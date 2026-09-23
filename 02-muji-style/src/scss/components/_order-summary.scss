@@ -1,0 +1,164 @@
+// ============================================================
+// 訂單摘要（購物車、結帳、付款結果共用）
+// 三頁用同一套 markup，換頁時面板的內距、行距、字級都不會變：
+//
+// <aside class="order-summary is-sticky" aria-labelledby="…">
+//   <h2 class="order-summary-title">訂單摘要</h2>
+//   <ul class="order-summary-items">                       ← 品項（結帳、付款結果）
+//     <li class="order-summary-item">
+//       <div class="order-summary-thumb img-frame"><img src="…" alt="" /></div>
+//       <div class="order-summary-item-body">
+//         <p class="order-summary-item-name">品名</p>
+//         <p class="order-summary-item-meta"><span>數量 2</span><span class="num">NT$ 2,560</span></p>
+//       </div>
+//     </li>
+//   </ul>
+//   <dl class="order-summary-rows">                        ← 金額列（標籤左、數值右）
+//     <div class="order-summary-row"><dt>商品小計</dt><dd class="num">NT$ 20,250</dd></div>
+//     <div class="order-summary-row"><dt>運費</dt><dd>免運</dd><dd class="order-summary-note">補充說明</dd></div>
+//     <div class="order-summary-row order-summary-total"><dt>應付總額</dt><dd class="price">NT$ 20,250</dd></div>
+//   </dl>
+// </aside>
+// ============================================================
+
+// ---------- 面板 ----------
+.order-summary {
+  padding: map-get($spacers, 4);
+  background-color: $white-warm;
+  border: 1px solid $hairline;
+  border-radius: $border-radius;
+
+  @include media-breakpoint-up(xl) {
+    padding: $spacer * 2;
+  }
+}
+
+// lg 以上固定在右欄。矮螢幕時先讓品項清單縮短、在清單內捲動，
+// 金額與按鈕維持看得到；再矮時整個面板捲動，不會被切掉
+.order-summary.is-sticky {
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - #{$sticky-top-offset} - #{map-get($spacers, 4)});
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    > * { flex-shrink: 0; }
+    > .order-summary-items {
+      flex-shrink: 1;
+      min-height: 7.5rem; // 至少露出一個半品項，看得出可以捲動
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+  }
+}
+
+.order-summary-title {
+  margin-bottom: map-get($spacers, 4);
+  font-size: $h4-font-size;
+}
+
+// 區塊之間（品項 ↔ 金額）以髮絲線分開，上下各 16px
+.order-summary-items + .order-summary-rows,
+.order-summary-rows + .order-summary-items,
+.order-summary-rows + .order-summary-rows {
+  margin-top: map-get($spacers, 3);
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $hairline;
+}
+
+// ---------- 品項 ----------
+.order-summary-items {
+  display: grid;
+  gap: map-get($spacers, 3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.order-summary-item {
+  display: flex;
+  align-items: flex-start;
+  gap: map-get($spacers, 3);
+}
+.order-summary-thumb {
+  flex: 0 0 auto;
+  width: 4rem;
+  aspect-ratio: 1 / 1;
+}
+.order-summary-item-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.order-summary-item-name {
+  margin-bottom: map-get($spacers, 1);
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
+  // 品名以詞組換行（同共用的 .text-phrase）：只在空白與零寬空白處換行，「(三入組)」這類片語不會被拆開；
+  // 單一片語放不下時才強制斷行。寫在元件裡，購物車、結帳、付款結果與 Guideline 的摘要都不用另外加 class
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+// 數量在左、小計在右：價格不另佔一欄，窄欄時品名也有足夠寬度
+.order-summary-item-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: map-get($spacers, 3);
+  margin-bottom: 0;
+  font-size: $font-size-sm;
+
+  > :first-child {
+    color: $body-secondary-color;
+    font-size: $small-font-size;
+    letter-spacing: $letter-spacing-label;
+  }
+  > :last-child { white-space: nowrap; }
+}
+
+// ---------- 金額列 ----------
+.order-summary-rows {
+  margin-bottom: 0;
+
+  dt {
+    font-weight: $font-weight-normal;
+    color: $body-secondary-color;
+  }
+  dd { margin-bottom: 0; }
+}
+.order-summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: map-get($spacers, 3);
+
+  > dt { flex: 0 0 auto; }
+  > dd {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: right;
+  }
+  // 列與列固定 8px
+  & + & { margin-top: map-get($spacers, 2); }
+}
+// 金額下方的補充說明（例如免運門檻），獨立一行靠左
+.order-summary-row > .order-summary-note {
+  flex-basis: 100%;
+  margin-top: map-get($spacers, 1);
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+  letter-spacing: $letter-spacing-label;
+  text-align: left;
+}
+
+// ---------- 總額 ----------
+.order-summary-total {
+  > dt { color: $sumi; }
+  > dd { font-size: $h3-font-size; }
+}
+.order-summary-row + .order-summary-total {
+  margin-top: map-get($spacers, 3);
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $hairline;
+}

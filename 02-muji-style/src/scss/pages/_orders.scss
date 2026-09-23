@@ -1,0 +1,383 @@
+// ============================================================
+// 我的訂單（OrdersView）
+// lg 以上：左 3 欄會員選單（固定）＋右 9 欄訂單；lg 以下：訂單、狀態示意在前，會員選單排在最後
+// 訂單是一列一列的清單：只用髮絲線分隔、以留白分層，不做卡片
+// 頁首節奏見 _base.scss 的 .page-header；頁首說明與品名在模板加 .text-phrase，以詞組換行
+// 「篩選後沒有訂單」示意用共用的 .demo-state、.empty-state（_base.scss）
+// ============================================================
+
+// ---------- 會員中心 ----------
+.orders-aside {
+  // lg 以下：接在訂單之後，以留白和上方內容分開；平板不拉成整排
+  max-width: 24rem;
+  margin-top: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+    max-width: none;
+    margin-top: 0;
+  }
+}
+.orders-menu {
+  --bs-list-group-bg: transparent;
+  --bs-list-group-color: #{$body-secondary-color};
+  --bs-list-group-border-color: #{$hairline};
+  --bs-list-group-item-padding-x: #{map-get($spacers, 3)};
+  --bs-list-group-item-padding-y: .875rem;
+  --bs-list-group-action-color: #{$body-secondary-color};
+  --bs-list-group-action-hover-color: #{$sumi};
+  --bs-list-group-action-hover-bg: transparent;
+  --bs-list-group-action-active-color: #{$sumi};
+  --bs-list-group-action-active-bg: #{$kinari};
+  --bs-list-group-active-color: #{$sumi};
+  --bs-list-group-active-bg: #{$kinari};
+  --bs-list-group-active-border-color: #{$hairline};
+
+  .list-group-item {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    font-size: $font-size-sm;
+    letter-spacing: $letter-spacing-label;
+  }
+  // 目前頁面：左側一道原木色細線（呼應頁首導覽的原木短線）
+  .list-group-item.active {
+    box-shadow: inset 2px 0 0 $oak;
+  }
+}
+// 登出：和選單隔開一段留白的文字按鈕（.btn .btn-text，44px 觸控高度由共用樣式提供）
+// 這裡只改成次要色、小一級字，圖示間距與上方選單相同
+.orders-logout {
+  --bs-btn-color: #{$body-secondary-color};
+  --bs-btn-font-size: #{$font-size-sm};
+  gap: .75rem;
+}
+
+// ---------- 狀態篩選（手機可左右滑動，貼齊螢幕兩側） ----------
+.orders-filter {
+  @include bleed-x;
+
+  // 手機：右側留白處淡出，被切到的最後一個分頁看起來是「還可以滑」，而不是排版錯位
+  @include media-breakpoint-down(sm) {
+    mask-image: linear-gradient(to right, #000 calc(100% - #{$container-padding-x * .5}), transparent);
+  }
+}
+
+// ---------- 訂單清單：一列一筆，髮絲線分隔 ----------
+.orders-list {
+  margin: 0;
+  border-bottom: 1px solid $hairline;
+}
+.orders-row {
+  padding-block: map-get($spacers, 5) - 1rem; // 32px
+
+  @include media-breakpoint-up(md) {
+    padding-block: map-get($spacers, 5);      // 48px
+  }
+
+  & + & {
+    border-top: 1px solid $hairline;
+  }
+}
+
+// 列首（訂單編號＋狀態）的排版用 utilities
+.orders-no {
+  margin-bottom: .125rem;
+  font-size: $font-size-base;
+  letter-spacing: .04em;
+}
+
+// 品項＋件數金額：手機上下排，md 起左右排
+.orders-row-body {
+  display: flex;
+  flex-direction: column;
+  gap: map-get($spacers, 3);
+
+  @include media-breakpoint-up(md) {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: map-get($spacers, 5);
+  }
+}
+.orders-items {
+  display: grid;
+  gap: map-get($spacers, 3);
+  margin: 0;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: map-get($spacers, 3);
+  }
+}
+.orders-thumb {
+  flex: 0 0 4rem;
+  width: 4rem;
+  height: 4rem;
+}
+.orders-item-name {
+  color: $sumi;
+  text-decoration: none;
+
+  &:hover {
+    color: $oak-deep;
+    text-decoration: underline;
+  }
+}
+
+// 件數與金額：手機左右排開，md 起靠右堆疊、和最後一個品項底部對齊
+.orders-sum {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+
+  @include media-breakpoint-up(md) {
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .125rem;
+  }
+
+  p { margin-bottom: 0; }
+  .price { font-size: $font-size-lg; }
+
+  // 已取消：金額不再有效，降低視覺重量
+  &.is-cancel .price {
+    color: $body-secondary-color;
+    font-weight: $font-weight-normal;
+  }
+}
+
+// ---------- 大型家具配送進度（出貨中）：已付款 → 備貨中 → 出貨中 → 已完成 ----------
+.orders-track {
+  display: grid;
+  // 前三格平分，最後一格依文字寬度並靠右收尾，讓進度線畫滿整列
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  margin-bottom: map-get($spacers, 3);
+
+  li {
+    position: relative;
+    padding-top: 1.5rem;
+    padding-right: .5rem;
+    color: $body-secondary-color;
+    font-size: $small-font-size;
+    line-height: 1.6;
+    letter-spacing: $letter-spacing-label;
+
+    // 節點
+    &::before {
+      content: "";
+      position: absolute;
+      top: .25rem;
+      left: 0;
+      z-index: 1;
+      width: .5625rem;
+      height: .5625rem;
+      border: 1px solid $linen;
+      border-radius: 50%;
+      background-color: $paper;
+    }
+    // 節點之間的細線
+    &::after {
+      content: "";
+      position: absolute;
+      top: .5rem;
+      left: .5625rem;
+      right: 0;
+      border-top: 1px solid $linen;
+    }
+
+    // 最後一步：節點在右端、文字靠右；細線從格子左緣畫到節點
+    &:last-child {
+      padding-right: 0;
+      text-align: right;
+
+      &::before { left: auto; right: 0; }
+      &::after { left: 0; right: .5625rem; }
+    }
+
+    &.is-done {
+      &::before { border-color: $sumi; background-color: $sumi; }
+      &::after { border-top-color: $sumi; }
+    }
+    &.is-current {
+      color: $sumi;
+      font-weight: $font-weight-medium;
+
+      &::before {
+        border-color: $sumi;
+        background-color: $sumi;
+        box-shadow: 0 0 0 .25rem rgba($oak, .35);
+      }
+    }
+  }
+}
+.orders-track-date {
+  display: block;
+  color: $body-secondary-color;
+  font-weight: $font-weight-normal;
+}
+
+// ---------- 列尾：配送資訊＋動作 ----------
+.orders-row-foot {
+  display: flex;
+  flex-direction: column;
+  gap: map-get($spacers, 2);
+  margin-top: map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: map-get($spacers, 4);
+  }
+}
+.orders-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem map-get($spacers, 4);
+  margin: 0;
+  font-size: $font-size-sm;
+
+  dt {
+    display: inline;
+    margin-right: .5rem;
+    color: $body-secondary-color;
+    font-weight: $font-weight-normal;
+    letter-spacing: $letter-spacing-label;
+  }
+  dd {
+    display: inline;
+    margin: 0;
+  }
+  // 待付款的付款期限：用提醒色，但不加底色、不加驚嘆號
+  .is-due dd { color: $karashi-deep; }
+}
+.orders-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 2) map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+  }
+}
+// 「訂單明細」展開鈕（44px 觸控高度由共用 .btn-text 提供）：箭頭隨展開狀態翻轉
+.orders-toggle {
+  gap: .375rem;
+
+  .bi {
+    display: inline-block; // 不套用文字底線
+    font-size: .75rem;
+    transition: transform .2s ease;
+  }
+  &[aria-expanded="true"] .bi {
+    transform: rotate(180deg);
+  }
+}
+
+// ---------- 訂單明細（展開） ----------
+.orders-detail {
+  margin-top: map-get($spacers, 4);
+  padding: map-get($spacers, 4);
+  background-color: rgba($kinari, .5);
+  font-size: $font-size-sm;
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 4) + .5rem;
+  }
+
+  p { margin-bottom: 0; }
+}
+.orders-detail-title {
+  margin-bottom: map-get($spacers, 2);
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  letter-spacing: $letter-spacing-label;
+}
+.orders-detail-lines {
+  margin-bottom: map-get($spacers, 3);
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: map-get($spacers, 3);
+    padding-block: .375rem;
+  }
+  li > .num { flex-shrink: 0; }
+}
+.orders-detail-sum {
+  margin: 0;
+  padding-top: map-get($spacers, 2);
+  border-top: 1px solid $hairline;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-block: .25rem;
+  }
+  dt {
+    color: $body-secondary-color;
+    font-weight: $font-weight-normal;
+  }
+  dd { margin: 0; }
+
+  .is-total {
+    padding-top: map-get($spacers, 2);
+
+    dt { color: $sumi; }
+    dd { font-size: $font-size-base; }
+  }
+}
+// 右欄三段（收件資訊、付款方式、狀態歷程）之間以留白分開
+.orders-detail-info > .orders-detail-title:not(:first-child) {
+  margin-top: map-get($spacers, 4);
+}
+// ATM 繳費資訊：標籤在上、號碼在下（不折行，方便抄寫）；空間夠時兩組並排
+.orders-atm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 2) map-get($spacers, 5);
+  margin: map-get($spacers, 2) 0;
+
+  dt {
+    color: $body-secondary-color;
+    font-size: $small-font-size;
+    font-weight: $font-weight-normal;
+    letter-spacing: $letter-spacing-label;
+  }
+  dd {
+    margin: 0;
+    font-size: $font-size-base;
+    letter-spacing: .06em;
+    white-space: nowrap;
+  }
+}
+// 付款期限提醒：圖示懸掛在左，換行時文字對齊
+.orders-due {
+  display: flex;
+  gap: .5rem;
+  color: $karashi-deep;
+
+  .bi { line-height: inherit; }
+}
+.orders-history {
+  margin: 0;
+
+  li {
+    display: flex;
+    gap: map-get($spacers, 3);
+    padding-block: .125rem;
+  }
+  .num {
+    flex: 0 0 auto;
+    color: $body-secondary-color;
+  }
+}
