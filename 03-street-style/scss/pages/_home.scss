@@ -1,0 +1,749 @@
+// ============================================================
+// 首頁（index.html）：class 一律加 home- 前綴
+// 1. Hero  2. 四大堅持  3. 靈感提案（分頁＋熱點＋整套清單）
+// 4. 人氣嚴選  5. 見證與承諾  6. 底部 CTA
+// ============================================================
+
+// 橫向捲動列延伸到螢幕兩側、第一張卡仍對齊版心（手機 < 576 用共用的 .bleed-x）
+// sm 以上版心有最大寬度：延伸量＝螢幕寬的一半 − 版心寬的一半 ＋ 版心內距，依斷點的 $container-max-widths 計算
+// 所在區塊要加 overflow-x: clip：桌機有捲軸時，100vw 會比畫面多一條捲軸寬
+@mixin home-bleed-screen($breakpoint) {
+  $bleed: calc(50vw - #{map-get($container-max-widths, $breakpoint) * .5} + #{$container-padding-x * .5});
+  margin-inline: calc(#{$bleed} * -1);
+  padding-inline: $bleed;
+  scroll-padding-inline: $bleed; // 捲動吸附的起點也對齊版心
+}
+
+// ---------- 1. Hero：巨大黑體主標＋粗框情境照＋螢光規格貼紙 ----------
+// 刻意偏離 wireframe 的「文字、圖片左右 2 欄」，改成海報式版面（見 README「與 wireframe 的刻意差異」）
+// 手機：標題 → 滿版照片（只留上下粗線、貼紙壓在下緣）→ 說明 → 滿版按鈕
+// sm：同手機，但照片收進版心、改完整粗框
+// md、lg：標題 → 粗線＋說明與按鈕一列 → 照片（按鈕留在第一屏）
+// xl 以上：標題佔 8 欄、右側 4 欄是說明與按鈕（上緣一條粗線，像吊牌），照片橫跨整個版心
+.home-hero {
+  padding-block: map-get($spacers, 4) map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 5) map-get($spacers, 6);
+  }
+}
+.home-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "title"
+    "media"
+    "body";
+  row-gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) {
+    grid-template-areas:
+      "title"
+      "body"
+      "media";
+    row-gap: map-get($spacers, 5); // 貼紙會往上壓 24px，留足空間
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-areas:
+      "title title title title title title title title body body body body"
+      "media media media media media media media media media media media media";
+    column-gap: $grid-gutter-width;
+  }
+}
+.home-hero-title {
+  grid-area: title;
+  margin: 0;
+  // 手機：8 個字剛好撐滿版心（隨螢幕寬度放到最大，不是桌機縮小）
+  font-size: calc((100vw - #{$container-padding-x}) / 8.3);
+  font-weight: 900;
+  line-height: 1.12;
+  letter-spacing: -.02em;
+
+  @include media-breakpoint-up(sm)  { font-size: 3.75rem; }
+  @include media-breakpoint-up(md)  { font-size: 5rem; }
+  @include media-breakpoint-up(lg)  { font-size: 6.5rem; }
+  @include media-breakpoint-up(xl)  { font-size: 5.5rem; } // 8 欄寬
+  @include media-breakpoint-up(xxl) { font-size: 6.5rem; }
+}
+
+.home-hero-media {
+  grid-area: media;
+  position: relative;
+  margin: 0;
+}
+.home-hero-frame {
+  aspect-ratio: 4 / 3;
+  // 手機（< 576）：照片貼齊螢幕兩側，只留上下粗線
+  margin-inline: $container-padding-x * -.5;
+  border-block: $frame-width solid $charcoal;
+
+  > img { object-position: 30% 50%; }
+
+  // sm 以上：版心已有最大寬度，照片收進版心、改完整粗框＋硬陰影
+  @include media-breakpoint-up(sm) {
+    aspect-ratio: 16 / 9;
+    margin-inline: 0;
+    border: $frame-width solid $charcoal;
+    box-shadow: $box-shadow-lg;
+
+    > img { object-position: 50% 55%; }
+  }
+  @include media-breakpoint-up(lg) { aspect-ratio: 21 / 9; }
+}
+// 螢光規格貼紙：坪數大字＋平方公尺，貼在照片角落並壓住粗框
+.home-hero-sticker {
+  position: absolute;
+  bottom: -1.25rem;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  border: $frame-width solid $charcoal;
+  background-color: $neon;
+  color: $charcoal;
+  box-shadow: $shadow-hard;
+  line-height: 1;
+
+  @include media-breakpoint-up(md) {
+    top: -1.5rem;
+    right: 1.5rem;
+    bottom: auto;
+    left: auto;
+  }
+}
+.home-hero-sticker-size {
+  padding: .5rem .75rem .375rem;
+  font-size: 1.125rem;
+  font-weight: 900;
+
+  .num {
+    font-size: 2.75rem;
+    font-weight: 900;
+    letter-spacing: -.02em;
+  }
+  @include media-breakpoint-up(md) {
+    padding: .625rem 1rem .5rem;
+    font-size: 1.375rem;
+
+    .num { font-size: 3.75rem; }
+  }
+}
+.home-hero-sticker-note {
+  padding: .375rem .75rem;
+  border-top: $border-width solid $charcoal;
+  font-size: .8125rem;
+  font-weight: 700;
+
+  @include media-breakpoint-up(md) { padding-inline: 1rem; }
+}
+
+.home-hero-body {
+  grid-area: body;
+  // 手機：貼紙壓在照片下緣，說明要讓出空間
+  padding-top: map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: map-get($spacers, 5);
+    padding-top: map-get($spacers, 4);
+    border-top: $frame-width solid $charcoal;
+  }
+  @include media-breakpoint-up(xl) {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: map-get($spacers, 4);
+    padding-top: map-get($spacers, 3);
+  }
+}
+.home-hero-lead {
+  margin-bottom: map-get($spacers, 4);
+  font-size: $font-size-lg;
+  font-weight: 700;
+  line-height: 1.6;
+
+  @include media-breakpoint-up(md) {
+    max-width: 22em;
+    margin-bottom: 0;
+    font-size: 1.25rem;
+  }
+  @include media-breakpoint-up(xl) {
+    max-width: none;
+    font-size: $font-size-lg;
+  }
+}
+.home-hero-actions {
+  display: grid;
+  gap: map-get($spacers, 3);
+
+  .btn {
+    --bs-btn-padding-y: 1rem;
+    --bs-btn-font-size: #{$font-size-lg};
+    --bs-btn-font-weight: 900;
+  }
+  // md：兩顆按鈕上下疊在右側；lg：左右並排
+  @include media-breakpoint-up(md) { flex: 0 0 16rem; }
+  @include media-breakpoint-up(lg) {
+    flex-basis: auto;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-auto-flow: row;
+
+    .btn { --bs-btn-padding-x: .75rem; }
+  }
+}
+
+// ---------- 2. 四大堅持：4 格共用粗框的規格表 ----------
+// 緊接在 Hero 之後，上下間距比一般 .section 收緊一級，讓兩個區塊讀起來是同一組
+.home-values-section {
+  padding-block: map-get($spacers, 5) map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) { padding-block: map-get($spacers, 6) map-get($spacers, 7); }
+}
+// 外框 3px（在 sheet 上）；格線以深炭底色＋2px 間隙畫出，相鄰格不會疊成雙線
+.home-values-sheet {
+  border: $frame-width solid $charcoal;
+  background-color: $charcoal;
+}
+// 深炭表頭（h2）
+.home-values-head {
+  margin: 0;
+  padding: 1rem 1rem 1.125rem;
+  color: $on-dark;
+  font-size: $h3-font-size;
+
+  @include media-breakpoint-up(sm) { padding-inline: map-get($spacers, 4); }
+  @include media-breakpoint-up(lg) { padding-block: 1.25rem 1.375rem; font-size: $h2-font-size; }
+}
+.home-values {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $border-width;
+  margin: 0;
+
+  @include media-breakpoint-up(sm) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @include media-breakpoint-up(lg) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.home-value {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-content: start; // 文字較短的格子，多出的高度留在底部，四格標題對齊
+  align-items: start;
+  gap: map-get($spacers, 3);
+  padding: 1.25rem 1rem;
+  background-color: $concrete-light;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: map-get($spacers, 4);
+    padding: map-get($spacers, 4);
+  }
+}
+// 圖示格：深炭底＋淺水泥圖示（裝飾性的說明圖示不用螢光，螢光留給目前狀態與主要動作）
+.home-value-icon {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  background-color: $charcoal;
+  color: $on-dark;
+  font-size: 1.5rem;
+
+  @include media-breakpoint-up(sm) {
+    width: 3.75rem;
+    height: 3.75rem;
+    font-size: 1.75rem;
+  }
+}
+.home-value-title {
+  margin-bottom: map-get($spacers, 2);
+  font-size: $h4-font-size;
+}
+.home-value-text {
+  margin: 0;
+  color: $concrete-dark;
+}
+
+// ---------- 3. 靈感提案（深炭區塊） ----------
+// 深色區塊的文字色、.btn-text 反白、下拉小卡與 .surface-light 面板的深色字，都由共用的 .section-dark 處理
+.home-rooms {
+  overflow-x: clip; // 分頁列在 sm 延伸到螢幕兩側（見 home-bleed-screen）
+}
+
+// 情境分頁：粗框按鈕（縮圖＋【情境名】＋標題）；手機橫向捲動，md 以上 3 欄
+.home-room-tabs {
+  display: grid;
+  grid-auto-columns: minmax(15.5rem, 78%);
+  grid-auto-flow: column;
+  gap: .75rem;
+  margin-block: 0 map-get($spacers, 3);
+  padding-block: .375rem; // 焦點框外擴時不被捲動區裁掉
+  overflow-x: auto;
+  scroll-padding-inline: $container-padding-x * .5;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+
+  > li {
+    display: flex;
+    scroll-snap-align: start;
+  }
+  // sm：延伸到螢幕兩側，目前分頁的焦點框不會被捲動區裁掉（< 576 由 HTML 的 .bleed-x 處理）
+  @include media-breakpoint-only(sm) { @include home-bleed-screen(sm); }
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-flow: row;
+    gap: map-get($spacers, 3);
+    overflow: visible;
+  }
+}
+.home-room-tab {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: .875rem;
+  width: 100%;
+  padding: .625rem .875rem .625rem .625rem;
+  border: $frame-width solid $steel; // 對深炭 4.8:1
+  background-color: transparent;
+  color: $on-dark;
+  text-align: left;
+  transition: border-color .12s ease, background-color .12s ease, color .12s ease;
+
+  &:hover { border-color: $neon; }
+  &:focus-visible { outline: 3px solid $neon; outline-offset: 3px; }
+
+  &.active {
+    border-color: $neon;
+    background-color: $neon;
+    color: $charcoal;
+  }
+  @include media-breakpoint-up(xl) { grid-template-columns: 6rem minmax(0, 1fr); }
+}
+.home-room-thumb {
+  aspect-ratio: 3 / 2;
+  border: $border-width solid $steel;
+
+  .home-room-tab.active & { border-color: $charcoal; }
+}
+.home-room-tab-text {
+  display: flex;
+  flex-direction: column;
+  gap: .125rem;
+}
+.home-room-label {
+  color: $neon;
+  font-size: .8125rem;
+  font-weight: 700;
+
+  .home-room-tab.active & { color: $charcoal; }
+}
+.home-room-name {
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+// 情境大圖＋熱點
+.home-room-stage {
+  position: relative;
+}
+.home-room-frame {
+  aspect-ratio: 3 / 2;
+  border: $frame-width solid $on-dark;
+}
+// 熱點：44px 可點範圍＋螢光圓點（深炭框）；位置由下方的 .home-spot-* 設定 --x／--y
+.home-spot {
+  position: absolute;
+  top: calc(var(--y) - 1.375rem);
+  left: calc(var(--x) - 1.375rem);
+}
+// 各熱點位置：家具在照片上的座標，單位是照片寬（--x）、高（--y）的百分比
+// 換照片時，對照 images/room-*.jpg 的家具位置重新量
+.home-spot-a-nightstand { --x: 90%; --y: 60%; } // 情境 A：床頭櫃
+.home-spot-a-bed        { --x: 48%; --y: 58%; } // 情境 A：攤開成床的沙發床
+.home-spot-b-cubes      { --x: 84%; --y: 45%; } // 情境 B：收納方塊牆
+.home-spot-b-desk       { --x: 57%; --y: 55%; } // 情境 B：窗前書桌
+.home-spot-b-bed        { --x: 15%; --y: 76%; } // 情境 B：左下的床（沙發床攤開）
+.home-spot-c-table      { --x: 24%; --y: 61%; } // 情境 C：餐桌
+.home-spot-c-cabinet    { --x: 37%; --y: 45%; } // 情境 C：藤編收納櫃
+.home-spot-c-sofa       { --x: 67%; --y: 60%; } // 情境 C：雙人沙發
+.home-spot-c-lamp       { --x: 63%; --y: 28%; } // 情境 C：弧形落地燈
+.home-spot-btn {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+
+  // 焦點：深炭／螢光／深炭三層方框（在亮面與暗面的照片上都看得見）
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px $charcoal, inset 0 0 0 5px $neon, 0 0 0 2px $charcoal;
+  }
+}
+.home-spot-dot {
+  width: 1.625rem;
+  height: 1.625rem;
+  border: $frame-width solid $charcoal;
+  border-radius: $border-radius-pill;
+  background-color: $neon;
+  box-shadow: 0 0 0 2px $neon;
+  transition: background-color .12s ease, border-color .12s ease;
+
+  // hover 與展開時反轉：深炭心＋螢光框
+  .home-spot-btn:hover &,
+  .home-spot-btn[aria-expanded="true"] & {
+    border-color: $neon;
+    background-color: $charcoal;
+    box-shadow: 0 0 0 2px $charcoal;
+  }
+}
+
+// 熱點小卡（dropdown）：淺底；深色字與深炭焦點框由共用的 .section-dark .dropdown-menu 處理
+.home-spot-card {
+  --bs-dropdown-min-width: 0;
+  --bs-dropdown-padding-y: 0;
+  --bs-dropdown-border-width: #{$frame-width};
+  width: 18.5rem;
+  max-width: calc(100vw - 2.5rem);
+
+  p { margin: 0; }
+}
+.home-spot-head {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  align-items: center;
+  gap: .75rem;
+  padding: .75rem;
+  border-bottom: $border-width solid $charcoal;
+}
+.home-spot-thumb {
+  aspect-ratio: 1 / 1;
+  border: $border-width solid $charcoal;
+}
+.home-spot-code {
+  color: $concrete-dark;
+  font-size: .75rem;
+  font-weight: 700;
+}
+.home-spot-name {
+  font-weight: 900;
+  line-height: 1.4;
+}
+.home-spot-body {
+  display: grid;
+  justify-items: start;
+  gap: .75rem;
+  padding: .75rem;
+
+  .price { font-size: 1.5rem; line-height: 1; }
+}
+
+// 整套清單：淺水泥面板，放在深炭區塊上（HTML 加共用的 .surface-light，文字與連結恢復深炭）
+.home-room-set {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: $concrete-light;
+}
+// 清單標頭（h4）：螢光條
+.home-room-set-head {
+  margin: 0;
+  padding: .625rem 1rem;
+  border-bottom: $frame-width solid $charcoal;
+  background-color: $neon;
+  font-size: 1rem;
+  line-height: $line-height-base;
+
+}
+.home-room-items {
+  margin: 0;
+}
+.home-room-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  align-items: start;
+  gap: .875rem;
+  padding: .875rem 1rem;
+
+  & + & { border-top: $border-width solid $charcoal; }
+  &:hover,
+  &:has(:focus-visible) { background-color: $concrete; }
+  // 售完：縮圖降低存在感（文字維持原色，對比不變）
+  &.is-sold-out .home-room-item-thumb img { opacity: .45; }
+}
+.home-room-item-thumb {
+  aspect-ratio: 1 / 1;
+  border: $border-width solid $charcoal;
+}
+.home-room-item-body {
+  display: grid;
+  justify-items: start;
+  gap: .375rem;
+  min-width: 0;
+}
+.home-room-item-code {
+  color: $concrete-dark;
+  font-size: .75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.home-room-item-link {
+  font-weight: 900;
+  line-height: 1.4;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+  &:focus-visible { outline: none; }
+  // stretched-link 的覆蓋層當焦點框：整列深炭框＋螢光內圈（和一般分隔線區分開）
+  &:focus-visible::after { box-shadow: inset 0 0 0 3px $charcoal, inset 0 0 0 6px $neon; }
+}
+.home-room-item .price { font-size: 1.125rem; }
+.home-room-set-foot {
+  margin-top: auto;
+  padding: 1rem;
+  border-top: $frame-width solid $charcoal;
+}
+.home-room-set-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .875rem;
+  font-weight: 700;
+
+  .price { font-size: 2rem; line-height: 1; }
+}
+.home-room-set-note {
+  margin: .625rem 0 0;
+  color: $concrete-dark;
+  font-size: $small-font-size;
+}
+
+// ---------- 4. 人氣嚴選：lg 以上 4 欄；以下橫向捲動（scroll-snap） ----------
+.home-featured-section {
+  overflow-x: clip; // 捲動列在 sm–lg 延伸到螢幕兩側（見 home-bleed-screen）
+}
+.home-featured {
+  display: grid;
+  grid-auto-columns: minmax(15rem, 72%);
+  grid-auto-flow: column;
+  gap: map-get($spacers, 3);
+  margin-block: 0;
+  // 商品卡 hover 會往左上位移並加硬陰影：留出空間，不被捲動區裁掉
+  padding-block: .25rem .5rem;
+  overflow-x: auto;
+  scroll-padding-inline: $container-padding-x * .5;
+  scroll-snap-type: x mandatory;
+
+  > li { scroll-snap-align: start; }
+
+  @include media-breakpoint-up(sm) { grid-auto-columns: calc((100% - 2rem) / 2.35); }
+  @include media-breakpoint-up(md) { grid-auto-columns: calc((100% - 2 * #{$grid-gutter-width}) / 2.6); gap: $grid-gutter-width; }
+  // sm、md：延伸到螢幕兩側，捲到一半的卡片切在螢幕邊，不會切在版心邊（< 576 由 HTML 的 .bleed-x 處理）
+  @include media-breakpoint-only(sm) { @include home-bleed-screen(sm); }
+  @include media-breakpoint-only(md) { @include home-bleed-screen(md); }
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-flow: row;
+    overflow: visible;
+  }
+}
+
+// ---------- 5. 室友見證＋無憂承諾 ----------
+// 見證卡：HTML 加 d-flex flex-column h-100 m-0（圖說貼底、同列等高）
+.home-ugc {
+  border: $frame-width solid $charcoal;
+  background-color: $concrete-light;
+}
+.home-ugc-media {
+  aspect-ratio: 4 / 3;
+  border-bottom: $frame-width solid $charcoal;
+
+  @include media-breakpoint-up(sm) { aspect-ratio: 1 / 1; }
+}
+.home-ugc-quote {
+  margin: 0;
+  padding: 1rem 1rem 0;
+
+  p {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 900;
+    line-height: 1.65;
+  }
+}
+.home-ugc-caption {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin-top: auto;
+  padding: 1rem;
+  font-size: $small-font-size;
+}
+.home-ugc-author {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: .375rem;
+  padding: .125rem .5rem;
+  background-color: $charcoal;
+  color: $neon;
+  font-size: .875rem;
+  font-weight: 800;
+}
+.home-ugc-product {
+  color: $concrete-dark;
+
+  a {
+    display: inline;
+    color: $charcoal;
+    font-weight: 700;
+    text-decoration-thickness: 2px;
+
+    &:hover { color: $neon-deep; }
+  }
+}
+
+// 承諾：規格表式清單（左欄放大關鍵數字，右欄標題＋說明）
+.home-promises {
+  margin: 0;
+  border: $frame-width solid $charcoal;
+  background-color: $concrete-light;
+
+  // lg：與左側見證等高，三列平分
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-auto-rows: 1fr;
+    height: 100%;
+  }
+}
+.home-promise {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+
+  & + & { border-top: $border-width solid $charcoal; }
+  & + & .home-promise-figure { border-top: $border-width solid $concrete-dark; margin-top: -$border-width; }
+
+  @include media-breakpoint-up(sm) { grid-template-columns: 7rem minmax(0, 1fr); }
+}
+// 關鍵數字：深炭格＋淺水泥大字（服務說明不用螢光，和四大堅持的圖示格一致）
+.home-promise-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem .5rem;
+  background-color: $charcoal;
+  color: $on-dark;
+  font-weight: 900;
+  line-height: 1;
+
+  .num {
+    font-size: 2.5rem;
+    font-weight: 900;
+
+    @include media-breakpoint-up(sm) { font-size: 3rem; }
+    @include media-breakpoint-up(lg) { font-size: 3.5rem; }
+  }
+}
+.home-promise-unit {
+  margin-top: .25rem;
+  font-size: .875rem;
+}
+.home-promise-body {
+  align-self: center;
+  padding: 1.125rem 1rem;
+
+  p {
+    margin: 0;
+    color: $concrete-dark;
+  }
+  @include media-breakpoint-up(sm) { padding: 1.25rem 1.5rem; }
+}
+.home-promise-title {
+  margin-bottom: .375rem;
+  font-size: $h4-font-size;
+}
+
+// ---------- 6. 底部 CTA：滿版照片、標題貼在左半清水模牆上 ----------
+// 牆面中灰（對深炭只有 2:1），所以標題用淺水泥底條＋深炭字（13:1），說明用深炭底條＋淺字
+// 照片直接接頁尾：HTML 加共用的 .flush-footer
+.home-cta {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  min-height: 32rem;
+  padding-block: map-get($spacers, 6);
+  border-top: $frame-width solid $charcoal;
+  overflow: hidden;
+
+  @include media-breakpoint-up(lg) { min-height: 40rem; }
+}
+.home-cta-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 22% 50%;
+
+  @include media-breakpoint-up(md) { object-position: 50% 50%; }
+}
+.home-cta-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: map-get($spacers, 3);
+}
+.home-cta-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .375rem;
+  margin: 0;
+  font-size: clamp(1.75rem, 7.4vw, 3.5rem);
+  line-height: 1.2;
+
+  > span {
+    padding: .125em .3em;
+    border: $frame-width solid $charcoal;
+    background-color: $concrete-light;
+    box-shadow: $shadow-hard;
+  }
+  @include media-breakpoint-up(md) {
+    > span + span { margin-left: 1.5rem; }
+  }
+}
+.home-cta-note {
+  margin: map-get($spacers, 2) 0 map-get($spacers, 2);
+  padding: .5rem .75rem;
+  background-color: $charcoal;
+  color: $on-dark;
+  font-weight: 700;
+
+  @include media-breakpoint-up(md) { margin-left: 1.5rem; }
+}
+.home-cta-btn {
+  --bs-btn-border-color: #{$charcoal};
+  --bs-btn-hover-border-color: #{$charcoal};
+  --bs-btn-active-border-color: #{$charcoal};
+  --bs-btn-font-weight: 900;
+  box-shadow: $shadow-hard;
+  transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease, color .12s ease;
+
+  &:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 $charcoal; }
+  &:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 $charcoal; }
+  &:focus-visible { box-shadow: $focus-ring-double; }
+
+  @include media-breakpoint-up(md) { margin-left: 1.5rem; }
+}

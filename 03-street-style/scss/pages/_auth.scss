@@ -1,0 +1,268 @@
+// ============================================================
+// 登入／註冊（login.html、register.html 共用）
+// lg 以上：左欄粗框表單面板＋右欄清水模照片（sticky、3px 粗框、品牌語銘牌）
+// lg 以下：只有表單欄（格線 col-sm-10 col-md-8 置中）；照片欄 d-none＋loading="lazy"，不會下載
+// 面板像一張吊牌：深炭頁首（h1＋說明）→ 表單 → 底部切換列，外框 3px＋硬陰影
+// 「設計稿狀態示意」用共用的 .demo-state；登入失敗提示用共用的 .alert.alert-danger（皆在 _base.scss）
+// ============================================================
+
+$auth-pad-x:    1.25rem; // 面板左右內距（手機）
+$auth-pad-x-sm: 2rem;    // 面板左右內距（576 以上）
+
+.auth-page {
+  padding-top: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 5);
+  }
+}
+
+// ---------- 表單面板 ----------
+.auth-panel {
+  border: $frame-width solid $charcoal;
+  background-color: $concrete-light;
+  box-shadow: $shadow-hard;
+}
+
+// 深炭頁首：沿用 .page-header 的結構（h1 → 說明），改成反白的銘牌
+.auth-head {
+  margin-bottom: 0;
+  padding: map-get($spacers, 4) $auth-pad-x;
+  border-bottom: 0;
+  background-color: $charcoal;
+  color: $on-dark;
+
+  @include media-breakpoint-up(sm) {
+    padding: 1.75rem $auth-pad-x-sm;
+  }
+
+  h1 {
+    margin-bottom: map-get($spacers, 2);
+    color: $on-dark;
+  }
+  .page-lead {
+    color: $on-dark-muted;
+  }
+}
+
+// 註冊：加入會員的好處（接在頁首說明下方；圖示用淺水泥，螢光留給目前狀態與主要動作）
+.auth-perks {
+  margin: map-get($spacers, 3) 0 0;
+  padding-top: map-get($spacers, 3);
+  border-top: $border-width solid $charcoal-soft;
+  font-size: $font-size-sm;
+  font-weight: 700;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: .75rem;
+    padding-block: .25rem;
+  }
+  .bi {
+    flex-shrink: 0;
+    color: $on-dark;
+    font-size: 1rem;
+  }
+}
+
+.auth-body {
+  padding: map-get($spacers, 4) $auth-pad-x;
+
+  @include media-breakpoint-up(sm) {
+    padding: map-get($spacers, 4) + .25rem $auth-pad-x-sm $auth-pad-x-sm;
+  }
+}
+
+// 密碼欄右側的「顯示密碼」方塊按鈕：與輸入框共用 2px 框線（input-group 以負邊距疊合，不會變成 4px）
+// 上下內距歸零、行高 1：高度交給 input-group 依輸入框撐齊，密碼欄和其他欄一樣高
+.auth-reveal {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: 0;
+  --bs-btn-color: #{$charcoal};
+  --bs-btn-bg: #{$concrete-light};
+  --bs-btn-border-color: #{$charcoal};
+  --bs-btn-hover-color: #{$charcoal};
+  --bs-btn-hover-bg: #{$neon};
+  --bs-btn-hover-border-color: #{$charcoal};
+  --bs-btn-active-color: #{$neon};
+  --bs-btn-active-bg: #{$charcoal};
+  --bs-btn-active-border-color: #{$charcoal};
+  flex: 0 0 3.25rem;
+  font-size: 1.125rem;
+  line-height: 1;
+
+  // 顯示中：深炭底螢光圖示，一眼看出目前是明碼
+  &[aria-pressed="true"] {
+    background-color: $charcoal;
+    color: $neon;
+  }
+}
+
+// 密碼規則：圖示懸掛在左
+.auth-hint {
+  display: flex;
+  align-items: baseline;
+  gap: .375rem;
+  margin-top: .375rem;
+  font-size: $font-size-sm;
+}
+
+// 記住我＋忘記密碼？：左右分開，窄螢幕可換行
+.auth-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: map-get($spacers, 3);
+}
+
+// 核取方塊：可點範圍放在 label 上（整列 44px 高），20px 方塊對齊第一行文字
+.auth-check {
+  display: flex;
+  align-items: flex-start;
+  gap: .625rem;
+  min-height: 2.75rem;
+  margin-bottom: 0;
+  padding: 0;
+  font-size: $font-size-sm;
+  font-weight: 700;
+
+  .form-check-input {
+    flex-shrink: 0;
+    float: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    // label 上內距 ＋（一行高 − 方塊高）÷ 2
+    margin: (.625rem + ($font-size-sm * $line-height-base - 1.25rem) * .5) 0 0;
+  }
+  .form-check-label {
+    padding-block: .625rem;
+  }
+}
+// 核取方塊的錯誤訊息：和 label 文字左緣對齊
+.auth-check-feedback {
+  display: block;
+  margin-top: 0;
+  padding-left: 1.25rem + .625rem;
+}
+
+// 條款連結（佔位，沒有 href）：保留連結樣式
+.auth-inline-link {
+  margin-inline: .125rem;
+  color: $charcoal;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .25em;
+}
+
+// 文字按鈕（忘記密碼？、立即註冊）：小一級字
+.auth-text-btn {
+  min-width: 2.75rem;
+  justify-content: center;
+  --bs-btn-font-size: #{$font-size-sm};
+}
+
+// 「或」分隔：2px 深炭線中間夾一個粗體字
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-block: map-get($spacers, 4) map-get($spacers, 3);
+  font-size: $font-size-sm;
+  font-weight: 900;
+  line-height: 1;
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1 1 0;
+    border-top: $border-width solid $charcoal;
+  }
+}
+
+// 第三方登入：沿用 .btn-outline-primary（圖示與文字的間距由共用 .btn:has(> .bi) 處理），只放大圖示
+.auth-social .bi {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+// 底部切換列（還沒有帳號？／已經有帳號？）：中水泥底，與表單分區
+.auth-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: .5rem;
+  margin: 0;
+  padding: .25rem $auth-pad-x;
+  border-top: $border-width solid $charcoal;
+  background-color: $concrete-mid;
+  font-size: $font-size-sm;
+  font-weight: 700;
+}
+
+// ---------- 右欄：清水模照片 ----------
+// 高度貼齊視窗（扣掉 sticky 頁首），表單較長時照片黏在畫面上
+.auth-visual {
+  position: sticky;
+  top: $sticky-top-offset;
+  height: calc(100vh - #{$sticky-top-offset} - #{map-get($spacers, 4)});
+  min-height: 34rem;
+  max-height: 58rem;
+  overflow: hidden;
+  border: $frame-width solid $charcoal;
+  background-color: $concrete-mid;
+
+  > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 40% 62%;
+  }
+}
+// 品牌語：貼在照片左上角的深炭銘牌
+.auth-visual-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 1.25rem 1.5rem 1.375rem;
+  border-right: $frame-width solid $charcoal;
+  border-bottom: $frame-width solid $charcoal;
+  background-color: $charcoal;
+  color: $on-dark;
+  font-size: clamp(2rem, 2.6vw, 2.75rem);
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: .04em;
+}
+
+// ---------- 忘記密碼 Modal ----------
+// 深炭標題條＋白色關閉鈕（共用 .btn-close.btn-close-white，44px）
+.auth-modal {
+  .modal-header {
+    padding: .75rem .75rem .75rem 1.25rem;
+    border-bottom: 0;
+    background-color: $charcoal;
+    color: $on-dark;
+  }
+  .modal-title {
+    font-size: $h4-font-size;
+    color: $on-dark;
+  }
+  .modal-body {
+    padding: 1.25rem;
+
+    p { margin-bottom: map-get($spacers, 3); }
+  }
+  .modal-footer {
+    gap: .75rem;
+    padding: 1rem 1.25rem 1.25rem;
+    border-top: $border-width solid $charcoal;
+
+    > * { margin: 0; }
+  }
+}

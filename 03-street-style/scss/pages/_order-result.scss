@@ -1,0 +1,280 @@
+// ============================================================
+// 付款結果（order-result.html）
+// - 版心與購物車、結帳同寬；內容收在 48rem 的 .or-wrap 並靠左，步驟條、標題位置與前兩步一致
+//   （$flow-container-max、$flow-steps-max 定義在 _variables.scss；步驟條的手機版在共用的 _steps.scss）
+// - xl 以上：左欄維持 48rem，「接下來會發生什麼」移到右欄（與前兩步的訂單摘要同一側），版心右邊不會空一大塊
+// - 成功標記：螢光方塊＋深炭粗勾（硬陰影）；失敗示意改成警示橘方塊＋驚嘆號，失敗原因用共用的 .alert-warning
+// - 訂單資訊：共用 .order-summary 的粗框與深炭標題條，內容做成規格銘牌式的格線表；品項用共用的 .order-summary-item-*
+// - 底部「付款未完成時」狀態示意（共用 .demo-state）
+// ============================================================
+
+.or-page {
+  @include media-breakpoint-up(xxl) {
+    max-width: $flow-container-max;
+  }
+}
+.or-wrap {
+  max-width: $flow-steps-max;
+
+  // xl 以上改成兩欄：其他區塊依序排在左欄，.or-next 固定在右欄、與訂單資訊頂端對齊
+  // （DOM 順序不變：訂單資訊 → 接下來會發生什麼 → 按鈕 → 狀態示意）
+  @include media-breakpoint-up(xl) {
+    display: grid;
+    grid-template-columns: minmax(0, $flow-steps-max) minmax(0, 1fr);
+    align-items: start;
+    column-gap: map-get($spacers, 5);
+    max-width: none;
+
+    > * { grid-column: 1; }
+    > .or-next {
+      grid-column: 2;
+      grid-row: 2 / span 2;
+      margin-top: 0;
+    }
+  }
+}
+
+// ---------- 標題：成功標記＋H1＋說明 ----------
+// 手機：標記與 H1 同一列，說明滿版在下；md 以上：標記在左、H1 與說明疊在右欄
+.or-headline {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "mark title"
+    "lead lead";
+  align-items: center;
+  column-gap: 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-areas:
+      "mark title"
+      "mark lead";
+    align-items: start;
+    column-gap: 1.5rem;
+  }
+}
+.or-headline-title {
+  grid-area: title;
+  margin-bottom: 0;
+
+  @include media-breakpoint-up(md) { padding-top: .25rem; }
+}
+.or-headline-lead {
+  grid-area: lead;
+  margin-top: map-get($spacers, 3);
+
+  @include media-breakpoint-up(md) { margin-top: map-get($spacers, 2); }
+}
+.or-mark {
+  display: grid;
+  grid-area: mark;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: $frame-width solid $charcoal;
+  background-color: $neon;
+  box-shadow: $shadow-hard;
+  color: $charcoal;
+
+  @include media-breakpoint-up(md) {
+    width: 5rem;
+    height: 5rem;
+  }
+
+  svg {
+    width: 70%;
+    height: 70%;
+    fill: none;
+    stroke: currentcolor;
+    stroke-linecap: square;
+    stroke-width: 3.5;
+  }
+  rect {
+    fill: currentcolor;
+    stroke: none;
+  }
+}
+.or-mark-fail {
+  background-color: $safety;
+}
+.or-email {
+  color: $charcoal;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 訂單資訊：規格銘牌式格線表 ----------
+// 格線用「深炭底＋2px 間隙」畫出，儲存格相鄰時不會疊成 4px 雙線
+.or-spec {
+  display: grid;
+  gap: $border-width;
+  margin: 0;
+  border-bottom: $border-width solid $charcoal;
+  background-color: $charcoal;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  > div {
+    padding: .75rem 1.25rem;
+    background-color: $concrete-light;
+  }
+  dt {
+    margin-bottom: .125rem;
+    color: $concrete-dark;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: $letter-spacing-label;
+  }
+  dd {
+    margin: 0;
+    font-weight: 900;
+    line-height: 1.45;
+  }
+}
+// 訂單編號：整列、大字窄體，像機身序號
+.or-spec-no {
+  grid-column: 1 / -1;
+
+  dd {
+    font-size: 1.75rem;
+    line-height: 1.1;
+    letter-spacing: .02em;
+
+    @include media-breakpoint-up(md) { font-size: 2.25rem; }
+  }
+}
+
+// 品項
+.or-items-title {
+  margin-bottom: .75rem;
+  font-size: $font-size-sm;
+}
+.or-items-count {
+  color: $concrete-dark;
+  font-weight: 700;
+}
+// 品項後面直接接付款金額：拿掉清單底線，只留總額的 3px 粗線，避免兩條線疊在一起
+.or-receipt .order-summary-items {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+// ---------- 接下來會發生什麼：編號面板（md–lg 三格並排；手機與 xl 右欄上下排列） ----------
+.or-next {
+  margin-top: map-get($spacers, 5);
+}
+.or-next-title {
+  margin-bottom: map-get($spacers, 3);
+  font-size: $h4-font-size;
+}
+.or-steps {
+  display: grid;
+  gap: $border-width;
+  margin: 0;
+  padding: 0;
+  border: $border-width solid $charcoal;
+  background-color: $charcoal;
+  list-style: none;
+
+  @include media-breakpoint-between(md, xl) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  li {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background-color: $concrete-light;
+
+    @include media-breakpoint-between(md, xl) {
+      flex-direction: column;
+      gap: .75rem;
+    }
+  }
+  p {
+    margin: 0;
+    color: $concrete-dark;
+    font-size: $font-size-sm;
+    line-height: $line-height-sm + .1;
+  }
+}
+.or-steps-no {
+  flex: 0 0 2rem;
+  font-family: "Archivo", $font-family-sans-serif;
+  font-size: 2.5rem;
+  font-stretch: $font-stretch-condensed;
+  font-weight: 900;
+  line-height: .9;
+}
+.or-steps-title {
+  margin-bottom: .25rem;
+  font-size: 1rem;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 按鈕：≥ 576px 兩顆等寬並排 ----------
+.or-actions {
+  display: grid;
+  gap: 1rem;
+  margin-top: map-get($spacers, 5);
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+// ---------- 狀態示意：付款未完成 ----------
+.or-fail {
+  background-color: $concrete-light;
+
+  @include media-breakpoint-up(md) { padding: map-get($spacers, 5) * .75; }
+
+  .or-headline {
+    grid-template-areas: "mark title";
+    align-items: center;
+    margin-bottom: map-get($spacers, 4);
+  }
+  .or-mark {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+}
+.or-fail-title {
+  grid-area: title;
+  margin: 0;
+  font-size: $h3-font-size;
+}
+.or-fail-subhead {
+  margin-bottom: .75rem;
+  font-size: $font-size-base;
+}
+// 清單：深炭小方塊項目符號（與跑馬燈的分隔方塊同一語彙）
+.or-fail-list {
+  margin: 0 0 map-get($spacers, 4);
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    padding-left: 1.25rem;
+
+    // 方塊對齊第一行文字的中線（行高 1.7 × 16px）
+    &::before {
+      content: "";
+      position: absolute;
+      top: calc(.85em - .25rem);
+      left: 0;
+      width: .5rem;
+      height: .5rem;
+      background-color: $charcoal;
+    }
+    & + li { margin-top: .375rem; }
+  }
+}
+.or-fail-actions {
+  margin-top: 0;
+}

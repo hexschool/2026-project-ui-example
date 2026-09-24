@@ -1,0 +1,303 @@
+// ============================================================
+// 購物車（cart.html）
+// 頁首用共用的 .page-header＋.checkout-steps，訂單摘要用共用的 .order-summary
+// - 版心：購物車、結帳、付款結果三頁同寬（xxl 收窄成 xl 的寬度），換頁時步驟條、標題、摘要位置不跳動
+//   （$flow-container-max、$flow-steps-max 定義在 _variables.scss；步驟條的手機版在共用的 _steps.scss）
+// - 品項：3px 粗框區塊＝深炭編號條（編號、分類、粗體標籤）→ 圖＋品名＋規格銘牌＋單價與規格 → 數量、移除、小計
+// - 手機、平板：清單上方多一條深炭總額列（總額＋前往結帳），摘要移到清單下方
+// - 底部「購物車是空的時」狀態示意（共用 .demo-state、.empty-state）
+// ============================================================
+
+.cart-page {
+  @include media-breakpoint-up(xxl) {
+    max-width: $flow-container-max;
+  }
+  .checkout-steps { max-width: $flow-steps-max; }
+}
+
+// ---------- 手機、平板：清單上方的深炭總額列 ----------
+.cart-quick {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 4);
+  padding: .75rem .75rem .75rem 1rem;
+  background-color: $charcoal;
+  color: $on-dark;
+
+  .btn { flex-shrink: 0; }
+}
+.cart-quick-sum {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  margin: 0;
+}
+.cart-quick-label {
+  color: $on-dark-muted;
+  font-size: $small-font-size;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.cart-quick-total {
+  color: $neon;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+// ---------- 品項清單 ----------
+.cart-list {
+  display: grid;
+  gap: map-get($spacers, 3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cart-item {
+  border: $frame-width solid $charcoal;
+  background-color: $concrete-light;
+}
+
+// 編號條：深炭底淺色字，左邊商品編號＋分類，右邊粗體標籤（與商品卡的編號條同一套語彙；螢光只留給「現貨」標籤）
+.cart-item-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .375rem .75rem;
+  padding: .375rem .5rem .375rem .75rem;
+  background-color: $charcoal;
+  color: $on-dark;
+  font-size: .8125rem;
+  font-weight: 700;
+}
+.cart-item-code {
+  display: flex;
+  align-items: baseline;
+  gap: .625rem;
+
+  .num {
+    font-size: .9375rem;
+    font-weight: 800;
+  }
+}
+.cart-item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .375rem;
+}
+
+// 主體：左圖右資訊（手機也維持圖左、資訊右）
+.cart-item-body {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  gap: map-get($spacers, 3);
+  padding: map-get($spacers, 3);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    gap: 1.25rem;
+    padding: 1.25rem;
+  }
+}
+.cart-item-media {
+  align-self: start;
+  aspect-ratio: 1 / 1;
+  border: $border-width solid $charcoal;
+}
+.cart-item-name {
+  margin-bottom: .625rem;
+  font-size: 1.0625rem;
+  line-height: 1.4;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+
+  @include media-breakpoint-up(md) { font-size: $h4-font-size; }
+
+  a {
+    // 行內連結上下補內距：點擊範圍約 44px 高，不影響行高與版面
+    padding-block: .8125rem;
+    color: $charcoal;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: .2em;
+    }
+  }
+}
+// 單價與規格：寬度夠時同一列，不夠時換行
+.cart-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1.5rem;
+  margin-top: .75rem;
+}
+.cart-item-unit {
+  margin: 0;
+  color: $concrete-dark;
+  font-size: $font-size-sm;
+  font-weight: 700;
+
+  .price {
+    margin-left: .25rem;
+    color: $charcoal;
+    font-size: 1rem;
+  }
+}
+.cart-item-spec {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+
+  .form-label {
+    flex-shrink: 0;
+    margin: 0;
+  }
+  .form-select {
+    width: auto;
+    min-height: 2.75rem;
+  }
+}
+.cart-item-note {
+  display: flex;
+  align-items: baseline;
+  gap: .375rem;
+  word-break: keep-all; // 只在標點後換行
+  margin: .75rem 0 0;
+  color: $concrete-dark;
+  font-size: $small-font-size;
+  font-weight: 700;
+}
+
+// 底列：數量、移除｜小計（寬度不夠時小計換到下一行、靠右）
+.cart-item-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  padding: .75rem map-get($spacers, 3);
+  border-top: $border-width solid $charcoal;
+
+  @include media-breakpoint-up(md) { padding-inline: 1.25rem; }
+}
+.cart-item-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .btn-text:hover { color: $signal; }
+}
+.cart-item-subtotal {
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
+  margin: 0 0 0 auto;
+
+  .price {
+    font-size: 1.5rem;
+    line-height: 1;
+
+    @include media-breakpoint-up(md) { font-size: 1.75rem; }
+  }
+}
+.cart-item-subtotal-label {
+  color: $concrete-dark;
+  font-size: $small-font-size;
+  font-weight: 700;
+}
+
+// ---------- 折扣碼 ----------
+.cart-coupon {
+  max-width: 26rem;
+
+  .btn { min-width: 5.5rem; }
+}
+
+// ---------- 訂單摘要內的補充 ----------
+// 運費的第二行：「已達免運」標籤＋門檻金額（門檻說明只放在購物車；右側的「免運」對齊第一行）
+.cart-summary-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .5rem;
+  margin-top: .375rem;
+  color: $concrete-dark;
+  font-size: $small-font-size;
+}
+// 安心說明：深炭小方塊＋淺色圖示（服務說明不用螢光）
+.cart-assure {
+  display: grid;
+  gap: .75rem;
+  margin: map-get($spacers, 3) 0 0;
+  padding: map-get($spacers, 3) 0 0;
+  border-top: $border-width solid $charcoal;
+  list-style: none;
+  font-size: $small-font-size;
+  font-weight: 700;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    word-break: keep-all; // 窄欄時在逗號後換行
+  }
+}
+.cart-assure-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  background-color: $charcoal;
+  color: $on-dark;
+  font-size: 1rem;
+}
+
+// ---------- 狀態示意：購物車是空的 ----------
+// 空的品項槽（虛線框＝還沒有東西）＋一句說明＋一個動作
+.cart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: map-get($spacers, 4);
+  background-color: $concrete-light;
+
+  @include media-breakpoint-up(md) {
+    flex-direction: row;
+    align-items: center;
+    padding: map-get($spacers, 5);
+  }
+}
+.cart-empty-slot {
+  display: flex;
+  align-items: stretch;
+  border: $frame-width solid $charcoal;
+}
+.cart-empty-mark {
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  background-color: $concrete-mid;
+  font-size: 2rem;
+}
+.cart-empty-count {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  padding-inline: 1rem;
+  border-left: $frame-width solid $charcoal;
+  background-color: $charcoal;
+  color: $on-dark;
+  font-weight: 900;
+
+  .num { font-size: 2rem; line-height: 1; }
+}
+.cart-empty-body {
+  padding-block: 0;
+}

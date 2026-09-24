@@ -1,0 +1,363 @@
+// ============================================================
+// 商品一覽（products.html）
+// 頁首尺寸讀法、手機分類標籤列、規格篩選器（側欄／offcanvas）、工具列、清單尾端提示、分頁
+// class 一律以 products- 開頭
+// ============================================================
+
+// ---------- 頁首：標題左、文字連結右（≥ 576px 底部對齊） ----------
+.products-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  column-gap: map-get($spacers, 4);
+
+  .btn-text { margin-bottom: -.25rem; }
+}
+// 尺寸讀法：一塊寫著「寬／深／高」的規格銘牌
+.products-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: map-get($spacers, 2) map-get($spacers, 3);
+  margin-top: map-get($spacers, 3);
+
+  .spec-plate {
+    background-color: $concrete-light;
+
+    dd { font-size: .875rem; font-weight: 900; }
+  }
+}
+
+// ---------- 992px 以下：分類標籤列 ----------
+.products-chips {
+  margin-bottom: map-get($spacers, 3);
+}
+.products-chips-list {
+  display: flex;
+  gap: map-get($spacers, 2);
+  // 上下左右各留 5px，讓焦點框不被捲動範圍切掉
+  // （576px 以下左右改由 HTML 上的共用 .bleed-x 處理：貼齊螢幕兩側、起點對齊版心）
+  margin: -.3125rem;
+  padding: .3125rem;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+.products-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  padding: .5rem .875rem;
+  border: $border-width solid $charcoal;
+  background-color: $concrete-light;
+  color: $charcoal;
+  font-weight: 700;
+  white-space: nowrap;
+  text-decoration: none;
+
+  .num { color: $concrete-dark; font-weight: 700; }
+
+  &:hover {
+    background-color: $neon;
+    color: $charcoal;
+
+    .num { color: $charcoal; }
+  }
+  &[aria-current="page"] {
+    background-color: $charcoal;
+    color: $neon;
+    font-weight: 900;
+
+    .num { color: $on-dark-muted; }
+  }
+}
+
+// ---------- 規格篩選器 ----------
+// 992px 以上：3px 粗框面板＋深炭標題條；以下：offcanvas（同一份 markup）
+.products-filter {
+  --bs-offcanvas-width: 22rem;
+  --bs-offcanvas-bg: #{$concrete-light};
+  max-width: 100%;
+
+  @include media-breakpoint-up(lg) {
+    border: $frame-width solid $charcoal;
+  }
+}
+// offcanvas-lg 在 992px 以上會隱藏 header，這裡讓它留下當面板的標題條
+.products-filter-head,
+.offcanvas-lg.products-filter .products-filter-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 2);
+  min-height: 3.25rem;
+  padding: .25rem .25rem .25rem 1.25rem;
+  background-color: $charcoal;
+  color: $neon;
+}
+.products-filter-heading {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  color: $neon;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: $letter-spacing-label;
+}
+.products-filter .offcanvas-body {
+  padding: 0;
+}
+// 992px 以上 Bootstrap 會把 offcanvas 底色設為透明，面板底色改放在表單上
+.products-filter-form {
+  background-color: $concrete-light;
+}
+
+// 每一組篩選條件：2px 分隔線（992–1199px 側欄最窄，左右內距收小）
+.products-filter-group {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border: 0;
+
+  @include media-breakpoint-only(lg) { padding-inline: 1rem; }
+
+  & + & { border-top: $border-width solid $charcoal; }
+}
+// 分類標題（h3）與 fieldset 的 legend 共用（legend 沿用 Bootstrap 的 float，才不會壓在框線上）
+.products-filter-title {
+  margin-bottom: .5rem;
+  padding: 0;
+  font-size: .9375rem;
+  font-weight: 900;
+  line-height: $line-height-sm;
+  letter-spacing: $letter-spacing-label;
+}
+
+// 分類：整列可點，目前分類為螢光底條
+.products-filter-cats {
+  margin: 0 -1.25rem;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-only(lg) { margin-inline: -1rem; }
+
+  li + li .products-filter-cat { border-top-color: $concrete-mid; }
+}
+.products-filter-cat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  min-height: 2.75rem;
+  padding: .375rem 1.25rem;
+  border-block: $border-width solid transparent;
+  color: $concrete-dark;
+  font-weight: 700;
+  text-decoration: none;
+
+  .num { font-weight: 700; }
+
+  &:hover {
+    color: $charcoal;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+  &:focus-visible { outline-offset: -3px; }
+  @include media-breakpoint-only(lg) { padding-inline: 1rem; }
+  &[aria-current="page"] {
+    border-color: $charcoal;
+    background-color: $neon;
+    color: $charcoal;
+    font-weight: 900;
+
+    .num { font-weight: 900; }
+  }
+}
+// 目前分類的上下框線，不要與相鄰列的分隔線疊成雙線
+.products-filter-cats li:has(+ li [aria-current="page"]) .products-filter-cat,
+.products-filter-cats li:has([aria-current="page"]) + li .products-filter-cat {
+  border-color: transparent;
+}
+
+// 核取方塊、單選、開關：整列 44px，右側是件數
+.products-option {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: 0;
+
+  .form-check-input {
+    flex: 0 0 auto;
+    float: none;
+    margin: 0;
+    cursor: pointer;
+  }
+  .form-check-label {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    min-height: 2.75rem;
+    cursor: pointer;
+  }
+  // 開關的方形滑塊由 _variables.scss 的 $form-switch-* 提供；這裡只取消預設的負邊距，讓它對齊其他選項
+  &.form-switch .form-check-input { margin-left: 0; }
+}
+.products-option-count {
+  color: $concrete-dark;
+  font-weight: 700;
+}
+// 價格區間用窄體數字，側欄最窄時也能維持一行（字重與其他選項相同）
+.products-option-range {
+  white-space: nowrap;
+}
+
+// offcanvas 底部：清除＋套用
+.products-filter-foot {
+  display: flex;
+  gap: map-get($spacers, 2);
+  padding: 1rem 1.25rem;
+  border-top: $frame-width solid $charcoal;
+  background-color: $concrete;
+}
+
+// ---------- 工具列：件數＋排序（手機：篩選＋排序） ----------
+.products-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 2);
+  padding-bottom: map-get($spacers, 3);
+  border-bottom: $border-width solid $charcoal;
+
+  @include media-breakpoint-up(lg) {
+    min-height: 3.25rem + .375rem; // 與篩選器標題條（含 3px 外框）同高，兩邊的分隔線對齊
+    padding-bottom: 0;
+    margin-bottom: map-get($spacers, 4);
+  }
+}
+.products-count {
+  margin: 0;
+  font-weight: 700;
+
+  .num {
+    margin-inline: .125rem;
+    font-size: 1.75rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+}
+.products-count-sm {
+  margin-block: map-get($spacers, 3);
+
+  .num { font-size: 1.25rem; }
+}
+.products-filter-btn {
+  flex: 0 0 auto;
+  min-height: 2.75rem;
+  padding: .5rem 1rem;
+}
+.products-sort {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .5rem;
+  min-width: 0;
+
+  @include media-breakpoint-up(sm) { flex: 0 0 auto; }
+
+  .form-select {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 2.75rem;
+    padding-block: .5rem;
+    font-weight: 700;
+
+    @include media-breakpoint-up(sm) { width: 11rem; }
+  }
+}
+.products-sort-label {
+  flex: 0 0 auto;
+  font-size: $font-size-sm;
+  font-weight: 700;
+}
+
+// ---------- 清單尾端：先量尺寸（深炭面板：上方螢光量尺、下方說明） ----------
+// 1200px 以上面板和同列商品卡一樣高：內容垂直置中，不在量尺與說明之間留一大塊空白
+.products-note {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: map-get($spacers, 4);
+  height: 100%;
+  padding: 1.5rem 1.25rem;
+
+  @include media-breakpoint-up(sm) { padding: 2rem; }
+  p {
+    max-width: 30em;
+    margin-bottom: map-get($spacers, 4);
+  }
+}
+.products-note-title {
+  margin-bottom: .75rem;
+  font-size: $h4-font-size;
+}
+// 量尺：兩端短豎線＋螢光線，像工程圖的尺寸標註
+.products-note-dim {
+  display: grid;
+  gap: .75rem;
+  justify-items: start;
+}
+.products-note-dim-label {
+  color: $on-dark-muted;
+  font-size: $small-font-size;
+  font-weight: 700;
+}
+.products-note-dim-line {
+  position: relative;
+  width: 100%;
+  height: 1.25rem;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 50% 0 auto;
+    height: 3px;
+    margin-top: -1.5px;
+    background-color: $neon;
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-inline: 3px solid $neon;
+  }
+}
+.products-note-dim-value {
+  color: $neon;
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1;
+
+  @include media-breakpoint-up(md) { font-size: 3.5rem; }
+}
+
+// ---------- 分頁 ----------
+.products-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 3);
+  margin-top: map-get($spacers, 5);
+  padding-top: map-get($spacers, 4);
+  border-top: $frame-width solid $charcoal;
+}
