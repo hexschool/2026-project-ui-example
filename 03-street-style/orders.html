@@ -18,9 +18,8 @@
     ============================================================
     頁面骨架（所有頁面共用）
     - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，10 個 .html 要一起改。
-    - 每頁只需要調整兩處「目前頁面」標示：
-      1. 頁首導覽：目前頁的 <a class="nav-link"> 加 active 與 aria-current="page"
-      2. 頁尾「設計稿頁面」：目前頁的按鈕加 aria-current="page"
+    - 每頁只需要調整一處「目前頁面」標示：
+      頁首導覽：目前頁的 <a class="nav-link"> 加 active 與 aria-current="page"
     - 商品詳情頁（product.html）：頁首的「商品一覽」標示為 active（不加 aria-current）
     ============================================================
   -->
@@ -126,7 +125,7 @@
       我的訂單：版型見 scss/pages/_orders.scss
       - lg 以上：左 3 欄會員中心（sticky）＋右 9 欄訂單；lg 以下：訂單 → 會員中心（DOM 順序即閱讀順序）
       - 設計稿狀態示意放在兩欄之後（所有寬度都排在最後，不會插在真正的介面中間）
-      - 訂單資料與 02 的 data/products.js 一致，第一筆是付款結果頁剛成立的訂單
+      - 訂單資料與 02 的 orders.html 一致，第一筆是付款結果頁剛成立的訂單
       - 訂單明細用 Bootstrap collapse 原地展開；待付款的訂單預設展開，直接看到繳費資訊
     -->
     <div class="container">
@@ -147,19 +146,22 @@
       <div class="row gy-6 gx-lg-4 gx-xl-5">
         <!-- 訂單（DOM 在前：手機先看到訂單，lg 以上移到右側 9 欄） -->
         <div class="col-lg-9">
-          <!-- 狀態篩選：設計稿只示意「全部」被選取（篩選邏輯留待串接） -->
-          <ul class="nav nav-underline orders-filter bleed-x" aria-label="依訂單狀態篩選">
-            <li class="nav-item"><button class="nav-link active" type="button" aria-pressed="true">全部<span class="tab-count">5</span></button></li>
-            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false">待付款<span class="tab-count">1</span></button></li>
-            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false">已付款<span class="tab-count">1</span></button></li>
-            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false">出貨中<span class="tab-count">1</span></button></li>
-            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false">已完成<span class="tab-count">1</span></button></li>
-            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false">已取消<span class="tab-count">1</span></button></li>
+          <!--
+            狀態篩選：點按鈕切換下方顯示的訂單，可以逐一看到 5 種狀態的訂單長什麼樣子
+            js/main.js 依按鈕的 data-filter 與每筆訂單 <li> 的 data-status 切換；數字是該狀態的訂單數
+          -->
+          <ul class="nav nav-underline orders-filter bleed-x" aria-label="依訂單狀態篩選" data-filter-list="#ordersList">
+            <li class="nav-item"><button class="nav-link active" type="button" aria-pressed="true" aria-controls="ordersList" data-filter="all">全部<span class="tab-count">5</span></button></li>
+            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false" aria-controls="ordersList" data-filter="待付款">待付款<span class="tab-count">1</span></button></li>
+            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false" aria-controls="ordersList" data-filter="已付款">已付款<span class="tab-count">1</span></button></li>
+            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false" aria-controls="ordersList" data-filter="出貨中">出貨中<span class="tab-count">1</span></button></li>
+            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false" aria-controls="ordersList" data-filter="已完成">已完成<span class="tab-count">1</span></button></li>
+            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false" aria-controls="ordersList" data-filter="已取消">已取消<span class="tab-count">1</span></button></li>
           </ul>
 
-          <ol class="list-unstyled orders-list">
+          <ol id="ordersList" class="list-unstyled orders-list">
             <!-- ========== 1. 已付款（付款結果頁剛成立的訂單） ========== -->
-            <li>
+            <li data-status="已付款">
               <article class="orders-card" aria-labelledby="order-NC-20260923-001">
                 <header class="orders-card-bar on-dark">
                   <h2 id="order-NC-20260923-001" class="orders-no"><span class="orders-no-label">訂單編號</span><span class="num">NC-20260923-001</span></h2>
@@ -244,7 +246,7 @@
             </li>
 
             <!-- ========== 2. 待付款（明細預設展開，顯示繳費資訊） ========== -->
-            <li>
+            <li data-status="待付款">
               <article class="orders-card" aria-labelledby="order-NC-20260921-009">
                 <header class="orders-card-bar on-dark">
                   <h2 id="order-NC-20260921-009" class="orders-no"><span class="orders-no-label">訂單編號</span><span class="num">NC-20260921-009</span></h2>
@@ -321,7 +323,7 @@
             </li>
 
             <!-- ========== 3. 出貨中（大型家具配送進度） ========== -->
-            <li>
+            <li data-status="出貨中">
               <article class="orders-card" aria-labelledby="order-NC-20260918-001">
                 <header class="orders-card-bar on-dark">
                   <h2 id="order-NC-20260918-001" class="orders-no"><span class="orders-no-label">訂單編號</span><span class="num">NC-20260918-001</span></h2>
@@ -422,7 +424,7 @@
             </li>
 
             <!-- ========== 4. 已完成（未滿 NT$ 3,000，超商取貨運費 NT$ 60） ========== -->
-            <li>
+            <li data-status="已完成">
               <article class="orders-card" aria-labelledby="order-NC-20260830-017">
                 <header class="orders-card-bar on-dark">
                   <h2 id="order-NC-20260830-017" class="orders-no"><span class="orders-no-label">訂單編號</span><span class="num">NC-20260830-017</span></h2>
@@ -500,7 +502,7 @@
             </li>
 
             <!-- ========== 5. 已取消（寫取消日期與未扣款） ========== -->
-            <li>
+            <li data-status="已取消">
               <article class="orders-card is-cancel" aria-labelledby="order-NC-20260803-002">
                 <header class="orders-card-bar on-dark">
                   <h2 id="order-NC-20260803-002" class="orders-no"><span class="orders-no-label">訂單編號</span><span class="num">NC-20260803-002</span></h2>
@@ -655,23 +657,6 @@
           </ul>
         </div>
       </div>
-
-      <!-- 設計稿頁面導覽（課程檢視用）：目前頁的按鈕加 aria-current="page" -->
-      <nav class="site-footer-pages" aria-label="設計稿頁面導覽">
-        <h2 class="site-footer-title">設計稿頁面</h2>
-        <ul class="list-unstyled d-flex flex-wrap gap-2 mb-0">
-          <li><a class="btn btn-sm" href="index.html">首頁</a></li>
-          <li><a class="btn btn-sm" href="products.html">商品一覽</a></li>
-          <li><a class="btn btn-sm" href="product.html">商品詳情</a></li>
-          <li><a class="btn btn-sm" href="cart.html">購物車</a></li>
-          <li><a class="btn btn-sm" href="checkout.html">結帳</a></li>
-          <li><a class="btn btn-sm" href="order-result.html">付款結果</a></li>
-          <li><a class="btn btn-sm" href="login.html">登入</a></li>
-          <li><a class="btn btn-sm" href="register.html">註冊</a></li>
-          <li><a class="btn btn-sm" href="orders.html" aria-current="page">我的訂單</a></li>
-          <li><a class="btn btn-sm" href="guideline.html">設計 Guideline</a></li>
-        </ul>
-      </nav>
 
       <p class="site-footer-copy">© 2026 NestCraft 原創生活家居選物｜本站為課程設計稿範例，商品與訂單皆為示意資料。</p>
     </div>

@@ -19,7 +19,7 @@ import { spawn, execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
-const OUT = path.resolve(HERE, '../public/images')
+const OUT = path.resolve(HERE, '../images')
 const RAW = path.join(os.tmpdir(), 'nestcraft-raw-images') // 原始 PNG（不進版控）
 const argv = process.argv.slice(2)
 const FORCE = argv.includes('--force')

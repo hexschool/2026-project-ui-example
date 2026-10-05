@@ -1,0 +1,126 @@
+// ============================================================
+// 結帳（checkout.html）
+// 單欄分組表單＋右側訂單摘要；以髮絲線與留白分組，不用卡片堆疊
+// 頁首用共用的 .page-header，訂單摘要用共用的 .order-summary（components/_order-summary.scss）
+// ============================================================
+
+// ---------- 表單分組 ----------
+// 注意：legend 會畫在 fieldset 的上框線位置，padding-top 會落在 legend 下方，
+// 所以分組間距用 margin-top
+.co-fieldset {
+  padding-bottom: map-get($spacers, 5);
+  border-bottom: 1px solid $hairline;
+
+  & + & { margin-top: map-get($spacers, 5); }
+
+  // lg 以上表單最後沒有按鈕，最後一組不需要底線
+  &:last-of-type {
+    @include media-breakpoint-up(lg) {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+  }
+}
+.co-legend {
+  float: none;
+  margin-bottom: map-get($spacers, 4);
+  font-size: inherit;
+}
+
+// ---------- 選項卡片（配送、付款）：整塊都是 label ----------
+.co-option {
+  display: flex;
+  align-items: flex-start;
+  gap: .875rem;
+  padding: map-get($spacers, 3) 1.25rem;
+  background-color: $white-warm;
+  border: 1px solid $linen;
+  border-radius: $border-radius;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+
+  .form-check-input {
+    flex-shrink: 0;
+    margin-top: .3rem;
+  }
+
+  &:hover:not(.is-disabled) { border-color: $linen-deep; }
+
+  // 選中：墨色邊框＋淺原木底
+  &:has(.form-check-input:checked) {
+    background-color: mix($oak-light, $white-warm, 50%);
+    border-color: $sumi;
+  }
+  &:has(.form-check-input:focus-visible) {
+    outline: 2px solid $oak-deep;
+    outline-offset: 2px;
+  }
+
+  // 停用：虛線外框、不改變說明文字的對比，讓原因清楚可讀
+  &.is-disabled {
+    background-color: transparent;
+    border-style: dashed;
+    cursor: not-allowed;
+
+    .co-option-title,
+    .co-option-fee { color: $body-secondary-color; }
+  }
+}
+.co-option-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: .25rem;
+  min-width: 0;
+}
+.co-option-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: map-get($spacers, 3);
+}
+.co-option-title {
+  color: $sumi;
+}
+.co-option-fee {
+  white-space: nowrap;
+}
+.co-option-desc {
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+  line-height: $line-height-sm;
+  text-wrap: pretty; // span 不在全域 p/li 規則內，這裡補上，避免最後一行剩一個字
+}
+
+// ---------- 信用卡欄位：只有選「信用卡」時顯示（純 CSS，不需要 JS） ----------
+// 面板用 Bootstrap 的 .card .card-body（底色、框線、內距取自 $card-*）
+// 欄位沒有 required，隱藏時不會擋住表單送出（說明見 checkout.html）
+.co-pay:has([name="payment"]:checked:not([value="card"])) .co-card {
+  display: none;
+}
+
+// ---------- 手機、平板：頂部可展開的訂單摘要 ----------
+.co-summary-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 3);
+  padding: map-get($spacers, 3);
+  background: none;
+  border: 0;
+  color: $sumi;
+  font-size: $font-size-base;
+  letter-spacing: $letter-spacing-body;
+  text-align: left;
+
+  &[aria-expanded="true"] .co-summary-chevron { transform: rotate(180deg); }
+}
+.co-summary-chevron {
+  transition: transform .2s ease;
+}
+.co-summary-body {
+  padding: map-get($spacers, 3);
+  border-top: 1px solid $hairline;
+}

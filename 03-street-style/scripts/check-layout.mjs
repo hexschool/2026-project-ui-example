@@ -1,4 +1,4 @@
-// 檢查每個頁面的共用區塊（<head> 共用部分、跑馬燈、頁首、頁尾、底部 script）是否與 templates/page.html 一致
+// 檢查每個頁面的共用區塊（<head> 共用部分、頁首、頁尾、底部 script）是否與 templates/page.html 一致
 // 頁首頁尾在每頁都完整寫一份，改範本後可以用這支確認 10 個頁面都同步了
 // 用法：npm run check
 import fs from 'node:fs'
@@ -32,13 +32,9 @@ for (const page of pages) {
   const diffs = Object.entries(blocks).filter(([, re]) => pick(html, re) !== pick(template, re)).map(([name]) => name)
   const header = (html.match(/<header class="site-header">[\s\S]*?<\/header>/) || [''])[0]
   const nav = (header.match(/class="nav-link active"/g) || []).length
-  const footerCurrent = (html.match(/<a class="btn btn-sm" href="[^"]+" aria-current="page">/g) || []).length
   const problems = [...diffs.map((d) => `${d} 與範本不同`)]
-  if (footerCurrent !== 1) problems.push(`頁尾「設計稿頁面」的目前頁標示有 ${footerCurrent} 個（應為 1）`)
   if (nav > 1) problems.push(`頁首有 ${nav} 個 active 導覽連結`)
   // 目前頁標示要指向自己（商品詳情頁的頁首標示「商品一覽」）
-  const footerHref = (html.match(/<a class="btn btn-sm" href="([^"]+)" aria-current="page">/) || [])[1]
-  if (footerCurrent === 1 && footerHref !== page) problems.push(`頁尾目前頁指向 ${footerHref}，應為 ${page}`)
   const navHref = (header.match(/class="nav-link active"[^>]*href="([^"]+)"|href="([^"]+)"[^>]*class="nav-link active"/) || []).slice(1).find(Boolean)
   const expectedNav = page === 'product.html' ? 'products.html' : page
   if (navHref && navHref !== expectedNav) problems.push(`頁首目前頁指向 ${navHref}，應為 ${expectedNav}`)

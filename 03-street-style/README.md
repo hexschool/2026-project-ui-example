@@ -6,7 +6,7 @@
 
 - **HTML**：每頁一個完整的 `.html`，用一般的 `<a href>` 換頁，瀏覽器直接打開就能看。
 - **CSS**：Bootstrap 用 Sass 客製，唯一的編譯工具是 `sass` CLI（`scss/` → `css/style.css`）。
-- **JS**：互動都交給 Bootstrap 的 `data-bs-*` 屬性，自己寫的只有 `js/main.js` 裡的三個小功能。
+- **JS**：互動都交給 Bootstrap 的 `data-bs-*` 屬性，自己寫的只有 `js/main.js` 裡的四個小功能。
 
 ## 快速開始
 
@@ -41,7 +41,7 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 | 註冊 | `register.html` | `scss/pages/_auth.scss` |
 | 我的訂單 | `orders.html` | `scss/pages/_orders.scss` |
 
-每頁的頁尾都有「設計稿頁面」導覽，可以快速切換所有頁面。
+頁面上沒有列出所有頁面的導覽：從首頁依購物流程點進各頁即可，Guideline 直接開 `guideline.html`。
 
 商品詳情只做一頁靜態示範（橡木餐桌），所有商品卡都連到 `product.html`。售完、低庫存、多尺寸模式（沙發床）等變化，放在該頁底部的「設計稿狀態示意」。
 
@@ -57,7 +57,7 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 │  ├─ style.css              ← 編譯結果（Bootstrap＋Icons＋本風格樣式），要提交
 │  └─ fonts/                 ← Bootstrap Icons 字型（npm run vendor 複製）
 ├─ js/
-│  ├─ main.js                ← 全站共用的三個小功能
+│  ├─ main.js                ← 全站共用的四個小功能
 │  └─ vendor/bootstrap.bundle.min.js
 ├─ images/                   ← 商品照、空間情境圖（AI 生成）、favicon
 ├─ scss/
@@ -74,10 +74,10 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 
 ## 沒有打包工具時的工作方式
 
-- **頁首、頁尾每頁一份**：沒有元件系統，所以 10 個頁面各自完整寫一份。要改頁首或頁尾時，先改 `templates/page.html`，再同步到每一頁，最後執行 `npm run check` 確認全部一致。每頁只有兩處不同：頁首導覽的目前頁（`active` 與 `aria-current="page"`）、頁尾「設計稿頁面」的目前頁（`aria-current="page"`）。
-- **新增頁面**：先在 `templates/page.html` 的頁尾「設計稿頁面」加上新頁按鈕，並把頁尾同步到所有頁面。再複製範本成新頁，改 `<title>`、description 與兩處目前頁標示（新頁按鈕加 `aria-current="page"`）。最後在 `scss/pages/` 新增 partial、在 `scss/main.scss` 加一行 `@import`，執行 `npm run check`。
-- **假資料直接寫在 HTML**：商品、購物車與訂單的數字都寫死在頁面裡。它們與 02 的 `src/data/products.js` 一致（Notion 文案；購物車 4 件、NT$ 20,250），改動時要記得多頁同步。
-- **JS**：`js/main.js` 只做三件事：手機搜尋列展開後自動聚焦、`data-toggle-password` 顯示／隱藏密碼、分頁籤與 Guideline 手機目錄切換時把目前項目捲進畫面。其他互動（選單、分頁、輪播、下拉、側邊抽屜）都靠 Bootstrap 的 `data-bs-*` 屬性。
+- **頁首、頁尾每頁一份**：沒有元件系統，所以 10 個頁面各自完整寫一份。要改頁首或頁尾時，先改 `templates/page.html`，再同步到每一頁，最後執行 `npm run check` 確認全部一致。每頁只有一處不同：頁首導覽的目前頁（`active` 與 `aria-current="page"`；商品詳情標「商品一覽」但不加 `aria-current`）。
+- **新增頁面**：複製範本成新頁，改 `<title>`、description 與頁首的目前頁標示，並在要連進來的地方（頁首導覽或其他頁的按鈕）補上連結；改到頁首或頁尾時，同樣先改範本再同步所有頁面。最後在 `scss/pages/` 新增 partial、在 `scss/main.scss` 加一行 `@import`，執行 `npm run check`。
+- **假資料直接寫在 HTML**：商品、購物車與訂單的數字都寫死在頁面裡。它們與 02 的頁面一致（Notion 文案；購物車 4 件、NT$ 20,250），改動時要記得多頁同步。
+- **JS**：`js/main.js` 只做四件事：手機搜尋列展開後自動聚焦、`data-toggle-password` 顯示／隱藏密碼、分頁籤與 Guideline 手機目錄切換時把目前項目捲進畫面、我的訂單的狀態篩選（`data-filter` 按鈕對應每筆訂單的 `data-status`，點了只顯示該狀態的訂單）。其他互動（選單、分頁、輪播、下拉、側邊抽屜）都靠 Bootstrap 的 `data-bs-*` 屬性。
 - **品名換行**：長品名用 `<wbr>` 標出詞組斷點，搭配 `.text-phrase`，只在詞組之間換行。
 
 ## 樣式架構
