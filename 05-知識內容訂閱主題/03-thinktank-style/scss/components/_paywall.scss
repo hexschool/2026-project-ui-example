@@ -1,0 +1,181 @@
+// ============================================================
+// 付費預覽牆 Paywall（文章內頁、Guideline）
+// - 漸層：由透明到白，高 140px（規格 120–160px），覆蓋殘句並略往下延伸；aria-hidden、不擋選字
+// - 卡片：全站唯一壓在內容上的卡片。頂端報頭雙線＋浮起陰影，寬度＝閱讀欄
+//   內容由上而下：已讀進度 → 標題 → 價值訴求 → 月／年方案（radio）→ 主要按鈕 → 登入入口 → 信任小字 → 替代入口
+// - 已訂閱：整個元件不渲染（data-show-view="unsubscribed"）
+// ============================================================
+$paywall-fade-height: 140px;
+
+// 殘句外層：讓漸層蓋在最後一段上
+.paywall-tail {
+  position: relative;
+  margin-bottom: 0;
+
+  p:last-child { margin-bottom: 0; }
+}
+.paywall-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2.5rem;   // 略往下延伸，殘句是「正在淡出」而不是「已消失」
+  height: $paywall-fade-height;
+  background: linear-gradient(to bottom, rgba($paper, 0) 0%, rgba($paper, .72) 55%, $paper 100%);
+  pointer-events: none;
+}
+
+.paywall {
+  position: relative;
+  max-width: $prose-max-width;
+  margin-top: 1.5rem;
+  padding: calc(#{$rule-double-height} + 1.5rem) 1.5rem 1.5rem;
+  background-color: $paper;
+  @include rule-double(top);
+  box-shadow: $box-shadow-lg, 0 0 0 1px $rule;
+
+  @include media-breakpoint-up(md) {
+    padding: calc(#{$rule-double-height} + 2rem) 2.25rem 2rem;
+  }
+}
+// ① 已讀進度：進度條＋「已免費讀完 32%」
+.paywall-progress {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+  font-size: $small-font-size;
+  color: $slate;
+
+  .progress {
+    flex: 1 1 auto;
+  }
+  span {
+    flex: 0 0 auto;
+    font-weight: $font-weight-medium;
+    color: $oxford;
+  }
+}
+.paywall-title {
+  margin-bottom: .75rem;
+  font-size: 1.5rem;
+  line-height: 1.45;
+
+  @include media-breakpoint-up(md) {
+    font-size: 1.75rem;
+  }
+}
+.paywall-text {
+  margin-bottom: 1.5rem;
+  color: $slate;
+}
+
+// ④ 方案快速切換：兩張 RadioCard，≥ 576px 並排，手機上下堆疊
+.paywall-plans {
+  display: grid;
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+// ---------- 選項卡 RadioCard（付費牆方案、結帳付款方式共用） ----------
+// <input class="btn-check" type="radio" name="plan" id="planYear" checked>
+// <label class="radio-card" for="planYear">…</label>
+// 選中：2px 深藍外框＋深藍淡底＋右上角勾勾
+.radio-card {
+  position: relative;
+  display: block;
+  height: 100%;
+  padding: 1rem 1.125rem;
+  border: 1px solid $control;
+  background-color: $paper;
+  cursor: pointer;
+  color: $ink;
+  transition: border-color .15s ease, background-color .15s ease;
+
+  &:hover {
+    border-color: $oxford;
+  }
+  .btn-check:checked + & {
+    border-color: $oxford;
+    background-color: $oxford-tint;
+    box-shadow: inset 0 0 0 1px $oxford;
+  }
+  .btn-check:checked + &::after {
+    content: "\F26A"; // bi-check-circle-fill
+    position: absolute;
+    top: .75rem;
+    right: .875rem;
+    font-family: "bootstrap-icons";
+    font-size: 1.125rem;
+    line-height: 1;
+    color: $oxford;
+  }
+  .btn-check:focus-visible + & {
+    box-shadow: inset 0 0 0 1px $oxford, $focus-ring-double;
+  }
+}
+.radio-card-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .25rem;
+  font-weight: $font-weight-bold;
+  color: $oxford;
+}
+.radio-card-price {
+  display: block;
+  margin-bottom: .125rem;
+  font-size: $font-size-sm;
+  color: $slate;
+
+  .figure-num {
+    font-size: 1.625rem;
+    margin-inline: .125rem;
+  }
+}
+.radio-card-note {
+  display: block;
+  font-size: $small-font-size;
+  color: $slate;
+}
+// 「省下兩個月」：綠色小標（有勾勾圖示，不只靠顏色）
+.save-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: 0 .375rem;
+  background-color: $green-subtle;
+  color: $green;
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+// ⑥ 登入入口、⑦ 信任小字、⑧ 替代入口
+.paywall-login {
+  margin: .75rem 0 0;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $slate;
+}
+.paywall-trust {
+  margin: 1.25rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid $rule;
+  font-size: $small-font-size;
+  color: $slate;
+
+  .bi { color: $green; margin-right: .25rem; }
+}
+.paywall-alt {
+  margin: .5rem 0 0;
+  font-size: $small-font-size;
+  color: $slate;
+
+  a { color: $oxford; }
+}

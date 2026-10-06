@@ -1,0 +1,1386 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>設計 Guideline｜現場筆記 FieldNotes</title>
+  <meta name="description" content="第一線工作者親自寫的長文。每篇都能免費讀前三分之一，讀到關鍵的那一段才需要訂閱。">
+  <meta name="theme-color" content="#F1ECE4">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：芫荽 Iansui（標題、長文、引言）、Literata（英數與大數字）、Noto Sans TC（介面文字） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Iansui&family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-bs-spy="scroll" data-bs-target="#glToc" data-bs-root-margin="0px 0px -70%" data-bs-threshold="0,0.25">
+  <!--
+    ============================================================
+    頁面骨架（6 個頁面共用）
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，6 個 .html 要一起改，
+      改完執行 npm run check 確認都與這份範本一致。
+    - 頁首由左至右：品牌（書籤標誌＋現場筆記）→ 主導覽（首頁、文章列表、訂閱方案）→ 搜尋 → 會員入口。
+      992px 以下：品牌靠左，右側是搜尋、會員圖示與選單按鈕；選單展開後是 3 個導覽連結＋會員入口。
+    - 每頁只需要調整一處「目前頁面」標示（加 active 與 aria-current="page"）：
+      index.html → 首頁；articles.html → 文章列表；pricing.html → 訂閱方案；
+      account.html → 會員入口（桌機的 .site-member 與選單裡的「我的現場筆記」）；
+      article.html → 文章列表只加 active，不加 aria-current；guideline.html 不標示。
+    - 文章內頁（<body data-view>）與個人頁面（<body data-role>）的設計稿切換器說明見 js/main.js。
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="navbar navbar-expand-lg" aria-label="主要導覽">
+        <div class="container">
+          <a class="navbar-brand site-brand" href="index.html">
+            <svg class="site-brand-mark" viewBox="0 0 20 28" aria-hidden="true" focusable="false"><path d="M4 1h12a3 3 0 0 1 3 3v23l-9-6.2L1 27V4a3 3 0 0 1 3-3Z"/></svg>
+            <span class="site-brand-name">現場筆記</span>
+            <span class="site-brand-en">FieldNotes</span>
+          </a>
+
+          <!-- 992px 以下的圖示列：搜尋、會員、選單 -->
+          <div class="site-header-mobile d-flex d-lg-none">
+            <button class="site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋文章">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <a class="site-icon-btn" href="account.html" aria-label="我的現場筆記">
+              <i class="bi bi-person" aria-hidden="true"></i>
+            </a>
+            <button class="navbar-toggler site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="articles.html">文章列表</a></li>
+              <li class="nav-item"><a class="nav-link" href="pricing.html">訂閱方案</a></li>
+              <li class="nav-item d-lg-none"><a class="nav-link" href="account.html">我的現場筆記</a></li>
+            </ul>
+            <!-- 桌機右側：搜尋 → 會員入口（示意使用者陳柏諺已登入） -->
+            <div class="site-header-actions d-none d-lg-flex">
+              <button class="site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋文章">
+                <i class="bi bi-search" aria-hidden="true"></i>
+              </button>
+              <a class="site-member" href="account.html">
+                <img class="avatar avatar-sm" src="images/avatar-chen.jpg" alt="" width="32" height="32">
+                <span>我的現場筆記</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- 點放大鏡展開的搜尋列（所有寬度共用），送出到文章列表 -->
+      <div id="siteSearch" class="collapse site-search-panel">
+        <div class="container">
+          <form class="site-search" role="search" action="articles.html">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input class="form-control" type="search" name="q" placeholder="搜尋文章、作者或標籤" aria-label="搜尋文章">
+            <button class="btn btn-primary btn-sm" type="submit">搜尋</button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!-- ============ 頁面內容從這裡開始 ============ -->
+      <div class="container page-body gl-page">
+        <header class="page-header gl-head">
+          <h1>設計 Guideline</h1>
+          <p class="page-lead">現場筆記 FieldNotes ‧ 04 溫暖心靈慢讀：淺色系＋暖色系（燕麥灰白、焦糖駝色、柔暖灰）｜柔光護眼色調，文字行距寬鬆，會員管理訂閱週期與取消路徑溫和而清晰。</p>
+          <div class="gl-intro">
+            <p>概念是「一盞午後閱讀燈」：燕麥色的紙、可可色的字、焦糖色的書籤。對比柔和但足夠，行距寬，每個需要做決定的地方（付費牆、訂閱、取消）都把「之後會發生什麼」寫在看得到的位置。</p>
+            <ul class="gl-intro-list">
+              <li><i class="bi bi-calendar-heart" aria-hidden="true"></i><span><strong>訂閱週期尺</strong>：把訂閱期間畫成一段時間，到期日與續訂方式一眼可見（<a href="#gl-signature">08 ⑤</a>）</span></li>
+              <li><i class="bi bi-door-open" aria-hidden="true"></i><span><strong>溫和的取消路徑</strong>：一樣大的兩顆按鈕、一層確認、先講沒有失去什麼</span></li>
+              <li><i class="bi bi-bookmark-fill" aria-hidden="true"></i><span><strong>書籤母題</strong>：品牌標誌、引文卡、閱讀進度共用同一個焦糖書籤</span></li>
+              <li><i class="bi bi-book-half" aria-hidden="true"></i><span><strong>護眼長文</strong>：700px 欄寬、行高 2.0、芫荽楷體內文、閱讀模式</span></li>
+            </ul>
+          </div>
+        </header>
+        <div class="row gx-lg-5">
+          <div class="col-lg-3">
+            <nav class="gl-toc" aria-label="Guideline 目錄" id="glToc">
+              <p class="gl-toc-title">目錄</p>
+              <ul class="nav">
+                <li><a class="nav-link" href="#gl-color"><span class="gl-toc-num">01</span>色彩</a></li>
+                <li><a class="nav-link" href="#gl-type"><span class="gl-toc-num">02</span>字級階層</a></li>
+                <li><a class="nav-link" href="#gl-prose"><span class="gl-toc-num">03</span>長文排版規範</a></li>
+                <li><a class="nav-link" href="#gl-space"><span class="gl-toc-num">04</span>間距與格線</a></li>
+                <li><a class="nav-link" href="#gl-radius"><span class="gl-toc-num">05</span>圓角與陰影</a></li>
+                <li><a class="nav-link" href="#gl-states"><span class="gl-toc-num">06</span>元件狀態規範</a></li>
+                <li><a class="nav-link" href="#gl-elements"><span class="gl-toc-num">07</span>內文元素</a></li>
+                <li><a class="nav-link" href="#gl-components"><span class="gl-toc-num">08</span>主題專屬元件</a></li>
+                <li><a class="nav-link" href="#gl-charts"><span class="gl-toc-num">09</span>數據圖表</a></li>
+                <li><a class="nav-link" href="#gl-copy"><span class="gl-toc-num">10</span>狀態與空畫面文案</a></li>
+                <li><a class="nav-link" href="#gl-rwd"><span class="gl-toc-num">11</span>RWD 斷點</a></li>
+                <li><a class="nav-link" href="#gl-dodont"><span class="gl-toc-num">12</span>Do／Don't 對照</a></li>
+              </ul>
+            </nav>
+          </div>
+          <div class="col-lg-9">
+
+            <section class="gl-section" id="gl-color" aria-labelledby="gl-color-title">
+              <h2 id="gl-color-title" class="gl-section-title"><span class="gl-section-num">01</span>色彩</h2>
+              <p class="gl-principle">燕麥灰白鋪底、可可色寫字、焦糖色只留給「可以按的東西」與「讀到哪裡」。整套不用純白、不用純黑，內文對比 8.8:1，柔和但讀得清楚。</p>
+              <h3 class="gl-sub">面：三層燕麥色</h3>
+              <div class="row g-3 mb-5">
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-oat" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">燕麥灰白</h4>
+                      <p class="gl-swatch-code"><code>$oat</code> <span class="num">#F1ECE4</span></p>
+                      <p class="gl-swatch-use">頁面底色、付費牆漸層的終點色、<code>theme-color</code></p>
+                      <p class="gl-swatch-ratio">底色（文字對比以它為準）</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-oat-milk" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">燕麥奶</h4>
+                      <p class="gl-swatch-code"><code>$oat-milk</code> <span class="num">#FAF7F2</span></p>
+                      <p class="gl-swatch-use">浮起的面：卡片、輸入框、付費牆卡、對話框、選單；主要按鈕上的字</p>
+                      <p class="gl-swatch-ratio">可可字 12.2:1 AAA</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-oat-husk" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">燕麥殼</h4>
+                      <p class="gl-swatch-code"><code>$oat-husk</code> <span class="num">#E8E1D6</span></p>
+                      <p class="gl-swatch-use">交替區塊、頁尾、進度軌、表頭、hover 底</p>
+                      <p class="gl-swatch-ratio">可可字 10.0:1、柔暖灰字 4.8:1</p>
+                    </div>
+                  </div>
+                </div>
+              </div>              <h3 class="gl-sub">線：裝飾線不承載資訊</h3>
+              <div class="row g-3 mb-5">
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-hairline" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">柔暖灰細線</h4>
+                      <p class="gl-swatch-code"><code>$hairline</code> <span class="num">#DDD3C6</span></p>
+                      <p class="gl-swatch-use">分隔線、卡片框</p>
+                      <p class="gl-swatch-ratio">1.3:1（裝飾用）</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-hairline-strong" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">深一階的線</h4>
+                      <p class="gl-swatch-code"><code>$hairline-strong</code> <span class="num">#C7BAA9</span></p>
+                      <p class="gl-swatch-use">虛線框、停用框線、次要按鈕框</p>
+                      <p class="gl-swatch-ratio">1.6:1（裝飾用）</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-control" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">表單框線</h4>
+                      <p class="gl-swatch-code"><code>$control</code> <span class="num">#8C7D6C</span></p>
+                      <p class="gl-swatch-use">輸入框、核取方塊、radio、漏斗基準軸</p>
+                      <p class="gl-swatch-ratio">3.4:1；對燕麥奶 3.7:1（非文字 3:1）</p>
+                    </div>
+                  </div>
+                </div>
+              </div>              <h3 class="gl-sub">文字：可可色三階（柔暖灰），不用純黑</h3>
+              <div class="row g-3 mb-5">
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-cocoa" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">可可</h4>
+                      <p class="gl-swatch-code"><code>$cocoa</code> <span class="num">#3A2F27</span></p>
+                      <p class="gl-swatch-use">標題、介面主文字</p>
+                      <p class="gl-swatch-ratio">11.1:1 AAA</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-ink" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">墨褐</h4>
+                      <p class="gl-swatch-code"><code>$ink</code> <span class="num">#4A3E35</span></p>
+                      <p class="gl-swatch-use">長文內文（比標題淺一階，降低長時間閱讀的壓迫）</p>
+                      <p class="gl-swatch-ratio">8.8:1 AAA</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-warm-gray" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">柔暖灰</h4>
+                      <p class="gl-swatch-code"><code>$warm-gray</code> <span class="num">#6B5E54</span></p>
+                      <p class="gl-swatch-use">次要文字、職稱、說明</p>
+                      <p class="gl-swatch-ratio">5.3:1 AA</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-warm-gray-light" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">淡柔暖灰</h4>
+                      <p class="gl-swatch-code"><code>$warm-gray-light</code> <span class="num">#73665A</span></p>
+                      <p class="gl-swatch-use">placeholder、鎖住的目錄項目、分頁數量</p>
+                      <p class="gl-swatch-ratio">4.7:1 AA（不放在燕麥殼上）</p>
+                    </div>
+                  </div>
+                </div>
+              </div>              <h3 class="gl-sub">焦糖駝色：可以按的東西、讀到哪裡、目前位置</h3>
+              <div class="row g-3 mb-5">
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-caramel" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">焦糖</h4>
+                      <p class="gl-swatch-code"><code>$caramel</code> <span class="num">#8F5A2E</span></p>
+                      <p class="gl-swatch-use">主要按鈕底、連結、焦點環、進度條、書籤</p>
+                      <p class="gl-swatch-ratio">4.9:1 AA；按鈕上的燕麥奶字 5.4:1</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-caramel-deep" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">深焦糖</h4>
+                      <p class="gl-swatch-code"><code>$caramel-deep</code> <span class="num">#74441E</span></p>
+                      <p class="gl-swatch-use">hover、強調字、文字按鈕、訂閱限定徽章字</p>
+                      <p class="gl-swatch-ratio">6.9:1 AA</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-camel" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">駝色</h4>
+                      <p class="gl-swatch-code"><code>$camel</code> <span class="num">#C9A27A</span></p>
+                      <p class="gl-swatch-use">週期尺剩下的期間、引號、分隔線圓點、深色底上的橫條</p>
+                      <p class="gl-swatch-ratio">2.0:1（裝飾，不作文字）；在可可底上 5.5:1</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-camel-mist" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">駝色奶霧</h4>
+                      <p class="gl-swatch-code"><code>$camel-mist</code> <span class="num">#F1E3D0</span></p>
+                      <p class="gl-swatch-use">選中項目底、推薦方案、免費預覽分隔線、品牌提示框</p>
+                      <p class="gl-swatch-ratio">深焦糖字 6.4:1、可可字 10.3:1</p>
+                    </div>
+                  </div>
+                </div>
+              </div>              <h3 class="gl-sub">狀態色與權限色：字色對自己的淡底都 ≥ 5:1</h3>
+              <div class="row g-3 mb-5">
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-sage" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">鼠尾草綠（成功）</h4>
+                      <p class="gl-swatch-code"><code>$sage</code> <span class="num">#4A6641</span></p>
+                      <p class="gl-swatch-use">使用中、付款成功、已讀完、已通過；淡底 <span class="num">#E4EADB</span></p>
+                      <p class="gl-swatch-ratio">5.5:1；對淡底 5.2:1</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-amber" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">琥珀（提醒）</h4>
+                      <p class="gl-swatch-code"><code>$amber</code> <span class="num">#7E5A14</span></p>
+                      <p class="gl-swatch-use">已取消待到期、即將到期、審核中、自動儲存失敗；淡底 <span class="num">#F4E8CC</span></p>
+                      <p class="gl-swatch-ratio">5.3:1；對淡底 5.1:1</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-clay" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">陶土紅（錯誤）</h4>
+                      <p class="gl-swatch-code"><code>$clay</code> <span class="num">#9E4436</span></p>
+                      <p class="gl-swatch-use">付款失敗、扣款失敗、未通過、違規下架；淡底 <span class="num">#F5E1DA</span></p>
+                      <p class="gl-swatch-ratio">5.4:1；對淡底 5.0:1</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-xl-4">
+                  <div class="gl-swatch">
+                    <span class="gl-chip gl-chip-dusk" aria-hidden="true"></span>
+                    <div>
+                      <h4 class="gl-swatch-name">暮藍（資訊、免費權限）</h4>
+                      <p class="gl-swatch-code"><code>$dusk</code> <span class="num">#476073</span></p>
+                      <p class="gl-swatch-use">資訊提示、免費閱讀徽章、設計稿標記；淡底 <span class="num">#E1E8EC</span></p>
+                      <p class="gl-swatch-ratio">5.6:1；對淡底 5.3:1</p>
+                    </div>
+                  </div>
+                </div>
+              </div>              <h3 class="gl-sub">權限色</h3>
+              <div class="gl-demo d-flex flex-wrap gap-3 align-items-center mb-3">
+                <span class="perm-badge is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span><span class="text-note">深焦糖字＋駝色奶霧底（6.4:1）＋鎖頭</span>
+                <span class="perm-badge is-free"><i class="bi bi-unlock" aria-hidden="true"></i>免費閱讀</span><span class="text-note">暮藍字＋暮藍淡底（5.3:1）＋開鎖</span>
+              </div>
+              <p class="text-note mb-5">權限色與狀態色是兩組意思：權限徽章一律方角小牌、放在標題前；狀態徽章一律膠囊形。狀態色只用在狀態，不拿來當裝飾。</p>
+
+              <h3 class="gl-sub">Bootstrap 對照</h3>
+              <div class="table-responsive data-table">
+                <table class="table">
+                  <thead><tr><th scope="col">Bootstrap 變數</th><th scope="col">本風格</th><th scope="col">說明</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>$primary</code></td><td>焦糖 <span class="num">#8F5A2E</span></td><td><code>.btn-primary</code>、<code>.form-check-input:checked</code>、分頁目前頁；按鈕字自動選到燕麥奶（5.4:1）</td></tr>
+                    <tr><td><code>$secondary</code></td><td>柔暖灰 <span class="num">#6B5E54</span></td><td><code>.btn-outline-secondary</code> 在 <code>_base.scss</code> 改成燕麥奶底＋細框＋可可字</td></tr>
+                    <tr><td><code>$success</code>／<code>$warning</code>／<code>$danger</code>／<code>$info</code></td><td>鼠尾草綠／琥珀／陶土紅／暮藍</td><td>連同 <code>$*-text-emphasis</code>、<code>$*-bg-subtle</code>、<code>$*-border-subtle</code> 一起覆寫</td></tr>
+                    <tr><td><code>$light</code>／<code>$dark</code></td><td>燕麥殼／可可</td><td><code>.bg-light</code>、<code>.text-dark</code></td></tr>
+                    <tr><td><code>$body-bg</code>／<code>$body-color</code></td><td>燕麥灰白／可可</td><td>單一淺色主題，<code>$enable-dark-mode: false</code>，不跟著系統切換深色</td></tr>
+                    <tr><td><code>$focus-ring-color</code></td><td>焦糖</td><td>按鈕、核取方塊用 <code>$focus-ring-double</code>（內圈燕麥奶、外圈焦糖）</td></tr>
+                    <tr><td><code>$input-*</code>、<code>$form-check-*</code></td><td>燕麥奶底、表單框線</td><td>focus：焦糖 2px；錯誤：陶土紅框＋圖示＋文字</td></tr>
+                    <tr><td><code>$card-*</code>、<code>$modal-*</code>、<code>$dropdown-*</code></td><td>燕麥奶底、16／20px 圓角</td><td>卡片不加陰影；對話框、下拉選單用柔光陰影</td></tr>
+                    <tr><td><code>$progress-*</code>、<code>$accordion-*</code>、<code>$pagination-*</code></td><td>焦糖＋燕麥殼</td><td>進度條、FAQ、分頁的選中狀態</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <section class="gl-section" id="gl-type" aria-labelledby="gl-type-title">
+              <h2 id="gl-type-title" class="gl-section-title"><span class="gl-section-num">02</span>字級階層</h2>
+              <p class="gl-principle">楷體慢讀、黑體做事：標題與長文用芫荽，介面用 Noto Sans TC，數字用 Literata。芫荽只有一個字重，階層靠字級、顏色與留白。</p>
+              <div class="row g-3 mb-4">
+                <div class="col-md-4"><div class="gl-font"><p class="gl-font-sample font-reading">慢慢讀</p><p class="gl-font-name">芫荽 Iansui 400</p><p class="text-note mb-0">標題、長文內文、導言、引言、卡片標題。以台灣教育部標準字形為準的硬筆楷書；只有 400 一個字重，不合成假粗體。</p></div></div>
+                <div class="col-md-4"><div class="gl-font"><p class="gl-font-sample figure-num">2027/10/02</p><p class="gl-font-name">Literata 400–600</p><p class="text-note mb-0">英數、價格、到期日、數據卡等大數字（Google Play 圖書的閱讀字體），排在閱讀字體的第一順位。</p></div></div>
+                <div class="col-md-4"><div class="gl-font"><p class="gl-font-sample gl-font-ui">訂閱並繼續閱讀</p><p class="gl-font-name">Noto Sans TC 400／500／700</p><p class="text-note mb-0">介面文字：按鈕、表單、表格、徽章、小字。表格數字用 <code>tabular-nums</code>。</p></div></div>
+              </div>
+              <div class="table-responsive data-table">
+                <table class="table gl-type-table">
+                  <thead><tr><th scope="col">樣本</th><th scope="col">字體 ／ 字級 ／ 行高 ／ 字重</th><th scope="col">用途</th></tr></thead>
+                  <tbody>
+                  <tr>
+                    <td><span class="gl-t-display">想弄懂一個行業</span></td>
+                    <td class="text-note">芫荽 ／ 36–56px（clamp）／ 1.4 ／ 400</td>
+                    <td>Display：首頁 Hero 主標（全頁唯一 h1）</td>
+                  </tr>
+                  <tr>
+                    <td><span class="h1">所有現場筆記</span></td>
+                    <td class="text-note">芫荽 ／ 40px ／ 1.45 ／ 400；文章標題 30–42px／1.5</td>
+                    <td>H1：各頁標題</td>
+                  </tr>
+                  <tr>
+                    <td><span class="h2">我的訂閱</span></td>
+                    <td class="text-note">芫荽 ／ 30px ／ 1.45 ／ 400</td>
+                    <td>H2：區塊標題</td>
+                  </tr>
+                  <tr>
+                    <td><span class="h3">關於作者</span></td>
+                    <td class="text-note">芫荽 ／ 22px ／ 1.45 ／ 400</td>
+                    <td>H3：小節標題、方案名</td>
+                  </tr>
+                  <tr>
+                    <td><span class="gl-t-card">一間餐廳的成本結構</span></td>
+                    <td class="text-note">芫荽 ／ 22px（列表）、19px（精簡卡）／ 1.55 ／ 400</td>
+                    <td>文章列表標題、卡片標題</td>
+                  </tr>
+                  <tr>
+                    <td><span class="gl-t-prose">桌子是我店裡唯一不在損益表上的成本。</span></td>
+                    <td class="text-note">芫荽＋Literata ／ 18px ／ 2.0 ／ 400 ／ 墨褐</td>
+                    <td>長文內文（Aa：17／18／20px）</td>
+                  </tr>
+                  <tr>
+                    <td><span class="gl-t-lede">開店第三年我才真的看懂損益表。</span></td>
+                    <td class="text-note">芫荽 ／ 20px ／ 1.9 ／ 400</td>
+                    <td>導言：比內文大一階</td>
+                  </tr>
+                  <tr>
+                    <td><span class="gl-t-quote">一張四人桌，一個晚上翻兩次和翻三次</span></td>
+                    <td class="text-note">芫荽 ／ 21px ／ 1.85 ／ 400＋焦糖左線</td>
+                    <td>引言（首頁引文卡同一組）</td>
+                  </tr>
+                  <tr>
+                    <td><span class="gl-t-ui">每篇都能免費讀前三分之一。</span></td>
+                    <td class="text-note">Noto Sans TC ／ 16px ／ 1.75 ／ 400</td>
+                    <td>介面內文、說明</td>
+                  </tr>
+                  <tr>
+                    <td><span class="text-note">約 6,800 字 ‧ 閱讀 18 分鐘</span></td>
+                    <td class="text-note">Noto Sans TC ／ 13–14px ／ 1.7 ／ 400 ／ 柔暖灰</td>
+                    <td>小字、資訊列、圖說</td>
+                  </tr>
+                  <tr>
+                    <td><span class="gl-t-price">NT$ 1,800</span></td>
+                    <td class="text-note">Literata ／ 48px ／ 1.1 ／ 600（NT$ 與單位 16px）</td>
+                    <td>價格</td>
+                  </tr>
+                  <tr>
+                    <td><span class="gl-t-big figure-num">2027/10/02</span></td>
+                    <td class="text-note">Literata ／ 40–56px ／ 1.15 ／ 600</td>
+                    <td>到期日：每頁唯一的主數字等級</td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <section class="gl-section" id="gl-prose" aria-labelledby="gl-prose-title">
+              <h2 id="gl-prose-title" class="gl-section-title"><span class="gl-section-num">03</span>長文排版規範</h2>
+              <p class="gl-principle">這是賣文字的平台：每一個數字都為「讀得完」服務。內文最大寬 700px、行高 2.0，手機不下調。</p>
+              <div class="table-responsive data-table mb-4">
+                <table class="table">
+                  <thead><tr><th scope="col">項目</th><th scope="col">本風格的值</th><th scope="col">規則</th></tr></thead>
+                  <tbody>
+                    <tr><td>內文最大寬度</td><td class="num">700px（<code>$prose-max-width</code>）</td><td>規格 680–720px，與容器寬度無關；文章頁首、表格、圖片、付費牆、文末都對齊</td></tr>
+                    <tr><td>每行字數</td><td class="num">約 38 個全形字</td><td>32–40 字；超過 40 字眼睛回行會找錯</td></tr>
+                    <tr><td>內文字級 ／ 行高</td><td class="num">18px ／ 2.0</td><td>行高 ≥ 1.8；手機不下調</td></tr>
+                    <tr><td>段落間距</td><td class="num">1.3em</td><td>段落之間留一口氣</td></tr>
+                    <tr><td>內文顏色</td><td>墨褐 <span class="num">#4A3E35</span>（8.8:1）</td><td>比標題的可可淺一階</td></tr>
+                    <tr><td>h2</td><td class="num">27px ／ 上 2.6em ／ 下 0.8em</td><td>上距明顯大於下距</td></tr>
+                    <tr><td>h3</td><td class="num">21px ／ 上 2em ／ 下 0.6em</td><td>和 h2 差 6px 字級；內文只用 h2 → h3，不跳級</td></tr>
+                    <tr><td>導言</td><td class="num">20px ／ 1.9</td><td>比內文大一階</td></tr>
+                    <tr><td>引言區塊</td><td class="num">21px ／ 1.85 ／ 上下 2.2em ／ 2px 焦糖左線</td><td>讓讀者在長文中間停一下</td></tr>
+                    <tr><td>圖片與圖說</td><td class="num">滿欄寬 ／ 圖說 14px、1.75、柔暖灰、距圖 0.75rem</td><td><code>&lt;figure&gt;</code>＋<code>&lt;figcaption&gt;</code></td></tr>
+                    <tr><td>數據表格</td><td>介面字 15px、數字靠右、合計列駝色奶霧底</td><td><code>.prose-table</code> 自己橫向捲動，不撐破閱讀寬</td></tr>
+                    <tr><td>清單</td><td class="num">行高同內文、項目間距 0.35em</td><td>項目符號焦糖色</td></tr>
+                    <tr><td>行內程式碼 ／ 程式碼區塊</td><td>燕麥殼淡底 ／ 可可底、13px、可橫向捲動</td><td>等寬字，不用連結色</td></tr>
+                    <tr><td>分隔線</td><td>三個駝色小點，上下 2.4em</td><td>話題轉折；免費預覽分隔線只出現在編輯器</td></tr>
+                    <tr><td>Aa 字級三段</td><td class="num">17px／2.0、18px／2.0、20px／1.9</td><td>每段都 ≥ 1.8；選擇記在本機（<code>localStorage</code>）</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <h3 class="gl-sub">實際排版示範（.prose）</h3>
+              <div class="gl-demo gl-demo-reading">
+                <div class="prose">
+                  <p>先說結論：我開店第一年以為自己在做餐飲，第二年發現自己在做人事，第三年才知道我真正在管的是一張一張桌子的時間。</p>
+                  <h2>先看去年整年的數字</h2>
+                  <p>下面這張表是去年（2025）的全年損益，營業額 1,842 萬，稅後淨利 61 萬，淨利率 3.3%。這個數字比多數人想像的低很多。</p>
+                </div>
+              </div>
+              <h3 class="gl-sub">Aa 字級三段（行高同步）</h3>
+              <div class="row g-3">
+                <div class="col-lg-4"><div class="gl-demo"><p class="gl-caption">小 17px／2.0</p><div class="prose prose-sm"><p>桌子是我店裡唯一不在損益表上的成本。它不會每個月寄帳單給我，所以我花了兩年才算到它。</p></div></div></div>
+                <div class="col-lg-4"><div class="gl-demo"><p class="gl-caption">中 18px／2.0（預設）</p><div class="prose prose-md"><p>桌子是我店裡唯一不在損益表上的成本。它不會每個月寄帳單給我，所以我花了兩年才算到它。</p></div></div></div>
+                <div class="col-lg-4"><div class="gl-demo"><p class="gl-caption">大 20px／1.9</p><div class="prose prose-lg"><p>桌子是我店裡唯一不在損益表上的成本。它不會每個月寄帳單給我，所以我花了兩年才算到它。</p></div></div></div>
+              </div>
+              <h3 class="gl-sub">閱讀模式</h3>
+              <div class="row g-3 align-items-center">
+                <div class="col-md-5">
+                  <div class="gl-reading-mode" aria-hidden="true">
+                    <span class="gl-reading-mode-bar"></span>
+                    <span class="gl-reading-mode-line is-title"></span>
+                    <span class="gl-reading-mode-line"></span><span class="gl-reading-mode-line"></span><span class="gl-reading-mode-line is-short"></span>
+                    <span class="gl-reading-mode-line"></span><span class="gl-reading-mode-line"></span>
+                    <span class="gl-reading-mode-pill"></span>
+                  </div>
+                </div>
+                <div class="col-md-7">
+                  <p class="mb-2">工具列的 <i class="bi bi-moon" aria-hidden="true"></i> 閱讀模式（<code>body.is-reading-mode</code>）：隱藏頁首、麵包屑與目錄，只留 700px 的閱讀欄置中；頂端進度條貼齊視窗上緣；底部固定行動列在所有寬度都出現，方便隨時退出。按鈕用 <code>aria-pressed</code> 標示開關。</p>
+                </div>
+              </div>
+            </section>
+            <section class="gl-section" id="gl-space" aria-labelledby="gl-space-title">
+              <h2 id="gl-space-title" class="gl-section-title"><span class="gl-section-num">04</span>間距與格線</h2>
+              <p class="gl-principle">寬鬆但有節奏：區塊之間 56／88px，同類區塊用同一組留白；版心 1280px，長文欄 700px 永遠比版心窄。</p>
+              <div class="row g-4">
+                <div class="col-lg-6">
+                  <h3 class="gl-sub mt-0">間距尺度（<code>$spacers</code>）</h3>
+                  <ul class="gl-space-scale">
+                    <li><span class="gl-space-bar" style="--s: .25rem"></span><code>1</code> 4px</li>
+                    <li><span class="gl-space-bar" style="--s: .5rem"></span><code>2</code> 8px</li>
+                    <li><span class="gl-space-bar" style="--s: 1rem"></span><code>3</code> 16px</li>
+                    <li><span class="gl-space-bar" style="--s: 1.5rem"></span><code>4</code> 24px</li>
+                    <li><span class="gl-space-bar" style="--s: 2.5rem"></span><code>5</code> 40px</li>
+                    <li><span class="gl-space-bar" style="--s: 3.5rem"></span><code>6</code> 56px：區塊上下留白（手機）</li>
+                    <li><span class="gl-space-bar" style="--s: 5.5rem"></span><code>7</code> 88px：區塊上下留白（桌機）</li>
+                  </ul>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="gl-sub mt-0">容器與留白</h3>
+                  <ul class="gl-list">
+                    <li>容器最大寬 1280px（≥ 1400px），左右內距 20px；≥ 992px 為 32px。1920 寬時版心仍是 1280px，背景色塊滿版。</li>
+                    <li>寬窄層級：版面容器 1280 ＞ 長文欄 700 ＞ 方案頁首屏文字 640 ＞ 取消對話框 520。</li>
+                    <li>區塊上下留白：<code>.section</code> 56／88px；<code>.page-body</code> 底部同值。</li>
+                    <li>sticky 偏移：頁首 73px＋呼吸 24px＝<code>$sticky-top-offset</code> 97px（篩選側欄、文章目錄、訂閱摘要、個人頁側欄、文章設定面板、本頁目錄）；頂端進度條貼在 73px。&lt; 992px 一律取消 sticky。</li>
+                  </ul>
+                </div>
+              </div>
+              <h3 class="gl-sub">各頁欄數配置（桌機）</h3>
+              <div class="gl-grids">
+                <div class="gl-grid"><p>首頁 Hero、精選、作者群</p><div class="gl-grid-row"><span style="--c: 7">7</span><span style="--c: 5">5</span></div></div>
+                <div class="gl-grid"><p>文章列表（篩選：列表）、個人頁（側欄：內容）、本頁</p><div class="gl-grid-row"><span style="--c: 3">3</span><span style="--c: 9">9</span></div></div>
+                <div class="gl-grid"><p>文章內頁（長文：目錄）、編輯器（寫作：設定）</p><div class="gl-grid-row"><span style="--c: 8">8</span><span style="--c: 4">4</span></div></div>
+                <div class="gl-grid"><p>結帳（付款欄位：訂閱摘要）、申請表</p><div class="gl-grid-row"><span style="--c: 7">7</span><span style="--c: 5">5</span></div></div>
+                <div class="gl-grid"><p>FAQ（標題：Accordion）</p><div class="gl-grid-row"><span style="--c: 4">4</span><span style="--c: 8">8</span></div></div>
+                <div class="gl-grid"><p>方案卡、主題卡、為什麼值得訂</p><div class="gl-grid-row"><span style="--c: 4">4</span><span style="--c: 4">4</span><span style="--c: 4">4</span></div></div>
+              </div>
+            </section>
+            <section class="gl-section" id="gl-radius" aria-labelledby="gl-radius-title">
+              <h2 id="gl-radius-title" class="gl-section-title"><span class="gl-section-num">05</span>圓角與陰影</h2>
+              <p class="gl-principle">圓角柔和、陰影克制：卡片只用細線分層，陰影只給真的浮在內容上的東西。</p>
+              <div class="row g-3 mb-4">
+                <div class="col-6 col-md"><div class="gl-radius" style="--r: .375rem"></div><p class="gl-caption">6px：權限徽章、標籤內按鈕</p></div>
+                <div class="col-6 col-md"><div class="gl-radius" style="--r: .625rem"></div><p class="gl-caption">10px：按鈕、輸入框</p></div>
+                <div class="col-6 col-md"><div class="gl-radius" style="--r: 1rem"></div><p class="gl-caption">16px：卡片、表格外框</p></div>
+                <div class="col-6 col-md"><div class="gl-radius" style="--r: 1.25rem"></div><p class="gl-caption">20px：付費牆卡、對話框、狀態卡</p></div>
+                <div class="col-6 col-md"><div class="gl-radius" style="--r: 50rem"></div><p class="gl-caption">膠囊：狀態徽章、頭像、分段控制</p></div>
+              </div>
+              <div class="row g-4">
+                <div class="col-md-4"><div class="gl-shadow gl-shadow-none"><p>不加陰影</p><span class="text-note">一般卡片：燕麥奶底＋柔暖灰細線就夠了</span></div></div>
+                <div class="col-md-4"><div class="gl-shadow gl-shadow-md"><p><code>$box-shadow</code></p><span class="text-note">下拉選單、插入選單、格式工具列、訂閱摘要</span></div></div>
+                <div class="col-md-4"><div class="gl-shadow gl-shadow-lg"><p><code>$box-shadow-lg</code></p><span class="text-note">付費牆卡、取消對話框：全站最「壓在內容上」的兩層</span></div></div>
+              </div>
+              <p class="text-note mt-3 mb-0">陰影是可可色、很淡、往下擴散，像檯燈從上方照下來的影子；沒有冷灰或黑色陰影。</p>
+            </section>
+            <section class="gl-section" id="gl-states" aria-labelledby="gl-states-title">
+              <h2 id="gl-states-title" class="gl-section-title"><span class="gl-section-num">06</span>元件狀態規範</h2>
+              <p class="gl-principle">每一種狀態都有圖示＋文字＋顏色；選中、焦點、停用都看得出來，鍵盤操作時焦點環清楚。</p>
+              <h3 class="gl-sub mt-0">按鈕</h3>
+              <div class="gl-demo">
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                  <button class="btn btn-primary" type="button">訂閱並繼續閱讀</button>
+                  <button class="btn btn-outline-primary" type="button"><i class="bi bi-book-half" aria-hidden="true"></i>免費讀前 2,200 字</button>
+                  <button class="btn btn-outline-secondary" type="button">查看訂閱方案</button>
+                  <button class="btn btn-text" type="button">查看全部文章</button>
+                  <button class="btn btn-primary" type="button" disabled>發布文章</button>
+                  <button class="btn btn-primary gl-force-focus" type="button">focus-visible</button>
+                </div>
+              </div>
+              <div class="table-responsive data-table mt-3 mb-5">
+                <table class="table">
+                  <thead><tr><th scope="col">層級</th><th scope="col">class</th><th scope="col">一般 → hover</th><th scope="col">規則</th></tr></thead>
+                  <tbody>
+                    <tr><td>主要</td><td><code>.btn-primary</code></td><td>焦糖底 → 深焦糖底</td><td>同一組動作只放一個；付費牆、結帳、取消對話框的「先不要」</td></tr>
+                    <tr><td>強調框</td><td><code>.btn-outline-primary</code></td><td>焦糖框 → 駝色奶霧底</td><td>區塊內的次要轉換（首頁主推「免費讀前 2,200 字」、申請成為作者入口）</td></tr>
+                    <tr><td>次要</td><td><code>.btn-outline-secondary</code></td><td>燕麥奶底 → 燕麥殼底</td><td>變更方案、取消自動續訂、提示框裡的按鈕</td></tr>
+                    <tr><td>文字</td><td><code>.btn-text</code></td><td>深焦糖字＋淡底線 → 可可字＋實底線</td><td>內建 44px 觸控高度</td></tr>
+                    <tr><td>停用</td><td><code>disabled</code></td><td>燕麥殼底、淡字，保留原尺寸</td><td>游標 <code>not-allowed</code>；旁邊寫出為什麼停用</td></tr>
+                    <tr><td>焦點</td><td><code>:focus-visible</code></td><td>內圈燕麥奶 2px＋外圈焦糖 2px</td><td>不移除 outline；只在鍵盤操作時出現</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3 class="gl-sub">表單欄位 6 態</h3>
+              <div class="gl-demo mb-5">
+                <div class="row g-3">
+                  <div class="col-md-6 col-xl-4"><label class="form-label" for="glF1">預設</label><input class="form-control" id="glF1" placeholder="搜尋文章、作者或標籤"></div>
+                  <div class="col-md-6 col-xl-4"><label class="form-label" for="glF2">已填</label><input class="form-control" id="glF2" value="陳柏諺"></div>
+                  <div class="col-md-6 col-xl-4"><label class="form-label" for="glF3">focus</label><input class="form-control gl-force-focus" id="glF3" value="boyen.chen@example.com"></div>
+                  <div class="col-md-6 col-xl-4"><label class="form-label" for="glF4">錯誤</label><input class="form-control is-invalid" id="glF4" value="4821 1234 5678" aria-describedby="glF4e" aria-invalid="true"><div class="invalid-feedback" id="glF4e">卡號需為 16 碼</div></div>
+                  <div class="col-md-6 col-xl-4"><label class="form-label" for="glF5">停用</label><textarea class="form-control" id="glF5" rows="1" placeholder="說說你的現場經驗，或問作者一個問題。" disabled></textarea></div>
+                  <div class="col-md-6 col-xl-4"><label class="form-label" for="glF6">多行字數提示</label><textarea class="form-control" id="glF6" rows="1">我想寫餐飲現場的真實數字…</textarea><div class="form-text form-count">已輸入 312 字</div></div>
+                </div>
+              </div>
+
+              <div class="row g-4 mb-5">
+                <div class="col-lg-6">
+                  <h3 class="gl-sub mt-0">權限徽章（放在標題前）</h3>
+                  <div class="gl-demo d-flex flex-wrap gap-2"><span class="perm-badge is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span><span class="perm-badge is-free"><i class="bi bi-unlock" aria-hidden="true"></i>免費閱讀</span><span class="perm-badge is-draft"><i class="bi bi-circle" aria-hidden="true"></i>草稿</span><span class="perm-badge is-removed"><i class="bi bi-slash-circle" aria-hidden="true"></i>已下架</span></div>
+                  <p class="text-note mt-2 mb-0">方角小牌＋圖示＋文字＋顏色；草稿是空心框、已下架是燕麥殼底＋禁止圖示。</p>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="gl-sub mt-0">狀態徽章（膠囊）</h3>
+                  <div class="gl-demo d-flex flex-wrap gap-2"><span class="status-badge is-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>使用中</span><span class="status-badge is-warning"><i class="bi bi-hourglass-split" aria-hidden="true"></i>審核中</span><span class="status-badge is-danger"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>付款失敗</span><span class="status-badge is-info"><i class="bi bi-info-circle" aria-hidden="true"></i>處理中</span><span class="status-badge is-brand"><i class="bi bi-bookmark-fill" aria-hidden="true"></i>閱讀中</span><span class="status-badge is-neutral"><i class="bi bi-circle" aria-hidden="true"></i>未訂閱</span><span class="status-badge is-muted"><i class="bi bi-dash-circle" aria-hidden="true"></i>已到期</span><span class="status-badge is-brand"><i class="bi bi-pen" aria-hidden="true"></i>作者</span></div>
+                  <p class="text-note mt-2 mb-0">成功是實心勾、等待是沙漏、錯誤是實心叉、中性是空心圓；「結束了」的狀態用虛線框。</p>
+                </div>
+              </div>
+
+              <div class="row g-4 mb-5">
+                <div class="col-lg-6">
+                  <h3 class="gl-sub mt-0">標籤</h3>
+                  <div class="gl-demo">
+                    <ul class="tag-list">
+                      <li><a class="tag" href="articles.html">#定價</a></li>
+                      <li><span class="tag is-active"><i class="bi bi-check-lg" aria-hidden="true"></i>#成本結構</span></li>
+                      <li><span class="tag is-empty">#補助 0</span></li>
+                    </ul>
+                  </div>
+                  <p class="text-note mt-2 mb-0">一般／選中（焦糖框＋勾）／目前條件下 0 篇（虛線＋淡字，不隱藏）。</p>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="gl-sub mt-0">分頁籤與分段控制</h3>
+                  <div class="gl-demo">
+                    <div class="nav nav-underline mb-3" role="group" aria-label="分頁籤示範">
+                      <button class="nav-link active" type="button" aria-pressed="true">收藏<span class="tab-count">38</span></button>
+                      <button class="nav-link" type="button" aria-pressed="false">閱讀紀錄</button>
+                      <button class="nav-link" type="button" aria-pressed="false">讀到一半<span class="tab-count">12</span></button>
+                    </div>
+                    <div class="segmented" role="group" aria-label="分段控制示範">
+                      <input class="btn-check" type="radio" name="glSeg" id="glSeg1" checked><label class="btn" for="glSeg1">月繳</label>
+                      <input class="btn-check" type="radio" name="glSeg" id="glSeg2"><label class="btn" for="glSeg2">年繳（省兩個月）</label>
+                    </div>
+                  </div>
+                  <p class="text-note mt-2 mb-0">選中：粗體＋焦糖 2px 底線；分段控制選中是浮起的燕麥奶膠囊。</p>
+                </div>
+              </div>
+
+              <div class="row g-4 mb-5">
+                <div class="col-lg-7">
+                  <h3 class="gl-sub mt-0">文章卡（列表）</h3>
+                  <ul class="article-list gl-demo-plain">
+                    <li class="article-item">
+                      <div class="card-kicker"><span class="perm-badge is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span><a class="card-kicker-link" href="articles.html">餐飲與零售</a></div>
+                      <h4 class="article-item-title text-phrase"><a href="article.html">一間餐廳的成本結構：<wbr>從食材到翻桌率，<wbr>錢到底花到哪去</a></h4>
+                      <div class="article-item-author"><img class="avatar avatar-sm" src="images/avatar-chen.jpg" alt="" width="32" height="32" loading="lazy"><span><strong>陳柏諺</strong>（台北某獨立餐酒館主廚兼老闆 ‧ 開店第 4 年）</span></div>
+                      <p class="meta-line"><span>約 6,800 字</span><span>閱讀 18 分鐘</span><span>發布於 2026/09/28</span><span class="is-preview">免費預覽前 2,200 字</span></p>
+                    </li>
+                  </ul>
+                  <p class="text-note mt-2 mb-0">細線分隔、不加外框；hover 標題變深焦糖、鍵盤 focus 整列加焦糖外框；導言完整顯示不截斷。</p>
+                </div>
+                <div class="col-lg-5">
+                  <h3 class="gl-sub mt-0">主題卡</h3>
+                  <a class="topic-card gl-topic-open" href="articles.html">
+                    <span class="topic-card-icon"><i class="bi bi-cup-hot" aria-hidden="true"></i></span>
+                    <h4 class="topic-card-title">餐飲與零售</h4>
+                    <p class="topic-card-text">成本、選址、翻桌率與那些倒掉的店</p>
+                    <p class="topic-card-meta"><span>86 篇 ‧ 最新更新 2026/09/28</span></p>
+                  </a>
+                  <p class="text-note mt-2 mb-0">hover／focus：上移 2px、焦糖框、展開篇數與日期（這裡固定展開示意）；&lt; 992px 直接顯示。</p>
+                </div>
+              </div>
+
+              <div class="row g-4 mb-5">
+                <div class="col-lg-6">
+                  <h3 class="gl-sub mt-0">收藏／追蹤（aria-pressed）</h3>
+                  <div class="gl-demo d-flex flex-wrap gap-2">
+                    <button class="tool-btn" type="button" aria-pressed="false"><i class="bi bi-heart" aria-hidden="true"></i><span>收藏</span></button>
+                    <button class="tool-btn" type="button" aria-pressed="true"><i class="bi bi-heart-fill" aria-hidden="true"></i><span>已收藏</span></button>
+                    <button class="btn btn-outline-secondary btn-sm" type="button" aria-pressed="false"><i class="bi bi-person-plus" aria-hidden="true"></i>追蹤作者</button>
+                    <button class="btn btn-outline-secondary btn-sm" type="button" aria-pressed="true"><i class="bi bi-person-check" aria-hidden="true"></i>已追蹤</button>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="gl-sub mt-0">頭像：照片／字首</h3>
+                  <div class="gl-demo d-flex flex-wrap gap-3 align-items-end">
+                    <img class="avatar avatar-xl" src="images/avatar-chen.jpg" alt="陳柏諺" width="64" height="64" loading="lazy">
+                    <img class="avatar avatar-lg" src="images/avatar-su.jpg" alt="蘇曉薇" width="56" height="56" loading="lazy">
+                    <span class="avatar avatar-lg avatar-initial" aria-hidden="true">農</span>
+                    <span class="avatar avatar-md avatar-initial" aria-hidden="true">許</span>
+                    <span class="avatar avatar-sm avatar-initial" aria-hidden="true">I</span>
+                  </div>
+                  <p class="text-note mt-2 mb-0">具名的 8 位作者用照片；作者牆後 4 位（職稱首字）、讀者、申請者用字首頭像：駝色奶霧底＋深焦糖楷體字。尺寸 24／32／44／56／64。</p>
+                </div>
+              </div>
+
+              <h3 class="gl-sub">互動狀態對照</h3>
+              <div class="table-responsive data-table">
+                <table class="table">
+                  <thead><tr><th scope="col">元件</th><th scope="col">hover</th><th scope="col">focus-visible</th><th scope="col">停用</th><th scope="col">錯誤／選中</th></tr></thead>
+                  <tbody>
+                    <tr><td>按鈕</td><td>底色加深一階</td><td>雙層焦點環</td><td>燕麥殼底、淡字、not-allowed</td><td>—</td></tr>
+                    <tr><td>輸入框</td><td>—</td><td>焦糖 2px 框</td><td>燕麥殼底（留言框加虛線）</td><td>陶土紅框＋圖示＋文字</td></tr>
+                    <tr><td>radio 卡</td><td>框線加深</td><td>雙層焦點環</td><td>—</td><td>焦糖框＋駝色奶霧底＋右上勾勾</td></tr>
+                    <tr><td>分頁籤／排序</td><td>字變可可</td><td>內側焦糖框</td><td>—</td><td>粗體＋焦糖底線</td></tr>
+                    <tr><td>側邊導覽</td><td>淡底</td><td>焦糖框</td><td>—</td><td>燕麥奶底＋左側焦糖線；有權限的群組有淡底與圖示</td></tr>
+                    <tr><td>目錄</td><td>字變可可</td><td>焦糖框</td><td>—</td><td>目前：粗體＋焦糖短線；鎖住：淡字＋鎖頭</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <section class="gl-section" id="gl-elements" aria-labelledby="gl-elements-title">
+              <h2 id="gl-elements-title" class="gl-section-title"><span class="gl-section-num">07</span>內文元素</h2>
+              <p class="gl-principle">富文本編輯器能產出的全部元素，在閱讀欄裡實際渲染的樣子（與文章內頁同一組 <code>.prose</code>）。</p>
+              <div class="gl-demo gl-demo-reading">
+                <div class="prose">
+                  <h2>真正吃掉利潤的，是那張你以為不用錢的桌子</h2>
+                  <p>桌子是我店裡唯一不在損益表上的成本。它不會每個月寄帳單給我，所以我花了兩年才算到它。</p>
+                  <h3>h3：小節標題（字級與上距都低一階）</h3>
+                  <p>算法很笨但很有效：把全年營業額除以桌數、再除以營業天數與時數，我會得到<strong>「每張桌子每小時應該產出多少錢」</strong>。行內程式碼長這樣：<code>revenue / tables / hours</code>。</p>
+                  <blockquote><p>一張四人桌，一個晚上翻兩次和翻三次，全年差距是 47 萬——剛好是我去年的淨利。</p></blockquote>
+                  <figure>
+                    <img src="images/figure-kitchen-pass.jpg" alt="週五晚間的出餐檯" width="1536" height="864" loading="lazy">
+                    <figcaption>尖峰時段的出餐節奏決定翻桌率，這張照片是 19:40，當下有 14 張單在跑。</figcaption>
+                  </figure>
+                  <ul>
+                    <li>食材成本 32%</li>
+                    <li>人事成本 28%</li>
+                    <li>租金與管理費 15%</li>
+                  </ul>
+                  <ol>
+                    <li>先看去年整年的數字</li>
+                    <li>真正吃掉利潤的，是那張你以為不用錢的桌子</li>
+                  </ol>
+                  <div class="prose-table">
+                    <table class="table">
+                      <caption>2025 年度損益結構 ‧ 單位萬元 ‧ 資料來源：作者自店帳務</caption>
+                      <thead><tr><th scope="col">項目</th><th scope="col" class="is-num">金額（萬元）</th><th scope="col" class="is-num">佔營收</th></tr></thead>
+                      <tbody>
+                        <tr><th scope="row">食材成本</th><td class="is-num">589</td><td class="is-num">32.0%</td></tr>
+                        <tr><th scope="row">人事成本</th><td class="is-num">516</td><td class="is-num">28.0%</td></tr>
+                        <tr><th scope="row">租金與管理費</th><td class="is-num">276</td><td class="is-num">15.0%</td></tr>
+                        <tr><th scope="row">水電瓦斯</th><td class="is-num">92</td><td class="is-num">5.0%</td></tr>
+                        <tr><th scope="row">耗材與雜支</th><td class="is-num">147</td><td class="is-num">8.0%</td></tr>
+                        <tr><th scope="row">行銷與平台抽成</th><td class="is-num">161</td><td class="is-num">8.7%</td></tr>
+                        <tr class="is-total"><th scope="row">稅後淨利</th><td class="is-num">61</td><td class="is-num">3.3%</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+<pre><code>// 每張桌子每小時應該產出多少錢
+const perTableHour = revenue / tables / (days * hours)</code></pre>
+                  <hr>
+                  <p>分隔線上下各 2.4em，用在同一篇文章裡的話題轉折。下面是編輯器裡的免費預覽分隔線（讀者端渲染成付費牆）：</p>
+                  <div class="preview-divider" role="separator" aria-label="免費預覽分隔線">
+                    <span class="preview-divider-grip"><i class="bi bi-grip-vertical" aria-hidden="true"></i></span>
+                    <span class="preview-divider-label"><i class="bi bi-lock-fill" aria-hidden="true"></i>以上為免費預覽內容，以下需訂閱才能閱讀</span>
+                    <span class="preview-divider-count">2,200 字</span>
+                    <span class="preview-divider-grip"><i class="bi bi-grip-vertical" aria-hidden="true"></i></span>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <section class="gl-section" id="gl-components" aria-labelledby="gl-components-title">
+              <h2 id="gl-components-title" class="gl-section-title"><span class="gl-section-num">08</span>主題專屬元件</h2>
+              <p class="gl-principle">付費牆、閱讀進度、方案、訂閱週期、角色與編輯器：這個主題特有的元件，以及它們的每一種狀態。</p>
+              <h3 class="gl-sub mt-0">① 付費牆：未訂閱／已訂閱並列</h3>
+              <div class="row g-4 mb-3">
+                <div class="col-xl-6">
+                  <p class="gl-caption">未訂閱：殘句＋140px 漸層淡出＋訂閱卡</p>
+                  <div class="gl-demo gl-paywall-demo">
+                    <div class="prose prose-md">
+                      <p>所以我重新做了一次成本拆解，這次把桌子的時間也放進去。結果讓我重新談了租約、砍掉三道菜、也終於看懂為什麼週二和週三永遠在虧。</p>
+                      <p class="paywall-teaser">……真正的問題不在食材，而是我們一直沒算進去的那一項：</p>
+                    </div>
+                    <section class="paywall" aria-labelledby="glPw1">
+                      <div class="read-progress is-reading is-lg">
+                        <div class="read-progress-track" role="progressbar" aria-label="已免費讀完" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32" style="--p: 32%"></div>
+                        <span class="read-progress-text">已免費讀完 32%</span>
+                      </div>
+                      <h4 id="glPw1" class="paywall-title text-phrase">剩下的 4,600&nbsp;字，<wbr>需要訂閱才能繼續</h4>
+                      <p class="paywall-text">你已經免費讀完這篇的 32%。接下來是全年逐月的數字拆解、兩次現金流斷鏈的處理過程，以及我重新談租約的方法。</p>
+                      <fieldset class="paywall-plans">
+                        <legend class="visually-hidden">選擇方案</legend>
+                        <div><input class="btn-check" type="radio" name="glPw1" id="glPw1M"><label class="radio-card" for="glPw1M"><span class="plan-option-name">月費</span><span class="plan-option-price">NT$ 180<small>／月</small></span><span class="plan-option-note">隨時取消</span></label></div>
+                        <div><input class="btn-check" type="radio" name="glPw1" id="glPw1Y" checked><label class="radio-card" for="glPw1Y"><span class="plan-option-name">年費<span class="save-tag">省下兩個月</span></span><span class="plan-option-price">NT$ 1,800<small>／年</small></span><span class="plan-option-note">平均 NT$ 150／月</span></label></div>
+                      </fieldset>
+                      <a class="btn btn-primary btn-lg w-100" href="pricing.html#checkout">訂閱並繼續閱讀</a>
+                      <p class="paywall-login">已經是訂閱者了？<a href="article.html?view=subscribed">登入</a></p>
+                      <p class="paywall-trust">七天內不滿意可全額退費 ‧ 線上一鍵取消 ‧ 訂閱期間全站 438 篇付費文章任讀</p>
+                      <p class="paywall-alt">還沒想好？<a href="articles.html">先看看免費文章</a> ｜ <a href="account.html#library">把這篇加入收藏，之後再讀</a></p>
+                    </section>
+                  </div>
+                </div>
+                <div class="col-xl-6">
+                  <p class="gl-caption">已訂閱：同一位置是正常內文（沒有漸層、卡片、分隔線、也沒有「你已訂閱」提示）</p>
+                  <div class="gl-demo">
+                    <div class="prose prose-md">
+                      <p>所以我重新做了一次成本拆解，這次把桌子的時間也放進去。結果讓我重新談了租約、砍掉三道菜、也終於看懂為什麼週二和週三永遠在虧。</p>
+                      <p>……真正的問題不在食材，而是我們一直沒算進去的那一項：那張桌子每個小時要幫我賺多少錢。</p>
+                      <p>我把全年營業額除以桌數再除以營業時數，得到一個數字。然後我發現，週二和週三那兩天，我其實是在付錢請自己上班。</p>
+                      <h2>全年逐月的數字拆解</h2>
+                      <p>把 1,842 萬拆成十二個月之後，最先跳出來的不是哪個月賺最多，而是落差：生意最好和最差的月份差了將近一倍，可是租金、人事和水電幾乎每個月都一樣。</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row g-4 mb-5">
+                <div class="col-xl-6">
+                  <p class="gl-caption">未登入（只在 Guideline 示範）：主要按鈕改「登入後訂閱」＋S01</p>
+                  <div class="gl-demo"><section class="paywall" aria-labelledby="glPw2">
+                      <div class="read-progress is-reading is-lg">
+                        <div class="read-progress-track" role="progressbar" aria-label="已免費讀完" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32" style="--p: 32%"></div>
+                        <span class="read-progress-text">已免費讀完 32%</span>
+                      </div>
+                      <h4 id="glPw2" class="paywall-title text-phrase">剩下的 4,600&nbsp;字，<wbr>需要訂閱才能繼續</h4>
+                      <p class="paywall-text">你已經免費讀完這篇的 32%。接下來是全年逐月的數字拆解、兩次現金流斷鏈的處理過程，以及我重新談租約的方法。</p>
+                      <fieldset class="paywall-plans">
+                        <legend class="visually-hidden">選擇方案</legend>
+                        <div><input class="btn-check" type="radio" name="glPw2" id="glPw2M"><label class="radio-card" for="glPw2M"><span class="plan-option-name">月費</span><span class="plan-option-price">NT$ 180<small>／月</small></span><span class="plan-option-note">隨時取消</span></label></div>
+                        <div><input class="btn-check" type="radio" name="glPw2" id="glPw2Y" checked><label class="radio-card" for="glPw2Y"><span class="plan-option-name">年費<span class="save-tag">省下兩個月</span></span><span class="plan-option-price">NT$ 1,800<small>／年</small></span><span class="plan-option-note">平均 NT$ 150／月</span></label></div>
+                      </fieldset>
+                      <a class="btn btn-primary btn-lg w-100" href="account.html">登入後訂閱</a>
+                      <p class="paywall-login">登入後就能訂閱，註冊只要 30 秒。</p>
+                      <p class="paywall-trust">七天內不滿意可全額退費 ‧ 線上一鍵取消 ‧ 訂閱期間全站 438 篇付費文章任讀</p>
+                      <p class="paywall-alt">還沒想好？<a href="articles.html">先看看免費文章</a> ｜ <a href="account.html#library">把這篇加入收藏，之後再讀</a></p>
+                    </section></div>
+                </div>
+                <div class="col-xl-6">
+                  <ul class="gl-list">
+                    <li>漸層：<code>.paywall-teaser::after</code>，透明 → 燕麥灰白，高 140px（規格 120–160），往下多延伸 24px；<code>pointer-events: none</code>、裝飾不進無障礙樹。</li>
+                    <li>殘句停在冒號：「……我們一直沒算進去的那一項：」。</li>
+                    <li>卡片由上而下：已讀進度（帶數字）→ 標題 → 價值訴求 → 月／年 radio 卡（預設年費）→ 唯一的主要按鈕 → 登入 → 信任小字 → 替代入口（只能是小字連結）。</li>
+                    <li>付費牆卡是全站唯一「壓在內容上」的卡片：燕麥奶底＋<code>$box-shadow-lg</code>。</li>
+                    <li>已訂閱：整個元件不渲染（<code>data-show-view="unsubscribed"</code>）。</li>
+                  </ul>
+                </div>
+              </div>
+
+              <h3 class="gl-sub">② 閱讀進度：3 種尺寸 × 3 種狀態</h3>
+              <div class="gl-demo mb-5">
+                <div class="row g-4">
+                  <div class="col-lg-4">
+                    <p class="gl-caption">頂端細條（不帶數字）</p>
+                    <div class="reading-bar gl-static-bar" role="progressbar" aria-label="本篇閱讀進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32" style="--p: 32%"></div>
+                  </div>
+                  <div class="col-lg-4">
+                    <p class="gl-caption">卡片內條＋文字</p>
+                    <div class="d-grid gap-3">
+                      <div class="read-progress is-reading"><div class="read-progress-track" role="progressbar" aria-label="進行中" aria-valuemin="0" aria-valuemax="100" aria-valuenow="64" style="--p: 64%"></div><span class="read-progress-text">讀到 64%</span></div>
+                      <div class="read-progress is-done"><div class="read-progress-track" role="progressbar" aria-label="已讀完" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"></div><span class="read-progress-text"><i class="bi bi-check-lg" aria-hidden="true"></i>已讀完</span></div>
+                      <div class="read-progress is-unstarted"><div class="read-progress-track" role="progressbar" aria-label="尚未開始" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div><span class="read-progress-text">尚未開始</span></div>
+                    </div>
+                  </div>
+                  <div class="col-lg-4">
+                    <p class="gl-caption">付費牆內條（必須帶數字）</p>
+                    <div class="read-progress is-reading is-lg"><div class="read-progress-track" role="progressbar" aria-label="已免費讀完" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32" style="--p: 32%"></div><span class="read-progress-text">已免費讀完 32%</span></div>
+                  </div>
+                </div>
+                <p class="text-note mt-3 mb-0">進行中：焦糖＋讀到的位置掛一個小書籤（本風格的書籤母題只用在「讀到哪裡」）；已讀完：鼠尾草綠＋勾；尚未開始：空軌（虛線框），不是 0% 的填色。</p>
+              </div>
+
+              <h3 class="gl-sub">③ 方案卡與月／年切換</h3>
+              <div class="row g-4 mb-3 gl-plan-demo">
+                <div class="col-md-6">
+                  <p class="gl-caption">一般（月繳時，年費卡按鈕是次要）</p>
+                  <article class="plan-card">
+                    <h4 class="plan-card-name">年費訂閱 <span class="save-tag">省 NT$ 360</span></h4>
+                    <p class="plan-price"><span class="plan-price-currency">NT$</span><span class="plan-price-num">1,800</span><span class="plan-price-unit">／年</span></p>
+                    <p class="plan-card-fit">適合：已經確定要長期讀的人</p>
+                    <ul class="plan-features">
+                      <li class="is-yes"><i class="bi bi-check-lg" aria-hidden="true"></i><span><span class="visually-hidden">有：</span>月費方案的全部權益</span></li>
+                      <li class="is-yes"><i class="bi bi-check-lg" aria-hidden="true"></i><span><span class="visually-hidden">有：</span>平均每月 NT$ 150</span></li>
+                    </ul>
+                    <a class="btn btn-outline-secondary" href="pricing.html#checkout">訂閱一年</a>
+                  </article>
+                </div>
+                <div class="col-md-6">
+                  <p class="gl-caption">推薦（固定在月費：★ 最多人選＋2px 焦糖框＋淡底，不放大）</p>
+                  <article class="plan-card is-recommended">
+                    <span class="plan-card-flag"><i class="bi bi-star-fill" aria-hidden="true"></i>最多人選</span>
+                    <h4 class="plan-card-name">月費訂閱</h4>
+                    <p class="plan-price"><span class="plan-price-currency">NT$</span><span class="plan-price-num">180</span><span class="plan-price-unit">／月</span></p>
+                    <p class="plan-card-fit">適合：想先訂一個月試試的人</p>
+                    <ul class="plan-features">
+                      <li class="is-yes"><i class="bi bi-check-lg" aria-hidden="true"></i><span><span class="visually-hidden">有：</span>全站 438 篇付費文章全文</span></li>
+                      <li class="is-no"><i class="bi bi-x-lg" aria-hidden="true"></i><span><span class="visually-hidden">無：</span>年度精選合輯 PDF</span></li>
+                    </ul>
+                    <a class="btn btn-primary" href="pricing.html#checkout">開始訂閱</a>
+                  </article>
+                </div>
+              </div>
+              <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                  <p class="gl-caption">月繳（預設）：提示預留高度但不顯示</p>
+                  <div class="gl-demo text-center">
+                    <div class="segmented" role="group" aria-label="計費週期示範一"><input class="btn-check" type="radio" name="glBill1" id="glBill1m" checked><label class="btn" for="glBill1m">月繳</label><input class="btn-check" type="radio" name="glBill1" id="glBill1y"><label class="btn" for="glBill1y">年繳（省兩個月）</label></div>
+                    <p class="billing-note gl-note-placeholder"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>年繳一年省下 NT$ 360 ‧ 平均每月 NT$ 150</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <p class="gl-caption">年繳：出現省錢提示，年費卡按鈕升為主要、月費卡降為次要</p>
+                  <div class="gl-demo text-center">
+                    <div class="segmented" role="group" aria-label="計費週期示範二"><input class="btn-check" type="radio" name="glBill2" id="glBill2m"><label class="btn" for="glBill2m">月繳</label><input class="btn-check" type="radio" name="glBill2" id="glBill2y" checked><label class="btn" for="glBill2y">年繳（省兩個月）</label></div>
+                    <p class="billing-note is-visible"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>年繳一年省下 NT$ 360 ‧ 平均每月 NT$ 150</p>
+                  </div>
+                </div>
+              </div>
+
+              <h3 class="gl-sub">④ 比較矩陣</h3>
+              <div class="compare-scroll mb-2" tabindex="0" role="region" aria-label="比較矩陣示範">
+                <table class="compare-table">
+                  <caption class="visually-hidden">比較矩陣示範</caption>
+                  <thead><tr><th scope="col">權益項目</th><th scope="col">免費會員</th><th scope="col" class="is-recommended">月費訂閱</th><th scope="col">年費訂閱</th></tr></thead>
+                  <tbody>
+                    <tr><th scope="row">付費文章全文（438 篇）</th><td><span class="cell-no"><i class="bi bi-x-lg" aria-hidden="true"></i>無</span></td><td class="is-recommended"><span class="cell-yes"><i class="bi bi-check-lg" aria-hidden="true"></i>有</span></td><td><span class="cell-yes"><i class="bi bi-check-lg" aria-hidden="true"></i>有</span></td></tr>
+                    <tr><th scope="row">平均月費</th><td><span class="cell-na"><span aria-hidden="true">—</span><span class="visually-hidden">不適用</span></span></td><td class="is-recommended num">NT$ 180</td><td class="num is-strong">NT$ 150</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="text-note mb-5"><i class="bi bi-check-lg" aria-hidden="true"></i> 有＝鼠尾草綠勾＋「有」、<i class="bi bi-x-lg" aria-hidden="true"></i> 無＝柔暖灰叉＋「無」、—＝不適用（螢幕報讀「不適用」）；形狀不同，不只靠綠紅。月費欄淡底強調但不整欄染色。手機橫向捲動、首欄 <code>position: sticky</code> 凍結。</p>
+
+              <h3 class="gl-sub" id="gl-signature">⑤ 訂閱狀態 4 態＋訂閱週期尺（本風格的招牌）</h3>
+              <div class="gl-signature mb-4">
+                <div class="row g-4 align-items-center">
+                  <div class="col-lg-7">
+                    <div class="cycle has-left-label" role="img" aria-label="訂閱期間 2026/10/03 – 2027/10/02，剩餘 364 天，到期自動續訂" style="--elapsed: .3%">
+                      <div class="cycle-head"><span>訂閱期間</span><span class="num">2026/10/03 – 2027/10/02</span></div>
+                      <div class="cycle-track">
+                        <span class="cycle-left">剩餘 364 天<i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+                        <span class="cycle-now"></span>
+                        <span class="cycle-end"><i class="bi bi-arrow-repeat" aria-hidden="true"></i></span>
+                      </div>
+                      <div class="cycle-scale"><span>2026/10/03</span><span>2027/10/02 ‧ 自動續訂</span></div>
+                    </div>
+                  </div>
+                  <div class="col-lg-5">
+                    <ul class="gl-list mb-0">
+                      <li>Notion：「會員管理訂閱週期與取消路徑溫和而清晰」。週期尺把「訂閱期間」畫成一段看得見的時間：已過（焦糖實線）→ 今天（焦糖圓環）→ 剩下（駝色，12 個月刻度）→ 終點。</li>
+                      <li>終點圖示說明到期後會怎樣：<i class="bi bi-arrow-repeat" aria-hidden="true"></i> 自動續訂；<i class="bi bi-stop-circle" aria-hidden="true"></i> 已取消（琥珀），終點之後是虛線＝回到免費會員。</li>
+                      <li>只用在三個地方：訂閱狀態卡、已取消待到期卡、結帳摘要。它是 <code>role="img"</code>，<code>aria-label</code> 寫完整日期，旁邊的文字仍是主要資訊。</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <article class="sub-card is-compact">
+                    <span class="status-badge is-neutral align-self-start"><i class="bi bi-circle" aria-hidden="true"></i>未訂閱</span>
+                    <h4 class="sub-card-title">免費會員</h4>
+                    <p class="sub-card-text">可讀 127 篇免費文章，付費文章讀前 1/3。</p>
+                    <a class="btn btn-primary" href="pricing.html">查看方案</a>
+                  </article>
+                </div>
+                <div class="col-md-6">
+                  <article class="sub-card is-compact is-active">
+                    <span class="status-badge is-success align-self-start"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>年費訂閱 ‧ 使用中</span>
+                    <p class="sub-card-label mt-3">到期日</p>
+                    <p class="sub-card-date figure-num gl-date-sm">2027/10/02</p>
+                    <p class="sub-card-remain mb-3">剩餘 364 天</p>
+                    <div class="equal-actions mt-auto"><a class="btn btn-outline-secondary btn-sm" href="pricing.html">變更方案</a><button class="btn btn-outline-secondary btn-sm" type="button">取消自動續訂</button></div>
+                  </article>
+                </div>
+                <div class="col-md-6">
+                  <article class="sub-card is-compact is-ending">
+                    <span class="status-badge is-warning align-self-start"><i class="bi bi-hourglass-split" aria-hidden="true"></i>已取消待到期</span>
+                    <h4 class="sub-card-title text-phrase">月費訂閱 ‧ <wbr>已取消自動續訂</h4>
+                    <p class="sub-card-text">你仍可閱讀到 2026/11/02，之後將回到免費會員。</p>
+                    <div class="cycle is-ending" role="img" aria-label="可閱讀到 2026/11/02，之後回到免費會員">
+                      <div class="cycle-track" style="--elapsed: 8%"><span class="cycle-now"></span><span class="cycle-end"><i class="bi bi-stop-circle" aria-hidden="true"></i></span><span class="cycle-after"></span></div>
+                      <div class="cycle-scale"><span>2026/11/02</span><span>免費會員</span></div>
+                    </div>
+                    <a class="btn btn-primary" href="account.html#subscription"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>恢復自動續訂</a>
+                  </article>
+                </div>
+                <div class="col-md-6">
+                  <article class="sub-card is-compact">
+                    <span class="status-badge is-muted align-self-start"><i class="bi bi-dash-circle" aria-hidden="true"></i>已到期</span>
+                    <h4 class="sub-card-title">免費會員</h4>
+                    <p class="sub-card-text">上次訂閱於 2026/08/02 到期。你的 38 則收藏都還在。</p>
+                    <a class="btn btn-primary" href="pricing.html">重新訂閱</a>
+                  </article>
+                </div>
+              </div>
+              <div class="row g-3 mb-4">
+                <div class="col-md-6"><div class="callout is-warning h-100"><i class="bi bi-hourglass-split callout-icon" aria-hidden="true"></i><div class="callout-body"><p class="callout-title">即將到期（提醒，不是狀態卡）</p><p>你的訂閱將於 11/02 到期，到期後付費文章會回到預覽狀態。</p><a class="btn btn-sm btn-outline-secondary" href="pricing.html">續訂</a></div></div></div>
+                <div class="col-md-6"><div class="callout is-danger h-100"><i class="bi bi-x-circle-fill callout-icon" aria-hidden="true"></i><div class="callout-body"><p class="callout-title">續訂扣款失敗</p><p>這期的自動扣款未成功，請在 11/09 前更新付款方式，以免中斷閱讀。</p><button class="btn btn-sm btn-outline-secondary" type="button">更新付款方式</button></div></div></div>
+              </div>
+              <div class="row g-4 align-items-center mb-5">
+                <div class="col-lg-6">
+                  <div class="cancel-dialog is-static">
+                    <span class="cancel-dialog-icon"><i class="bi bi-door-open" aria-hidden="true"></i></span>
+                    <p class="cancel-dialog-title h4">要取消自動續訂嗎？</p>
+                    <p class="cancel-dialog-text">你仍可閱讀到 <strong>2026/11/02</strong>。如果是因為沒時間看，也可以改成年費方案慢慢讀。</p>
+                    <div class="equal-actions"><button class="btn btn-outline-secondary" type="button">確認取消</button><button class="btn btn-primary" type="button">先不要</button></div>
+                    <p class="cancel-dialog-note"><i class="bi bi-bookmark-heart" aria-hidden="true"></i><span>取消後：收藏與閱讀紀錄全部保留，免費文章照常閱讀，付費文章回到預覽狀態。</span></p>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <h4 class="gl-sub-sm">取消路徑的 4 條規則</h4>
+                  <ol class="gl-list">
+                    <li>一鍵可達：「取消自動續訂」和「變更方案」同樣大小並排在狀態卡上，不藏在設定深處、不要求來信。</li>
+                    <li>只有一層確認：對話框 520px，兩顆按鈕一樣大、一樣好按；「先不要」是主要、「確認取消」是次要。</li>
+                    <li>先講沒有失去什麼：仍可讀到哪一天（粗體日期）、收藏與閱讀紀錄全部保留。</li>
+                    <li>回頭很容易：已取消待到期的卡片把「恢復自動續訂」放成唯一的主要按鈕，週期尺終點換成停止圖示。</li>
+                  </ol>
+                </div>
+              </div>
+
+              <h3 class="gl-sub">⑥ 作者申請 4 態</h3>
+              <div class="row g-3 mb-5">
+                <div class="col-md-6 col-xl-3"><div class="gl-demo h-100"><p class="gl-caption">未申請</p><p class="mb-2">申請表（讀者側欄有「申請成為作者」入口）。</p><a class="btn btn-sm btn-outline-primary" href="account.html#apply">申請成為作者</a></div></div>
+                <div class="col-md-6 col-xl-3"><div class="callout is-warning h-100"><i class="bi bi-hourglass-split callout-icon" aria-hidden="true"></i><div class="callout-body"><p class="callout-title">審核中</p><p>申請已送出（2026/09/30），審核約需 5 個工作天，結果會以 Email 通知。</p></div></div></div>
+                <div class="col-md-6 col-xl-3"><div class="callout is-success h-100"><i class="bi bi-check-circle-fill callout-icon" aria-hidden="true"></i><div class="callout-body"><p class="callout-title">已通過</p><p>你已是認證作者（通過於 2026/04/18）。</p><a class="btn btn-sm btn-outline-secondary" href="account.html?role=author#editor">開始撰寫文章</a></div></div></div>
+                <div class="col-md-6 col-xl-3"><div class="callout is-danger h-100"><i class="bi bi-x-circle-fill callout-icon" aria-hidden="true"></i><div class="callout-body"><p class="callout-title">未通過</p><p>這次未通過。原因：</p><blockquote class="callout-quote">「寫作方向說明較偏向理論整理，本平台以第一線實務經驗為主，歡迎補充具體工作場景後再次申請。」</blockquote><a class="btn btn-sm btn-outline-secondary" href="account.html#apply">修改後重新申請</a></div></div></div>
+              </div>
+
+              <h3 class="gl-sub">⑦ 文章 3 態與付費層級</h3>
+              <div class="table-responsive data-table mb-5">
+                <table class="table my-articles-table">
+                  <thead><tr><th scope="col">標題</th><th scope="col">付費層級</th><th scope="col" class="is-num">瀏覽</th><th scope="col">發布日期</th><th scope="col">操作</th></tr></thead>
+                  <tbody>
+                    <tr><th scope="row"><span class="table-title">一間餐廳的成本結構</span></th><td><div class="segmented segmented-sm" role="group" aria-label="付費層級示範"><input class="btn-check" type="radio" name="glTier" id="glTierF"><label class="btn" for="glTierF"><i class="bi bi-unlock" aria-hidden="true"></i>免費</label><input class="btn-check" type="radio" name="glTier" id="glTierL" checked><label class="btn" for="glTierL"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</label></div></td><td class="is-num">18,420</td><td class="num">2026/09/28</td><td><div class="table-actions"><a class="btn btn-text" href="account.html?role=author#editor">編輯</a><a class="btn btn-text" href="account.html?role=author#analytics">查看數據</a><button class="btn btn-text" type="button">下架</button></div></td></tr>
+                    <tr><th scope="row"><span class="table-title">重新談租約的七個月</span></th><td><span class="perm-badge is-draft"><i class="bi bi-circle" aria-hidden="true"></i>草稿</span></td><td class="is-num is-muted">—</td><td class="is-muted">尚缺：分類與導言</td><td><div class="table-actions"><a class="btn btn-text" href="account.html?role=author#editor">繼續編輯</a></div></td></tr>
+                    <tr><th scope="row"><span class="table-title is-removed">開店前要準備多少錢（2024 版）</span></th><td><span class="perm-badge is-removed"><i class="bi bi-slash-circle" aria-hidden="true"></i>已下架</span></td><td class="is-num is-muted">—</td><td class="is-muted">數字已過時</td><td><div class="table-actions"><button class="btn btn-text" type="button">重新上架</button><a class="btn btn-text" href="account.html?role=author#editor">編輯</a></div></td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3 class="gl-sub">⑧ 角色三欄並列：同一個版型、三種權限</h3>
+              <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                  <p class="gl-caption">讀者</p>
+                  <nav class="account-nav gl-role-nav" aria-label="讀者的側邊導覽">
+                    <div class="account-nav-group"><h4 class="account-nav-title">閱讀</h4><ul><li><span class="account-nav-link">訂閱狀態</span></li><li><span class="account-nav-link">我的收藏<span class="tab-count">38</span></span></li><li><span class="account-nav-link">閱讀紀錄</span></li><li><span class="account-nav-link">追蹤的作者</span></li><li><span class="account-nav-link">我的留言</span></li></ul></div>
+                    <div class="account-nav-group"><h4 class="account-nav-title">帳號</h4><ul><li><span class="account-nav-link">帳號設定</span></li></ul></div>
+                    <div class="account-upgrade"><p>你也在某個行業的現場嗎？</p><span class="btn btn-outline-primary btn-sm w-100">申請成為作者</span></div>
+                  </nav>
+                </div>
+                <div class="col-md-4">
+                  <p class="gl-caption">作者</p>
+                  <nav class="account-nav gl-role-nav" aria-label="作者的側邊導覽">
+                    <div class="account-nav-group"><h4 class="account-nav-title">閱讀</h4><ul><li><span class="account-nav-link">訂閱狀態</span></li><li><span class="account-nav-link">我的收藏<span class="tab-count">38</span></span></li><li><span class="account-nav-link">閱讀紀錄</span></li><li><span class="account-nav-link">追蹤的作者</span></li><li><span class="account-nav-link">我的留言</span></li></ul></div>
+                    <div class="account-nav-group is-create"><h4 class="account-nav-title"><i class="bi bi-pen" aria-hidden="true"></i>創作</h4><ul><li><span class="account-nav-link">我的文章<span class="tab-count">18</span></span></li><li><span class="account-nav-link">撰寫新文章</span></li><li><span class="account-nav-link">內容數據</span></li><li><span class="account-nav-link">讀者留言</span></li></ul></div>
+                    <div class="account-nav-group"><h4 class="account-nav-title">帳號</h4><ul><li><span class="account-nav-link">帳號設定</span></li></ul></div>
+                  </nav>
+                </div>
+                <div class="col-md-4">
+                  <p class="gl-caption">管理員</p>
+                  <nav class="account-nav gl-role-nav" aria-label="管理員的側邊導覽">
+                    <div class="account-nav-group"><h4 class="account-nav-title">閱讀</h4><ul><li><span class="account-nav-link">訂閱狀態</span></li><li><span class="account-nav-link">我的收藏<span class="tab-count">38</span></span></li><li><span class="account-nav-link">閱讀紀錄</span></li><li><span class="account-nav-link">追蹤的作者</span></li><li><span class="account-nav-link">我的留言</span></li></ul></div>
+                    <div class="account-nav-group is-create"><h4 class="account-nav-title"><i class="bi bi-pen" aria-hidden="true"></i>創作</h4><ul><li><span class="account-nav-link">我的文章<span class="tab-count">18</span></span></li><li><span class="account-nav-link">撰寫新文章</span></li><li><span class="account-nav-link">內容數據</span></li><li><span class="account-nav-link">讀者留言</span></li></ul></div>
+                    <div class="account-nav-group is-admin"><h4 class="account-nav-title"><i class="bi bi-shield-check" aria-hidden="true"></i>平台管理</h4><ul><li><span class="account-nav-link">作者申請審核<span class="tab-count">3</span></span></li><li><span class="account-nav-link">使用者管理</span></li><li><span class="account-nav-link">文章管理</span></li></ul></div>
+                    <div class="account-nav-group"><h4 class="account-nav-title">帳號</h4><ul><li><span class="account-nav-link">帳號設定</span></li></ul></div>
+                  </nav>
+                </div>
+              </div>
+              <div class="table-responsive data-table mb-5">
+                <table class="table">
+                  <thead><tr><th scope="col">情境</th><th scope="col">側邊導覽</th><th scope="col">看到的內容</th></tr></thead>
+                  <tbody>
+                    <tr><td>讀者（未申請）</td><td>閱讀＋帳號＋「申請成為作者」入口</td><td>訂閱、收藏、追蹤、成為作者（申請表）、帳號設定</td></tr>
+                    <tr><td>讀者直接輸入作者後台網址</td><td>同上</td><td>S15「這個區域需要作者身分。」＋ [申請成為作者]</td></tr>
+                    <tr><td>申請審核中</td><td>閱讀＋帳號（不先顯示灰掉的創作群組）</td><td>審核中提示框</td></tr>
+                    <tr><td>申請未通過</td><td>閱讀＋帳號</td><td>未通過提示框，原因全文用引言樣式</td></tr>
+                    <tr><td>作者</td><td>＋創作（駝色奶霧底）</td><td>＋我的文章、撰寫新文章、內容數據；成為作者只顯示「已通過」</td></tr>
+                    <tr><td>管理員</td><td>＋創作＋平台管理（暮藍淡底）</td><td>＋作者申請審核、使用者管理、文章管理</td></tr>
+                    <tr><td>帳號已停用</td><td>—</td><td>無法登入；管理員的使用者表格顯示「已停用」並提供 [恢復啟用]</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3 class="gl-sub">⑨ 編輯器元件集</h3>
+              <p class="text-note">格式工具列（選取文字時）、＋插入選單（游標在空行時）、免費預覽分隔線三個浮動元件，在設計稿上同時畫出來，實際使用時不會同時出現。</p>
+              <div class="row g-4 mb-3">
+                <div class="col-lg-6">
+                  <p class="gl-caption">浮動格式工具列（可可底、選取文字正上方；窄螢幕可橫向捲動）</p>
+                  <div class="gl-demo gl-toolbar-demo">
+                    <div class="bubble-toolbar" role="toolbar" aria-label="格式工具列示範">
+                      <button type="button" aria-label="粗體" aria-pressed="true"><i class="bi bi-type-bold" aria-hidden="true"></i></button>
+                      <button type="button" aria-label="斜體" aria-pressed="false"><i class="bi bi-type-italic" aria-hidden="true"></i></button>
+                      <button type="button" aria-label="刪除線" aria-pressed="false"><i class="bi bi-type-strikethrough" aria-hidden="true"></i></button>
+                      <span class="bubble-toolbar-sep" aria-hidden="true"></span>
+                      <button type="button" aria-label="連結"><i class="bi bi-link-45deg" aria-hidden="true"></i></button>
+                      <span class="bubble-toolbar-sep" aria-hidden="true"></span>
+                      <button type="button" aria-label="H2" aria-pressed="false"><i class="bi bi-type-h2" aria-hidden="true"></i></button>
+                      <button type="button" aria-label="H3" aria-pressed="false"><i class="bi bi-type-h3" aria-hidden="true"></i></button>
+                      <span class="bubble-toolbar-sep" aria-hidden="true"></span>
+                      <button type="button" aria-label="引言" aria-pressed="false"><i class="bi bi-quote" aria-hidden="true"></i></button>
+                      <button type="button" aria-label="code" aria-pressed="false"><i class="bi bi-code" aria-hidden="true"></i></button>
+                    </div>
+                    <p class="gl-caption mt-3 mb-0">選中的格式（這裡是粗體）：圖示換成駝色、底色亮一階。</p>
+                  </div>
+                  <p class="gl-caption mt-4">自動儲存：成功／失敗</p>
+                  <div class="gl-demo d-grid gap-3">
+                    <p class="autosave m-0"><i class="bi bi-cloud-check" aria-hidden="true"></i>已自動儲存於 14:28</p>
+                    <div class="callout is-warning"><i class="bi bi-cloud-slash callout-icon" aria-hidden="true"></i><div class="callout-body"><p>無法連線，內容已暫存在本機，恢復連線後會自動同步。</p></div></div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <p class="gl-caption">＋插入選單（展開，訂閱組的「免費預覽分隔線」是強調樣式）</p>
+                  <div class="gl-demo d-flex gap-3 align-items-start">
+                    <button class="editor-plus" type="button" aria-label="插入區塊" aria-expanded="true"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
+                    <div class="insert-menu gl-static-menu" role="menu" aria-label="插入區塊示範">
+                      <p class="insert-menu-group" aria-hidden="true">內容</p>
+                      <button class="insert-menu-item" type="button" role="menuitem"><i class="bi bi-image" aria-hidden="true"></i>圖片</button>
+                      <button class="insert-menu-item" type="button" role="menuitem"><i class="bi bi-table" aria-hidden="true"></i>表格</button>
+                      <button class="insert-menu-item" type="button" role="menuitem"><i class="bi bi-quote" aria-hidden="true"></i>引言區塊</button>
+                      <button class="insert-menu-item" type="button" role="menuitem"><i class="bi bi-hr" aria-hidden="true"></i>分隔線</button>
+                      <p class="insert-menu-group" aria-hidden="true">清單與程式</p>
+                      <button class="insert-menu-item" type="button" role="menuitem"><i class="bi bi-list-ul" aria-hidden="true"></i>項目清單</button>
+                      <button class="insert-menu-item" type="button" role="menuitem"><i class="bi bi-list-ol" aria-hidden="true"></i>編號清單</button>
+                      <button class="insert-menu-item" type="button" role="menuitem"><i class="bi bi-code-slash" aria-hidden="true"></i>程式碼區塊</button>
+                      <p class="insert-menu-group" aria-hidden="true">訂閱</p>
+                      <button class="insert-menu-item is-accent" type="button" role="menuitem"><i class="bi bi-lock" aria-hidden="true"></i>免費預覽分隔線</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row g-4">
+                <div class="col-lg-6">
+                  <p class="gl-caption">設定面板（展開；按右上圖示收合）與免費預覽範圍</p>
+                  <div class="editor-settings gl-static-settings">
+                    <div class="editor-settings-head"><h4 class="h5 m-0">文章設定</h4><span class="site-icon-btn" aria-hidden="true"><i class="bi bi-layout-sidebar-inset-reverse"></i></span></div>
+                    <div class="editor-settings-body">
+                      <div class="settings-field"><p class="settings-label">免費預覽範圍</p><div class="read-progress "><div class="read-progress-track" role="progressbar" aria-label="免費預覽範圍" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32" style="--p: 32%"></div><span class="read-progress-text">32%</span></div><p class="text-note mt-2 mb-0">2,200 ／ 6,800 字 ‧ 由內文中的分隔線位置決定</p></div>
+                      <div class="settings-field"><p class="settings-label">預估閱讀時間</p><p class="settings-value">18 分鐘<span class="text-note ms-2">（依字數自動計算）</span></p></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <p class="gl-caption">發布前檢查：通過（發布可按）／未通過（發布停用、保留原尺寸）</p>
+                  <div class="publish-check mb-3">
+                    <ul class="check-list mb-3"><li class="is-done"><i class="bi bi-check-square-fill" aria-hidden="true"></i>已設定分類</li><li class="is-done"><i class="bi bi-check-square-fill" aria-hidden="true"></i>已填寫導言</li><li class="is-done"><i class="bi bi-check-square-fill" aria-hidden="true"></i>已設定免費預覽分隔線</li></ul>
+                    <button class="btn btn-primary" type="button">發布文章</button>
+                  </div>
+                  <div class="publish-check">
+                    <ul class="check-list mb-3"><li class="is-done"><i class="bi bi-check-square-fill" aria-hidden="true"></i>已設定分類</li><li class="is-done"><i class="bi bi-check-square-fill" aria-hidden="true"></i>已填寫導言</li><li class="is-todo"><i class="bi bi-square" aria-hidden="true"></i>尚未設定免費預覽分隔線</li></ul>
+                    <button class="btn btn-primary" type="button" disabled>發布文章</button>
+                    <p class="text-note mt-2 mb-0">檢查未全部通過前，「發布文章」維持停用狀態。</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <section class="gl-section" id="gl-charts" aria-labelledby="gl-charts-title">
+              <h2 id="gl-charts-title" class="gl-section-title"><span class="gl-section-num">09</span>數據圖表</h2>
+              <p class="gl-principle">作者最想知道的是「多少人讀到付費牆、多少人訂閱」：圖表誠實、同色、直接標數字，淺色與深色底都讀得清楚。</p>
+              <div class="row g-4 mb-4">
+                <div class="col-xl-6"><p class="gl-caption">淺色底（內容數據頁）</p><div class="funnel-card ">
+                    <h4 class="funnel-title">一間餐廳的成本結構 ｜ 讀者轉換路徑</h4>
+                    <p class="funnel-sub">近 30 天 ‧ 絕對人數</p>
+                    <div class="funnel" role="img" aria-label="閱讀漏斗：開啟文章 18,420 人；讀完免費段 6,208 人，佔前一階段 33.7%；點擊訂閱 892 人，佔前一階段 14.4%；完成訂閱 214 人，佔前一階段 24.0%">
+                      <div class="funnel-row" style="--w: 1" aria-hidden="true"><span class="funnel-label">開啟文章</span><span class="funnel-track"><span class="funnel-bar"></span><span class="funnel-value">18,420</span></span></div>
+                      <div class="funnel-row" style="--w: .337" aria-hidden="true"><span class="funnel-label">讀完免費段</span><span class="funnel-track"><span class="funnel-bar"></span><span class="funnel-value">6,208</span><span class="funnel-rate">佔前一階段 33.7%</span></span></div>
+                      <div class="funnel-row" style="--w: .0484" aria-hidden="true"><span class="funnel-label">點擊訂閱</span><span class="funnel-track"><span class="funnel-bar"></span><span class="funnel-value">892</span><span class="funnel-rate">佔前一階段 14.4%</span></span></div>
+                      <div class="funnel-row" style="--w: .0116" aria-hidden="true"><span class="funnel-label">完成訂閱</span><span class="funnel-track"><span class="funnel-bar"></span><span class="funnel-value">214</span><span class="funnel-rate">佔前一階段 24.0%</span></span></div>
+                    </div>
+                  </div></div>
+                <div class="col-xl-6"><p class="gl-caption">深色底（可可底：橫條換成駝色、文字燕麥奶；同一組 class）</p><div class="funnel-card is-dark">
+                    <h4 class="funnel-title">一間餐廳的成本結構 ｜ 讀者轉換路徑</h4>
+                    <p class="funnel-sub">近 30 天 ‧ 絕對人數</p>
+                    <div class="funnel" role="img" aria-label="閱讀漏斗：開啟文章 18,420 人；讀完免費段 6,208 人，佔前一階段 33.7%；點擊訂閱 892 人，佔前一階段 14.4%；完成訂閱 214 人，佔前一階段 24.0%">
+                      <div class="funnel-row" style="--w: 1" aria-hidden="true"><span class="funnel-label">開啟文章</span><span class="funnel-track"><span class="funnel-bar"></span><span class="funnel-value">18,420</span></span></div>
+                      <div class="funnel-row" style="--w: .337" aria-hidden="true"><span class="funnel-label">讀完免費段</span><span class="funnel-track"><span class="funnel-bar"></span><span class="funnel-value">6,208</span><span class="funnel-rate">佔前一階段 33.7%</span></span></div>
+                      <div class="funnel-row" style="--w: .0484" aria-hidden="true"><span class="funnel-label">點擊訂閱</span><span class="funnel-track"><span class="funnel-bar"></span><span class="funnel-value">892</span><span class="funnel-rate">佔前一階段 14.4%</span></span></div>
+                      <div class="funnel-row" style="--w: .0116" aria-hidden="true"><span class="funnel-label">完成訂閱</span><span class="funnel-track"><span class="funnel-bar"></span><span class="funnel-value">214</span><span class="funnel-rate">佔前一階段 24.0%</span></span></div>
+                    </div>
+                  </div></div>
+              </div>
+              <ul class="gl-list mb-4">
+                <li>等比例橫條、同一個刻度、同一個顏色；最後一段很短是事實，不放大、不畫成梯形。</li>
+                <li>每段右側直接標人數，後 3 段再標「佔前一階段」；人數與百分比是兩種單位，不用雙軸。</li>
+                <li>基準軸是實線（表單框線色）；只有門檻線（例如平均值）可以用虛線。</li>
+                <li>用 HTML＋CSS 畫（不用圖表套件）：手機上文字不會跟著縮小；顏色用 class 控制，不在標記裡寫死色碼。</li>
+                <li>每張圖都附數據表（<code>.data-table</code>），整張圖 <code>role="img"</code>＋完整的 <code>aria-label</code>。</li>
+              </ul>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="gl-do">
+                    <p class="gl-do-label is-do"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do：等比例橫條</p>
+                    <div class="gl-mini-bars" aria-hidden="true"><span style="--w: 1"></span><span style="--w: .337"></span><span style="--w: .0484"></span><span style="--w: .0116"></span></div>
+                    <p class="text-note mb-0">一眼看得出「讀完免費段」之後掉了多少。</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="gl-do is-dont">
+                    <p class="gl-do-label is-dont"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't：梯形漏斗</p>
+                    <div class="gl-mini-trapezoid" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+                    <p class="text-note mb-0">每層寬度是裝飾不是數字，214 看起來和 892 差不多大。</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <section class="gl-section" id="gl-copy" aria-labelledby="gl-copy-title">
+              <h2 id="gl-copy-title" class="gl-section-title"><span class="gl-section-num">10</span>狀態與空畫面文案</h2>
+              <p class="gl-principle">Notion「狀態與空畫面文案」S01–S22 全部 22 條，語氣溫和、資訊清楚。</p>
+              <div class="table-responsive data-table mb-4">
+                <table class="table gl-copy-table">
+                  <thead><tr><th scope="col">#</th><th scope="col">情境</th><th scope="col">文案（框起來的是下一步按鈕）</th><th scope="col">出現在</th></tr></thead>
+                  <tbody>
+                    <tr><td class="num">S01</td><td>未登入點擊訂閱</td><td>登入後就能訂閱，註冊只要 30 秒。</td><td class="text-note">Guideline 付費牆「未登入」</td></tr>
+                    <tr><td class="num">S02</td><td>未訂閱點擊付費文章</td><td>這篇文章的後半需要訂閱才能閱讀，你已經免費讀了 32%。<span class="gl-copy-btn">查看方案</span></td><td class="text-note">文章內頁目錄鎖住的章節（點了捲到付費牆）</td></tr>
+                    <tr><td class="num">S03</td><td>未訂閱點擊留言</td><td>留言功能開放給訂閱者使用，訂閱後就能直接問作者。<span class="gl-copy-btn">查看方案</span></td><td class="text-note">頁面用短版「留言功能開放給訂閱者使用。」</td></tr>
+                    <tr><td class="num">S04</td><td>訂閱即將到期（剩 7 天）</td><td>你的訂閱將於 11/02 到期，到期後付費文章會回到預覽狀態。<span class="gl-copy-btn">續訂</span></td><td class="text-note">個人頁面：設計稿狀態示意</td></tr>
+                    <tr><td class="num">S05</td><td>訂閱已到期</td><td>你目前是免費會員。收藏的 38 篇文章都還在，重新訂閱就能繼續讀。<span class="gl-copy-btn">重新訂閱</span></td><td class="text-note">頁面用「已到期」狀態卡的文案</td></tr>
+                    <tr><td class="num">S06</td><td>取消訂閱確認</td><td>要取消自動續訂嗎？你仍可閱讀到 2026/11/02。<span class="gl-copy-btn">確認取消</span> <span class="gl-copy-btn">先不要</span></td><td class="text-note">頁面用長版（多一句「改成年費方案慢慢讀」）</td></tr>
+                    <tr><td class="num">S07</td><td>付款失敗</td><td>付款未完成，訂閱尚未開始。請確認卡片狀態後再試一次。<span class="gl-copy-btn">重新付款</span></td><td class="text-note">方案頁用「銀行回覆：額度不足」版</td></tr>
+                    <tr><td class="num">S08</td><td>續訂扣款失敗</td><td>這期的自動扣款未成功，請在 11/09 前更新付款方式，以免中斷閱讀。<span class="gl-copy-btn">更新付款方式</span></td><td class="text-note">個人頁面：設計稿狀態示意</td></tr>
+                    <tr><td class="num">S09</td><td>文章列表篩選無結果</td><td>這個條件下目前沒有文章，試著放寬主題或閱讀時間範圍。</td><td class="text-note">文章列表（＋[清除篩選]）</td></tr>
+                    <tr><td class="num">S10</td><td>搜尋無結果</td><td>找不到「{關鍵字}」相關的文章。試試其他關鍵字，或 <span class="gl-copy-btn">瀏覽全部主題</span>。</td><td class="text-note">文章列表（例：鳳梨出口）</td></tr>
+                    <tr><td class="num">S11</td><td>我的收藏為空</td><td>你還沒有收藏任何文章，看到想之後再讀的按一下 ♡。<span class="gl-copy-btn">探索文章</span></td><td class="text-note">個人頁面：設計稿狀態示意</td></tr>
+                    <tr><td class="num">S12</td><td>閱讀紀錄為空</td><td>還沒有閱讀紀錄，從一篇免費文章開始吧。<span class="gl-copy-btn">看看免費文章</span></td><td class="text-note">個人頁面：設計稿狀態示意</td></tr>
+                    <tr><td class="num">S13</td><td>追蹤的作者為空</td><td>你還沒有追蹤任何作者，追蹤後新文章發布會通知你。</td><td class="text-note">個人頁面：正式內容</td></tr>
+                    <tr><td class="num">S14</td><td>文章已下架（讀者看到）</td><td>這篇文章已由作者下架。<span class="gl-copy-btn">瀏覽其他文章</span></td><td class="text-note">文章內頁文末：設計稿狀態示意</td></tr>
+                    <tr><td class="num">S15</td><td>一般讀者進入作者後台</td><td>這個區域需要作者身分。<span class="gl-copy-btn">申請成為作者</span></td><td class="text-note">個人頁面「成為作者」（讀者）</td></tr>
+                    <tr><td class="num">S16</td><td>作者申請審核中</td><td>申請已送出，審核約需 5 個工作天，結果會以 Email 通知。</td><td class="text-note">頁面用含日期的區塊版</td></tr>
+                    <tr><td class="num">S17</td><td>作者申請未通過</td><td>這次未通過，原因是「寫作方向偏向理論整理」。補充具體工作場景後可再次申請。</td><td class="text-note">頁面用含完整原因的區塊版</td></tr>
+                    <tr><td class="num">S18</td><td>作者尚無文章</td><td>你還沒有發表任何文章，從你最熟悉的那件事開始寫。<span class="gl-copy-btn">撰寫新文章</span></td><td class="text-note">我的文章：設計稿狀態示意</td></tr>
+                    <tr><td class="num">S19</td><td>編輯器草稿未完成</td><td>這篇還缺少分類與導言，補齊後就能發布。</td><td class="text-note">編輯器：設計稿狀態示意</td></tr>
+                    <tr><td class="num">S20</td><td>編輯器未設定預覽分隔線</td><td>這篇設為訂閱限定，但還沒指定免費預覽範圍。建議開放前 1/3。<span class="gl-copy-btn">自動設定</span></td><td class="text-note">發布前檢查（發布鈕停用）</td></tr>
+                    <tr><td class="num">S21</td><td>編輯器自動儲存失敗</td><td>無法連線，內容已暫存在本機，恢復連線後會自動同步。</td><td class="text-note">編輯器：設計稿狀態示意</td></tr>
+                    <tr><td class="num">S22</td><td>管理員審核佇列為空</td><td>目前沒有待審核的作者申請，辛苦了。</td><td class="text-note">平台管理：設計稿狀態示意</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="row g-3 mb-4">
+                <div class="col-md-4"><div class="empty-state h-100"><span class="empty-state-icon"><i class="bi bi-heart" aria-hidden="true"></i></span><p>你還沒有收藏任何文章，看到想之後再讀的按一下 <i class="bi bi-heart" aria-label="♡"></i>。</p><a class="btn btn-outline-secondary" href="articles.html">探索文章</a></div></div>
+                <div class="col-md-4"><div class="empty-state h-100"><span class="empty-state-icon"><i class="bi bi-search" aria-hidden="true"></i></span><p>找不到「鳳梨出口」相關的文章。試試其他關鍵字，或 <a href="articles.html">瀏覽全部主題</a>。</p></div></div>
+                <div class="col-md-4"><div class="empty-state h-100"><span class="empty-state-icon"><i class="bi bi-cup-hot" aria-hidden="true"></i></span><p>目前沒有待審核的作者申請，辛苦了。</p></div></div>
+              </div>
+              <h3 class="gl-sub">寫作規則</h3>
+              <ul class="gl-list">
+                <li>說明現狀＋一個可以按下去的下一步；不責怪使用者、不用驚嘆號。</li>
+                <li>壞消息要寫清楚實際狀況與期限（「請在 11/09 前」「銀行回覆：額度不足」）。</li>
+                <li>「已到期」「自動儲存失敗」先講沒有失去什麼（收藏都還在、內容已暫存在本機）。</li>
+                <li>同一件事有區塊版與短版時，頁面用區塊版、本表列出 S 版本。</li>
+              </ul>
+            </section>
+            <section class="gl-section" id="gl-rwd" aria-labelledby="gl-rwd-title">
+              <h2 id="gl-rwd-title" class="gl-section-title"><span class="gl-section-num">11</span>RWD 斷點</h2>
+              <p class="gl-principle">沿用 Bootstrap 斷點；任何寬度都沒有水平捲軸，橫向捲動只發生在明確標示的容器（比較表、資料表、分頁籤、程式碼區塊）。</p>
+              <div class="table-responsive data-table mb-4">
+                <table class="table">
+                  <thead><tr><th scope="col">斷點</th><th scope="col">寬度</th><th scope="col">本主題的關鍵變化</th></tr></thead>
+                  <tbody>
+                    <tr><td>xs</td><td class="num">&lt; 576</td><td>文章工具列 → 底部固定行動列（收藏、分享、字級、閱讀模式，頁尾多留 104px）；設計稿切換器滿寬、標籤獨佔一行；付費牆兩個方案上下堆疊；作者牆單列橫向捲動</td></tr>
+                    <tr><td>sm</td><td class="num">≥ 576</td><td>付費牆方案並排；文章工具列回到作者列右側</td></tr>
+                    <tr><td>md</td><td class="num">≥ 768</td><td>為什麼值得訂、主題卡 2 欄；收藏卡 2 欄；漏斗圖標籤在左；延伸閱讀 3 欄（&lt; 768 是左縮圖右文字）；付款方式一列 4 張</td></tr>
+                    <tr><td>lg</td><td class="num">≥ 992</td><td>頁首主導覽出現（以下是選單按鈕）；篩選側欄（以下是 Offcanvas「篩選條件（3）」）；文章目錄（以下隱藏）；個人頁側欄（以下是下拉選單）；結帳摘要、文章設定面板 sticky（以下移到下方）；方案卡 3 欄（以下堆疊）；比較表提示隱藏</td></tr>
+                    <tr><td>xl</td><td class="num">≥ 1200</td><td>數據卡 4 欄（以下 2 欄）；收藏卡 3 欄；Hero、精選維持 7 : 5</td></tr>
+                    <tr><td>xxl</td><td class="num">≥ 1400</td><td>容器 1280px；1920 寬時背景滿版、內容仍在 1280 版心，長文欄不跟著變寬</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <h3 class="gl-sub mt-0">長文在各寬度的實際行長</h3>
+                  <ul class="gl-list">
+                    <li>390px：欄寬 350px ÷ 18.5px ≈ 每行 18–19 字，行高仍是 2.0。</li>
+                    <li>768px：欄寬 680px ≈ 每行 36 字。</li>
+                    <li>≥ 992px：欄寬 700px ≈ 每行 38 字（8 欄寬大於 700px，閱讀欄靠左、右側是目錄）。</li>
+                  </ul>
+                </div>
+                <div class="col-md-6">
+                  <h3 class="gl-sub mt-0">比較表為什麼不在手機拆成卡片</h3>
+                  <p class="mb-0">拆開後「年費有、月費沒有」要靠記憶來回比對。保留表格、在自己的容器裡橫向捲動，首欄（權益項目）凍結，上方提示「左右捲動可以看到三種方案，最左欄會固定不動」。</p>
+                </div>
+              </div>
+            </section>
+            <section class="gl-section" id="gl-dodont" aria-labelledby="gl-dodont-title">
+              <h2 id="gl-dodont-title" class="gl-section-title"><span class="gl-section-num">12</span>Do／Don't 對照</h2>
+              <p class="gl-principle">10 組正確／錯誤並排（其中 2 組與 RWD 有關）；每組都有文字標題，不只靠綠紅。</p>
+              <div class="row g-4">
+                <div class="col-lg-6">
+                  <h3 class="gl-sub-sm">付費徽章</h3>
+                  <div class="row g-2">
+                    <div class="col-sm-6"><div class="gl-do h-100"><p class="gl-do-label is-do"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p><p class="mb-2"><span class="perm-badge is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span></p><p class="mb-0">權限徽章放在標題前，訂閱限定一眼就知道。</p></div></div>
+                    <div class="col-sm-6"><div class="gl-do is-dont h-100"><p class="gl-do-label is-dont"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p><p class="mb-2 text-end"><i class="bi bi-lock-fill text-secondary" aria-hidden="true"></i></p><p class="mb-0">把鎖頭縮在卡片右下角，讀者點進去才發現要付費。</p></div></div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="gl-sub-sm">付費牆</h3>
+                  <div class="row g-2">
+                    <div class="col-sm-6"><div class="gl-do h-100"><p class="gl-do-label is-do"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p><p class="mb-0">殘句停在冒號，140px 漸層淡出再壓上卡片。</p></div></div>
+                    <div class="col-sm-6"><div class="gl-do is-dont h-100"><p class="gl-do-label is-dont"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p><p class="mb-0">硬切斷：段落中間直接出現一個灰色方塊。</p></div></div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="gl-sub-sm">到期日</h3>
+                  <div class="row g-2">
+                    <div class="col-sm-6"><div class="gl-do h-100"><p class="gl-do-label is-do"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p><p class="figure-num mb-2 gl-dd-date">2027/10/02</p><p class="mb-0">到期日用 Literata 大字（本頁唯一的主數字）＋週期尺。</p></div></div>
+                    <div class="col-sm-6"><div class="gl-do is-dont h-100"><p class="gl-do-label is-dont"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p><p class="text-note mb-2">…自動續訂（到期 2027/10/02）</p><p class="mb-0">把到期日藏在一行小字的最後面。</p></div></div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="gl-sub-sm">取消路徑</h3>
+                  <div class="row g-2">
+                    <div class="col-sm-6"><div class="gl-do h-100"><p class="gl-do-label is-do"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p><p class="mb-0">「取消自動續訂」和「變更方案」一樣大並排；一層確認。</p></div></div>
+                    <div class="col-sm-6"><div class="gl-do is-dont h-100"><p class="gl-do-label is-dont"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p><p class="mb-0">要求來信或致電、連續三層挽留頁、把取消做成灰色小字。</p></div></div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="gl-sub-sm">比較矩陣的有／無</h3>
+                  <div class="row g-2">
+                    <div class="col-sm-6"><div class="gl-do h-100"><p class="gl-do-label is-do"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p><p class="mb-2"><span class="cell-yes gl-cell"><i class="bi bi-check-lg" aria-hidden="true"></i>有</span>　<span class="cell-no gl-cell"><i class="bi bi-x-lg" aria-hidden="true"></i>無</span></p><p class="mb-0">勾＋「有」、叉＋「無」：形狀不同的圖示＋文字。</p></div></div>
+                    <div class="col-sm-6"><div class="gl-do is-dont h-100"><p class="gl-do-label is-dont"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p><p class="mb-0">只用綠色圓點和紅色圓點，色弱讀者分不出來。</p></div></div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="gl-sub-sm">長文寬度與行高（RWD）</h3>
+                  <div class="row g-2">
+                    <div class="col-sm-6"><div class="gl-do h-100"><p class="gl-do-label is-do"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p><p class="mb-0">任何寬度都是 680–720px 欄寬、行高 ≥ 1.8；手機行長只有 19 字也不壓行高。</p></div></div>
+                    <div class="col-sm-6"><div class="gl-do is-dont h-100"><p class="gl-do-label is-dont"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p><p class="mb-0">1920 寬時內文吃滿容器；手機把行高改成 1.6，中文跳行。</p></div></div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="gl-sub-sm">已訂閱</h3>
+                  <div class="row g-2">
+                    <div class="col-sm-6"><div class="gl-do h-100"><p class="gl-do-label is-do"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p><p class="mb-0">已訂閱者完全不渲染付費牆，文章直接接下去。</p></div></div>
+                    <div class="col-sm-6"><div class="gl-do is-dont h-100"><p class="gl-do-label is-dont"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p><p class="mb-0">留著灰掉的方案卡或「你已訂閱」橫幅，打斷閱讀。</p></div></div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="gl-sub-sm">漏斗圖</h3>
+                  <div class="row g-2">
+                    <div class="col-sm-6"><div class="gl-do h-100"><p class="gl-do-label is-do"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p><p class="mb-0">等比例、同色橫條＋直接標註數字。</p></div></div>
+                    <div class="col-sm-6"><div class="gl-do is-dont h-100"><p class="gl-do-label is-dont"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p><p class="mb-0">梯形漸層漏斗，寬度不代表數字。</p></div></div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="gl-sub-sm">狀態三重編碼</h3>
+                  <div class="row g-2">
+                    <div class="col-sm-6"><div class="gl-do h-100"><p class="gl-do-label is-do"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p><p class="mb-0">圖示＋文字＋顏色：沙漏＋「已取消待到期」＋琥珀。</p></div></div>
+                    <div class="col-sm-6"><div class="gl-do is-dont h-100"><p class="gl-do-label is-dont"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p><p class="mb-0">只把卡片外框改成黃色，或把狀態色拿來當裝飾。</p></div></div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="gl-sub-sm">手機篩選與目錄（RWD）</h3>
+                  <div class="row g-2">
+                    <div class="col-sm-6"><div class="gl-do h-100"><p class="gl-do-label is-do"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p><p class="mb-0">&lt; 992px 篩選收進 Offcanvas、目錄隱藏、工具列移到底部行動列。</p></div></div>
+                    <div class="col-sm-6"><div class="gl-do is-dont h-100"><p class="gl-do-label is-dont"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p><p class="mb-0">把 4 組篩選全部攤在列表上方，讀者要捲兩個螢幕才看到第一篇。</p></div></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+      <!-- ============ 頁面內容到這裡結束 ============ -->
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="row gy-5">
+          <div class="col-lg-5">
+            <a class="site-brand" href="index.html">
+              <svg class="site-brand-mark" viewBox="0 0 20 28" aria-hidden="true" focusable="false"><path d="M4 1h12a3 3 0 0 1 3 3v23l-9-6.2L1 27V4a3 3 0 0 1 3-3Z"/></svg>
+              <span class="site-brand-name">現場筆記</span>
+              <span class="site-brand-en">FieldNotes</span>
+            </a>
+            <p class="site-footer-lead">
+              這裡不收二手整理、不收懶人包，只收第一線工作者親自寫的長文。每篇文章都可以免費讀前三分之一，讀到關鍵的那一段才需要訂閱。
+            </p>
+          </div>
+          <!-- 沒有頁面的連結（關於現場筆記、作者審核標準、聯絡我們）用不帶 href 的佔位連結 -->
+          <div class="col-6 col-md-4 col-lg-2 offset-lg-1">
+            <h2 class="site-footer-title">讀者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="articles.html">瀏覽文章</a></li>
+              <li><a href="pricing.html">訂閱方案</a></li>
+              <li><a href="account.html#library">我的收藏</a></li>
+              <li><a href="account.html#subscription">訂閱狀態</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">作者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="account.html?role=reader#apply">申請成為作者</a></li>
+              <li><a href="account.html?role=author#my-articles">我的文章</a></li>
+              <li><a href="account.html?role=author#editor">撰寫新文章</a></li>
+              <li><a href="account.html?role=author#analytics">內容數據</a></li>
+            </ul>
+          </div>
+          <div class="col-md-4 col-lg-2">
+            <h2 class="site-footer-title">平台</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a>關於現場筆記</a></li>
+              <li><a>作者審核標準</a></li>
+              <li><a href="pricing.html#faq">退費與取消政策</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 現場筆記 FieldNotes｜<wbr>本站為課程設計稿範例，文章、作者與數據皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

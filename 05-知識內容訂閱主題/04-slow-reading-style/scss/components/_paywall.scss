@@ -1,0 +1,142 @@
+// ============================================================
+// 付費預覽牆 Paywall（文章內頁、Guideline）
+// 不硬切：免費段最後兩段上覆蓋 140px 的漸層淡出（透明 → 頁面底色），殘句停在冒號，
+// 緊接著是全站唯一「壓在內容上」的卡片：燕麥奶底＋柔光陰影。
+// 已訂閱者整個元件不渲染（data-show-view="unsubscribed"）。
+//
+// <div class="paywall-teaser">…最後兩段…</div>     ← ::after 是漸層（裝飾）
+// <section class="paywall" id="paywall" aria-labelledby="paywallTitle">…</section>
+// ============================================================
+$paywall-fade-height: 8.75rem; // 140px（規格 120–160px）
+
+.paywall-teaser {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1.5rem; // 略往下延伸，殘句是「正在淡出」而不是「已消失」
+    height: $paywall-fade-height;
+    background: linear-gradient(to bottom, rgba($oat, 0) 0%, rgba($oat, .5) 55%, rgba($oat, .92) 100%);
+    pointer-events: none; // 不擋選字
+  }
+}
+
+.paywall {
+  container-type: inline-size; // 讓裡面的方案卡依付費牆卡的寬度排版
+  position: relative;
+  z-index: 1;
+  max-width: $prose-max-width;
+  margin-top: map-get($spacers, 2);
+  padding: map-get($spacers, 4);
+  border: 1px solid $hairline;
+  border-radius: $border-radius-xl;
+  background-color: $oat-milk;
+  box-shadow: $box-shadow-lg; // 柔光陰影：表現「擋住了下面的東西」
+  font-family: $font-family-base;
+  letter-spacing: $letter-spacing-body;
+
+  @include media-breakpoint-up(sm) {
+    padding: map-get($spacers, 5) map-get($spacers, 5) map-get($spacers, 4);
+  }
+}
+.paywall-title {
+  margin: map-get($spacers, 4) 0 map-get($spacers, 2);
+  font-size: 1.625rem;
+  line-height: 1.5;
+}
+.paywall-text {
+  margin-bottom: map-get($spacers, 4);
+  color: $ink;
+  line-height: 1.85;
+}
+
+// 方案快速切換：兩張 radio 卡；依付費牆卡本身的寬度決定（container query）：
+// 卡片內容寬 ≥ 28rem（約 448px）時並排，手機或窄欄（Guideline 並列示範）上下堆疊
+.paywall-plans {
+  display: grid;
+  gap: .75rem;
+  margin-bottom: map-get($spacers, 4);
+
+  @container (min-width: 28rem) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.plan-option-name {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .25rem;
+  padding-right: 1.75rem; // 讓出右上角的選中記號
+  font-weight: $font-weight-bold;
+  color: $cocoa;
+}
+.plan-option-price {
+  display: block;
+  white-space: nowrap;
+  font-family: $font-family-reading;
+  font-size: 1.625rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: $cocoa;
+  font-variant-numeric: lining-nums;
+
+  small {
+    font-family: $font-family-base;
+    font-size: .875rem;
+    font-weight: $font-weight-normal;
+    color: $warm-gray;
+  }
+}
+.plan-option-note {
+  display: block;
+  margin-top: .25rem;
+  font-size: .875rem;
+  color: $warm-gray;
+}
+// 「省下兩個月」：鼠尾草綠小牌
+.save-tag {
+  display: inline-flex;
+  font-family: $font-family-base;
+  letter-spacing: $letter-spacing-body;
+  vertical-align: middle;
+  align-items: center;
+  padding: .0625rem .5rem;
+  border-radius: $border-radius-sm;
+  background-color: $sage-mist;
+  color: $sage;
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.paywall-login {
+  margin: map-get($spacers, 3) 0 0;
+  text-align: center;
+  font-size: .9375rem;
+  color: $warm-gray;
+}
+.paywall-trust {
+  margin: map-get($spacers, 4) 0 0;
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $hairline;
+  font-size: .8125rem;
+  line-height: 1.8;
+  color: $warm-gray;
+}
+// 替代入口：只能是小字連結，不能和 CTA 等重
+.paywall-alt {
+  margin: .25rem 0 0;
+  font-size: .8125rem;
+  color: $warm-gray;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: $caramel-deep;
+  }
+}

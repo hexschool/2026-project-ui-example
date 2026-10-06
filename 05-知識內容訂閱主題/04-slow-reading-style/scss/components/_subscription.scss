@@ -1,0 +1,331 @@
+// ============================================================
+// 本風格的招牌：訂閱狀態卡 .sub-card、訂閱週期尺 .cycle、取消對話框 .cancel-dialog
+// Notion：「會員管理訂閱週期與取消路徑溫和而清晰」
+// - 到期日是每頁唯一的主數字等級（.sub-card-date）
+// - 週期尺把「訂閱期間」畫成一段看得見的時間：已過（焦糖實線）→ 剩下（駝色細線）→ 終點（自動續訂 or 停止）
+// - 「變更方案」「取消自動續訂」同樣大小並排；取消只有一層確認，兩顆按鈕一樣大，「先不要」是主要
+// ============================================================
+
+// ---------- 訂閱狀態卡 ----------
+// 狀態：.is-active（訂閱中：焦糖外框）、.is-ending（已取消待到期：琥珀外框＋淡底）、
+//      預設（已到期、未訂閱：一般卡片）
+.sub-card {
+  position: relative;
+  border: 1px solid $hairline;
+  border-radius: $border-radius-xl;
+  background-color: $oat-milk;
+
+  &.is-active {
+    border-color: $caramel;
+    box-shadow: inset 0 0 0 1px $caramel;
+  }
+  &.is-ending {
+    border-color: mix($amber, $amber-mist, 45%);
+    background-color: mix($amber-mist, $oat-milk, 45%);
+  }
+}
+.sub-card-main,
+.sub-card-side {
+  padding: map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 5);
+  }
+}
+// 桌機：左右兩欄之間一條細線；手機：上下排、到期日在上
+.sub-card-side {
+  border-top: 1px solid $hairline;
+
+  @include media-breakpoint-up(lg) {
+    border-top: 0;
+    border-left: 1px solid $hairline;
+  }
+}
+.sub-card-label {
+  margin: map-get($spacers, 4) 0 .25rem;
+  font-size: .875rem;
+  color: $warm-gray;
+}
+// 到期日：本頁唯一的主數字（Literata 襯線數字）
+.sub-card-date {
+  margin: 0;
+  font-size: clamp(2.5rem, 2rem + 2.4vw, 3.5rem);
+  color: $cocoa;
+}
+.sub-card-remain {
+  margin: .5rem 0 0;
+  color: $caramel-deep;
+  font-weight: $font-weight-medium;
+  font-variant-numeric: tabular-nums;
+}
+
+// 資訊列表：下次扣款、付款方式、解鎖範圍
+.sub-card-dl {
+  margin: 0;
+
+  > div {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: .25rem 1rem;
+    align-items: baseline;
+    padding-block: .625rem;
+    border-bottom: 1px dashed $hairline;
+
+    &:first-child { padding-top: 0; }
+  }
+  dt {
+    font-weight: $font-weight-normal;
+    font-size: .875rem;
+    color: $warm-gray;
+  }
+  dd {
+    margin: 0;
+    color: $cocoa;
+    font-weight: $font-weight-medium;
+    font-variant-numeric: tabular-nums;
+  }
+  .btn-text {
+    min-height: auto;
+    margin-left: .5rem;
+    font-size: .875rem;
+  }
+}
+
+// 兩顆同樣大小的按鈕（變更方案／取消自動續訂；確認取消／先不要）
+.equal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .75rem;
+  margin-top: map-get($spacers, 4);
+
+  .btn { width: 100%; }
+}
+
+// 精簡版狀態卡（設計稿狀態示意的 3 欄、Guideline 四態並列）
+.sub-card.is-compact {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: map-get($spacers, 4);
+
+  .sub-card-title {
+    margin: map-get($spacers, 3) 0 .375rem;
+    font-size: 1.25rem;
+  }
+  .sub-card-text {
+    margin-bottom: map-get($spacers, 4);
+    color: $ink;
+    font-size: .9375rem;
+    line-height: 1.85;
+  }
+  .cycle { margin-bottom: map-get($spacers, 4); }
+  > .btn { margin-top: auto; }
+}
+
+// ---------- 訂閱週期尺 ----------
+// <div class="cycle has-left-label" role="img" aria-label="…" style="--elapsed: .3%">
+//   <div class="cycle-head"><span>訂閱期間</span><span class="num">2026/10/03 – 2027/10/02</span></div>
+//   <div class="cycle-track">
+//     <span class="cycle-left">剩餘 364 天</span><span class="cycle-now"></span>
+//     <span class="cycle-end"><i class="bi bi-arrow-repeat"></i></span>
+//   </div>
+//   <div class="cycle-scale"><span>2026/10/03</span><span>2027/10/02</span></div>
+// </div>
+// --elapsed：已經過的比例（今天的位置）；12 個月的刻度由背景畫出
+// .is-ending：終點換成「停止」圖示（琥珀），終點之後是虛線（之後回到免費會員）
+.cycle {
+  --elapsed: 0%;
+  font-size: .8125rem;
+  color: $warm-gray;
+  font-variant-numeric: tabular-nums;
+}
+.cycle-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  margin-bottom: .875rem;
+
+  > :first-child {
+    color: $cocoa;
+    font-weight: $font-weight-bold;
+  }
+}
+.cycle-track {
+  position: relative;
+  height: $cycle-track-height;
+  margin-right: 1.25rem; // 讓出終點圖示的一半
+  border-radius: $border-radius-pill;
+  // 剩下的期間：駝色；上面疊 12 個月的刻度（燕麥奶細縫）
+  background:
+    repeating-linear-gradient(to right, transparent 0, transparent calc(100% / 12 - 2px), $oat-milk calc(100% / 12 - 2px), $oat-milk calc(100% / 12)),
+    $cycle-remaining;
+
+  // 已經過的期間：焦糖
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--elapsed);
+    min-width: $cycle-track-height;
+    border-radius: inherit;
+    background-color: $cycle-elapsed;
+  }
+}
+// 今天：焦糖圓環
+.cycle-now {
+  position: absolute;
+  top: 50%;
+  left: var(--elapsed);
+  width: 1rem;
+  height: 1rem;
+  border: 3px solid $caramel;
+  border-radius: 50%;
+  background-color: $oat-milk;
+  transform: translate(-50%, -50%);
+}
+// 終點：圓形圖示（自動續訂＝arrow-repeat、停止＝stop-circle）
+.cycle-end {
+  position: absolute;
+  top: 50%;
+  right: -1.25rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: $camel-mist;
+  box-shadow: 0 0 0 3px $oat-milk;
+  color: $caramel-deep;
+  font-size: 1rem;
+  transform: translateY(-50%);
+}
+.cycle-scale {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: .5rem;
+  margin-top: .875rem;
+
+  > :last-child { text-align: right; }
+}
+// 「剩餘 364 天」：放在軌道裡（.cycle-track 的子元素），從今天的位置往右標在剩下的那一段上方
+.cycle-left {
+  position: absolute;
+  bottom: calc(100% + .75rem);
+  left: var(--elapsed);
+  transform: translateX(-.5rem);
+  color: $caramel-deep;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  white-space: nowrap;
+
+  .bi { margin-left: .25rem; }
+}
+.cycle.has-left-label .cycle-track {
+  margin-top: 2.25rem; // 讓出「剩餘 364 天」標籤的位置
+}
+
+// 已取消待到期：剩下的期間改琥珀細線、終點是停止圖示，終點之後畫虛線（回到免費會員）
+.cycle.is-ending {
+  .cycle-track {
+    margin-right: 0;
+    width: calc(100% - 4.75rem); // 右邊留給終點之後的虛線
+    background: mix($amber, $amber-mist, 45%);
+  }
+  .cycle-track::before { background-color: $amber; }
+  .cycle-now { border-color: $amber; }
+  .cycle-end {
+    background-color: $amber-mist;
+    color: $amber;
+  }
+  .cycle-after {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 1.25rem);
+    width: 3.5rem;
+    border-top: 2px dashed $cycle-after;
+    transform: translateY(-50%);
+  }
+  // 刻度列：終點日期對齊停止圖示，「免費會員」標在虛線下方
+  .cycle-scale {
+    display: grid;
+    grid-template-columns: 1fr 3.5rem;
+
+    > :first-child { text-align: right; }
+    > :last-child { text-align: left; white-space: nowrap; }
+  }
+}
+
+// ---------- 取消自動續訂對話框（Modal，與設計稿狀態示意的靜態版共用） ----------
+.cancel-dialog {
+  position: relative;
+  padding: map-get($spacers, 4);
+  border-radius: $border-radius-xl;
+  background-color: $oat-milk;
+
+  @include media-breakpoint-up(sm) {
+    padding: map-get($spacers, 5);
+  }
+
+  .btn-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    background-size: .875rem;
+    border-radius: $border-radius;
+  }
+}
+// 靜態示意版：寬度同 Modal（520px），加柔光陰影表示這是浮起的層
+.cancel-dialog.is-static {
+  max-width: $modal-md;
+  border: 1px solid $hairline;
+  box-shadow: $box-shadow-lg;
+}
+.cancel-dialog-icon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: map-get($spacers, 3);
+  border-radius: 50%;
+  background-color: $camel-mist;
+  color: $caramel-deep;
+  font-size: 1.375rem;
+}
+.cancel-dialog-title {
+  margin-bottom: .75rem;
+  padding-right: 2.5rem;
+  font-size: 1.5rem;
+}
+.cancel-dialog-text {
+  margin: 0;
+  color: $ink;
+  line-height: 1.9;
+
+  strong {
+    color: $cocoa;
+    font-variant-numeric: tabular-nums;
+  }
+}
+// 取消後會怎樣：分隔線下的小字，先講沒有失去什麼
+.cancel-dialog-note {
+  display: flex;
+  gap: .625rem;
+  margin: map-get($spacers, 4) 0 0;
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $hairline;
+  font-size: .875rem;
+  line-height: 1.8;
+  color: $warm-gray;
+
+  .bi {
+    flex: none;
+    color: $sage;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+}

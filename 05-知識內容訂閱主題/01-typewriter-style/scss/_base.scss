@@ -1,0 +1,775 @@
+// ============================================================
+// 全站基礎：字體、區塊節奏、按鈕、焦點、表單微調與共用小工具
+// 本風格的共用類別：.font-type（打字稿字體）、.figure-num（大數字）、.caret（藍色游標）、
+// paper-stack（疊紙）、.segmented（分段控制）、.tag（標籤）、.callout（提示框）、
+// .demo-state（設計稿狀態示意）、.empty-state（空狀態）
+// ============================================================
+
+// 單一淺色主題：瀏覽器原生的捲軸、日期選擇器也用淺色；作業系統切換深色模式時畫面不變
+:root {
+  color-scheme: light;
+  accent-color: $ribbon;
+}
+
+body {
+  letter-spacing: $letter-spacing-body;
+  text-rendering: optimizeLegibility;
+}
+
+// 標題：打字稿字體（英數 Courier Prime＋中文思源宋體）
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  letter-spacing: $letter-spacing-heading;
+  text-wrap: balance; // 標題多行時平均分配，避免最後一行只剩一兩個字
+}
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty; // 內文避免孤字
+}
+
+// sticky 頁首不遮住焦點與錨點目標（值同 $sticky-top-offset）
+html {
+  scroll-padding-top: $sticky-top-offset;
+}
+
+// 反白選取：淡藍底＋炭黑字（14.5:1），和編輯器的選取同一個樣子
+::selection {
+  background-color: $ribbon-tint;
+  color: $ink;
+}
+
+// 容器：手機左右 20px，≥ 992px 改 32px（$container-padding-x 只能給一個值）
+.container {
+  @include media-breakpoint-up(lg) {
+    padding-inline: 2rem;
+  }
+}
+
+// ---------- 字體與數字 ----------
+// 打字稿字體：非 h 標籤的標題、引文、示意文字
+.font-type {
+  font-family: $font-family-typewriter;
+  letter-spacing: $letter-spacing-heading;
+}
+
+// 大數字：價格、到期日、數據卡、Hero 數字列。Courier Prime 粗體的打字機數字
+// 字級由所在位置決定，例如 <p class="figure-num fs-1">2027/10/02</p>
+.figure-num {
+  font-family: $font-family-typewriter;
+  font-weight: $font-weight-bold;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+// 大數字後面的單位（篇、位、人、字、／月）：介面字體、小一階
+.figure-unit {
+  margin-left: .25em;
+  font-family: $font-family-base;
+  font-size: .5em;
+  font-weight: $font-weight-medium;
+  letter-spacing: $letter-spacing-label;
+}
+
+// 表格與需要縱向對齊的數字：等寬數字
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+// 次要說明文字
+.text-note {
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+}
+
+// ---------- 藍色游標（本風格的品牌記號） ----------
+// 品牌字後面、首頁 H1 結尾、編輯器的文字游標都是這條：寬 .12em、高一個字、色帶藍
+// .caret.is-blinking 會閃爍（prefers-reduced-motion 時停在亮的狀態）
+// <span class="caret is-blinking" aria-hidden="true"></span>
+.caret {
+  display: inline-block;
+  width: .12em;
+  min-width: 2px;
+  height: 1em;
+  margin-left: .08em;
+  vertical-align: -.12em;
+  background-color: $ribbon;
+
+  &.is-blinking {
+    animation: caret-blink 1.1s steps(1, end) infinite;
+  }
+}
+@keyframes caret-blink {
+  50% { opacity: 0; }
+}
+
+// ---------- 疊紙：浮起層的表現方式（不用模糊陰影） ----------
+// 1px 炭黑框＋右下錯開 6px 的第二張紙（稿紙灰面＋炭黑框），像把一張打好字的紙壓在另一張上
+// 用在：付費牆卡、＋插入選單、下拉選單、對話框、結帳摘要
+@mixin paper-stack($offset: $paper-stack-offset) {
+  border: 1px solid $ink;
+  background-color: $paper;
+  box-shadow: $offset $offset 0 0 $paper-gray, $offset $offset 0 1px $ink;
+}
+.paper-stack {
+  @include paper-stack;
+}
+.dropdown-menu {
+  @include paper-stack;
+}
+.modal-content {
+  @include paper-stack(.5rem);
+}
+
+// ---------- 區塊節奏 ----------
+// 區塊上下留白：手機 56px → 桌機 88px → 1200 以上 112px
+.section {
+  padding-block: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7);
+  }
+  @include media-breakpoint-up(xl) {
+    padding-block: map-get($spacers, 8);
+  }
+}
+// 相鄰區塊之間用一條炭黑細線分節（像打字稿裡的分節線）
+.section + .section {
+  border-top: 1px solid $ink;
+}
+.section-alt {
+  background-color: $paper-gray;
+}
+
+// 區塊標題列：左標題（＋副標）、右動作；手機上下排
+// <div class="section-heading">
+//   <div><h2>標題</h2><p>副標（只有 Notion 寫明副標的區塊才有）</p></div>
+//   <a class="btn btn-outline-dark" href="…">動作</a>
+// </div>
+.section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: map-get($spacers, 3) map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: map-get($spacers, 6);
+  }
+
+  h2,
+  .h2 {
+    margin-bottom: 0;
+  }
+  p {
+    margin: map-get($spacers, 2) 0 0;
+    color: $body-secondary-color;
+    max-width: 36em;
+  }
+}
+
+// ---------- 頁面標題區（文章列表、訂閱方案、個人頁面、Guideline 共用） ----------
+// 麵包屑 → H1 → 說明或控制項，間距固定，切換頁面時標題位置不跳動
+.page-header {
+  padding-top: map-get($spacers, 4);        // 手機 24px
+  margin-bottom: map-get($spacers, 5);      // 到第一個內容區塊 40px
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 5);      // 桌機 40px
+    margin-bottom: map-get($spacers, 6);    // 桌機 56px
+  }
+
+  .breadcrumb {
+    margin-bottom: map-get($spacers, 3);
+  }
+  h1,
+  .h1 {
+    margin-bottom: map-get($spacers, 2);
+  }
+}
+.page-lead {
+  max-width: 40em;
+  margin-bottom: 0;
+  color: $body-secondary-color;
+}
+
+// ---------- 麵包屑：連結鉛灰無底線、目前頁炭黑；單一項目不從中間斷行 ----------
+.breadcrumb {
+  align-items: center;
+}
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem; // 觸控目標 44px
+  color: $body-secondary-color;
+  text-decoration: none;
+
+  &:hover {
+    color: $ribbon;
+    text-decoration: underline;
+  }
+}
+
+// ---------- 按鈕 ----------
+// 規則：hover 一律變藍（按得下去的地方才會出現藍色）
+// 主要：.btn-primary（色帶藍實心）— 全頁最重要的一個動作
+// 強調：.btn-dark（炭黑墨塊）— 區塊內的主要動作
+// 次要：.btn-outline-dark（白底炭黑框）
+// 文字連結：.btn-text（藍字底線）
+.btn {
+  letter-spacing: $letter-spacing-label;
+  --bs-btn-focus-box-shadow: #{$focus-ring-double};
+  // 停用：稿紙灰底＋淡墨字＋細線框，保留原尺寸；游標 not-allowed
+  --bs-btn-disabled-bg: #{$paper-gray};
+  --bs-btn-disabled-color: #{$ink-faint};
+  --bs-btn-disabled-border-color: #{$rule};
+
+  &:disabled,
+  &.disabled {
+    pointer-events: auto;
+    cursor: not-allowed;
+  }
+  .bi {
+    line-height: 1;
+  }
+}
+.btn-primary {
+  --bs-btn-hover-bg: #{$ribbon-deep};
+  --bs-btn-hover-border-color: #{$ribbon-deep};
+  --bs-btn-active-bg: #{$ribbon-deep};
+  --bs-btn-active-border-color: #{$ribbon-deep};
+}
+.btn-dark {
+  --bs-btn-bg: #{$ink};
+  --bs-btn-border-color: #{$ink};
+  --bs-btn-hover-bg: #{$ribbon};
+  --bs-btn-hover-border-color: #{$ribbon};
+  --bs-btn-active-bg: #{$ribbon-deep};
+  --bs-btn-active-border-color: #{$ribbon-deep};
+}
+.btn-outline-dark {
+  --bs-btn-color: #{$ink};
+  --bs-btn-border-color: #{$ink};
+  --bs-btn-hover-color: #{$ribbon};
+  --bs-btn-hover-bg: #{$ribbon-tint};
+  --bs-btn-hover-border-color: #{$ribbon};
+  --bs-btn-active-color: #{$ribbon-deep};
+  --bs-btn-active-bg: #{$ribbon-tint};
+  --bs-btn-active-border-color: #{$ribbon-deep};
+}
+// 文字連結型按鈕：藍字＋底線、無外框；內建 44px 觸控高度
+.btn-text {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: .25rem;
+  --bs-btn-color: #{$ribbon};
+  --bs-btn-hover-color: #{$ribbon-deep};
+  --bs-btn-active-color: #{$ribbon-deep};
+  --bs-btn-border-width: 0;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-color: #{$ink-faint};
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .3em;
+  vertical-align: baseline;
+
+  &:hover { text-decoration-thickness: 2px; }
+  // 沒有左右內距，box-shadow 焦點環會貼著字；改用有間距的外框
+  &:focus-visible {
+    box-shadow: none;
+    outline: 2px solid $ribbon;
+    outline-offset: 4px;
+  }
+}
+
+// ---------- 分段控制（月／年、字級、付費層級、數據期間共用） ----------
+// <div class="btn-group segmented" role="group" aria-label="計費方式">
+//   <input type="radio" class="btn-check" name="billing" id="billMonth" checked>
+//   <label class="btn" for="billMonth">月繳</label>
+//   …
+// </div>
+// 未選：白底細線框＋鉛灰字；選中：炭黑墨塊＋白字
+.segmented {
+  .btn {
+    --bs-btn-padding-x: 1rem;
+    --bs-btn-padding-y: .5rem;
+    --bs-btn-font-size: #{$font-size-sm};
+    --bs-btn-color: #{$ink-muted};
+    --bs-btn-bg: #{$paper};
+    --bs-btn-border-color: #{$control};
+    --bs-btn-hover-color: #{$ribbon};
+    --bs-btn-hover-bg: #{$paper};
+    --bs-btn-hover-border-color: #{$control};
+    --bs-btn-active-color: #{$paper};
+    --bs-btn-active-bg: #{$ink};
+    --bs-btn-active-border-color: #{$ink};
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .375rem;
+    white-space: nowrap;
+  }
+  .btn-check:focus-visible + .btn {
+    z-index: 3;
+  }
+}
+.segmented-sm .btn {
+  --bs-btn-padding-x: .75rem;
+  --bs-btn-padding-y: .25rem;
+  --bs-btn-font-size: #{$small-font-size};
+  min-height: 2.25rem;
+}
+
+// ---------- 標籤 #成本結構 ----------
+// 一般：白底細線框；選中（.btn-check:checked）：炭黑墨塊；0 篇：虛線框＋淡墨字
+// <a class="tag" href="articles.html">#成本結構</a>
+// <input type="checkbox" class="btn-check" id="t1"><label class="tag" for="t1">#成本結構</label>
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.25rem;
+  padding: .25rem .75rem;
+  border: 1px solid $control;
+  background-color: $paper;
+  color: $ink;
+  font-size: $font-size-sm;
+  line-height: 1.4;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease, background-color .15s ease;
+
+  &:hover {
+    border-color: $ribbon;
+    color: $ribbon;
+  }
+  &.is-empty {
+    border-style: dashed;
+    border-color: $control;
+    color: $ink-faint;
+  }
+  .tag-count {
+    color: inherit;
+    font-size: .75rem;
+  }
+}
+.btn-check:checked + .tag,
+.tag.is-selected {
+  border-color: $ink;
+  background-color: $ink;
+  color: $paper;
+}
+.btn-check:focus-visible + .tag {
+  outline: 2px solid $ribbon;
+  outline-offset: 2px;
+}
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------- 核取方塊、radio、開關 ----------
+.form-check-input {
+  cursor: pointer;
+}
+// 只有鍵盤操作時顯示焦點環，滑鼠或手指點完不留光暈
+.form-check-input:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+.form-check-label {
+  cursor: pointer;
+}
+// radio 與核取方塊的列：最小高 44px
+.form-check-row {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: 0;
+
+  .form-check-input {
+    flex-shrink: 0;
+    margin: 0;
+  }
+}
+// 開關：關閉時圓鈕灰、軌道空心；開啟時炭黑軌道
+.form-switch .form-check-input {
+  width: 2.5em;
+  height: 1.375em;
+}
+
+// ---------- 表單 ----------
+.form-control,
+.form-select {
+  caret-color: $ribbon;
+}
+// 欄位錯誤：框線＋下方錯誤文字（圖示＋文字），不只靠紅色
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-width: 2px;
+}
+.invalid-feedback,
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin-top: .375rem;
+  font-size: $small-font-size;
+  color: $error;
+}
+.field-error {
+  display: flex;
+}
+// 選填標示：<label class="form-label">作品連結<span class="form-label-optional">選填</span></label>
+.form-label-optional {
+  margin-left: map-get($spacers, 2);
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  font-weight: $font-weight-normal;
+}
+// 多行字數提示：靠右
+.form-count {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: .375rem;
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+}
+
+// ---------- 底線式分頁籤 ----------
+// 選中：炭黑字＋2px 炭黑底線＋粗體；數量放在文字後（.tab-count）
+.nav-underline {
+  --bs-nav-underline-gap: 1.75rem;
+  --bs-nav-underline-border-width: 2px;
+  --bs-nav-underline-link-active-color: #{$ink};
+  border-bottom: 1px solid $rule;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  .nav-link {
+    min-width: 2.75rem;
+    padding-block: .75rem;
+    color: $body-secondary-color;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-normal;
+    white-space: nowrap;
+    &:hover { color: $ribbon; }
+  }
+  .nav-link.active {
+    font-weight: $font-weight-bold;
+    border-bottom-color: $ink;
+    color: $ink;
+  }
+  // 捲動容器會裁掉外擴的焦點環，改畫在內側
+  .nav-link:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px $ribbon;
+  }
+  .nav-link:not(.active):focus:not(:focus-visible) {
+    border-bottom-color: transparent;
+  }
+  @include media-breakpoint-down(md) {
+    --bs-nav-underline-gap: 1.25rem;
+  }
+}
+.tab-count {
+  margin-left: .25rem;
+  font-variant-numeric: tabular-nums;
+  color: $body-tertiary-color;
+  font-weight: $font-weight-normal;
+}
+
+// ---------- 鍵盤焦點 ----------
+// 一律是色帶藍 2px 實線，外推 2px 露出白紙當間隙
+:focus-visible {
+  outline: 2px solid $ribbon;
+  outline-offset: 2px;
+}
+.offcanvas:focus-visible,
+.modal:focus-visible,
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+.btn:focus-visible,
+.btn-close:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible {
+  outline: none;
+}
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: $zindex-fixed + 10;
+  padding: .5rem 1rem;
+  background: $ink;
+  color: $paper;
+  &:focus { top: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+// ---------- 提示框 Callout：左側 3px 色條＋圖示＋文字（＋一個按鈕） ----------
+// 五種：.is-info（炭黑）、.is-ok、.is-warn、.is-error、.is-brand（色帶藍）
+// <div class="callout is-warn" role="status">
+//   <i class="bi bi-hourglass-split callout-icon" aria-hidden="true"></i>
+//   <div class="callout-body"><p class="callout-title">標題（選用）</p><p>內容</p></div>
+// </div>
+.callout {
+  --callout-color: #{$ink};
+  display: flex;
+  gap: .75rem;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--callout-color);
+  background-color: $paper-gray;
+  color: $ink;
+
+  &.is-ok    { --callout-color: #{$ok}; }
+  &.is-warn  { --callout-color: #{$warn}; }
+  &.is-error { --callout-color: #{$error}; }
+  &.is-brand { --callout-color: #{$ribbon}; background-color: $ribbon-tint; }
+}
+.callout-icon {
+  flex-shrink: 0;
+  color: var(--callout-color);
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+.callout-body {
+  flex: 1;
+  min-width: 0;
+
+  > p:last-child,
+  > :last-child { margin-bottom: 0; }
+  p { margin-bottom: .5rem; }
+}
+.callout-title {
+  font-weight: $font-weight-bold;
+  color: var(--callout-color);
+}
+// 提示框裡的動作列
+.callout-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1.25rem;
+  margin-top: .75rem;
+}
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、標點與 <wbr> 處換行，「訂閱／限定」這類詞組不會被拆開；整段放不下時才強制斷行
+// 用在標題、短說明、按鈕；長段落不要用（會讓行尾參差）
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 手機滿版橫向捲動列 ----------
+// 手機（< 576px）時讓橫向捲動列貼齊螢幕兩側，內容起點仍對齊版心
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+  }
+}
+.bleed-x {
+  @include bleed-x;
+}
+
+// ---------- 可橫向捲動的表格容器 ----------
+// .table-responsive 的捲軸常被忽略；外框加細線，讓「這裡可以捲動」有邊界
+.table-scroll {
+  position: relative; // 讓表格裡的 .visually-hidden（絕對定位）也被裁在捲動範圍內，不撐出整頁的水平捲軸
+  overflow-x: auto;
+  border: 1px solid $rule;
+  -webkit-overflow-scrolling: touch;
+
+  > .table { margin-bottom: 0; }
+  &:focus-visible { outline-offset: 2px; }
+}
+
+// ---------- 資料表 DataTable ----------
+// 外框＋表頭稿紙灰＋列分隔線；數字欄靠右、tabular-nums（.text-end.num）
+.table-data {
+  font-size: $font-size-sm;
+
+  // 資料表不在儲存格內換行：放不下時由外層 .table-scroll 橫向捲動
+  th,
+  td { white-space: nowrap; }
+
+  // 說明型表格（Guideline 的規範表）：文字照常換行；最小寬 36rem，手機上橫向捲動，不把欄位擠成一兩個字寬
+  &.is-text {
+    min-width: 36rem;
+  }
+  &.is-text th,
+  &.is-text td {
+    white-space: normal;
+    min-width: 6rem;
+  }
+
+  > thead th {
+    background-color: $paper-gray;
+    color: $ink;
+    font-weight: $font-weight-medium;
+    white-space: nowrap;
+    border-bottom-color: $ink;
+  }
+  > tbody td,
+  > tbody th {
+    vertical-align: middle;
+  }
+  > tbody th {
+    font-weight: $font-weight-medium;
+  }
+  > caption {
+    caption-side: bottom;
+    padding: .75rem 1rem;
+    font-size: $small-font-size;
+    color: $body-secondary-color;
+  }
+}
+
+// ---------- 設計稿狀態示意（各頁共用） ----------
+// 頁面上「另一種狀態」的畫面：以虛線和正式內容分開，標籤寫明「設計稿狀態示意」，避免被當成正式內容
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag">設計稿狀態示意</p>
+//   <h2 id="…" class="demo-state-title">設計稿狀態示意：篩選與搜尋沒有結果時</h2>
+//   <p class="text-note">什麼情況下出現、畫面哪裡會改變</p>
+//   <div class="demo-state-stage">…示意畫面…</div>
+// </section>
+.demo-state {
+  margin-top: map-get($spacers, 6);
+  padding-top: map-get($spacers, 4);
+  border-top: 1px dashed $control;
+
+  > .text-note {
+    margin-bottom: map-get($spacers, 3);
+  }
+}
+.demo-state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: map-get($spacers, 2);
+  padding: .125rem .5rem;
+  border: 1px dashed $control;
+  color: $body-secondary-color;
+  font-size: .75rem;
+  letter-spacing: $letter-spacing-label;
+}
+.demo-state-title {
+  margin-bottom: map-get($spacers, 1);
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-body;
+}
+// 狀態示意裡的「示範畫面」外框：虛線表示這是示意，不是正式版面的一部分
+.demo-state-stage {
+  padding: map-get($spacers, 4);
+  border: 1px dashed $control;
+
+  @include media-breakpoint-down(sm) {
+    padding: map-get($spacers, 3);
+  }
+}
+// 並列多個示意畫面時，每格上方的小標
+.demo-state-label {
+  margin-bottom: .5rem;
+  font-size: $small-font-size;
+  font-weight: $font-weight-medium;
+  color: $body-secondary-color;
+}
+
+// ---------- 空狀態 EmptyState ----------
+// 圖示＋一句說明＋一個下一步按鈕；靠左、不放插圖、不責怪使用者
+// <div class="empty-state">
+//   <i class="bi bi-search empty-state-icon" aria-hidden="true"></i>
+//   <p>這個條件下目前沒有文章，試著放寬主題或閱讀時間範圍。</p>
+//   <button class="btn btn-outline-dark" type="button">清除篩選</button>
+// </div>
+.empty-state {
+  padding-block: map-get($spacers, 4);
+
+  > p {
+    max-width: 30em;
+    margin-bottom: map-get($spacers, 3);
+  }
+}
+.empty-state-icon {
+  display: block;
+  margin-bottom: .75rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: $ink;
+}
+
+// ---------- 定義清單（資訊列：標籤在左、值在右） ----------
+// <dl class="info-list"><div><dt>下次扣款</dt><dd>…</dd></div></dl>
+.info-list {
+  margin: 0;
+
+  > div {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, auto) 1fr;
+    gap: .25rem 1rem;
+    padding-block: .75rem;
+    border-bottom: 1px solid $rule;
+
+    &:first-child { padding-top: 0; }
+  }
+  dt {
+    font-weight: $font-weight-normal;
+    color: $body-secondary-color;
+    font-size: $font-size-sm;
+  }
+  dd {
+    margin: 0;
+  }
+}
+
+// 隱藏捲軸但保留捲動（橫向分頁列、工具列）
+.scroll-x {
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+// 欄位多的資料表：給最小寬度，外層 .table-scroll 橫向捲動（使用者管理、文章表現列表）
+.table-wide {
+  min-width: 44rem;
+}

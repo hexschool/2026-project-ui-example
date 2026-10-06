@@ -1,0 +1,311 @@
+// ============================================================
+// 個人頁面 account.html（class 前綴 account-、review-、settings-）
+// 3 : 9（側邊導覽 : 內容）；同一個版型、三種權限，由 <body data-role> 與 data-show-role 控制
+// 訂閱狀態卡、編輯器、數據卡與漏斗的樣式分別在 components/_subscription、_editor、_stats
+// ============================================================
+
+// 頁面標題區：左麵包屑＋H1，右設計稿切換器；< 576px 切換器移到 H1 下方
+.account-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+
+  h1 { margin-bottom: 0; }
+}
+
+// ---------- 側邊導覽（≥ 992px sticky）----------
+.account-side {
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+    max-height: calc(100vh - #{$sticky-top-offset} - 1rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+}
+// 個人卡：頭像＋姓名＋訂閱徽章；< 992px 縮成一列
+.account-profile {
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+  padding-bottom: map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 3);
+  border-bottom: 2px solid $ink;
+
+  p { margin: 0 0 .25rem; font-family: $font-family-typewriter; font-size: 1.125rem; font-weight: $font-weight-bold; }
+}
+.account-nav-group {
+  margin-bottom: map-get($spacers, 3);
+
+  // 有權限才出現的群組（創作、平台管理）：左側 3px 炭黑線＋群組名前的圖示，讓人看出「這一區是你多出來的」
+  &.is-extra {
+    padding-left: .75rem;
+    border-left: 3px solid $ink;
+  }
+}
+.account-nav-title {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0 0 .25rem;
+  padding-inline: .75rem;
+  color: $body-secondary-color;
+  font-family: $font-family-base;
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+
+  .is-extra & {
+    padding-left: 0;
+    color: $ink;
+  }
+}
+.account-nav-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    min-height: 2.5rem;
+    padding: .25rem .75rem;
+    color: $ink;
+    font-size: $font-size-sm;
+    text-decoration: none;
+
+    &:hover { color: $ribbon; background-color: $paper-gray; }
+    // 目前位置（ScrollSpy 加 .active）：炭黑墨塊
+    &.active {
+      background-color: $ink;
+      color: $paper;
+      font-weight: $font-weight-medium;
+    }
+    &:focus-visible { outline-offset: -2px; }
+    .bi-box-arrow-up-right { font-size: .75rem; color: inherit; opacity: .7; }
+  }
+}
+// 角色升級入口（一般讀者可見）
+.account-upgrade {
+  margin-top: map-get($spacers, 4);
+  padding: 1.25rem;
+  border: 1px dashed $ink;
+
+  p { margin-bottom: .75rem; font-family: $font-family-typewriter; font-weight: $font-weight-bold; }
+}
+// < 992px：側邊導覽改成內容上方的下拉選單
+.account-nav-mobile {
+  .dropdown-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .dropdown-menu {
+    width: 100%;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: .375rem;
+    font-weight: $font-weight-bold;
+  }
+}
+
+// ---------- 內容區塊 ----------
+.account-section {
+  padding-block: map-get($spacers, 6);
+  border-top: 1px solid $ink;
+  scroll-margin-top: $sticky-top-offset - 1rem;
+
+  &:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+  // 區塊內的第二層（訂閱紀錄、文章表現列表、審核佇列…）
+  h3.account-subtitle {
+    margin: map-get($spacers, 5) 0 map-get($spacers, 3);
+    font-size: 1.25rem;
+  }
+}
+.account-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1.5rem;
+  margin-bottom: map-get($spacers, 4);
+
+  h2 { margin: 0; }
+}
+
+// 我的文章：付費層級在列表直接切換（每列一組 .btn-check radio）
+.tier-toggle {
+  .btn { --bs-btn-padding-x: .625rem; white-space: nowrap; }
+}
+// 已下架列：標題刪除線＋鉛灰
+.is-removed-title {
+  color: $ink-muted;
+  text-decoration: line-through;
+}
+.row-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: .25rem .875rem;
+  white-space: nowrap;
+
+  .btn-text { min-height: 2.25rem; }
+}
+.my-articles-table {
+  min-width: 54rem; // 欄位多：外層 .table-scroll 橫向捲動
+
+  th[scope="row"] { min-width: 12rem; }
+  a { color: $ink; text-decoration-color: $rule; }
+  a:hover { color: $ribbon; }
+}
+
+// ---------- 平台管理 ----------
+// 作者申請卡：字首頭像＋姓名＋審核中 → 職稱 ‧ 年資 ｜ 想寫的分類 → 寫作方向 → 申請日期 → 操作；下半是退件原因
+.review-card {
+  border: 1px solid $ink;
+}
+.review-card-main {
+  display: grid;
+  gap: 1rem 1.25rem;
+  padding: map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: auto 1fr auto;
+  }
+  p { margin-bottom: .5rem; }
+}
+.review-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  font-family: $font-family-typewriter;
+  font-size: 1.125rem;
+  font-weight: $font-weight-bold;
+}
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: .5rem;
+}
+.review-reject {
+  padding: map-get($spacers, 4);
+  border-top: 1px dashed $control;
+  background-color: $paper-gray;
+}
+// 文章管理（違規下架）：一列文章＋操作
+.admin-article {
+  display: grid;
+  gap: 1rem 1.5rem;
+  align-items: center;
+  padding: map-get($spacers, 3);
+  border: 1px solid $rule;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 9rem 1fr auto;
+  }
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1200 / 630;
+    object-fit: cover;
+    border: 1px solid $ink;
+  }
+  h4 { margin-bottom: .25rem; font-size: 1.125rem; }
+  p { margin: 0; color: $body-secondary-color; font-size: $font-size-sm; }
+}
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  white-space: nowrap;
+
+  .avatar { --avatar-size: 2rem; }
+}
+
+// ---------- 成為作者 ----------
+.apply-form {
+  padding: map-get($spacers, 4);
+  border: 1px solid $ink;
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 5);
+  }
+}
+.apply-form-title {
+  margin-bottom: map-get($spacers, 4);
+  font-size: 1.25rem;
+}
+// 未通過的原因：引言樣式、全文顯示
+.reject-quote {
+  margin: .5rem 0 .75rem;
+  padding-left: 1rem;
+  border-left: 3px solid $error;
+  font-family: $font-family-typewriter;
+  line-height: 1.85;
+}
+
+// ---------- 帳號設定 ----------
+.settings-card {
+  height: 100%;
+  padding: map-get($spacers, 4);
+  border: 1px solid $rule;
+
+  h3 { margin-bottom: map-get($spacers, 3); font-size: 1.125rem; }
+  .form-switch {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    min-height: 2.75rem;
+    margin: 0;
+    padding: 0;
+
+    .form-check-input { float: none; flex-shrink: 0; margin: 0; }
+  }
+}
+
+// ---------- 取消自動續訂對話框（只有一層確認；兩顆按鈕一樣大、一樣好按）----------
+.cancel-dialog {
+  // 靜態示意（.cancel-dialog-static）不在 .modal 裡，內距變數要自己給
+  --bs-modal-padding: 1.5rem;
+  --bs-modal-header-padding: 1.5rem 1.5rem 0;
+  --bs-modal-footer-gap: .75rem;
+
+  .modal-header { border-bottom: 0; padding-bottom: 0; }
+  .modal-title { font-size: 1.375rem; }
+  .modal-body p { line-height: 1.85; }
+  .modal-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .75rem;
+    border-top: 0;
+
+    > * { margin: 0; }
+  }
+}
+.cancel-dialog-note {
+  margin: 0;
+  padding: 1rem var(--bs-modal-padding) var(--bs-modal-padding);
+  border-top: 1px solid $rule;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  line-height: 1.8;
+}
+// 設計稿狀態示意裡靜態畫一份對話框
+.cancel-dialog-static {
+  @include paper-stack(.5rem);
+  max-width: $modal-md;
+}

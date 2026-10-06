@@ -1,0 +1,437 @@
+// ============================================================
+// 所見即所得編輯器（個人頁面 #editor、Guideline 編輯器元件集）
+// 靜態的介面設計：浮動格式工具列、＋插入選單、免費預覽分隔線、設定面板直接畫在畫面上（不用 contenteditable）
+// 寫作區像一張排版稿紙：細框、內容置中、四周留白；浮起的只有工具列與插入選單（陰影）
+// ============================================================
+
+// ---------- 寫作區 ----------
+.editor-sheet {
+  border: 1px solid $rule;
+  background-color: $paper;
+}
+.editor-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  padding: .75rem 1.25rem;
+  border-bottom: 1px solid $rule;
+}
+.editor-doc {
+  max-width: 42rem;
+  margin-inline: auto;
+  padding: 2rem 1.25rem 2.5rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 3rem 2.5rem 3.5rem;
+  }
+}
+.editor-title {
+  margin-bottom: 1rem;
+  font-family: $font-family-serif;
+  font-size: 1.75rem;
+  font-weight: $font-weight-bolder;
+  line-height: 1.4;
+  color: $oxford;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+
+  @include media-breakpoint-up(md) {
+    font-size: 2.125rem;
+  }
+}
+.editor-lede {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid $rule; // 標題、導言與內文之間的分隔線
+  font-family: $font-family-serif;
+  font-size: 1.125rem;
+  line-height: 1.85;
+  color: $slate;
+}
+// placeholder：淡石板色
+.editor-title.is-placeholder,
+.editor-lede.is-placeholder,
+.editor-placeholder {
+  color: $slate-light;
+}
+.editor-placeholder {
+  margin: 0;
+  font-family: $font-family-serif;
+}
+// 文字游標（靜態，不閃爍）
+.editor-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.15em;
+  margin-left: .125rem;
+  vertical-align: text-bottom;
+  background-color: $oxford;
+}
+.editor-body.prose {
+  max-width: none;
+  font-size: 1.0625rem;
+}
+
+// ---------- 選取狀態＋浮動格式工具列 ----------
+.editor-selection-block {
+  position: relative;
+  padding-top: 3.75rem; // 讓出工具列的位置
+}
+.editor-selection {
+  background-color: rgba($cerulean, .2);
+  box-shadow: 0 2px 0 $cerulean;
+}
+.bubble-toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0 .25rem;
+  background-color: $oxford;
+  box-shadow: $box-shadow;
+  overflow-x: auto; // 窄螢幕可橫向捲動
+  scrollbar-width: none;
+
+  @include media-breakpoint-up(md) {
+    left: 6rem;
+    overflow: visible;
+  }
+
+  // 指向選取文字的小三角
+  &::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -6px;
+    border: 6px solid transparent;
+    border-bottom: 0;
+    border-top-color: $oxford;
+    transform: translateX(-50%);
+
+    @include media-breakpoint-down(md) {
+      display: none;
+    }
+  }
+
+  button {
+    flex: 0 0 auto;
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: $paper;
+    font-size: 1.125rem;
+
+    &:hover { background-color: $oxford-hover; }
+    &:focus-visible {
+      outline: 2px solid $paper;
+      outline-offset: -4px;
+    }
+  }
+}
+.bubble-sep {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 1.25rem;
+  margin-inline: .125rem;
+  background-color: rgba($paper, .3);
+}
+
+// ---------- 免費預覽分隔線：虛線＋強調底色＋兩端拖曳把手＋即時字數 ----------
+// 樣式刻意和一般分隔線不同：這是全站唯一允許用虛線當分隔的地方
+.preview-divider {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: 1.75rem;
+  padding: .5rem .25rem;
+  border-block: 1px dashed $oxford;
+  background-color: $oxford-tint;
+  font-family: $font-family-sans-serif;
+  font-size: $small-font-size;
+  line-height: 1.5;
+  color: $oxford;
+}
+.preview-divider-grip {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 2.75rem;
+  cursor: grab;
+  font-size: 1.125rem;
+}
+.preview-divider-label {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .375rem;
+  font-weight: $font-weight-bold;
+  text-align: center;
+}
+.preview-divider-count {
+  flex: 0 0 auto;
+  padding: .125rem .5rem;
+  background-color: $oxford;
+  color: $paper;
+  font-weight: $font-weight-bold;
+  white-space: nowrap;
+}
+// 576px 以下：說明文字自己一行，把手與字數排在下一行
+@include media-breakpoint-down(sm) {
+  .preview-divider {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    row-gap: 0;
+  }
+  .preview-divider-label {
+    order: -1;
+    flex-basis: 100%;
+    padding: .25rem .5rem 0;
+  }
+}
+.preview-divider-hint {
+  margin: .375rem 0 0 !important;
+  font-family: $font-family-sans-serif;
+  font-size: .75rem;
+  text-align: center;
+  color: $slate-light;
+}
+
+// ---------- 空行＋插入選單 ----------
+.insert-line {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+  column-gap: .75rem;
+  align-items: start;
+
+  .editor-placeholder {
+    padding-top: .375rem; // 和「＋」按鈕的第一行對齊
+  }
+  margin-top: 1.75rem;
+}
+.insert-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid $oxford;
+  background-color: $paper;
+  color: $oxford;
+  font-size: 1.125rem;
+
+  &[aria-expanded="true"] {
+    background-color: $oxford;
+    color: $paper;
+  }
+}
+// 插入選單：浮起的白色面板；3 組，最後一組「訂閱」的免費預覽分隔線用強調樣式
+.insert-menu {
+  grid-column: 2;
+  width: min(16rem, 100%);
+  margin-top: .5rem;
+  padding: .375rem;
+  border: 1px solid $rule;
+  background-color: $paper;
+  box-shadow: $box-shadow;
+  font-family: $font-family-sans-serif;
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: .25rem .625rem;
+    border: 0;
+    background: transparent;
+    color: $ink;
+    font-size: $font-size-sm;
+    text-align: left;
+
+    .bi { color: $slate; font-size: 1rem; }
+    &:hover { background-color: $mist; }
+    &:focus-visible {
+      outline: 2px solid $oxford;
+      outline-offset: -2px;
+    }
+  }
+  .is-key {
+    background-color: $oxford-tint;
+    box-shadow: inset 2px 0 0 $oxford;
+    color: $oxford;
+    font-weight: $font-weight-bold;
+
+    .bi { color: $oxford; }
+  }
+}
+.insert-menu-group {
+  margin: .375rem .625rem .25rem !important;
+  font-size: .75rem;
+  color: $slate-light;
+
+  &:not(:first-child) {
+    margin-top: .5rem !important;
+    padding-top: .5rem;
+    border-top: 1px solid $rule;
+  }
+}
+
+// ---------- 底部操作列 ----------
+.editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid $rule;
+  background-color: $mist;
+}
+.editor-actions-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+// 自動儲存提示：綠色勾勾＋文字
+.editor-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  font-size: $small-font-size;
+  color: $slate;
+
+  .bi { color: $green; }
+}
+
+// ---------- 文章設定面板 ----------
+.editor-panel {
+  border: 1px solid $rule;
+  border-top: 2px solid $oxford;
+  background-color: $mist;
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+  }
+}
+.editor-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .5rem .5rem .5rem 1.25rem;
+  border-bottom: 1px solid $rule;
+}
+.editor-panel-title {
+  margin: 0;
+  font-family: $font-family-sans-serif;
+  font-size: 1rem;
+  font-weight: $font-weight-bold;
+}
+.editor-panel-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  background: transparent;
+  color: $oxford;
+  font-size: 1.125rem;
+
+  &:hover { background-color: $oxford-tint; }
+}
+.editor-panel-body {
+  padding: 1.25rem;
+}
+.panel-field {
+  margin: 0 0 1.25rem;
+  padding: 0 0 1.25rem;
+  border-bottom: 1px solid $rule;
+
+  .form-label { display: block; }
+  .form-check { min-height: 2rem; }
+}
+.panel-progress {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+
+  .progress { flex: 1 1 auto; }
+  span { font-weight: $font-weight-bold; color: $oxford; }
+}
+.panel-facts {
+  margin: 0 0 .25rem;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    padding-block: .25rem;
+  }
+  dt { font-weight: $font-weight-normal; color: $slate; }
+  dd { margin: 0; font-weight: $font-weight-bold; color: $oxford; }
+}
+// 可移除的標籤、新增標籤
+.tag-removable {
+  padding-right: 0;
+
+  button {
+    display: inline-grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-left: .125rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: $slate;
+
+    &:hover { color: $crimson; }
+  }
+}
+.tag-add {
+  border-style: dashed;
+  color: $oxford;
+  background-color: transparent;
+}
+
+// ---------- 發布前檢查 ----------
+.publish-check-title {
+  margin-bottom: .5rem;
+  font-weight: $font-weight-bold;
+  color: $oxford;
+}
+.check-list {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding-block: .25rem;
+  }
+  .is-done .bi { color: $green; }
+  .is-todo {
+    color: $amber;
+    font-weight: $font-weight-bold;
+  }
+}
+.publish-check .callout {
+  margin-bottom: 1rem;
+}
+.editor-sheet-blank .editor-doc {
+  padding: 1.5rem 1.25rem;
+}
+.editor-sheet-blank .editor-title {
+  font-size: 1.5rem;
+}

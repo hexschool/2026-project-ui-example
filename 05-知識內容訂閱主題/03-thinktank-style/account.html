@@ -1,0 +1,1349 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>我的現場筆記｜現場筆記 FieldNotes</title>
+  <meta name="description" content="第一線工作者親自寫的長文。每篇都能免費讀前三分之一，讀到關鍵的那一段才需要訂閱。">
+  <meta name="theme-color" content="#002147">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Newsreader（英數、大數字）、Noto Serif TC（中文標題與長文）、Noto Sans TC（介面） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400..700&family=Noto+Serif+TC:wght@400;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-role="reader">
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，6 個 .html 要一起改，
+      改完執行 npm run check 確認都與這份範本一致。
+    - 頁首＝日期列（≥ 992px，不固定）＋固定在頂端的主列（品牌｜導覽｜搜尋｜會員入口），
+      主列底部是報頭雙線（2px 粗線＋1px 細線），這是本風格的招牌。
+    - 每頁只需要調整「目前頁面」標示：目前頁的 <a class="nav-link"> 加 active 與 aria-current="page"
+      index.html → 首頁；articles.html → 文章列表；pricing.html → 訂閱方案；
+      account.html → 會員入口（選單內與桌機各一個，兩個都加）；
+      article.html → 文章列表（只加 active，不加 aria-current）；guideline.html 不標示。
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <!-- 日期列：報刊報頭上方的日期與刊物說明；只在 ≥ 992px 顯示，捲動時不跟著固定 -->
+    <div class="site-dateline d-none d-lg-block">
+      <div class="container">
+        <time datetime="2026-10-06">2026/10/06 星期二</time>
+        <span>第一線工作者的知識訂閱</span>
+      </div>
+    </div>
+
+    <header class="site-header">
+      <nav class="navbar navbar-expand-lg" aria-label="主要導覽">
+        <div class="container">
+          <a class="navbar-brand site-brand" href="index.html">
+            <span class="site-brand-name">現場筆記</span>
+            <span class="site-brand-en">FieldNotes</span>
+          </a>
+
+          <!-- 992px 以下的圖示列：搜尋、會員入口、選單（桌機另一組放在導覽之後，Tab 順序與畫面一致） -->
+          <div class="site-tools d-flex d-lg-none">
+            <button class="site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋文章">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <a class="site-icon-btn" href="account.html" aria-label="我的現場筆記">
+              <img class="avatar avatar-24" src="images/avatar-chen.jpg" alt="" width="24" height="24">
+            </a>
+            <button class="navbar-toggler site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="articles.html">文章列表</a></li>
+              <li class="nav-item"><a class="nav-link" href="pricing.html">訂閱方案</a></li>
+              <li class="nav-item d-lg-none"><a class="nav-link active" href="account.html" aria-current="page">我的現場筆記</a></li>
+            </ul>
+            <!-- 桌機右側：搜尋 → 會員入口 -->
+            <div class="site-actions d-none d-lg-flex">
+              <button class="site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋文章">
+                <i class="bi bi-search" aria-hidden="true"></i>
+              </button>
+              <a class="nav-link site-member active" href="account.html" aria-current="page">
+                <img class="avatar avatar-24" src="images/avatar-chen.jpg" alt="" width="24" height="24">
+                <span>我的現場筆記</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- 點放大鏡展開的搜尋列（所有寬度共用），送出到文章列表 -->
+      <div id="siteSearch" class="collapse site-search">
+        <div class="container">
+          <form class="site-search-form" role="search" action="articles.html">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input class="form-control" type="search" name="q" placeholder="搜尋文章、作者或標籤" aria-label="搜尋文章">
+            <button class="btn btn-primary" type="submit">搜尋</button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+        <main id="main" class="flex-grow-1" tabindex="-1">
+      <!-- ============ 頁面內容從這裡開始 ============ -->
+
+      <!--
+        個人頁面「我的現場筆記」（規格 §3.05）：同一個版型、三種權限
+        角色用頁面右上的設計稿切換器切換：<body data-role="reader|author|admin">（預設讀者）
+        - data-show-role="author admin"：作者與管理員才看得到（創作群組、我的文章、編輯器、內容數據）
+        - data-show-role="admin"：只有管理員（平台管理）
+        - data-show-role="reader"：只有一般讀者（成為作者的申請表、側欄的申請入口）
+        account.html?role=author、account.html?role=admin 直接開對應角色；內容區的順序＝側欄的順序
+        文案：CONTENT.md §7、§10.8、§10.9
+      -->
+      <div class="container pb-6 pb-lg-7">
+        <header class="page-header account-head">
+          <div>
+            <nav aria-label="目前位置">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+                <li class="breadcrumb-item active" aria-current="page">我的現場筆記</li>
+              </ol>
+            </nav>
+            <h1>我的現場筆記</h1>
+          </div>
+          <div class="demo-switch" role="group" aria-labelledby="roleSwitchLabel">
+            <span class="demo-switch-label" id="roleSwitchLabel"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意（非產品介面）</span>
+            <button type="button" data-switch="role" data-value="reader" aria-pressed="true">讀者</button>
+            <button type="button" data-switch="role" data-value="author" aria-pressed="false">作者</button>
+            <button type="button" data-switch="role" data-value="admin" aria-pressed="false">管理員</button>
+          </div>
+        </header>
+
+        <div class="row gx-lg-5">
+          <!-- ========== 左 3 欄：側邊導覽（≥ 992px sticky；以下收成下拉） ========== -->
+          <div class="col-lg-3">
+            <aside class="acct-side" aria-label="個人頁面導覽">
+              <!-- 個人卡：3 種角色共用這位示意使用者（他是作者，也是訂閱者） -->
+              <div class="acct-profile">
+                <img class="avatar avatar-48" src="images/avatar-chen.jpg" alt="" width="48" height="48">
+                <div>
+                  <p class="acct-profile-name">陳柏諺</p>
+                  <span class="status is-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>年費訂閱中</span>
+                </div>
+              </div>
+
+              <!-- 992px 以下：按鈕顯示目前區塊名稱，點開列出同樣的群組與項目 -->
+              <button class="btn btn-outline-primary acct-nav-toggle d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#acctNav" aria-expanded="false" aria-controls="acctNav">
+                <span><span class="visually-hidden">個人頁面導覽，目前位置：</span>訂閱狀態</span>
+                <i class="bi bi-chevron-down" aria-hidden="true"></i>
+              </button>
+
+              <nav id="acctNav" class="collapse d-lg-block acct-nav" aria-label="個人頁面">
+                <div class="acct-nav-group">
+                  <p class="acct-nav-title">閱讀</p>
+                  <ul>
+                    <li><a class="acct-nav-link active" href="#subscription" aria-current="true">訂閱狀態</a></li>
+                    <li><a class="acct-nav-link" href="#library">我的收藏<span class="acct-nav-count num">38</span></a></li>
+                    <li><a class="acct-nav-link" href="#library">閱讀紀錄</a></li>
+                    <li><a class="acct-nav-link" href="#following">追蹤的作者</a></li>
+                    <li><a class="acct-nav-link" href="article.html?view=subscribed#comments">我的留言</a></li>
+                  </ul>
+                </div>
+                <!-- 有權限才出現的群組：左側色條＋圖示，看得出「這一區是你多出來的」 -->
+                <div class="acct-nav-group is-extra" data-show-role="author admin">
+                  <p class="acct-nav-title"><i class="bi bi-pen" aria-hidden="true"></i>創作</p>
+                  <ul>
+                    <li><a class="acct-nav-link" href="#my-articles">我的文章<span class="acct-nav-count num">18</span></a></li>
+                    <li><a class="acct-nav-link" href="#editor">撰寫新文章</a></li>
+                    <li><a class="acct-nav-link" href="#analytics">內容數據</a></li>
+                    <li><a class="acct-nav-link" href="article.html?view=subscribed#comments">讀者留言</a></li>
+                  </ul>
+                </div>
+                <div class="acct-nav-group is-extra is-admin" data-show-role="admin">
+                  <p class="acct-nav-title"><i class="bi bi-shield-check" aria-hidden="true"></i>平台管理</p>
+                  <ul>
+                    <li><a class="acct-nav-link" href="#admin-review">作者申請審核<span class="acct-nav-count num">3</span></a></li>
+                    <li><a class="acct-nav-link" href="#admin-users">使用者管理</a></li>
+                    <li><a class="acct-nav-link" href="#admin-articles">文章管理</a></li>
+                  </ul>
+                </div>
+                <div class="acct-nav-group">
+                  <p class="acct-nav-title">帳號</p>
+                  <ul>
+                    <li><a class="acct-nav-link" href="#settings">帳號設定</a></li>
+                  </ul>
+                </div>
+              </nav>
+
+              <!-- 角色升級入口：一般讀者才看得到 -->
+              <div class="acct-upgrade" data-show-role="reader">
+                <p>你也在某個行業的現場嗎？</p>
+                <a class="btn btn-outline-primary w-100" href="#apply">申請成為作者</a>
+              </div>
+            </aside>
+          </div>
+
+          <!-- ========== 右 9 欄：內容（順序＝側欄順序） ========== -->
+          <div class="col-lg-9 acct-content">
+
+            <!-- ===== 1. 我的訂閱（所有角色） ===== -->
+            <section id="subscription" class="acct-section" aria-labelledby="subscriptionTitle">
+              <div class="section-head">
+                <h2 id="subscriptionTitle">我的訂閱</h2>
+                <a class="btn btn-text" href="pricing.html">查看所有方案</a>
+              </div>
+
+              <!-- 主狀態卡（訂閱中）：到期日是本頁唯一的主數字；「變更方案」「取消自動續訂」同樣大小 -->
+              <div class="sub-card is-active">
+                <div class="sub-card-main">
+                  <span class="status is-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>年費訂閱 ‧ 使用中</span>
+                  <p class="sub-card-label">到期日</p>
+                  <p class="figure-num sub-card-date">2027/10/02</p>
+                  <p class="sub-card-remain">剩餘 364&nbsp;天</p>
+                </div>
+                <div class="sub-card-detail">
+                  <dl class="sub-card-list">
+                    <div>
+                      <dt>下次扣款</dt>
+                      <dd class="num">2027/10/02 ‧ NT$&nbsp;1,800 ‧ 自動續訂</dd>
+                    </div>
+                    <div>
+                      <dt>付款方式</dt>
+                      <dd><span class="num">信用卡 **** 4821</span> <button class="btn btn-text" type="button">更換</button></dd>
+                    </div>
+                    <div>
+                      <dt>解鎖範圍</dt>
+                      <dd>全站 438&nbsp;篇付費文章</dd>
+                    </div>
+                  </dl>
+                  <div class="sub-card-actions">
+                    <a class="btn btn-outline-primary" href="pricing.html">變更方案</a>
+                    <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#cancelModal">取消自動續訂</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 設計稿狀態示意：其他三種訂閱狀態 -->
+              <section class="demo-state" aria-labelledby="demoSubTitle">
+                <h3 class="demo-state-title" id="demoSubTitle"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意：其他訂閱狀態</h3>
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <div class="sub-mini is-warning">
+                      <span class="status is-warning"><i class="bi bi-hourglass-split" aria-hidden="true"></i>已取消待到期</span>
+                      <p class="sub-mini-title">月費訂閱 ‧ 已取消自動續訂</p>
+                      <p>你仍可閱讀到 2026/11/02，之後將回到免費會員。</p>
+                      <button class="btn btn-primary" type="button">恢復自動續訂</button>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="sub-mini">
+                      <span class="status is-neutral"><i class="bi bi-dash-circle" aria-hidden="true"></i>已到期</span>
+                      <p class="sub-mini-title">免費會員</p>
+                      <p>上次訂閱於 2026/08/02 到期。你的 38&nbsp;則收藏都還在。</p>
+                      <a class="btn btn-primary" href="pricing.html">重新訂閱</a>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="sub-mini">
+                      <span class="status is-neutral"><i class="bi bi-circle" aria-hidden="true"></i>未訂閱</span>
+                      <p class="sub-mini-title">免費會員</p>
+                      <p>可讀 127&nbsp;篇免費文章，付費文章讀前 1/3。</p>
+                      <a class="btn btn-primary" href="pricing.html">查看方案</a>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- 設計稿狀態示意：提醒（扣款失敗 S08、即將到期 S04） -->
+              <section class="demo-state" aria-labelledby="demoRemindTitle">
+                <h3 class="demo-state-title" id="demoRemindTitle"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意：提醒</h3>
+                <div class="d-grid gap-3">
+                  <div class="callout callout-danger" role="alert">
+                    <i class="bi bi-x-circle-fill" aria-hidden="true"></i>
+                    <div class="callout-body">
+                      <p class="callout-title">續訂扣款失敗</p>
+                      <p>這期的自動扣款未成功，請在 11/09 前更新付款方式，以免中斷閱讀。</p>
+                      <button class="btn btn-outline-primary" type="button">更新付款方式</button>
+                    </div>
+                  </div>
+                  <div class="callout callout-warning" role="status">
+                    <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                    <div class="callout-body">
+                      <p class="callout-title">訂閱即將到期</p>
+                      <p>你的訂閱將於 11/02 到期，到期後付費文章會回到預覽狀態。</p>
+                      <a class="btn btn-outline-primary" href="pricing.html">續訂</a>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- 設計稿狀態示意：取消確認對話框（Modal 的內容靜態畫一份；真的對話框由「取消自動續訂」開啟） -->
+              <section class="demo-state" aria-labelledby="demoCancelTitle">
+                <h3 class="demo-state-title" id="demoCancelTitle"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意：取消確認對話框</h3>
+                <div class="cancel-dialog-static">
+                  <div class="cancel-dialog-head">
+                    <p class="cancel-dialog-title">要取消自動續訂嗎？</p>
+                  </div>
+                  <p>你仍可閱讀到 2026/11/02。如果是因為沒時間看，也可以改成年費方案慢慢讀。</p>
+                  <div class="cancel-actions">
+                    <button class="btn btn-outline-primary" type="button">確認取消</button>
+                    <button class="btn btn-primary" type="button">先不要</button>
+                  </div>
+                  <p class="cancel-note">取消後：收藏與閱讀紀錄全部保留，免費文章照常閱讀，付費文章回到預覽狀態。</p>
+                </div>
+              </section>
+
+              <h3 class="acct-subtitle">訂閱紀錄</h3>
+              <div class="table-responsive">
+                <table class="table table-data">
+                  <caption class="visually-hidden">訂閱紀錄</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">日期</th>
+                      <th scope="col">方案</th>
+                      <th scope="col" class="text-end">金額</th>
+                      <th scope="col">狀態</th>
+                      <th scope="col">發票</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="num">2026/10/03</td>
+                      <td>年費訂閱</td>
+                      <td class="text-end num">NT$&nbsp;1,800</td>
+                      <td><span class="status is-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>付款成功</span></td>
+                      <td><button class="btn btn-text" type="button">查看發票</button></td>
+                    </tr>
+                    <tr>
+                      <td class="num">2026/09/02</td>
+                      <td>月費訂閱</td>
+                      <td class="text-end num">NT$&nbsp;180</td>
+                      <td><span class="status is-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>付款成功</span></td>
+                      <td><button class="btn btn-text" type="button">查看發票</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <!-- ===== 2. 我的收藏（所有角色） ===== -->
+            <section id="library" class="acct-section" aria-labelledby="libraryTitle">
+              <div class="section-head">
+                <h2 id="libraryTitle">我的收藏（38&nbsp;篇）</h2>
+                <a class="btn btn-text" href="articles.html">探索更多文章</a>
+              </div>
+              <ul class="nav nav-underline" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active" id="tabSaved" data-bs-toggle="tab" data-bs-target="#paneSaved" type="button" role="tab" aria-controls="paneSaved" aria-selected="true">收藏<span class="tab-count">38</span></button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="tabHistory" data-bs-toggle="tab" data-bs-target="#paneHistory" type="button" role="tab" aria-controls="paneHistory" aria-selected="false">閱讀紀錄</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="tabHalf" data-bs-toggle="tab" data-bs-target="#paneHalf" type="button" role="tab" aria-controls="paneHalf" aria-selected="false">讀到一半<span class="tab-count">12</span></button>
+                </li>
+              </ul>
+              <div class="tab-content">
+                <div class="tab-pane fade show active" id="paneSaved" role="tabpanel" aria-labelledby="tabSaved" tabindex="0">
+                  <div class="row g-3 library-grid">
+                    <div class="col-md-6 col-xl-4">
+                      <article class="library-card">
+                        <a class="img-frame ratio-cover" href="article.html?view=subscribed" tabindex="-1" aria-hidden="true"><img src="images/cover-restaurant-costs.jpg" alt="" width="1200" height="630" loading="lazy"></a>
+                        <div class="library-card-body">
+                          <p class="kicker">
+                            <span class="perm perm-premium"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                            <span class="status is-brand"><i class="bi bi-book-half" aria-hidden="true"></i>閱讀中</span>
+                          </p>
+                          <h3 class="library-card-title"><a href="article.html?view=subscribed">一間餐廳的成本結構</a></h3>
+                          <p class="library-card-meta">陳柏諺 ‧ 閱讀 18&nbsp;分鐘</p>
+                          <div class="library-progress"><div class="progress" role="progressbar" aria-label="閱讀進度" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: 64%"></div></div><span>讀到 64%</span></div>
+                          <a class="btn btn-primary w-100" href="article.html?view=subscribed">繼續閱讀</a>
+                        </div>
+                      </article>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                      <article class="library-card">
+                        <a class="img-frame ratio-cover" href="article.html?view=subscribed" tabindex="-1" aria-hidden="true"><img src="images/cover-pineapple-export.jpg" alt="" width="1200" height="630" loading="lazy"></a>
+                        <div class="library-card-body">
+                          <p class="kicker">
+                            <span class="perm perm-premium"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                            <span class="status is-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>已讀完</span>
+                          </p>
+                          <h3 class="library-card-title"><a href="article.html?view=subscribed">一顆鳳梨怎麼進到日本超市的貨架上</a></h3>
+                          <p class="library-card-meta">林振豐 ‧ 15&nbsp;分鐘</p>
+                          <div class="library-progress"><div class="progress" role="progressbar" aria-label="閱讀進度" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar is-done" style="width: 100%"></div></div><span>已讀完</span></div>
+                          <a class="btn btn-outline-primary w-100" href="article.html?view=subscribed">重新閱讀</a>
+                        </div>
+                      </article>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                      <article class="library-card">
+                        <a class="img-frame ratio-cover" href="article.html?view=subscribed" tabindex="-1" aria-hidden="true"><img src="images/cover-game-launch.jpg" alt="" width="1200" height="630" loading="lazy"></a>
+                        <div class="library-card-body">
+                          <p class="kicker">
+                            <span class="perm perm-premium"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                            <span class="status is-neutral"><i class="bi bi-circle" aria-hidden="true"></i>尚未開始</span>
+                          </p>
+                          <h3 class="library-card-title"><a href="article.html?view=subscribed">遊戲上線第一週</a></h3>
+                          <p class="library-card-meta">郭懷恩 ‧ 19&nbsp;分鐘</p>
+                          <div class="library-progress"><div class="progress is-empty" role="progressbar" aria-label="閱讀進度" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div><span>尚未開始</span></div>
+                          <a class="btn btn-outline-primary w-100" href="article.html?view=subscribed">開始閱讀</a>
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="paneHistory" role="tabpanel" aria-labelledby="tabHistory" tabindex="0">
+                  <div class="row g-3 library-grid">
+                    <div class="col-md-6 col-xl-4">
+                      <article class="library-card">
+                        <a class="img-frame ratio-cover" href="article.html?view=subscribed" tabindex="-1" aria-hidden="true"><img src="images/cover-restaurant-costs.jpg" alt="" width="1200" height="630" loading="lazy"></a>
+                        <div class="library-card-body">
+                          <p class="kicker">
+                            <span class="perm perm-premium"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                            <span class="status is-brand"><i class="bi bi-book-half" aria-hidden="true"></i>閱讀中</span>
+                          </p>
+                          <h3 class="library-card-title"><a href="article.html?view=subscribed">一間餐廳的成本結構</a></h3>
+                          <p class="library-card-meta">陳柏諺 ‧ 閱讀 18&nbsp;分鐘</p>
+                          <div class="library-progress"><div class="progress" role="progressbar" aria-label="閱讀進度" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: 64%"></div></div><span>讀到 64%</span></div>
+                          <a class="btn btn-primary w-100" href="article.html?view=subscribed">繼續閱讀</a>
+                        </div>
+                      </article>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                      <article class="library-card">
+                        <a class="img-frame ratio-cover" href="article.html?view=subscribed" tabindex="-1" aria-hidden="true"><img src="images/cover-pineapple-export.jpg" alt="" width="1200" height="630" loading="lazy"></a>
+                        <div class="library-card-body">
+                          <p class="kicker">
+                            <span class="perm perm-premium"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                            <span class="status is-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>已讀完</span>
+                          </p>
+                          <h3 class="library-card-title"><a href="article.html?view=subscribed">一顆鳳梨怎麼進到日本超市的貨架上</a></h3>
+                          <p class="library-card-meta">林振豐 ‧ 15&nbsp;分鐘</p>
+                          <div class="library-progress"><div class="progress" role="progressbar" aria-label="閱讀進度" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar is-done" style="width: 100%"></div></div><span>已讀完</span></div>
+                          <a class="btn btn-outline-primary w-100" href="article.html?view=subscribed">重新閱讀</a>
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="paneHalf" role="tabpanel" aria-labelledby="tabHalf" tabindex="0">
+                  <div class="row g-3 library-grid">
+                    <div class="col-md-6 col-xl-4">
+                      <article class="library-card">
+                        <a class="img-frame ratio-cover" href="article.html?view=subscribed" tabindex="-1" aria-hidden="true"><img src="images/cover-restaurant-costs.jpg" alt="" width="1200" height="630" loading="lazy"></a>
+                        <div class="library-card-body">
+                          <p class="kicker">
+                            <span class="perm perm-premium"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                            <span class="status is-brand"><i class="bi bi-book-half" aria-hidden="true"></i>閱讀中</span>
+                          </p>
+                          <h3 class="library-card-title"><a href="article.html?view=subscribed">一間餐廳的成本結構</a></h3>
+                          <p class="library-card-meta">陳柏諺 ‧ 閱讀 18&nbsp;分鐘</p>
+                          <div class="library-progress"><div class="progress" role="progressbar" aria-label="閱讀進度" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: 64%"></div></div><span>讀到 64%</span></div>
+                          <a class="btn btn-primary w-100" href="article.html?view=subscribed">繼續閱讀</a>
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 設計稿狀態示意：收藏與閱讀紀錄為空（S11、S12） -->
+              <section class="demo-state" aria-labelledby="demoLibraryTitle">
+                <h3 class="demo-state-title" id="demoLibraryTitle"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意：收藏與閱讀紀錄為空</h3>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <span class="demo-caption">收藏為空</span>
+                    <div class="demo-stage">
+                      <div class="empty-state">
+                        <i class="bi bi-bookmark" aria-hidden="true"></i>
+                        <p>你還沒有收藏任何文章，看到想之後再讀的按一下 <i class="bi bi-bookmark" aria-hidden="true"></i><span class="visually-hidden">收藏</span>。</p>
+                        <a class="btn btn-outline-primary" href="articles.html">探索文章</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <span class="demo-caption">閱讀紀錄為空</span>
+                    <div class="demo-stage">
+                      <div class="empty-state">
+                        <i class="bi bi-clock-history" aria-hidden="true"></i>
+                        <p>還沒有閱讀紀錄，從一篇免費文章開始吧。</p>
+                        <a class="btn btn-outline-primary" href="articles.html">看看免費文章</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </section>
+
+            <!-- ===== 3. 追蹤的作者（所有角色；Notion 只有空狀態） ===== -->
+            <section id="following" class="acct-section" aria-labelledby="followingTitle">
+              <h2 id="followingTitle" class="acct-title">追蹤的作者</h2>
+              <div class="empty-state">
+                <i class="bi bi-person-plus" aria-hidden="true"></i>
+                <p>你還沒有追蹤任何作者，追蹤後新文章發布會通知你。</p>
+              </div>
+            </section>
+
+            <!-- ===== 4. 我的文章（作者、管理員） ===== -->
+            <section id="my-articles" class="acct-section" data-show-role="author admin" aria-labelledby="myArticlesTitle">
+              <div class="section-head">
+                <h2 id="myArticlesTitle">我的文章 <span class="role-chip"><i class="bi bi-eye" aria-hidden="true"></i>作者可見</span></h2>
+                <a class="btn btn-primary" href="#editor"><i class="bi bi-pencil-square" aria-hidden="true"></i>撰寫新文章</a>
+              </div>
+
+              <dl class="stat-strip">
+                <div class="stat">
+                  <dt class="stat-label">已發布</dt>
+                  <dd class="stat-value"><span class="figure-num">18</span><span class="stat-unit">篇</span></dd>
+                </div>
+                <div class="stat">
+                  <dt class="stat-label">總瀏覽</dt>
+                  <dd class="stat-value"><span class="figure-num">142,860</span></dd>
+                </div>
+                <div class="stat">
+                  <dt class="stat-label">本月新增訂閱貢獻</dt>
+                  <dd class="stat-value"><span class="figure-num">214</span><span class="stat-unit">人</span></dd>
+                </div>
+                <div class="stat">
+                  <dt class="stat-label">平均閱讀完成率</dt>
+                  <dd class="stat-value"><span class="figure-num">71</span><span class="stat-unit">%</span></dd>
+                </div>
+              </dl>
+
+              <!-- 狀態篩選：點了真的篩選（js/main.js 第 5 項，data-filter ↔ 文章列 data-status） -->
+              <div class="nav nav-underline acct-filter" data-filter-list="#myArticles" role="group" aria-label="依狀態篩選文章">
+                <button class="nav-link active" type="button" data-filter="all" aria-pressed="true">全部<span class="tab-count">21</span></button>
+                <button class="nav-link" type="button" data-filter="published" aria-pressed="false">已發布<span class="tab-count">18</span></button>
+                <button class="nav-link" type="button" data-filter="draft" aria-pressed="false">草稿<span class="tab-count">2</span></button>
+                <button class="nav-link" type="button" data-filter="removed" aria-pressed="false">已下架<span class="tab-count">1</span></button>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-data my-articles-table">
+                  <caption class="visually-hidden">我的文章：標題、分類、付費層級、瀏覽、發布日期與操作</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">標題</th>
+                      <th scope="col">分類</th>
+                      <th scope="col">付費層級</th>
+                      <th scope="col" class="text-end">瀏覽</th>
+                      <th scope="col">發布日期</th>
+                      <th scope="col">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="myArticles">
+                    <tr data-status="published">
+                      <th scope="row"><a href="article.html">一間餐廳的成本結構</a></th>
+                      <td>餐飲與零售</td>
+                      <td>
+                        <!-- 付費層級在列表直接切換（每列一組 radio） -->
+                        <div class="btn-group segmented segmented-sm" role="group" aria-label="〈一間餐廳的成本結構〉的付費層級">
+                          <input class="btn-check" type="radio" name="tier1" id="tier1Free" value="free"><label class="btn" for="tier1Free"><i class="bi bi-unlock" aria-hidden="true"></i>免費</label>
+                          <input class="btn-check" type="radio" name="tier1" id="tier1Paid" value="premium" checked><label class="btn" for="tier1Paid"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</label>
+                        </div>
+                      </td>
+                      <td class="text-end num">18,420</td>
+                      <td class="num">2026/09/28</td>
+                      <td class="row-actions">
+                        <a class="btn btn-text" href="#editor">編輯</a>
+                        <a class="btn btn-text" href="#analytics">查看數據</a>
+                        <button class="btn btn-text" type="button">下架</button>
+                      </td>
+                    </tr>
+                    <tr data-status="published">
+                      <th scope="row">為什麼我不做外送平台</th>
+                      <td>餐飲與零售</td>
+                      <td>
+                        <div class="btn-group segmented segmented-sm" role="group" aria-label="〈為什麼我不做外送平台〉的付費層級">
+                          <input class="btn-check" type="radio" name="tier2" id="tier2Free" value="free" checked><label class="btn" for="tier2Free"><i class="bi bi-unlock" aria-hidden="true"></i>免費</label>
+                          <input class="btn-check" type="radio" name="tier2" id="tier2Paid" value="premium"><label class="btn" for="tier2Paid"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</label>
+                        </div>
+                      </td>
+                      <td class="text-end num">31,206</td>
+                      <td class="num">2026/08/14</td>
+                      <td class="row-actions">
+                        <a class="btn btn-text" href="#editor">編輯</a>
+                        <a class="btn btn-text" href="#analytics">查看數據</a>
+                        <button class="btn btn-text" type="button">下架</button>
+                      </td>
+                    </tr>
+                    <tr data-status="draft">
+                      <th scope="row">重新談租約的七個月</th>
+                      <!-- Notion 原文同列寫了分類又寫「尚缺：分類」，以「尚缺」為準（規格 §8 #26） -->
+                      <td class="text-secondary">未設定</td>
+                      <td><span class="perm perm-draft"><i class="bi bi-pencil" aria-hidden="true"></i>草稿</span></td>
+                      <td class="text-end"><span aria-hidden="true">—</span><span class="visually-hidden">尚無瀏覽</span></td>
+                      <td class="text-secondary">尚缺：分類與導言</td>
+                      <td class="row-actions">
+                        <a class="btn btn-text" href="#editor">繼續編輯</a>
+                      </td>
+                    </tr>
+                    <tr data-status="removed" class="is-removed">
+                      <th scope="row"><del>開店前要準備多少錢（2024 版）</del></th>
+                      <td>餐飲與零售</td>
+                      <td><span class="perm perm-removed"><i class="bi bi-slash-circle" aria-hidden="true"></i>已下架</span></td>
+                      <td class="text-end"><span aria-hidden="true">—</span><span class="visually-hidden">已下架，不計瀏覽</span></td>
+                      <td class="text-secondary">數字已過時</td>
+                      <td class="row-actions">
+                        <button class="btn btn-text" type="button">重新上架</button>
+                        <a class="btn btn-text" href="#editor">編輯</a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- 設計稿狀態示意：作者尚無文章（S18） -->
+              <section class="demo-state" aria-labelledby="demoNoArticleTitle">
+                <h3 class="demo-state-title" id="demoNoArticleTitle"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意：作者尚無文章</h3>
+                <div class="demo-stage">
+                  <div class="empty-state">
+                    <i class="bi bi-journal-text" aria-hidden="true"></i>
+                    <p>你還沒有發表任何文章，從你最熟悉的那件事開始寫。</p>
+                    <a class="btn btn-primary" href="#editor"><i class="bi bi-pencil-square" aria-hidden="true"></i>撰寫新文章</a>
+                  </div>
+                </div>
+              </section>
+            </section>
+
+            <!-- ===== 5. 撰寫新文章：所見即所得編輯器（作者、管理員；靜態的介面設計，不能真的編輯） ===== -->
+            <section id="editor" class="acct-section" data-show-role="author admin" aria-labelledby="editorTitle">
+              <div class="section-head">
+                <h2 id="editorTitle">撰寫新文章 <span class="role-chip"><i class="bi bi-eye" aria-hidden="true"></i>作者可見</span></h2>
+                <p class="editor-saved"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>已自動儲存於 14:28</p>
+              </div>
+
+              <div class="row g-4">
+                <!-- 寫作區 8 欄：內容置中、工具列浮動；以這篇發布前的草稿示意 -->
+                <div class="col-lg-8">
+                  <div class="editor-sheet">
+                    <div class="editor-topbar">
+                      <span class="perm perm-premium"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                      <span class="perm perm-draft"><i class="bi bi-pencil" aria-hidden="true"></i>草稿</span>
+                    </div>
+                    <div class="editor-doc">
+                      <p class="editor-title">一間餐廳的成本結構：從食材到翻桌率，錢到底花到哪去</p>
+                      <p class="editor-lede">開店第三年我才真的看懂損益表。這篇我把去年整年的數字攤開給你看，包含那些開店教學不會講的隱形成本，以及兩次差點關門的月份。</p>
+                      <div class="editor-body prose">
+                        <p>先說結論：我開店第一年以為自己在做餐飲，第二年發現自己在做人事，第三年才知道我真正在管的是一張一張桌子的時間。</p>
+
+                        <!-- 選取狀態＋浮動格式工具列（選取文字時才出現） -->
+                        <div class="editor-selection-block">
+                          <div class="bubble-toolbar" role="toolbar" aria-label="格式工具列">
+                            <button type="button" aria-label="粗體"><i class="bi bi-type-bold" aria-hidden="true"></i></button>
+                            <button type="button" aria-label="斜體"><i class="bi bi-type-italic" aria-hidden="true"></i></button>
+                            <button type="button" aria-label="刪除線"><i class="bi bi-type-strikethrough" aria-hidden="true"></i></button>
+                            <span class="bubble-sep" aria-hidden="true"></span>
+                            <button type="button" aria-label="連結"><i class="bi bi-link-45deg" aria-hidden="true"></i></button>
+                            <span class="bubble-sep" aria-hidden="true"></span>
+                            <button type="button" aria-label="H2"><i class="bi bi-type-h2" aria-hidden="true"></i></button>
+                            <button type="button" aria-label="H3"><i class="bi bi-type-h3" aria-hidden="true"></i></button>
+                            <span class="bubble-sep" aria-hidden="true"></span>
+                            <button type="button" aria-label="引言"><i class="bi bi-quote" aria-hidden="true"></i></button>
+                            <button type="button" aria-label="code"><i class="bi bi-code" aria-hidden="true"></i></button>
+                          </div>
+                          <p>下面這張表是去年（2025）的全年損益，營業額 1,842&nbsp;萬，<span class="editor-selection">稅後淨利 61&nbsp;萬，淨利率 3.3%</span>。這個數字比多數人想像的低很多。</p>
+                        </div>
+
+                        <!-- 免費預覽分隔線：作者看到的是這條線，讀者看到的是付費牆（唯一允許用虛線當分隔的地方） -->
+                        <div class="preview-divider" role="separator" aria-label="免費預覽分隔線：以上為免費預覽內容，以下需訂閱才能閱讀；目前免費預覽 2,200 字，可拖曳調整位置">
+                          <span class="preview-divider-grip" aria-hidden="true"><i class="bi bi-grip-vertical"></i></span>
+                          <span class="preview-divider-label"><i class="bi bi-lock" aria-hidden="true"></i>以上為免費預覽內容，以下需訂閱才能閱讀</span>
+                          <span class="preview-divider-count num">2,200&nbsp;字</span>
+                          <span class="preview-divider-grip" aria-hidden="true"><i class="bi bi-grip-vertical"></i></span>
+                        </div>
+                        <p class="preview-divider-hint">可拖曳調整位置</p>
+
+                        <!-- 空行＋插入：左側「＋」固定在空行左側（不是 hover 才出現），插入選單展開 -->
+                        <div class="insert-line">
+                          <button class="insert-btn" type="button" aria-label="插入區塊" aria-expanded="true" aria-controls="insertMenu"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
+                          <p class="editor-placeholder">開始寫吧。選取文字可設定格式，按 ＋ 插入圖片、表格或引言。<span class="editor-caret" aria-hidden="true"></span></p>
+                          <div id="insertMenu" class="insert-menu" role="menu" aria-label="插入區塊">
+                            <p class="insert-menu-group" role="presentation">內容</p>
+                            <button type="button" role="menuitem"><i class="bi bi-image" aria-hidden="true"></i>圖片</button>
+                            <button type="button" role="menuitem"><i class="bi bi-table" aria-hidden="true"></i>表格</button>
+                            <button type="button" role="menuitem"><i class="bi bi-quote" aria-hidden="true"></i>引言區塊</button>
+                            <button type="button" role="menuitem"><i class="bi bi-hr" aria-hidden="true"></i>分隔線</button>
+                            <p class="insert-menu-group" role="presentation">清單與程式</p>
+                            <button type="button" role="menuitem"><i class="bi bi-list-ul" aria-hidden="true"></i>項目清單</button>
+                            <button type="button" role="menuitem"><i class="bi bi-list-ol" aria-hidden="true"></i>編號清單</button>
+                            <button type="button" role="menuitem"><i class="bi bi-code-slash" aria-hidden="true"></i>程式碼區塊</button>
+                            <p class="insert-menu-group" role="presentation">訂閱</p>
+                            <button class="is-key" type="button" role="menuitem"><i class="bi bi-lock" aria-hidden="true"></i>免費預覽分隔線</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 底部操作列 -->
+                    <div class="editor-actions">
+                      <p class="editor-saved"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>已自動儲存於 14:28</p>
+                      <div class="editor-actions-buttons">
+                        <button class="btn btn-outline-primary" type="button">儲存草稿</button>
+                        <button class="btn btn-outline-primary" type="button">預覽</button>
+                        <button class="btn btn-primary" type="button">發布文章</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 文章設定面板 4 欄（≥ 992px sticky，可收合） -->
+                <div class="col-lg-4">
+                  <aside class="editor-panel" aria-labelledby="editorPanelTitle">
+                    <div class="editor-panel-head">
+                      <h3 id="editorPanelTitle" class="editor-panel-title">文章設定</h3>
+                      <button class="editor-panel-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#editorPanelBody" aria-expanded="true" aria-controls="editorPanelBody" aria-label="收合面板">
+                        <i class="bi bi-layout-sidebar-inset-reverse" aria-hidden="true"></i>
+                      </button>
+                    </div>
+                    <div id="editorPanelBody" class="collapse show">
+                      <div class="editor-panel-body">
+                        <div class="panel-field">
+                          <label class="form-label" for="postCategory">分類</label>
+                          <select class="form-select" id="postCategory">
+                            <option selected>餐飲與零售</option>
+                            <option>製造與供應鏈</option>
+                            <option>農業與食品</option>
+                            <option>軟體與數位產品</option>
+                            <option>文化與創作產業</option>
+                            <option>醫療與社會工作</option>
+                            <option>物流與運輸</option>
+                          </select>
+                        </div>
+                        <div class="panel-field">
+                          <p class="form-label" id="postTagsLabel">標籤<span class="form-label-optional">最多 5 個</span></p>
+                          <ul class="tag-list" aria-labelledby="postTagsLabel">
+                            <li><span class="tag tag-removable">#成本結構<button type="button" aria-label="移除標籤 #成本結構"><i class="bi bi-x" aria-hidden="true"></i></button></span></li>
+                            <li><span class="tag tag-removable">#開店<button type="button" aria-label="移除標籤 #開店"><i class="bi bi-x" aria-hidden="true"></i></button></span></li>
+                            <li><span class="tag tag-removable">#損益表<button type="button" aria-label="移除標籤 #損益表"><i class="bi bi-x" aria-hidden="true"></i></button></span></li>
+                            <li><button class="tag tag-add" type="button"><i class="bi bi-plus-lg" aria-hidden="true"></i>新增</button></li>
+                          </ul>
+                        </div>
+                        <fieldset class="panel-field">
+                          <legend class="form-label">付費層級</legend>
+                          <div class="form-check">
+                            <input class="form-check-input" type="radio" name="postTier" id="postTierFree" value="free">
+                            <label class="form-check-label" for="postTierFree">免費閱讀</label>
+                          </div>
+                          <div class="form-check">
+                            <input class="form-check-input" type="radio" name="postTier" id="postTierPaid" value="premium" checked>
+                            <label class="form-check-label" for="postTierPaid">訂閱限定</label>
+                          </div>
+                        </fieldset>
+                        <div class="panel-field">
+                          <p class="form-label">免費預覽範圍</p>
+                          <!-- 只顯示結果：調整只能拖內文的分隔線（同一件事只有一個控制點） -->
+                          <div class="panel-progress">
+                            <div class="progress" role="progressbar" aria-label="免費預覽範圍" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100">
+                              <div class="progress-bar" style="width: 32%"></div>
+                            </div>
+                            <span class="num">32%</span>
+                          </div>
+                          <p class="form-text">2,200 ／ 6,800&nbsp;字 ‧ 由內文中的分隔線位置決定</p>
+                        </div>
+                        <div class="panel-field">
+                          <p class="form-label">封面圖</p>
+                          <div class="img-frame ratio-cover panel-cover">
+                            <img src="images/cover-restaurant-costs.jpg" alt="營業前擺好桌椅的餐酒館用餐區" width="1200" height="630" loading="lazy">
+                          </div>
+                          <button class="btn btn-outline-primary btn-sm w-100 mt-2" type="button"><i class="bi bi-upload" aria-hidden="true"></i>上傳</button>
+                          <p class="form-text">建議 1200 × 630px</p>
+                        </div>
+                        <dl class="panel-facts">
+                          <div><dt>預估閱讀時間</dt><dd>18&nbsp;分鐘</dd></div>
+                          <div><dt>目前字數</dt><dd class="num">6,800&nbsp;字</dd></div>
+                        </dl>
+                        <p class="form-text mb-0">依字數自動計算</p>
+                      </div>
+                    </div>
+                  </aside>
+                </div>
+              </div>
+
+              <!-- 設計稿狀態示意：編輯器的其他狀態 -->
+              <section class="demo-state" aria-labelledby="demoEditorTitle">
+                <h3 class="demo-state-title" id="demoEditorTitle"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意：編輯器的其他狀態</h3>
+                <p class="demo-state-note">浮動工具列、插入選單、免費預覽分隔線在上面同時出現只是為了一次看完；實際使用時，工具列只在選取文字時出現、插入選單只在按下「＋」後出現。</p>
+                <div class="row g-3">
+                  <div class="col-xl-7">
+                    <span class="demo-caption">發布前檢查未通過</span>
+                    <div class="demo-stage publish-check">
+                      <p class="publish-check-title">發布前請確認</p>
+                      <ul class="check-list">
+                        <li class="is-done"><i class="bi bi-check-square-fill" aria-hidden="true"></i><span><span class="visually-hidden">已完成：</span>已設定分類</span></li>
+                        <li class="is-done"><i class="bi bi-check-square-fill" aria-hidden="true"></i><span><span class="visually-hidden">已完成：</span>已填寫導言</span></li>
+                        <li class="is-todo"><i class="bi bi-square" aria-hidden="true"></i><span><span class="visually-hidden">未完成：</span>尚未設定免費預覽分隔線</span></li>
+                      </ul>
+                      <div class="callout callout-warning">
+                        <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                        <div class="callout-body">
+                          <p>這篇設為訂閱限定，但還沒指定免費預覽範圍。建議開放前 1/3。</p>
+                          <button class="btn btn-outline-primary" type="button">自動設定</button>
+                        </div>
+                      </div>
+                      <div class="editor-actions-buttons publish-check-actions">
+                        <button class="btn btn-outline-primary" type="button">儲存草稿</button>
+                        <button class="btn btn-outline-primary" type="button">預覽</button>
+                        <button class="btn btn-primary" type="button" disabled aria-describedby="publishDisabledNote">發布文章</button>
+                      </div>
+                      <p id="publishDisabledNote" class="text-note mt-2 mb-0">檢查未全部通過前，「發布文章」維持停用狀態。</p>
+                    </div>
+                  </div>
+                  <div class="col-xl-5 d-grid gap-3 align-content-start">
+                    <div>
+                      <span class="demo-caption">草稿未完成</span>
+                      <div class="callout callout-warning">
+                        <i class="bi bi-pencil" aria-hidden="true"></i>
+                        <div class="callout-body"><p>這篇還缺少分類與導言，補齊後就能發布。</p></div>
+                      </div>
+                    </div>
+                    <div>
+                      <span class="demo-caption">自動儲存失敗</span>
+                      <div class="callout callout-warning" role="status">
+                        <i class="bi bi-cloud-slash" aria-hidden="true"></i>
+                        <div class="callout-body"><p>無法連線，內容已暫存在本機，恢復連線後會自動同步。</p></div>
+                      </div>
+                    </div>
+                    <div>
+                      <span class="demo-caption">空白新文章</span>
+                      <div class="editor-sheet editor-sheet-blank">
+                        <div class="editor-doc">
+                          <p class="editor-title is-placeholder">文章標題</p>
+                          <p class="editor-lede is-placeholder">用兩三句話說明這篇要講什麼，這段會顯示在列表與分享卡片上。</p>
+                          <p class="editor-placeholder">開始寫吧。選取文字可設定格式，按 ＋ 插入圖片、表格或引言。</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </section>
+
+            <!-- ===== 6. 內容數據（作者、管理員） ===== -->
+            <section id="analytics" class="acct-section" data-show-role="author admin" aria-labelledby="analyticsTitle">
+              <div class="section-head">
+                <h2 id="analyticsTitle">內容數據 <span class="role-chip"><i class="bi bi-eye" aria-hidden="true"></i>作者可見</span></h2>
+                <!-- 期間切換放在所有圖表上方（視覺切換，數字不變） -->
+                <div class="btn-group segmented" role="group" aria-label="統計期間">
+                  <input class="btn-check" type="radio" name="period" id="period30" checked><label class="btn" for="period30">近 30&nbsp;天</label>
+                  <input class="btn-check" type="radio" name="period" id="period90"><label class="btn" for="period90">近 90&nbsp;天</label>
+                  <input class="btn-check" type="radio" name="period" id="periodAll"><label class="btn" for="periodAll">全部</label>
+                </div>
+              </div>
+
+              <dl class="stat-strip">
+                <div class="stat">
+                  <dt class="stat-label">總瀏覽</dt>
+                  <dd class="stat-value"><span class="figure-num">18,420</span></dd>
+                </div>
+                <div class="stat">
+                  <dt class="stat-label">閱讀完成率</dt>
+                  <dd class="stat-value"><span class="figure-num">71</span><span class="stat-unit">%</span></dd>
+                </div>
+                <div class="stat">
+                  <dt class="stat-label">讀到付費牆</dt>
+                  <dd class="stat-value"><span class="figure-num">6,208</span><span class="stat-unit">人</span></dd>
+                </div>
+                <!-- 唯一強調的一張：由本篇帶來的訂閱 -->
+                <div class="stat is-key">
+                  <dt class="stat-label">由本篇帶來的訂閱</dt>
+                  <dd class="stat-value"><span class="figure-num">214</span><span class="stat-unit">人</span></dd>
+                </div>
+              </dl>
+
+              <div class="row g-4 analytics-charts">
+                <div class="col-xl-7">
+                  <!-- 圖 1 閱讀漏斗：等比例橫條、同一個刻度（0–25,000 人）、同一個顏色；數值直接標在右側。最後一段很短是事實，不放大 -->
+                  <figure class="exhibit">
+                    <figcaption class="exhibit-head">
+                      <span class="exhibit-label">圖 1</span>
+                      <span class="exhibit-title">一間餐廳的成本結構 ｜ 讀者轉換路徑</span>
+                      <span class="exhibit-unit">近 30&nbsp;天 ‧ 絕對人數</span>
+                    </figcaption>
+                    <div class="hbar-chart" style="--grid: 20%" role="img" aria-label="閱讀漏斗，近 30 天：開啟文章 18,420 人；讀完免費段 6,208 人，佔前一階段 33.7%；點擊訂閱 892 人，佔前一階段 14.4%；完成訂閱 214 人，佔前一階段 24.0%。">
+                      <div class="hbar-row" style="--value: 73.68%">
+                        <span class="hbar-label">開啟文章</span>
+                        <span class="hbar-track"><span class="hbar-bar"></span><span class="hbar-value">18,420</span></span>
+                      </div>
+                      <div class="hbar-row" style="--value: 24.83%">
+                        <span class="hbar-label">讀完免費段</span>
+                        <span class="hbar-track"><span class="hbar-bar"></span><span class="hbar-value">6,208<small>佔前一階段 33.7%</small></span></span>
+                      </div>
+                      <div class="hbar-row" style="--value: 3.57%">
+                        <span class="hbar-label">點擊訂閱</span>
+                        <span class="hbar-track"><span class="hbar-bar"></span><span class="hbar-value">892<small>佔前一階段 14.4%</small></span></span>
+                      </div>
+                      <div class="hbar-row" style="--value: 0.86%">
+                        <span class="hbar-label">完成訂閱</span>
+                        <span class="hbar-track"><span class="hbar-bar"></span><span class="hbar-value">214<small>佔前一階段 24.0%</small></span></span>
+                      </div>
+                      <span class="hbar-ticks" aria-hidden="true">
+                        <span style="--at: 0%">0</span>
+                        <span style="--at: 20%">5,000</span>
+                        <span style="--at: 40%">10,000</span>
+                        <span style="--at: 60%">15,000</span>
+                        <span style="--at: 80%">20,000</span>
+                        <span style="--at: 100%">25,000</span>
+                      </span>
+                      <span class="hbar-axis-title" aria-hidden="true">人數</span>
+                    </div>
+                    <p class="exhibit-source">資料來源：現場筆記作者後台。百分比為佔前一階段的比例。</p>
+                  </figure>
+                </div>
+                <div class="col-xl-5">
+                  <!-- 圖 2 各段轉換率：0–100% 刻度；平均線 24.7% 是唯一的虛線，只畫在「讀完免費段」。人數與百分比分成兩張圖，不用雙軸 -->
+                  <figure class="exhibit">
+                    <figcaption class="exhibit-head">
+                      <span class="exhibit-label">圖 2</span>
+                      <span class="exhibit-title">各段轉換率</span>
+                      <span class="exhibit-unit">近 30&nbsp;天 ‧ 佔前一階段</span>
+                    </figcaption>
+                    <div class="hbar-chart" style="--grid: 25%" role="img" aria-label="各段轉換率，近 30 天：讀完免費段 33.7%，你的平均 24.7%，高出 9 個百分點；點擊訂閱 14.4%；完成訂閱 24.0%。">
+                      <div class="hbar-row" style="--value: 33.7%">
+                        <span class="hbar-label">讀完免費段</span>
+                        <span class="hbar-track"><span class="hbar-bar"></span><span class="hbar-threshold" style="--at: 24.7%"></span><span class="hbar-value">33.7%</span></span>
+                      </div>
+                      <span class="hbar-threshold-note">虛線：你的平均 24.7% ‧ 高出 9 個百分點</span>
+                      <div class="hbar-row" style="--value: 14.4%">
+                        <span class="hbar-label">點擊訂閱</span>
+                        <span class="hbar-track"><span class="hbar-bar"></span><span class="hbar-value">14.4%</span></span>
+                      </div>
+                      <div class="hbar-row" style="--value: 24%">
+                        <span class="hbar-label">完成訂閱</span>
+                        <span class="hbar-track"><span class="hbar-bar"></span><span class="hbar-value">24.0%</span></span>
+                      </div>
+                      <span class="hbar-ticks" aria-hidden="true">
+                        <span style="--at: 0%">0%</span>
+                        <span style="--at: 25%">25%</span>
+                        <span style="--at: 50%">50%</span>
+                        <span style="--at: 75%">75%</span>
+                        <span style="--at: 100%">100%</span>
+                      </span>
+                    </div>
+                    <p class="exhibit-source">資料來源：現場筆記作者後台。</p>
+                  </figure>
+                </div>
+              </div>
+
+              <div class="callout callout-brand analytics-insight">
+                <i class="bi bi-lightbulb" aria-hidden="true"></i>
+                <div class="callout-body">
+                  <p class="callout-title">洞察</p>
+                  <p>這篇的「讀完免費段」比例高於你的平均值 9 個百分點，導言的數字開場可能是原因。</p>
+                </div>
+              </div>
+
+              <!-- 每張圖都附數據表（tooltip 不能是唯一的讀值方式） -->
+              <figure class="exhibit">
+                <figcaption class="exhibit-head">
+                  <span class="exhibit-label">表 1</span>
+                  <span class="exhibit-title">圖 1 的數據：讀者轉換路徑</span>
+                  <span class="exhibit-unit">近 30&nbsp;天 ‧ 單位：人</span>
+                </figcaption>
+                <div class="table-responsive">
+                  <table class="table exhibit-table">
+                    <caption class="visually-hidden">讀者轉換路徑數據表：各階段人數、佔前一階段與佔開啟數</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">階段</th>
+                        <th scope="col" class="text-end">人數</th>
+                        <th scope="col" class="text-end">佔前一階段</th>
+                        <th scope="col" class="text-end">佔開啟數</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><th scope="row">開啟文章</th><td class="text-end">18,420</td><td class="text-end"><span aria-hidden="true">—</span><span class="visually-hidden">不適用</span></td><td class="text-end">100.0%</td></tr>
+                      <tr><th scope="row">讀完免費段</th><td class="text-end">6,208</td><td class="text-end">33.7%</td><td class="text-end">33.7%</td></tr>
+                      <tr><th scope="row">點擊訂閱</th><td class="text-end">892</td><td class="text-end">14.4%</td><td class="text-end">4.8%</td></tr>
+                      <tr><th scope="row">完成訂閱</th><td class="text-end">214</td><td class="text-end">24.0%</td><td class="text-end">1.2%</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </figure>
+
+              <h3 class="acct-subtitle">文章表現</h3>
+              <div class="table-responsive">
+                <table class="table table-data perf-table">
+                  <caption class="visually-hidden">文章表現：已發布文章的瀏覽、完成率、觸及付費牆、帶來訂閱與收藏數</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">標題</th>
+                      <th scope="col" class="text-end">瀏覽</th>
+                      <th scope="col" class="text-end">完成率</th>
+                      <th scope="col" class="text-end">觸及付費牆</th>
+                      <th scope="col" class="text-end">帶來訂閱</th>
+                      <th scope="col" class="text-end">收藏數</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row"><a href="article.html">一間餐廳的成本結構</a></th>
+                      <td class="text-end num">18,420</td>
+                      <td class="text-end num">71%</td>
+                      <td class="text-end num">6,208</td>
+                      <td class="text-end num">214</td>
+                      <td class="text-end"><span aria-hidden="true">—</span><span class="visually-hidden">無資料</span></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">為什麼我不做外送平台</th>
+                      <td class="text-end num">31,206</td>
+                      <td class="text-end"><span aria-hidden="true">—</span><span class="visually-hidden">無資料</span></td>
+                      <td class="text-end text-secondary">不適用</td>
+                      <td class="text-end text-secondary">不適用</td>
+                      <td class="text-end"><span aria-hidden="true">—</span><span class="visually-hidden">無資料</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <!-- ===== 7. 平台管理（管理員） ===== -->
+            <section id="admin" class="acct-section" data-show-role="admin" aria-labelledby="adminTitle">
+              <h2 id="adminTitle" class="acct-title">平台管理 <span class="role-chip"><i class="bi bi-eye" aria-hidden="true"></i>管理員可見</span></h2>
+
+              <!-- 7-1 作者申請審核佇列 -->
+              <div id="admin-review" class="admin-block">
+                <h3 class="acct-subtitle">作者申請審核</h3>
+                <div class="nav nav-underline" role="group" aria-label="申請狀態">
+                  <button class="nav-link active" type="button" aria-pressed="true">待審<span class="tab-count">3</span></button>
+                  <button class="nav-link" type="button" aria-pressed="false">已通過</button>
+                  <button class="nav-link" type="button" aria-pressed="false">已退件</button>
+                </div>
+                <article class="review-card" aria-labelledby="reviewName">
+                  <div class="review-card-head">
+                    <span class="avatar avatar-48 avatar-initial" aria-hidden="true">許</span>
+                    <div class="review-card-who">
+                      <p id="reviewName" class="review-card-name">許雅筑 <span class="status is-warning"><i class="bi bi-hourglass-split" aria-hidden="true"></i>審核中</span></p>
+                      <p class="review-card-meta">台中獨立選物店店主 ‧ 經營第 3&nbsp;年 ｜ 想寫：餐飲與零售</p>
+                    </div>
+                    <div class="review-card-actions">
+                      <button class="btn btn-text" type="button">查看佐證</button>
+                      <button class="btn btn-outline-primary" type="button">退件</button>
+                      <button class="btn btn-primary" type="button">通過</button>
+                    </div>
+                  </div>
+                  <dl class="review-card-body">
+                    <dt>寫作方向</dt>
+                    <dd>寫一間 12&nbsp;坪選物店的寄賣與通路抽成：哪些品牌適合寄賣、抽成三成到底划不划算，以及月底對帳時最常吵起來的三件事。</dd>
+                  </dl>
+                  <p class="review-card-date">申請於 <time class="num" datetime="2026-09-30">2026/09/30</time> ‧ 已附身分佐證</p>
+                  <!-- 退件原因：多行、必填、原文顯示給申請者；不給預設選項下拉 -->
+                  <div class="review-card-reject">
+                    <label class="form-label" for="rejectReason">退件原因（退件時必填，會完整顯示給申請者）</label>
+                    <textarea class="form-control" id="rejectReason" rows="3" placeholder="說明這次未通過的原因，以及申請者可以補充什麼。這段文字會原文顯示給對方。"></textarea>
+                  </div>
+                </article>
+
+                <section class="demo-state" aria-labelledby="demoQueueTitle">
+                  <h4 class="demo-state-title" id="demoQueueTitle"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意：審核佇列為空</h4>
+                  <div class="demo-stage">
+                    <div class="empty-state">
+                      <i class="bi bi-inbox" aria-hidden="true"></i>
+                      <p>目前沒有待審核的作者申請，辛苦了。</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <!-- 7-2 使用者與角色管理：角色、訂閱狀態、帳號狀態分 3 欄（互相獨立） -->
+              <div id="admin-users" class="admin-block">
+                <h3 class="acct-subtitle">使用者與角色管理</h3>
+                <div class="table-responsive">
+                  <table class="table table-data users-table">
+                    <caption class="visually-hidden">使用者與角色管理</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">使用者</th>
+                        <th scope="col">角色</th>
+                        <th scope="col">訂閱狀態</th>
+                        <th scope="col">帳號狀態</th>
+                        <th scope="col">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th scope="row"><span class="user-cell"><img class="avatar avatar-28" src="images/avatar-chen.jpg" alt="" width="28" height="28" loading="lazy">陳柏諺</span></th>
+                        <td><span class="status is-info"><i class="bi bi-pen" aria-hidden="true"></i>作者</span></td>
+                        <td><span class="status is-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>年費訂閱中</span></td>
+                        <td><span class="status is-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>啟用</span></td>
+                        <td class="row-actions"><button class="btn btn-text" type="button">降級為讀者</button><button class="btn btn-text text-danger" type="button">停用</button></td>
+                      </tr>
+                      <tr>
+                        <th scope="row"><span class="user-cell"><img class="avatar avatar-28" src="images/avatar-wang.jpg" alt="" width="28" height="28" loading="lazy">王孟潔</span></th>
+                        <td><span class="status is-info"><i class="bi bi-pen" aria-hidden="true"></i>作者</span></td>
+                        <td><span class="status is-neutral"><i class="bi bi-circle" aria-hidden="true"></i>免費會員</span></td>
+                        <td><span class="status is-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>啟用</span></td>
+                        <td class="row-actions"><button class="btn btn-text" type="button">降級為讀者</button><button class="btn btn-text text-danger" type="button">停用</button></td>
+                      </tr>
+                      <tr>
+                        <th scope="row"><span class="user-cell"><span class="avatar avatar-28 avatar-initial" aria-hidden="true">許</span>許雅筑</span></th>
+                        <td><span class="status is-neutral"><i class="bi bi-person" aria-hidden="true"></i>讀者</span></td>
+                        <td><span class="status is-warning"><i class="bi bi-hourglass-split" aria-hidden="true"></i>已取消待到期</span></td>
+                        <td><span class="status is-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>啟用</span></td>
+                        <td class="row-actions"><button class="btn btn-text" type="button">升級為作者</button><button class="btn btn-text text-danger" type="button">停用</button></td>
+                      </tr>
+                      <tr>
+                        <th scope="row"><span class="user-cell"><span class="avatar avatar-28 avatar-initial" aria-hidden="true">D</span>@deal_hunter_99</span></th>
+                        <td><span class="status is-neutral"><i class="bi bi-person" aria-hidden="true"></i>讀者</span></td>
+                        <td><span class="status is-neutral"><i class="bi bi-circle" aria-hidden="true"></i>免費會員</span></td>
+                        <td><span class="status is-danger"><i class="bi bi-slash-circle" aria-hidden="true"></i>已停用</span></td>
+                        <td class="row-actions"><button class="btn btn-text" type="button">恢復啟用</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 7-3 文章管理（違規下架） -->
+              <div id="admin-articles" class="admin-block">
+                <h3 class="acct-subtitle">文章管理（違規下架）</h3>
+                <div class="admin-article">
+                  <div class="img-frame ratio-cover admin-article-thumb"><img src="images/cover-concert-pricing.jpg" alt="" width="1200" height="630" loading="lazy"></div>
+                  <div class="admin-article-body">
+                    <p class="admin-article-title">一場演唱會的票價是誰決定的</p>
+                    <p class="admin-article-meta">鄭昱安 ｜ 文化與創作產業 ｜ 發布於 <time class="num" datetime="2026-08-25">2026/08/25</time></p>
+                  </div>
+                  <div class="admin-article-actions">
+                    <a class="btn btn-outline-primary" href="article.html">查看文章</a>
+                    <button class="btn btn-outline-danger" type="button"><i class="bi bi-slash-circle" aria-hidden="true"></i>違規下架</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ===== 8. 成為作者（讀者：申請表＋狀態；作者、管理員：只顯示已通過） ===== -->
+            <section id="apply" class="acct-section" aria-labelledby="applyTitle">
+              <h2 id="applyTitle" class="acct-title">成為作者 <span class="role-chip" data-show-role="reader"><i class="bi bi-eye" aria-hidden="true"></i>一般讀者可見</span></h2>
+
+              <!-- 作者、管理員：已通過 -->
+              <div class="callout callout-success" data-show-role="author admin">
+                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                <div class="callout-body">
+                  <p>你已是認證作者（通過於 2026/04/18）。</p>
+                  <a class="btn btn-outline-primary" href="#editor">開始撰寫文章</a>
+                </div>
+              </div>
+
+              <!-- 讀者：說明 → S15 → 申請表＋申請狀態 -->
+              <div data-show-role="reader">
+                <p class="apply-intro">現場筆記只收第一線工作者的文章。請告訴我們你在哪個現場、做了多久，以及你想寫什麼。審核約需 5&nbsp;個工作天。</p>
+
+                <section class="demo-state apply-gate" aria-labelledby="demoGateTitle">
+                  <h3 class="demo-state-title" id="demoGateTitle"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意：讀者直接輸入作者後台網址時</h3>
+                  <div class="demo-stage">
+                    <div class="empty-state">
+                      <i class="bi bi-lock" aria-hidden="true"></i>
+                      <p>這個區域需要作者身分。</p>
+                      <a class="btn btn-primary" href="#applyForm">申請成為作者</a>
+                    </div>
+                  </div>
+                </section>
+
+                <div class="row g-4 mt-1">
+                  <div class="col-xl-7">
+                    <!-- 作者申請表（未申請狀態）。串接後端時，form 的 action 改成送出申請的網址 -->
+                    <form id="applyForm" class="apply-form" action="account.html#apply">
+                      <h3 class="apply-form-title">作者申請表</h3>
+                      <div class="row g-3">
+                        <div class="col-sm-6">
+                          <label class="form-label" for="applyName">真實姓名</label>
+                          <input class="form-control" id="applyName" type="text" autocomplete="name" value="陳柏諺">
+                        </div>
+                        <div class="col-sm-6">
+                          <label class="form-label" for="applyYears">年資</label>
+                          <input class="form-control" id="applyYears" type="text" value="開店第 4 年">
+                        </div>
+                        <div class="col-12">
+                          <label class="form-label" for="applyTitle">目前職稱與單位</label>
+                          <input class="form-control" id="applyTitle" type="text" autocomplete="organization-title" value="台北某獨立餐酒館主廚兼老闆">
+                        </div>
+                        <div class="col-12">
+                          <label class="form-label" for="applyTopic">想寫的主題分類</label>
+                          <select class="form-select" id="applyTopic">
+                            <option selected>餐飲與零售</option>
+                            <option>製造與供應鏈</option>
+                            <option>農業與食品</option>
+                            <option>軟體與數位產品</option>
+                            <option>文化與創作產業</option>
+                            <option>醫療與社會工作</option>
+                            <option>物流與運輸</option>
+                          </select>
+                        </div>
+                        <div class="col-12">
+                          <label class="form-label" for="applyPlan">寫作方向說明</label>
+                          <textarea class="form-control" id="applyPlan" rows="5" aria-describedby="applyPlanCount">我想寫餐飲現場的真實數字：成本結構、翻桌率、重新談租約的過程。前三年我都在繳學費，想把那些開店教學不會講的隱形成本攤開來寫…</textarea>
+                          <p class="form-count" id="applyPlanCount"><span>200–500&nbsp;字</span><span class="num">已輸入 312&nbsp;字</span></p>
+                        </div>
+                        <div class="col-sm-6">
+                          <label class="form-label" for="applyLink">作品連結<span class="form-label-optional">選填</span></label>
+                          <input class="form-control" id="applyLink" type="url" placeholder="https://">
+                        </div>
+                        <div class="col-sm-6">
+                          <label class="form-label" for="applyProof">身分佐證</label>
+                          <input class="form-control" id="applyProof" type="file" aria-describedby="applyProofHint">
+                          <p class="form-text" id="applyProofHint">上傳名片、識別證或作品。不公開，僅供審核使用</p>
+                        </div>
+                      </div>
+                      <button class="btn btn-primary btn-lg mt-4" type="button">送出申請</button>
+                    </form>
+                  </div>
+                  <div class="col-xl-5">
+                    <section class="demo-state mt-0" aria-labelledby="demoApplyTitle">
+                      <h3 class="demo-state-title" id="demoApplyTitle"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意：申請狀態</h3>
+                      <div class="d-grid gap-3">
+                        <div>
+                          <span class="demo-caption">審核中</span>
+                          <div class="callout callout-warning" role="status">
+                            <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                            <div class="callout-body"><p>申請已送出（2026/09/30），審核約需 5&nbsp;個工作天，結果會以 Email 通知。</p></div>
+                          </div>
+                        </div>
+                        <div>
+                          <span class="demo-caption">已通過</span>
+                          <div class="callout callout-success" role="status">
+                            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                            <div class="callout-body">
+                              <p>你已是認證作者（通過於 2026/04/18）。</p>
+                              <a class="btn btn-outline-primary" href="account.html?role=author#editor">開始撰寫文章</a>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <span class="demo-caption">未通過</span>
+                          <div class="callout callout-danger" role="status">
+                            <i class="bi bi-x-circle-fill" aria-hidden="true"></i>
+                            <div class="callout-body">
+                              <p>這次未通過。原因：</p>
+                              <blockquote class="reject-quote">寫作方向說明較偏向理論整理，本平台以第一線實務經驗為主，歡迎補充具體工作場景後再次申請。</blockquote>
+                              <a class="btn btn-outline-primary" href="#applyForm">修改後重新申請</a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ===== 9. 帳號設定（所有角色） ===== -->
+            <section id="settings" class="acct-section" aria-labelledby="settingsTitle">
+              <h2 id="settingsTitle" class="acct-title">帳號設定</h2>
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <form class="settings-card" action="account.html#settings">
+                    <h3 class="settings-card-title">基本資料</h3>
+                    <div class="mb-3">
+                      <label class="form-label" for="displayName">顯示名稱</label>
+                      <input class="form-control" id="displayName" type="text" autocomplete="nickname" value="陳柏諺">
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label" for="email">Email</label>
+                      <input class="form-control" id="email" type="email" autocomplete="email" value="boyen.chen@example.com">
+                    </div>
+                    <button class="btn btn-outline-primary" type="button">變更密碼</button>
+                  </form>
+                </div>
+                <div class="col-md-6">
+                  <form class="settings-card" action="account.html#settings">
+                    <h3 class="settings-card-title">通知設定</h3>
+                    <div class="form-check form-switch settings-switch">
+                      <input class="form-check-input" type="checkbox" role="switch" id="notifyFollow" checked>
+                      <label class="form-check-label" for="notifyFollow">追蹤作者發新文</label>
+                    </div>
+                    <div class="form-check form-switch settings-switch">
+                      <input class="form-check-input" type="checkbox" role="switch" id="notifyReply" checked>
+                      <label class="form-check-label" for="notifyReply">留言回覆</label>
+                    </div>
+                    <div class="form-check form-switch settings-switch">
+                      <input class="form-check-input" type="checkbox" role="switch" id="notifyExpire" checked>
+                      <label class="form-check-label" for="notifyExpire">訂閱即將到期提醒</label>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <!-- 取消自動續訂：只有一層確認，兩顆按鈕一樣大、一樣好按（「先不要」是主要按鈕） -->
+      <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered cancel-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title" id="cancelModalTitle">要取消自動續訂嗎？</h2>
+              <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body">
+              <p>你仍可閱讀到 2026/11/02。如果是因為沒時間看，也可以改成年費方案慢慢讀。</p>
+              <div class="cancel-actions">
+                <button class="btn btn-outline-primary" type="button" data-bs-dismiss="modal">確認取消</button>
+                <button class="btn btn-primary" type="button" data-bs-dismiss="modal">先不要</button>
+              </div>
+              <p class="cancel-note">取消後：收藏與閱讀紀錄全部保留，免費文章照常閱讀，付費文章回到預覽狀態。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 頁面內容到這裡結束 ============ -->
+    </main>
+
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="row gy-4">
+          <div class="col-lg-5">
+            <a class="site-brand" href="index.html">
+              <span class="site-brand-name">現場筆記</span>
+              <span class="site-brand-en">FieldNotes</span>
+            </a>
+            <p class="site-footer-lead">這裡不收二手整理、不收懶人包，只收第一線工作者親自寫的長文。每篇文章都可以免費讀前三分之一，讀到關鍵的那一段才需要訂閱。</p>
+          </div>
+          <!-- 沒有頁面的連結（關於現場筆記、作者審核標準、聯絡我們）用不帶 href 的 <a> -->
+          <div class="col-6 col-md-4 col-lg-2 offset-lg-1">
+            <h2 class="site-footer-title">讀者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="articles.html">瀏覽文章</a></li>
+              <li><a href="pricing.html">訂閱方案</a></li>
+              <li><a href="account.html#library">我的收藏</a></li>
+              <li><a href="account.html#subscription">訂閱狀態</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">作者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="account.html?role=reader#apply">申請成為作者</a></li>
+              <li><a href="account.html?role=author#my-articles">我的文章</a></li>
+              <li><a href="account.html?role=author#editor">撰寫新文章</a></li>
+              <li><a href="account.html?role=author#analytics">內容數據</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">平台</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a>關於現場筆記</a></li>
+              <li><a>作者審核標準</a></li>
+              <li><a href="pricing.html#faq">退費與取消政策</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">© 2026 現場筆記 FieldNotes｜<wbr>本站為課程設計稿範例，文章、作者與數據皆為示意資料。</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

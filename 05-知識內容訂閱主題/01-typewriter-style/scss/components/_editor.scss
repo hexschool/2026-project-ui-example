@@ -1,0 +1,429 @@
+// ============================================================
+// 所見即所得編輯器（個人頁面的「撰寫新文章」、Guideline 的編輯器元件集）
+// 招牌「零多餘干擾」：寫作區是一張白紙，沒有固定的工具列與框線；
+// 選取文字時才浮出炭黑墨塊工具列，空行左側才出現＋，唯一的虛線是免費預覽分隔線（撕線）
+// 這是靜態的介面設計：不用 contenteditable，元件直接畫在畫面上
+// ============================================================
+
+// 寫作區外框：只有一條細線圍出「這張紙」，上方一列極簡的狀態列
+.editor {
+  border: 1px solid $rule;
+  background-color: $paper;
+}
+.editor-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  padding: .75rem 1rem;
+  border-bottom: 1px solid $rule;
+  font-size: $small-font-size;
+}
+.editor-topbar-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+// 自動儲存提示：成功＝勾勾＋鉛灰字；失敗見 .callout.is-warn（S21）
+.editor-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  white-space: nowrap;
+
+  .bi { color: $ok; }
+}
+
+// 稿面：內容置中、四周留白；行高與文章內頁相同（.prose）
+.editor-canvas {
+  position: relative;
+  max-width: calc(#{$prose-max-width} + 7rem);
+  margin-inline: auto;
+  padding: map-get($spacers, 5) map-get($spacers, 3) map-get($spacers, 5) map-get($spacers, 5) + .25rem;
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 6) map-get($spacers, 6) map-get($spacers, 6);
+  }
+  &.prose { max-width: calc(#{$prose-max-width} + 7rem); }
+}
+// 標題輸入：大字、打字稿字體
+.editor-title {
+  margin-bottom: 1rem;
+  font-size: 1.75rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+
+  @include media-breakpoint-up(md) {
+    font-size: 2rem;
+  }
+}
+// 導言輸入：比內文大一階
+.editor-lede {
+  margin-bottom: 1.5rem;
+  font-size: $prose-lede-size;
+  line-height: 1.85;
+}
+// placeholder：淡墨（空白新文章的三個輸入框也用這個）
+.editor-placeholder {
+  color: $ink-faint;
+}
+.editor-rule {
+  margin: 0 0 2rem;
+  border: 0;
+  border-top: 1px solid $rule;
+
+  &::after { content: none; }
+}
+
+// ---------- 選取狀態＋浮動格式工具列 ----------
+// 被選取的字：淡藍底＋底部 2px 色帶藍（游標色）；工具列浮在選取處正上方
+// <p class="editor-selection-line">…<mark class="editor-selection">稅後淨利 61 萬，淨利率 3.3%<span class="editor-toolbar" role="toolbar" …>…</span></mark>…</p>
+// ≥ 1400px：工具列對齊選取的字（定位在 <mark> 上）
+// < 1400px：寫作區變窄，選取處的位置不固定，工具列改成對齊段落左緣、浮在段落上方，過寬時可橫向捲動
+.editor-selection-line {
+  position: relative;
+  margin-top: 3.5rem;
+
+  @include media-breakpoint-up(xxl) {
+    margin-top: 0;
+  }
+}
+.editor-selection {
+  padding: .1em 0;
+  background-color: $ribbon-tint;
+  box-shadow: inset 0 -2px 0 $ribbon;
+  color: $ink;
+
+  @include media-breakpoint-up(xxl) {
+    position: relative;
+  }
+}
+// 炭黑墨塊工具列：白色圖示；B／I／S、連結、H2／H3、引言／code 之間用細分隔
+.editor-toolbar {
+  position: absolute;
+  bottom: calc(100% + .5rem);
+  left: 0;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: .25rem;
+  background-color: $ink;
+  color: $paper;
+  font-family: $font-family-base;
+  font-size: $font-size-sm;
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: nowrap;
+
+  @include media-breakpoint-up(xxl) {
+    max-width: none;
+    overflow: visible;
+
+    // 下方的小三角，指向選取的字（捲動容器會裁掉三角，所以只在 ≥ 1400px 畫）
+    &::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 1.25rem;
+      border: .375rem solid transparent;
+      border-top-color: $ink;
+    }
+  }
+}
+.editor-tool {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 .375rem;
+  border: 0;
+  background: transparent;
+  color: $paper;
+  font: inherit;
+  font-weight: $font-weight-bold;
+  cursor: pointer;
+
+  &:hover { background-color: $ribbon; }
+  &[aria-pressed="true"] { box-shadow: inset 0 -2px 0 $paper; }
+  &:focus-visible {
+    outline: 2px solid $paper;
+    outline-offset: -4px;
+  }
+  .bi { font-size: 1.0625rem; }
+}
+.editor-tool-sep {
+  width: 1px;
+  height: 1.25rem;
+  margin-inline: .25rem;
+  background-color: $ink-muted;
+}
+
+// ---------- 免費預覽分隔線（撕線）----------
+// 平台特有的區塊：作者看到的是這條線，讀者看到的是付費牆
+// 樣式和一般分隔線明顯不同：色帶藍 2px 虛線＋剪刀＋兩端拖曳把手＋即時字數；全站唯一的虛線分隔
+.preview-divider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 2.5rem 0 .5rem;
+  font-family: $font-family-base;
+  font-size: $small-font-size;
+  line-height: 1.4;
+  color: $ribbon;
+
+  // 虛線：畫在整條的垂直中央
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    border-top: 2px dashed $ribbon;
+  }
+}
+.preview-divider-handle {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 2.75rem;
+  border: 1px solid $ribbon;
+  background-color: $paper;
+  color: $ribbon;
+  font-size: 1rem;
+  cursor: grab;
+}
+.preview-divider-label {
+  word-break: keep-all; // 窄螢幕時只在 <wbr>（逗號後）換行
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-inline: auto;
+  padding: .375rem .75rem;
+  background-color: $paper;
+  font-weight: $font-weight-bold;
+  text-align: center;
+}
+.preview-divider-count {
+  position: relative;
+  padding: .375rem .5rem;
+  background-color: $ribbon;
+  color: $paper;
+  font-weight: $font-weight-bold;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.preview-divider-hint {
+  margin: 0 0 2.5rem;
+  color: $body-secondary-color;
+  font-family: $font-family-base;
+  font-size: $small-font-size;
+  text-align: center;
+}
+
+// ---------- 空行＋插入鈕（＋）＋插入區塊選單 ----------
+// ＋固定在空行左側（不是 hover 才出現）；選單展開時列出 8 種區塊，分 3 組
+.editor-empty-line {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr; // 第一欄＋、第二欄 placeholder；展開的選單在第二列、和文字對齊
+  align-items: start;
+  gap: .5rem .75rem;
+  margin-left: -3rem;
+
+  @include media-breakpoint-down(md) {
+    margin-left: -2.75rem;
+  }
+  p { margin: 0; }
+}
+// ＋：全站少數圓形的元件（和方形的徽章、按鈕區隔，一眼看出是「插入」）
+.editor-plus {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-top: .1875rem;
+  border: 1px solid $ink;
+  border-radius: $border-radius-pill;
+  background-color: $paper;
+  color: $ink;
+  font-size: 1rem;
+  cursor: pointer;
+
+  &:hover,
+  &[aria-expanded="true"] {
+    border-color: $ribbon;
+    background-color: $ribbon;
+    color: $paper;
+  }
+  // 觸控目標：外擴到 44px
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -.25rem;
+  }
+}
+// 插入區塊選單：Bootstrap dropdown（data-bs-display="static"），設計稿上預設展開
+.editor-insert-menu {
+  --bs-dropdown-min-width: 15rem;
+  grid-column: 2;
+  justify-self: start;
+  --bs-dropdown-font-size: #{$font-size-sm};
+  --bs-dropdown-header-padding-y: .375rem;
+  margin-top: 0 !important;
+  font-family: $font-family-base;
+  line-height: 1.5;
+
+  // 展開時接在空行下方、和文字對齊（不浮在別的內容上，設計稿上看得到整個選單）
+  &.show {
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+  }
+  .dropdown-header {
+    font-size: .75rem;
+    font-weight: $font-weight-medium;
+    color: $body-secondary-color;
+  }
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    min-height: 2.5rem;
+
+    .bi { width: 1.125rem; font-size: 1rem; text-align: center; }
+  }
+  // 「免費預覽分隔線」：訂閱組的強調樣式（色帶藍＋淡藍底）
+  .dropdown-item.is-paywall {
+    background-color: $ribbon-tint;
+    color: $ribbon;
+    font-weight: $font-weight-bold;
+
+    &:hover,
+    &:focus { background-color: $ribbon; color: $paper; }
+  }
+}
+.editor-insert {
+  position: relative;
+}
+
+// ---------- 底部操作列 ----------
+.editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+  padding: 1rem;
+  border-top: 1px solid $rule;
+
+  .editor-saved { margin-right: auto; }
+}
+.editor-actions-note {
+  flex-basis: 100%;
+  margin: 0;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+}
+
+// ---------- 文章設定面板 ----------
+// ≥ 992px sticky；標題列右側收合按鈕（Bootstrap Collapse）；< 992px 移到寫作區下方
+.editor-settings {
+  border: 1px solid $ink;
+  background-color: $paper;
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+  }
+}
+.editor-settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .5rem .5rem .5rem 1.25rem;
+  border-bottom: 1px solid $rule;
+
+  h3 { margin: 0; font-size: 1.125rem; }
+  .site-icon-btn .bi { transition: transform .15s ease; }
+  .site-icon-btn[aria-expanded="false"] .bi { transform: rotate(180deg); }
+}
+.editor-settings-body {
+  padding: 1.25rem;
+  font-size: $font-size-sm;
+}
+.editor-setting {
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid $rule;
+
+  &:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: 0; }
+  .form-label { display: block; }
+}
+// 可移除的標籤
+.tag-removable {
+  padding-right: .25rem;
+
+  button {
+    display: inline-grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    &:hover { color: $ribbon; }
+  }
+}
+.editor-cover {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1200 / 630;
+  margin-bottom: .75rem;
+  border: 1px solid $ink;
+  object-fit: cover;
+}
+// 唯讀的計算結果（預估閱讀時間、目前字數）
+.editor-readonly {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin: 0 0 .5rem;
+
+  strong {
+    font-family: $font-family-typewriter;
+    font-size: 1.125rem;
+  }
+}
+
+// ---------- 發布前檢查 ----------
+.publish-check {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    min-height: 2rem;
+  }
+  .is-done .bi { color: $ok; }
+  .is-todo { color: $warn; font-weight: $font-weight-medium; }
+}

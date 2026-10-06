@@ -1,0 +1,320 @@
+// ============================================================
+// 圖表 Exhibit（本風格的招牌之二）：像智庫報告裡的圖表
+// 頂端報頭雙線 → 「表 1／圖 1」編號＋標題 → 單位或期間 → 圖或表 → 底部資料來源
+// 用在：文章內頁損益表、內容數據的閱讀漏斗與轉換率、Guideline 圖表示範
+//
+// <figure class="exhibit">
+//   <figcaption class="exhibit-head">
+//     <span class="exhibit-label">圖 1</span>
+//     <span class="exhibit-title">標題</span>
+//     <span class="exhibit-unit">近 30 天 ‧ 絕對人數</span>
+//   </figcaption>
+//   …表格（.exhibit-table）或橫條圖（.hbar-chart）…
+//   <p class="exhibit-source">資料來源：…</p>
+// </figure>
+// ============================================================
+.exhibit {
+  margin: 2rem 0;
+  padding-top: calc(#{$rule-double-height} + .875rem);
+  @include rule-double(top);
+  font-family: $font-family-sans-serif;
+  font-size: 1rem;
+  line-height: $line-height-base;
+  letter-spacing: $letter-spacing-body;
+  color: $ink;
+}
+.exhibit-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .25rem .625rem;
+  margin-bottom: 1rem;
+}
+// 編號：深藍細框小字（圖表在文件中的順序，所以用數字）
+.exhibit-label {
+  flex: 0 0 auto;
+  padding: 0 .375rem;
+  border: 1px solid $oxford;
+  color: $oxford;
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+.exhibit-title {
+  font-family: $font-family-serif;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+  color: $oxford;
+}
+// 單位、期間：獨立一行小字
+.exhibit-unit {
+  flex-basis: 100%;
+  font-size: $small-font-size;
+  color: $slate;
+}
+.exhibit-source {
+  margin: .875rem 0 0;
+  padding-top: .5rem;
+  border-top: 1px solid $rule;
+  font-size: .75rem;
+  color: $slate-light;
+}
+
+// ---------- 圖表裡的表格（損益表、漏斗對應數據表） ----------
+// 表頭底下一條深藍線；數字欄靠右＋等寬數字；合計列上方深藍線＋霧白紙底＋粗體
+.exhibit-table {
+  margin-bottom: 0;
+  font-size: $font-size-sm;
+  font-variant-numeric: tabular-nums;
+
+  > thead > tr > th {
+    border-bottom: 1px solid $oxford;
+    color: $slate;
+    font-size: $small-font-size;
+    font-weight: $font-weight-medium;
+    white-space: nowrap;
+  }
+  > tbody > tr > * {
+    border-bottom-color: $rule;
+  }
+  .is-total > * {
+    border-top: 1px solid $oxford;
+    border-bottom: 0;
+    background-color: $mist;
+    font-weight: $font-weight-bold;
+    color: $oxford;
+  }
+  th[scope="row"] {
+    font-weight: $font-weight-normal;
+  }
+  .is-total th[scope="row"] {
+    font-weight: $font-weight-bold;
+  }
+}
+
+// ---------- 數據卡 StatTile：小字標籤＋大號數字＋單位 ----------
+// 一列數據卡以欄線分開（報刊的分欄），不做成四張浮起的卡片
+// <dl class="stat-strip">
+//   <div class="stat"><dt class="stat-label">總瀏覽</dt><dd class="stat-value"><span class="figure-num">18,420</span></dd></div>
+//   <div class="stat is-key">…唯一強調的一張：深藍底白字…</div>
+// </dl>
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  border-top: 1px solid $oxford;
+  border-bottom: 1px solid $rule;
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.stat {
+  padding: 1rem 1.25rem 1.125rem;
+  border-left: 1px solid $rule;
+
+  // 每列第一格不畫左欄線；兩欄時第二列加上方線
+  @include media-breakpoint-down(xl) {
+    &:nth-child(2n + 1) { border-left: 0; padding-left: 0; }
+    &:nth-child(n + 3) { border-top: 1px solid $rule; }
+  }
+  @include media-breakpoint-up(xl) {
+    &:first-child { border-left: 0; padding-left: 0; }
+  }
+}
+.stat-label {
+  margin-bottom: .375rem;
+  font-size: $small-font-size;
+  font-weight: $font-weight-medium;
+  color: $slate;
+}
+.stat-value {
+  display: flex;
+  align-items: baseline;
+  gap: .25rem;
+  margin: 0;
+
+  .figure-num {
+    font-size: 2.125rem;
+  }
+}
+.stat-unit {
+  font-size: $font-size-sm;
+  color: $slate;
+}
+// 唯一強調的數據卡：深藍底白字（手機與桌機都保留內距，不貼齊欄線）
+.stat.is-key {
+  padding-left: 1.25rem !important;
+  background-color: $oxford;
+  color: $paper;
+
+  .stat-label,
+  .stat-unit { color: $on-oxford-muted; }
+  .figure-num { color: $paper; }
+}
+
+// ---------- 橫條圖 .hbar-chart（閱讀漏斗、各段轉換率） ----------
+// 同一張圖：等比例、同一個刻度、同一個顏色；數值直接標在橫條右側；格線實線，只有門檻線用虛線
+// 每一列用 style="--value: 73.7%" 指定長度（＝數值 ÷ 刻度最大值）；--grid 是格線間距（刻度的百分比）
+// <div class="hbar-chart" style="--grid: 20%" role="img" aria-label="完整說明">
+//   <div class="hbar-row" style="--value: 73.7%">
+//     <span class="hbar-label">開啟文章</span>
+//     <span class="hbar-track"><span class="hbar-bar"></span><span class="hbar-value">18,420</span></span>
+//   </div>
+//   <div class="hbar-axis" aria-hidden="true"><span class="hbar-ticks"><span style="--at: 0%">0</span>…</span></div>
+// </div>
+.hbar-chart {
+  --grid: 20%;
+  --bar-color: #{$chart-series-1};
+  --grid-color: #{$chart-grid};
+  --axis-color: #{$chart-axis};
+  --label-color: #{$ink};
+  --value-color: #{$oxford};
+  --note-color: #{$slate};
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: .25rem;
+  font-size: $font-size-sm;
+  font-variant-numeric: tabular-nums;
+  container-type: inline-size; // 圖表放在窄欄（例如 Guideline 的半欄）時，依自身寬度精簡刻度
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    column-gap: 1rem;
+  }
+}
+.hbar-row,
+.hbar-axis {
+  display: contents;
+}
+.hbar-label {
+  align-self: center;
+  color: var(--label-color);
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+
+  @include media-breakpoint-up(sm) {
+    text-align: right;
+  }
+  @include media-breakpoint-down(sm) {
+    margin-top: .5rem;
+    font-size: $small-font-size;
+  }
+}
+// 軌道：背後畫垂直格線（實線），左側是 0 的軸線
+.hbar-track {
+  position: relative;
+  display: block;
+  min-height: 2.5rem;
+  border-left: 1px solid var(--axis-color);
+  background-image: repeating-linear-gradient(to right, transparent 0, transparent calc(var(--grid) - 1px), var(--grid-color) calc(var(--grid) - 1px), var(--grid-color) var(--grid));
+}
+.hbar-bar {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: var(--value);
+  min-width: 2px; // 最小的一段也看得見，但不放大
+  height: 1.375rem;
+  transform: translateY(-50%);
+  background-color: var(--bar-color);
+}
+// 數值：緊接在橫條右端
+.hbar-value {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--value) + .5rem);
+  transform: translateY(-50%);
+  white-space: nowrap;
+  color: var(--value-color);
+  font-weight: $font-weight-bold;
+
+  small {
+    margin-left: .5rem;
+    font-size: $small-font-size;
+    font-weight: $font-weight-normal;
+    color: var(--note-color);
+  }
+}
+// 門檻線（平均值）：虛線，只畫在指定的那一列
+.hbar-threshold {
+  position: absolute;
+  top: -.25rem;
+  bottom: -.25rem;
+  left: var(--at);
+  border-left: 2px dashed var(--axis-color);
+}
+.hbar-threshold-note {
+  display: block;
+  margin-top: .125rem;
+  font-size: $small-font-size;
+  color: var(--note-color);
+
+  @include media-breakpoint-up(sm) {
+    grid-column: 2;
+  }
+}
+// 刻度列
+.hbar-ticks {
+  position: relative;
+  display: block;
+  height: 1.5rem;
+  margin-top: .25rem;
+  border-top: 1px solid var(--axis-color);
+  color: var(--note-color);
+  font-size: .75rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-column: 2;
+  }
+
+  > span {
+    position: absolute;
+    top: .25rem;
+    left: var(--at);
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  > span:first-child { transform: none; }
+  > span:last-child { transform: translateX(-100%); }
+}
+// 圖表本身窄於 34rem：刻度隔一個標一個（0、10,000、20,000／0%、50%、100%），格線不變，避免數字擠在一起
+@container (max-width: 34rem) {
+  .hbar-ticks > span:nth-child(even) {
+    display: none;
+  }
+}
+.hbar-axis-title {
+  display: block;
+  font-size: .75rem;
+  color: var(--note-color);
+  text-align: right;
+
+  @include media-breakpoint-up(sm) {
+    grid-column: 2;
+  }
+}
+
+// 深色底（Guideline 示範）：主系列換成淡藍灰，格線用深藍帶欄線，文字白色
+.exhibit-dark {
+  padding: calc(#{$rule-double-height} + 1.25rem) 1.25rem 1.25rem;
+  background-color: $oxford;
+  @include rule-double(top, $on-oxford-muted);
+  color: $paper;
+
+  .exhibit-label { border-color: $on-oxford-muted; color: $paper; }
+  .exhibit-title { color: $paper; }
+  .exhibit-unit,
+  .exhibit-source { color: $on-oxford-muted; }
+  .exhibit-source { border-top-color: $on-oxford-rule; }
+  .hbar-chart {
+    --bar-color: #{$chart-series-1-on-dark};
+    --grid-color: #{$chart-grid-on-dark};
+    --axis-color: #{$on-oxford-muted};
+    --label-color: #{$paper};
+    --value-color: #{$paper};
+    --note-color: #{$on-oxford-muted};
+  }
+}

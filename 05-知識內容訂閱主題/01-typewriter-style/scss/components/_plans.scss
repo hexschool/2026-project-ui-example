@@ -1,0 +1,209 @@
+// ============================================================
+// 方案卡 PlanCard 與比較矩陣 ComparisonTable（訂閱方案頁、Guideline 共用）
+// 招牌「黑白分明」：✓＝實心炭黑方格＋白勾＋「有」；✗＝空心方格＋淡墨叉＋「無」
+// 推薦方案（月費）：3px 炭黑粗框＋「★ 最多人選」墨塊標籤，固定在月費卡，不放大卡片、不上色
+// ============================================================
+
+// ---------- 方案卡 ----------
+// 方案名 → 價格（大字）→ 適合：… → ✓／✗ 權益清單 → 底部按鈕（貼底，三張等高）
+.plan-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: map-get($spacers, 5) map-get($spacers, 4) map-get($spacers, 4);
+  border: 1px solid $ink;
+  background-color: $paper;
+
+  @include media-breakpoint-up(xl) {
+    padding-inline: map-get($spacers, 5);
+  }
+  .btn { margin-top: auto; }
+
+  // 推薦：3px 粗框（內距少 2px，內容位置和另外兩張對齊）
+  &.is-recommended {
+    border-width: 3px;
+    padding: calc(#{map-get($spacers, 5)} - 2px) calc(#{map-get($spacers, 4)} - 2px) calc(#{map-get($spacers, 4)} - 2px);
+
+    @include media-breakpoint-up(xl) {
+      padding-inline: calc(#{map-get($spacers, 5)} - 2px);
+    }
+  }
+}
+// 「★ 最多人選」：壓在卡片上緣的墨塊標籤
+.plan-card-flag {
+  position: absolute;
+  top: 0;
+  left: map-get($spacers, 4) - .125rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  padding: .25rem .75rem;
+  background-color: $ink;
+  color: $paper;
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+  transform: translateY(-50%);
+
+  @include media-breakpoint-up(xl) {
+    left: map-get($spacers, 5) - .125rem;
+  }
+}
+.plan-card-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .75rem;
+  font-size: 1.25rem;
+}
+// 價格：NT$ 與「／月」縮小，數字大
+.plan-card-price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: .25rem;
+  margin-bottom: .5rem;
+
+  .figure-num { font-size: 3rem; line-height: 1; }
+}
+.plan-card-currency,
+.plan-card-period {
+  font-family: $font-family-typewriter;
+  font-size: 1rem;
+  font-weight: $font-weight-bold;
+}
+.plan-card-fit {
+  margin-bottom: map-get($spacers, 4);
+  padding-bottom: map-get($spacers, 3);
+  border-bottom: 1px solid $rule;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+}
+
+// ✓／✗ 權益清單：方格記號＋文字；✗ 保留並用次要色（不用刪除線）
+.check-list {
+  margin: 0 0 map-get($spacers, 4);
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    gap: .75rem;
+    padding-block: .375rem;
+    line-height: 1.6;
+  }
+  .is-no { color: $body-secondary-color; }
+}
+
+// 方格記號：<span class="check-mark is-yes" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+.check-mark {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: .1875rem;
+  border: 1px solid $ink;
+  font-size: .875rem;
+  line-height: 1;
+
+  &.is-yes {
+    background-color: $ink;
+    color: $paper;
+  }
+  &.is-no {
+    border-color: $control;
+    background-color: $paper;
+    color: $ink-faint;
+  }
+}
+
+// ---------- 比較矩陣 ----------
+// 表頭：炭黑墨塊＋白字；推薦欄（月費）：稿紙灰淡底，只到儲存格（不整欄染色）
+// 手機：在 .compare-scroll 內橫向捲動，首欄 position: sticky 凍結
+.compare-scroll {
+  position: relative; // 同 .table-scroll：裁住表格裡的 .visually-hidden
+  overflow-x: auto;
+  border: 1px solid $ink;
+  -webkit-overflow-scrolling: touch;
+
+  &:focus-visible { outline-offset: 2px; }
+}
+.compare-table {
+  width: 100%;
+  min-width: 40rem;
+  margin: 0;
+  border-collapse: separate; // sticky 首欄要用 separate 才不會丟掉框線
+  border-spacing: 0;
+  font-size: $font-size-sm;
+
+  th,
+  td {
+    padding: .875rem 1rem;
+    border-bottom: 1px solid $rule;
+    vertical-align: middle;
+  }
+  thead th {
+    background-color: $ink;
+    color: $paper;
+    font-weight: $font-weight-bold;
+    border-bottom: 0;
+    white-space: nowrap;
+  }
+  thead th:not(:first-child),
+  td {
+    width: 20%;
+    text-align: center;
+  }
+  tbody th {
+    font-weight: $font-weight-medium;
+    text-align: left;
+  }
+  // 首欄凍結
+  th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: $paper;
+    border-right: 1px solid $rule;
+  }
+  thead th:first-child {
+    background-color: $ink;
+    border-right-color: $ink-muted;
+  }
+  tbody tr:last-child > * { border-bottom: 0; }
+
+  // 推薦欄淡底
+  .is-recommended { background-color: $paper-gray; }
+  thead .is-recommended {
+    background-color: $ink;
+    box-shadow: inset 0 -4px 0 $paper-gray;
+  }
+  // 平均月費列：上方 2px 炭黑線，年費 NT$ 150 加粗
+  .is-price-row > * {
+    border-top: 2px solid $ink;
+    font-family: $font-family-typewriter;
+    font-size: 1rem;
+  }
+}
+// 儲存格內的「✓ 有」「✗ 無」「—」：方格記號＋文字
+.compare-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+
+  .check-mark { margin-top: 0; }
+  &.is-no { color: $body-secondary-color; }
+}
+// 手機提示：左右捲動可以看到三種方案
+.compare-hint {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .75rem;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+}

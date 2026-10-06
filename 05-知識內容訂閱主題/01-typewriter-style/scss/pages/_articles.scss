@@ -1,0 +1,194 @@
+// ============================================================
+// 文章列表 articles.html（class 前綴 articles-、filter-）
+// 3 : 9（篩選側欄 : 列表）；側欄用 .offcanvas-lg：≥ 992px 是 sticky 側欄，以下變成左側滑出的篩選面板
+// ============================================================
+
+// 頁首的搜尋列：最寬 720px（閱讀欄同寬）
+.articles-search {
+  display: flex;
+  gap: .5rem;
+  max-width: 45rem;
+  margin-top: map-get($spacers, 4);
+
+  .form-control { flex: 1; min-width: 0; }
+  .input-icon {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+
+    .bi {
+      position: absolute;
+      left: .875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+    .form-control { padding-left: 2.5rem; }
+  }
+}
+
+// ---------- 篩選側欄 ----------
+.articles-filter {
+  // 側欄比視窗高時，在自己的範圍內捲動（不然下半部要等列表捲到底才看得到）
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+    max-height: calc(100vh - #{$sticky-top-offset} - 1rem);
+    overflow-y: auto;
+    padding-right: .75rem;
+    scrollbar-width: thin;
+  }
+  // offcanvas 模式（< 992px）：左側滑出，標題列＋底部「清除篩選」「套用」
+  @include media-breakpoint-down(lg) {
+    --bs-offcanvas-width: min(22rem, 90vw);
+    border-right: 1px solid $ink;
+
+    .offcanvas-body { padding-top: 0; }
+  }
+  .offcanvas-header {
+    align-items: center;
+    gap: .5rem;
+    padding-top: 0;
+    padding-bottom: .75rem;
+    border-bottom: 2px solid $ink;
+
+    // Bootstrap 在 ≥ 992px 會隱藏 .offcanvas-lg 的標題列；本頁桌機也要「篩選＋清除篩選」，所以改回顯示
+    @include media-breakpoint-up(lg) {
+      display: flex;
+      padding-inline: 0;
+    }
+    @include media-breakpoint-down(lg) { padding-top: 1rem; }
+  }
+  @include media-breakpoint-up(lg) {
+    .offcanvas-body { padding: 0; overflow: visible; }
+  }
+}
+.filter-title {
+  margin: 0 auto 0 0;
+  font-family: $font-family-base;
+  font-size: 1rem;
+  font-weight: $font-weight-bold;
+}
+// 每組篩選：小標（h3，字小）＋選項
+.filter-group {
+  margin: 0;
+  padding: 0 0 map-get($spacers, 3); // 上方留白寫在 legend：fieldset 的 padding-top 會被放到 legend 下面
+  border: 0;
+  border-bottom: 1px solid $rule;
+
+  legend {
+    float: none;
+    width: auto;
+    margin-bottom: .25rem;
+    padding: map-get($spacers, 3) 0 0;
+    font-family: $font-family-base;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+  }
+  &:last-child { border-bottom: 0; }
+}
+// 主題分類：單選清單（radio 藏起來，選中是炭黑墨塊）
+.filter-topics {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  label {
+    display: flex;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: .125rem .75rem;
+    font-size: $font-size-sm;
+    cursor: pointer;
+
+    &:hover { color: $ribbon; }
+  }
+  .btn-check:checked + label {
+    background-color: $ink;
+    color: $paper;
+    font-weight: $font-weight-medium;
+  }
+  .btn-check:focus-visible + label {
+    outline: 2px solid $ribbon;
+    outline-offset: -2px;
+  }
+}
+// 閱讀權限、閱讀時間：一列一個 radio／checkbox（40px 高，整列都可點）
+.filter-group .form-check-row {
+  min-height: 2.5rem;
+  font-size: $font-size-sm;
+}
+.filter-group .tag {
+  min-height: 2rem;
+  font-size: $small-font-size;
+}
+.articles-filter-foot {
+  display: flex;
+  gap: .75rem;
+  padding: 1rem;
+  border-top: 1px solid $ink;
+
+  .btn { flex: 1; }
+}
+
+// ---------- 列表工具列：排序分頁籤＋顯示筆數 ----------
+.articles-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: .75rem 1.5rem;
+  margin-bottom: map-get($spacers, 3);
+
+  .sort-tabs {
+    flex: 1 1 auto;
+    min-width: 0;
+    border-bottom: 0;
+  }
+  // < 992px：第一列「篩選條件」按鈕＋筆數，第二列排序分頁籤（可橫向捲動）
+  @include media-breakpoint-down(lg) {
+    align-items: center;
+
+    .sort-tabs {
+      order: 3;
+      flex-basis: 100%;
+    }
+    .articles-count { padding-bottom: 0; }
+  }
+}
+// 排序分頁籤：用 radio（.btn-check）做選中狀態，點了會換選中項（列表是靜態示意）
+.sort-tabs {
+  .btn-check:checked + .nav-link {
+    color: $ink;
+    font-weight: $font-weight-bold;
+    border-bottom-color: $ink;
+  }
+  .btn-check:focus-visible + .nav-link {
+    box-shadow: inset 0 0 0 2px $ribbon;
+  }
+  .nav-link { cursor: pointer; }
+}
+.articles-count {
+  margin: 0;
+  padding-bottom: .75rem;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  white-space: nowrap;
+}
+
+// 分頁
+.articles-pagination {
+  margin-top: map-get($spacers, 5);
+
+  .pagination { flex-wrap: wrap; gap: .25rem; }
+  .page-link {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .page-item:not(:first-child) .page-link { margin-left: 0; }
+  .page-ellipsis .page-link { border-color: transparent; background: transparent; }
+}

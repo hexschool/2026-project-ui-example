@@ -1,0 +1,157 @@
+// ============================================================
+// 付費預覽牆 Paywall（文章內頁、Guideline 共用）
+// 結構：免費段最後一段（.paywall-teaser，覆蓋 140px 由透明到白紙的漸層）→ 付費牆卡（.paywall，疊紙）
+// 已訂閱：整個元件不渲染（漸層、卡片都沒有），文章接著往下
+// ============================================================
+
+// 殘句所在的段落：漸層覆蓋在最後一段上並略往下延伸，讓殘句是「正在淡出」而不是「已消失」
+// 漸層是裝飾：pointer-events: none，不擋選字
+.paywall-teaser {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -3.5rem; // 往下延伸到段落之後，殘句落在漸層的中段：看得出字，但正在淡出
+    height: 8.75rem;  // 140px（規格 120–160px）
+    background: linear-gradient(to bottom, rgba($paper, 0) 0%, rgba($paper, .55) 50%, rgba($paper, .9) 75%, $paper 100%);
+    pointer-events: none;
+  }
+}
+
+// 付費牆卡：寬度＝閱讀欄、全站唯一壓在內容上的卡片 → 疊紙
+.paywall {
+  @include paper-stack(.5rem);
+  position: relative;
+  max-width: $prose-max-width;
+  margin-top: map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 6);
+  padding: map-get($spacers, 4);
+  font-family: $font-family-base;
+
+  @include media-breakpoint-up(sm) {
+    padding: map-get($spacers, 5) map-get($spacers, 5) map-get($spacers, 4);
+  }
+}
+// ① 已讀進度：條＋「已免費讀完 32%」（必須帶數字）
+.paywall-progress {
+  margin-bottom: map-get($spacers, 4);
+
+  .progress { height: .5rem; }
+  .progress-text { font-weight: $font-weight-medium; }
+}
+// ② 標題
+.paywall-title {
+  margin-bottom: .75rem;
+  font-size: 1.5rem;
+  line-height: 1.5;
+}
+// ③ 價值訴求
+.paywall-lead {
+  margin-bottom: map-get($spacers, 4);
+  color: $ink;
+  line-height: 1.85;
+}
+
+// ④ 兩種方案快速切換：RadioCard（.btn-check＋label），寬度夠時並排、手機上下堆疊；預設選年費
+// 未選：白紙＋控件框線；選中：2px 炭黑框＋左上角的實心方塊記號
+.plan-options {
+  display: grid;
+  // 每格至少 13rem：卡片夠寬時並排，窄（手機、Guideline 的並列示範）時自動上下堆疊
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: .75rem;
+  margin-bottom: map-get($spacers, 4);
+}
+.plan-option {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: .125rem .75rem;
+  align-content: start;
+  height: 100%;
+  margin: 0;
+  padding: 1rem 1rem 1rem .875rem;
+  border: 1px solid $control;
+  background-color: $paper;
+  cursor: pointer;
+  transition: border-color .15s ease;
+
+  &:hover { border-color: $ribbon; }
+}
+// 選中記號：空心方塊 → 實心墨塊＋白勾
+.plan-option-mark {
+  grid-row: span 3;
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: .125rem;
+  border: 1px solid $control;
+  background-color: $paper;
+  color: transparent;
+  font-size: .875rem;
+}
+.plan-option-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem;
+  font-weight: $font-weight-bold;
+}
+.plan-option-price {
+  font-size: 1.5rem;
+}
+.plan-option-note {
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+}
+// 「省下兩個月」：炭黑墨塊小標籤
+.save-tag {
+  display: inline-flex;
+  font-family: $font-family-base;
+  letter-spacing: $letter-spacing-label;
+  align-items: center;
+  padding: .0625rem .375rem;
+  background-color: $ink;
+  color: $paper;
+  font-size: .75rem;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+.btn-check:checked + .plan-option {
+  border: 2px solid $ink;
+  padding: calc(1rem - 1px) calc(1rem - 1px) calc(1rem - 1px) calc(.875rem - 1px);
+
+  .plan-option-mark {
+    border-color: $ink;
+    background-color: $ink;
+    color: $paper;
+  }
+}
+.btn-check:focus-visible + .plan-option {
+  outline: 2px solid $ribbon;
+  outline-offset: 2px;
+}
+
+// ⑤ 主要 CTA（滿寬）＋ ⑥ 登入入口
+.paywall-cta {
+  margin-bottom: .5rem;
+}
+.paywall-login {
+  margin-bottom: map-get($spacers, 3);
+  text-align: center;
+  font-size: $font-size-sm;
+}
+// ⑦ 信任小字、⑧ 替代入口（只能是小字連結）
+.paywall-foot {
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $rule;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  line-height: 1.8;
+
+  p { margin-bottom: .25rem; }
+  .btn-text { min-height: 2rem; font-size: inherit; }
+}

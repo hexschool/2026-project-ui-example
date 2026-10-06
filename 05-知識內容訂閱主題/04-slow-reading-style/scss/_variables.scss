@@ -1,0 +1,500 @@
+// ============================================================
+// 現場筆記 FieldNotes｜04 溫暖心靈慢讀 — Bootstrap 5 變數覆寫（design token）
+// 規則：只在這裡改 Bootstrap 變數；元件與頁面樣式一律引用變數，不寫死色碼
+//
+// 單一淺色主題（不跟著作業系統切換深色模式）。
+// 對比度以 WCAG 公式計算，括號內沒有特別註明時，都是對「燕麥灰白」頁面底色 $oat 的比值
+// ============================================================
+
+// ---------- 1. 色彩：燕麥灰白、焦糖駝色、柔暖灰 ----------
+// 基礎色票（設計 Guideline 的「色彩」章節即以此為準）
+
+// 面：三層都是帶一點灰的燕麥色，不用純白（減少長時間閱讀的眩光）
+$oat:            #F1ECE4; // 燕麥灰白：頁面底色
+$oat-milk:       #FAF7F2; // 燕麥奶：浮起的面（卡片、輸入框、付費牆卡、對話框、選單）
+$oat-husk:       #E8E1D6; // 燕麥殼：交替區塊、進度軌、表頭、hover 底
+
+// 線：裝飾線不承載資訊；表單控制項的邊框要達非文字 3:1
+$hairline:        #DDD3C6; // 柔暖灰細線：預設分隔線、卡片框（1.3:1，裝飾用）
+$hairline-strong: #C7BAA9; // 深一階的線：虛線框、停用框線、拖曳把手（1.6:1，裝飾用）
+$control:         #8C7D6C; // 表單框線：輸入框、核取方塊、radio（3.4:1；對燕麥奶 3.7:1）
+
+// 文字：可可色三階（柔暖灰），不用純黑
+$cocoa:           #3A2F27; // 可可：標題、介面主文字（11.1:1 AAA；對燕麥奶 12.2:1）
+$ink:             #4A3E35; // 墨褐：長文內文，比標題淺一階（8.8:1 AAA；對燕麥殼 8.0:1）
+$warm-gray:       #6B5E54; // 柔暖灰：次要文字、說明、作者職稱（5.3:1 AA；對燕麥殼 4.8:1）
+$warm-gray-light: #73665A; // 淡柔暖灰：placeholder、最弱的說明（4.7:1；對燕麥奶 5.2:1；不放在燕麥殼上當文字）
+
+// 焦糖駝色：可以按的東西、讀到哪裡（進度、書籤）、目前位置
+$caramel:         #8F5A2E; // 焦糖：主要按鈕底、連結、焦點環、進度條（4.9:1 AA；按鈕上的燕麥奶字 5.4:1）
+$caramel-deep:    #74441E; // 深焦糖：hover、強調文字、小字連結（6.9:1）
+$camel:           #C9A27A; // 駝色：書籤、引號、週期尺的刻度等裝飾（2.0:1，不作文字）
+$camel-mist:      #F1E3D0; // 駝色奶霧：選中項目底、推薦方案、免費預覽分隔線底（焦糖字 4.5:1、可可字 10.3:1）
+
+// 狀態色：低彩度的暖調，字色對自己的淡底都 ≥ 5:1
+$sage:            #4A6641; // 鼠尾草綠：成功、使用中、已讀完（5.5:1）
+$sage-mist:       #E4EADB; //   淡底（鼠尾草綠字 5.2:1）
+$amber:           #7E5A14; // 琥珀：提醒、等待、已取消待到期、審核中（5.3:1）
+$amber-mist:      #F4E8CC; //   淡底（琥珀字 5.1:1）
+$clay:            #9E4436; // 陶土紅：錯誤、付款失敗、未通過、下架（5.4:1）
+$clay-mist:       #F5E1DA; //   淡底（陶土紅字 5.0:1）
+$dusk:            #476073; // 暮藍：資訊、免費權限（5.6:1）
+$dusk-mist:       #E1E8EC; //   淡底（暮藍字 5.3:1）
+
+// 權限色：訂閱限定＝焦糖（鎖頭）、免費＝暮藍（開鎖）；靠圖示＋文字＋顏色三重編碼
+$perm-locked:      $caramel-deep;
+$perm-locked-bg:   $camel-mist;
+$perm-free:        $dusk;
+$perm-free-bg:     $dusk-mist;
+
+$primary:   $caramel;
+$secondary: $warm-gray;
+$success:   $sage;
+$info:      $dusk;
+$warning:   $amber;
+$danger:    $clay;
+$light:     $oat-husk;
+$dark:      $cocoa;
+
+$theme-colors: (
+  "primary":   $primary,
+  "secondary": $secondary,
+  "success":   $success,
+  "info":      $info,
+  "warning":   $warning,
+  "danger":    $danger,
+  "light":     $light,
+  "dark":      $dark,
+);
+
+// 按鈕、標籤上的文字色：Bootstrap 的 color-contrast() 依序試「淺色 → 深色」，取第一個達 4.5:1 的。
+// 焦糖、琥珀、陶土紅上會選到燕麥奶；燕麥殼上會選到可可
+$color-contrast-light: $oat-milk;
+$color-contrast-dark:  $cocoa;
+$min-contrast-ratio:   4.5;
+
+// 單一淺色主題，不輸出 [data-bs-theme="dark"] 那一份變數
+$enable-dark-mode: false;
+
+// ---------- 全站底色與文字（Bootstrap 的 --bs-body-* 等 CSS 變數由這裡產生） ----------
+$body-bg:                  $oat;
+$body-color:               $cocoa;
+$body-secondary-color:     $warm-gray;
+$body-secondary-bg:        $oat-husk;
+$body-tertiary-color:      $warm-gray-light;
+$body-tertiary-bg:         $oat-husk;
+$body-emphasis-color:      $cocoa;
+$border-color:             $hairline;
+$border-color-translucent: rgba($cocoa, .12);
+$headings-color:           $cocoa;
+
+// 連結：焦糖色＋細底線，hover 換深焦糖
+$link-color:            $caramel;
+$link-hover-color:      $caramel-deep;
+$link-decoration:       underline;
+$link-underline-offset: .3em;
+
+// 各狀態色的「文字、淡底、淡框」三件組（alert、.text-*-emphasis、.bg-*-subtle 共用）
+$primary-text-emphasis:   $caramel-deep;
+$secondary-text-emphasis: $cocoa;
+$success-text-emphasis:   $sage;
+$info-text-emphasis:      $dusk;
+$warning-text-emphasis:   $amber;
+$danger-text-emphasis:    $clay;
+$light-text-emphasis:     $cocoa;
+$dark-text-emphasis:      $cocoa;
+
+$primary-bg-subtle:       $camel-mist;
+$secondary-bg-subtle:     $oat-husk;
+$success-bg-subtle:       $sage-mist;
+$info-bg-subtle:          $dusk-mist;
+$warning-bg-subtle:       $amber-mist;
+$danger-bg-subtle:        $clay-mist;
+$light-bg-subtle:         $oat-milk;
+$dark-bg-subtle:          $oat-husk;
+
+$primary-border-subtle:   mix($caramel, $camel-mist, 35%);
+$secondary-border-subtle: $hairline-strong;
+$success-border-subtle:   mix($sage, $sage-mist, 30%);
+$info-border-subtle:      mix($dusk, $dusk-mist, 30%);
+$warning-border-subtle:   mix($amber, $amber-mist, 30%);
+$danger-border-subtle:    mix($clay, $clay-mist, 30%);
+$light-border-subtle:     $hairline;
+$dark-border-subtle:      $hairline-strong;
+
+// 元件的「選中」：焦糖底＋燕麥奶字（下拉選單、分頁、列表群組、核取方塊共用）
+$component-active-bg:    $caramel;
+$component-active-color: $oat-milk;
+
+// 焦點環：焦糖 2px 實線，外推 2px 露出底色當間隙（4.9:1）
+// 一般元素用 outline；按鈕、核取方塊用下面這組雙層 box-shadow（內圈燕麥奶、外圈焦糖）
+$focus-ring-width:      2px;
+$focus-ring-opacity:    1;
+$focus-ring-blur:       0;
+$focus-ring-color:      $caramel;
+$focus-ring-double:     0 0 0 2px $oat-milk, 0 0 0 4px $caramel; // 自訂
+$focus-ring-box-shadow: $focus-ring-double;
+
+$code-color: $caramel-deep;
+$mark-bg:    $camel-mist;
+$mark-color: $cocoa;
+$kbd-bg:     $cocoa;
+$kbd-color:  $oat-milk;
+
+$hr-color:   $hairline;
+$hr-opacity: 1;
+
+// ---------- 2. 字體與字級 ----------
+// 閱讀字體：Literata 負責英數（Google Play 圖書的閱讀字體），中文落到芫荽 Iansui
+//   芫荽是以台灣教育部標準字形為準的硬筆楷書字體（「為」「真」都是台灣通行的寫法），只有 400 一個字重：
+//   用到它的地方一律 font-weight: 400，階層靠字級與顏色區分，不讓瀏覽器合成假粗體
+//   用在標題、長文內文、引言、到期日與價格等大數字
+// 介面字體：Noto Sans TC 負責按鈕、表單、表格、小字、標籤
+$font-family-reading:    "Literata", "Iansui", "Kaiti TC", "BiauKai", "DFKai-SB", serif; // 自訂：.font-reading、標題、.prose
+$font-family-sans-serif: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+$font-family-base:       $font-family-sans-serif;
+$font-family-monospace:  ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+$headings-font-family:   $font-family-reading;
+$display-font-family:    $font-family-reading;
+
+$font-size-base:   1rem;     // 16px：介面內文
+$font-size-sm:     .875rem;  // 14px
+$font-size-lg:     1.125rem; // 18px
+$small-font-size:  .8125rem; // 13px
+
+$font-weight-light:    400;
+$font-weight-normal:   400;
+$font-weight-medium:   500;
+$font-weight-semibold: 500;
+$font-weight-bold:     700;
+$font-weight-bolder:   700;
+
+$line-height-base: 1.75; // 介面文字；長文另用 $prose-line-height
+$line-height-sm:   1.5;
+$line-height-lg:   2;
+
+// 字級階層：楷體標題不加粗，字級要比黑體大一點、顏色用最深的可可才撐得住
+$h1-font-size: 2.5rem;    // 40px
+$h2-font-size: 1.875rem;  // 30px
+$h3-font-size: 1.375rem;  // 22px
+$h4-font-size: 1.1875rem; // 19px
+$h5-font-size: 1.0625rem; // 17px
+$h6-font-size: .9375rem;  // 15px
+
+$headings-font-weight:   400; // 芫荽只有 400
+$headings-line-height:   1.45;
+$headings-margin-bottom: .75rem;
+
+$display-font-sizes: (
+  1: 4rem,
+  2: 3.5rem,
+  3: 3.25rem, // 首頁 Hero 主標
+  4: 2.75rem,
+  5: 2.5rem,
+  6: 2.25rem,
+);
+$display-font-weight: 400;
+$display-line-height: 1.35;
+
+$lead-font-size:   1.125rem;
+$lead-font-weight: 400;
+
+// 自訂：長文排版（Guideline「長文排版規範」以此為準）
+$prose-max-width:     43.75rem; // 700px：每行約 38 個全形字（規格 680–720px）
+$prose-font-size:     1.125rem; // 18px（Aa 中）
+$prose-line-height:   2;        // 規格 ≥ 1.8；手機不下調
+$prose-paragraph-gap: 1.3em;
+$prose-sizes: (                 // Aa 三段：字級、行高（每段都 ≥ 1.8）
+  sm: (1.0625rem, 2),           // 17px／2.0
+  md: (1.125rem, 2),            // 18px／2.0（預設）
+  lg: (1.25rem, 1.9),           // 20px／1.9
+);
+$lede-font-size:      1.25rem;  // 20px：導言比內文大一階
+$lede-line-height:    1.9;
+
+// 自訂：字距
+$letter-spacing-body:  .02em;
+$letter-spacing-prose: .03em; // 楷體內文略加字距，長文比較透氣
+$letter-spacing-label: .04em;
+
+// ---------- 3. 間距 ----------
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * .25,  // 4px
+  2: $spacer * .5,   // 8px
+  3: $spacer,        // 16px
+  4: $spacer * 1.5,  // 24px
+  5: $spacer * 2.5,  // 40px
+  6: $spacer * 3.5,  // 56px：區塊上下留白（手機）
+  7: $spacer * 5.5,  // 88px：區塊上下留白（桌機）
+);
+
+$grid-gutter-width: 2rem;
+$container-padding-x: 2.5rem; // 左右各 20px（≥ 992px 在 _base.scss 改成 32px）；需 ≥ gutter 才不會讓 .row 溢出
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  xxl: 1280px,
+);
+// RWD 斷點沿用 Bootstrap 預設：sm 576 / md 768 / lg 992 / xl 1200 / xxl 1400
+
+// ---------- 4. 圓角與陰影：柔和的圓角、只給浮起的層一點燈下的影子 ----------
+$border-width:       1px;
+$border-radius-sm:   .375rem; // 6px：標籤、小按鈕
+$border-radius:      .625rem; // 10px：按鈕、輸入框
+$border-radius-lg:   1rem;    // 16px：卡片
+$border-radius-xl:   1.25rem; // 20px：付費牆卡、對話框、編輯器寫作區
+$border-radius-xxl:  1.75rem;
+$border-radius-pill: 50rem;   // 徽章、頭像、分段控制
+
+$enable-shadows: false;
+// 柔光陰影：可可色、很淡、擴散大，像檯燈從上方照下來的影子（只給浮起的層）
+$box-shadow-sm:    0 1px 2px rgba($cocoa, .06), 0 2px 8px -2px rgba($cocoa, .08);
+$box-shadow:       0 12px 32px -12px rgba($cocoa, .24), 0 2px 6px rgba($cocoa, .05);
+$box-shadow-lg:    0 28px 64px -20px rgba($cocoa, .32), 0 4px 12px rgba($cocoa, .06);
+$box-shadow-inset: inset 0 1px 2px rgba($cocoa, .08);
+
+$enable-negative-margins: true;
+
+// ---------- 5. 元件 ----------
+// 按鈕：主要＝焦糖底＋燕麥奶字；次要＝燕麥奶底＋細框（_base.scss）
+$btn-padding-y:        .6875rem; // 高約 48px
+$btn-padding-x:        1.5rem;
+$btn-font-size:        .9375rem;
+$btn-padding-y-sm:     .5625rem; // 高約 44px，符合觸控目標
+$btn-padding-x-sm:     1rem;
+$btn-font-size-sm:     .875rem;
+$btn-padding-y-lg:     .875rem;
+$btn-padding-x-lg:     2rem;
+$btn-font-size-lg:     1rem;
+$btn-font-weight:      500;
+$btn-border-radius:    $border-radius;
+$btn-border-radius-sm: $border-radius;
+$btn-border-radius-lg: $border-radius;
+$btn-disabled-opacity: 1; // 停用色另外調暗（_base.scss），不疊透明度
+$btn-focus-width:      $focus-ring-width;
+$btn-link-disabled-color: $warm-gray-light;
+
+// 表單：燕麥奶底、表單框線（3.7:1）
+$input-bg:                    $oat-milk;
+$input-color:                 $cocoa;
+$input-border-color:          $control;
+$input-placeholder-color:     $warm-gray-light;
+$input-plaintext-color:       $cocoa;
+$input-padding-y:             .6875rem;
+$input-padding-x:             1rem;
+$input-font-size:             1rem;
+$input-border-radius:         $border-radius;
+$input-focus-bg:              $oat-milk;
+$input-focus-color:           $cocoa;
+$input-focus-border-color:    $caramel;
+$input-focus-box-shadow:      0 0 0 1px $caramel; // 與 1px 邊框合成 2px 焦糖實線
+$input-disabled-bg:           $oat-husk;
+$input-disabled-color:        $warm-gray;
+$input-disabled-border-color: $hairline-strong;
+$input-group-addon-bg:        $oat-husk;
+$input-group-addon-color:     $warm-gray;
+$input-group-addon-border-color: $control;
+$form-label-font-size:        .9375rem;
+$form-label-font-weight:      500;
+$form-label-color:            $cocoa;
+$form-label-margin-bottom:    .5rem;
+$form-text-color:             $warm-gray;
+$form-text-font-size:         .8125rem;
+$form-file-button-bg:         $oat-husk;
+$form-file-button-hover-bg:   $hairline;
+$form-file-button-color:      $cocoa;
+
+$form-select-indicator-color:  $warm-gray;
+$form-select-focus-box-shadow: $input-focus-box-shadow;
+
+// 核取方塊、radio：燕麥奶底＋表單框線；選中為焦糖底＋燕麥奶勾勾／圓點
+$form-check-input-bg:                   $oat-milk;
+$form-check-input-border:               1px solid $control;
+$form-check-input-border-radius:        .3125rem;
+$form-check-input-checked-color:        $oat-milk;
+$form-check-input-checked-bg-color:     $caramel;
+$form-check-input-checked-border-color: $caramel;
+$form-check-input-focus-border:         $caramel;
+$form-check-input-focus-box-shadow:     $focus-ring-double;
+$form-check-input-width:                1.125em;
+
+// 開關：未開為柔暖灰圓鈕、開啟為燕麥奶圓鈕在焦糖軌道上
+$form-switch-color:         $warm-gray;
+$form-switch-focus-color:   $caramel;
+$form-switch-checked-color: $oat-milk;
+$form-switch-width:         2.5em;
+
+$form-feedback-valid-color:   $sage;
+$form-feedback-invalid-color: $clay;
+$form-feedback-font-size:     .8125rem;
+
+$btn-close-color:         $cocoa;
+$btn-close-opacity:       .7;
+$btn-close-hover-opacity: 1;
+$btn-close-focus-shadow:  $focus-ring-double;
+
+// 卡片：燕麥奶底＋柔暖灰細線，不加陰影（陰影留給浮起的層）
+$card-bg:            $oat-milk;
+$card-color:         $cocoa;
+$card-border-color:  $hairline;
+$card-border-radius: $border-radius-lg;
+$card-cap-bg:        transparent;
+$card-spacer-y:      1.5rem;
+$card-spacer-x:      1.5rem;
+
+// 頁首高度：sticky 側欄、閱讀進度條、錨點捲動的位移都以此為準
+$site-header-height: 4.5625rem; // 73px：$navbar-padding-y 上下各 .875rem＋44px 圖示按鈕＋1px 底線
+$sticky-top-offset:  $site-header-height + 1.5rem; // 97px
+
+// 導覽列
+$navbar-padding-y:             .875rem;
+$navbar-nav-link-padding-x:    .875rem;
+$navbar-light-color:           $warm-gray;
+$navbar-light-hover-color:     $cocoa;
+$navbar-light-active-color:    $cocoa;
+$navbar-light-brand-color:     $cocoa;
+$navbar-light-brand-hover-color: $cocoa;
+$navbar-light-toggler-border-color: transparent;
+$navbar-toggler-border-radius: $border-radius;
+$nav-link-font-size:           .9375rem;
+$nav-link-font-weight:         500;
+$nav-link-color:               $warm-gray;
+$nav-link-hover-color:         $cocoa;
+$nav-link-disabled-color:      $warm-gray-light;
+$nav-underline-border-width:   2px;
+$nav-underline-link-active-color: $cocoa; // 底線色在 _base.scss 改成焦糖
+$nav-pills-link-active-bg:     $caramel;
+$nav-pills-link-active-color:  $oat-milk;
+
+// 下拉選單
+$dropdown-bg:                 $oat-milk;
+$dropdown-color:              $cocoa;
+$dropdown-border-color:       $hairline;
+$dropdown-border-radius:      $border-radius-lg;
+$dropdown-divider-bg:         $hairline;
+$dropdown-box-shadow:         $box-shadow;
+$dropdown-link-color:         $cocoa;
+$dropdown-link-hover-color:   $cocoa;
+$dropdown-link-hover-bg:      $oat-husk;
+$dropdown-link-active-color:  $oat-milk;
+$dropdown-link-active-bg:     $caramel;
+$dropdown-link-disabled-color: $warm-gray-light;
+$dropdown-header-color:       $warm-gray;
+$dropdown-padding-y:          .5rem;
+$dropdown-item-padding-y:     .625rem;
+$dropdown-item-padding-x:     1rem;
+
+// 對話框、側邊抽屜
+$modal-content-bg:            $oat-milk;
+$modal-content-color:         $cocoa;
+$modal-content-border-color:  transparent;
+$modal-content-border-radius: $border-radius-xl;
+$modal-header-border-color:   $hairline;
+$modal-backdrop-bg:           $cocoa;
+$modal-backdrop-opacity:      .45;
+$modal-md:                    32.5rem; // 520px：取消對話框（寬窄層級中最窄的一層）
+$modal-inner-padding:         2rem;
+$offcanvas-bg-color:          $oat-milk;
+$offcanvas-color:             $cocoa;
+$offcanvas-border-color:      $hairline;
+$offcanvas-backdrop-bg:       $cocoa;
+$offcanvas-backdrop-opacity:  .45;
+
+// Accordion：透明底、細線分隔，展開時不加底色，只把箭頭換成焦糖
+$accordion-color:               $cocoa;
+$accordion-bg:                  transparent;
+$accordion-border-color:        $hairline;
+$accordion-border-radius:       0;
+$accordion-inner-border-radius: 0;
+$accordion-button-color:        $cocoa;
+$accordion-button-padding-y:    1.25rem;
+$accordion-button-padding-x:    0;
+$accordion-body-padding-x:      0;
+$accordion-body-padding-y:      0;
+$accordion-button-active-bg:    transparent;
+$accordion-button-active-color: $cocoa;
+$accordion-icon-color:          $warm-gray;
+$accordion-icon-active-color:   $caramel;
+$accordion-button-focus-box-shadow: inset 0 0 0 2px $caramel;
+
+// 標籤（Bootstrap .badge 只用在少數地方，權限與狀態徽章另見 components/_badges.scss）
+$badge-font-weight:   500;
+$badge-border-radius: $border-radius-pill;
+$badge-padding-y:     .375em;
+$badge-padding-x:     .75em;
+
+// 麵包屑
+$breadcrumb-divider:        quote("／");
+$breadcrumb-font-size:      .875rem;
+$breadcrumb-divider-color:  $warm-gray-light;
+$breadcrumb-active-color:   $cocoa;
+$breadcrumb-item-padding-x: .375rem;
+
+// 分頁
+$pagination-color:                $cocoa;
+$pagination-bg:                   transparent;
+$pagination-border-color:         transparent;
+$pagination-border-radius:        $border-radius;
+$pagination-padding-y:            .625rem;
+$pagination-padding-x:            .875rem;
+$pagination-hover-color:          $caramel-deep;
+$pagination-hover-bg:             $oat-husk;
+$pagination-hover-border-color:   transparent;
+$pagination-focus-color:          $caramel-deep;
+$pagination-focus-bg:             $oat-husk;
+$pagination-focus-box-shadow:     $focus-ring-double;
+$pagination-active-color:         $oat-milk;
+$pagination-active-bg:            $caramel;
+$pagination-active-border-color:  $caramel;
+$pagination-disabled-color:       $warm-gray-light;
+$pagination-disabled-bg:          transparent;
+$pagination-disabled-border-color: transparent;
+$pagination-margin-start:         .25rem;
+
+// 提示框、彈出框、toast
+$tooltip-bg:                 $cocoa;
+$tooltip-color:              $oat-milk;
+$tooltip-opacity:            1;
+$tooltip-border-radius:      $border-radius-sm;
+$popover-bg:                 $oat-milk;
+$popover-border-color:       $hairline;
+$popover-body-color:         $cocoa;
+$popover-border-radius:      $border-radius-lg;
+
+// 表格：透明底（放在燕麥殼區塊上也一致）、柔暖灰細線分隔、表頭燕麥殼底
+$table-color:          $cocoa;
+$table-bg:             transparent;
+$table-border-color:   $hairline;
+$table-striped-bg:     rgba($cocoa, .025);
+$table-hover-bg:       rgba($cocoa, .04);
+$table-cell-padding-y: .875rem;
+$table-cell-padding-x: 1rem;
+$table-th-font-weight: 500;
+
+// 提示（alert 顏色由上面的「文字、淡底、淡框」三件組決定；左側色條在 components/_callout.scss）
+$alert-border-radius: $border-radius-lg;
+$alert-padding-y:     1rem;
+$alert-padding-x:     1.25rem;
+
+// 進度條：燕麥殼軌道＋焦糖填色（焦糖對燕麥殼 4.4:1，非文字 3:1 以上）
+$progress-height:        .375rem;
+$progress-bg:            $oat-husk;
+$progress-bar-bg:        $caramel;
+$progress-bar-color:     $oat-milk;
+$progress-border-radius: $border-radius-pill;
+
+$figure-caption-color:   $warm-gray;
+$figure-caption-font-size: .875rem;
+
+// ---------- 6. 本風格的招牌：訂閱週期尺、書籤 ----------
+// 週期尺：已過的部分是焦糖實線、剩下的部分是駝色細線、終點之後（取消後）是虛線
+$cycle-track-height: .375rem;
+$cycle-elapsed:      $caramel;
+$cycle-remaining:    $camel;
+$cycle-after:        $hairline-strong;
+// 書籤：品牌標誌、Hero 引文卡、閱讀進度用的同一個形狀
+$bookmark-color:     $caramel;

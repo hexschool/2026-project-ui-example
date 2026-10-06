@@ -1,0 +1,198 @@
+// ============================================================
+// 長文排版 .prose（文章內頁、編輯器的寫作區、Guideline 的長文示範共用）
+// 硬性規格：內文最大寬 684px（18px × 38 個全形字，落在 680–720px）、行高 ≥ 1.8（手機不下調）
+// 打字稿字體：英數 Courier Prime、中文思源宋體；Aa 三段字級用 .is-size-sm／-md／-lg 切換（js/main.js）
+// <div class="prose is-size-md" id="article-body"> … </div>
+// ============================================================
+.prose {
+  max-width: $prose-max-width;
+  font-family: $font-family-typewriter;
+  font-size: map-get($prose-font-sizes, md);
+  line-height: map-get($prose-line-heights, md);
+  letter-spacing: .02em;
+  color: $ink;
+  overflow-wrap: break-word;
+
+  &.is-size-sm { font-size: map-get($prose-font-sizes, sm); line-height: map-get($prose-line-heights, sm); }
+  &.is-size-md { font-size: map-get($prose-font-sizes, md); line-height: map-get($prose-line-heights, md); }
+  &.is-size-lg { font-size: map-get($prose-font-sizes, lg); line-height: map-get($prose-line-heights, lg); }
+
+  > :first-child { margin-top: 0; }
+
+  p {
+    margin-bottom: $prose-paragraph-gap;
+  }
+  strong { font-weight: $font-weight-bold; }
+
+  // h2：文章內的大節；上距明顯大於下距
+  h2 {
+    margin: 3rem 0 1rem;
+    font-size: 1.5rem;
+    line-height: 1.5;
+    scroll-margin-top: $sticky-top-offset;
+  }
+  // h3：h2 之下的小節；換成介面黑體 700，和 h2 一眼分得出層級
+  h3 {
+    margin: 2.25rem 0 .75rem;
+    font-family: $font-family-base;
+    font-size: 1.125rem;
+    font-weight: $font-weight-bold;
+    line-height: 1.6;
+  }
+
+  // 引言區塊：上下留白大於段距、左側 3px 炭黑線、字級大一階
+  blockquote {
+    margin: 2.5rem 0;
+    padding-left: 1.5rem;
+    border-left: 3px solid $ink;
+    font-size: $prose-quote-size;
+    line-height: 1.9;
+
+    p:last-child { margin-bottom: 0; }
+  }
+
+  // 圖片與圖說：滿閱讀欄寬
+  figure {
+    margin: 2.5rem 0;
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid $ink;
+    }
+  }
+  figcaption {
+    margin-top: .625rem;
+    font-family: $font-family-base;
+    font-size: $figure-caption-font-size;
+    line-height: 1.7;
+    color: $figure-caption-color;
+  }
+
+  ul,
+  ol {
+    margin-bottom: $prose-paragraph-gap;
+    padding-left: 1.5em;
+  }
+  li {
+    margin-bottom: .35em;
+  }
+  li::marker {
+    font-family: $font-family-typewriter;
+  }
+
+  // 行內程式碼：稿紙灰底＋細線框，不用連結色
+  :not(pre) > code {
+    padding: .1em .35em;
+    border: 1px solid $rule;
+    background-color: $paper-gray;
+    color: $ink;
+    font-size: .875em;
+  }
+  // 程式碼區塊：炭黑墨塊、白字、自己橫向捲動
+  pre {
+    margin: 2rem 0;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    background-color: $ink;
+    color: $paper;
+    font-size: .875rem;
+    line-height: 1.75;
+
+    code { color: inherit; font-size: inherit; }
+    &:focus-visible { outline-offset: 2px; }
+  }
+
+  // 分隔線：打字稿的分節記號「*　*　*」，上下約 2.4em
+  // 只套在沒有 class 的 <hr>（編輯器產出的分隔線），不影響下拉選單分隔線、編輯器標題下的細線
+  hr:not([class]) {
+    height: auto;
+    margin: 2.4em 0;
+    border: 0;
+    color: $ink-muted;
+    opacity: 1;
+    text-align: center;
+
+    &::after {
+      content: "*\00a0\00a0\00a0*\00a0\00a0\00a0*";
+      font-family: $font-family-typewriter;
+      letter-spacing: .2em;
+    }
+  }
+
+  a {
+    text-decoration-thickness: 1px;
+    text-underline-offset: .25em;
+  }
+}
+
+// 數據表格：自己的容器內橫向捲動，不撐破閱讀欄
+// <div class="prose-table" tabindex="0" role="region" aria-label="2025 年度損益結構表"><table>…</table></div>
+.prose-table {
+  position: relative;
+  margin: 2rem 0;
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+    min-width: 26rem;
+    border-collapse: collapse;
+    font-size: .9375rem;
+    line-height: 1.6;
+  }
+  caption {
+    caption-side: top;
+    padding: 0 0 .625rem;
+    font-family: $font-family-base;
+    font-size: $small-font-size;
+    color: $body-secondary-color;
+    text-align: left;
+  }
+  th,
+  td {
+    padding: .625rem .75rem;
+    border-bottom: 1px solid $rule;
+  }
+  thead th {
+    border-top: 2px solid $ink;
+    border-bottom: 1px solid $ink;
+    font-family: $font-family-base;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    text-align: left;
+  }
+  // 數字欄靠右、等寬數字
+  thead th + th,
+  tbody td {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  tbody th {
+    font-weight: $font-weight-normal;
+    text-align: left;
+  }
+  // 合計列：上方 2px 炭黑線＋粗體
+  .is-total th,
+  .is-total td {
+    border-top: 2px solid $ink;
+    border-bottom: 2px solid $ink;
+    font-weight: $font-weight-bold;
+  }
+}
+
+// 導言 lede：比內文大一階
+.lede {
+  font-family: $font-family-typewriter;
+  font-size: $prose-lede-size;
+  line-height: 1.85;
+  color: $ink;
+}
+
+// 引文（首頁 Hero 的引文卡）：字級與行高和文章內頁的引言區塊同一組
+.pull-quote {
+  margin: 0;
+  font-family: $font-family-typewriter;
+  font-size: $prose-quote-size;
+  line-height: 1.9;
+}

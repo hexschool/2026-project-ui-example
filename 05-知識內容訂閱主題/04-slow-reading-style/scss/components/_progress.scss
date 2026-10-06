@@ -1,0 +1,104 @@
+// ============================================================
+// 閱讀進度 Progress：三種尺寸同一個意思
+//   ① 文章頁頂端細條 .reading-bar（不帶數字，捲動時由 js/main.js 更新）
+//   ② 卡片內條＋文字 .read-progress
+//   ③ 付費牆內條＋「已免費讀完 32%」 .read-progress.is-lg（必須帶數字）
+// 三種狀態：進行中（焦糖＋書籤記號）、已讀完（鼠尾草綠＋勾勾）、尚未開始（空軌，不是 0% 的填色）
+// ============================================================
+
+// ---------- ① 頂端細條：sticky 在頁首正下方 ----------
+// <div class="reading-bar" role="progressbar" aria-label="本篇閱讀進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32" style="--p: 32%"></div>
+.reading-bar {
+  position: sticky;
+  top: $site-header-height;
+  z-index: $zindex-sticky - 1;
+  height: 3px;
+  background-color: $oat-husk;
+
+  &::before {
+    content: "";
+    display: block;
+    width: var(--p, 0%);
+    height: 100%;
+    background-color: $caramel;
+    transition: width .1s linear;
+  }
+}
+
+// ---------- ②③ 卡片內條、付費牆內條 ----------
+// <div class="read-progress is-reading">
+//   <div class="read-progress-track" role="progressbar" aria-label="閱讀進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="64" style="--p: 64%"></div>
+//   <span class="read-progress-text">讀到 64%</span>
+// </div>
+.read-progress {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+.read-progress-track {
+  position: relative;
+  flex: 1 1 auto;
+  height: .375rem;
+  border-radius: $border-radius-pill;
+  background-color: $oat-husk;
+
+  // 已讀的部分
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--p, 0%);
+    border-radius: inherit;
+    background-color: $caramel;
+  }
+}
+.read-progress-text {
+  flex: none;
+  font-size: .8125rem;
+  font-weight: $font-weight-medium;
+  color: $caramel-deep;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  .bi { margin-right: .25rem; }
+}
+
+// 進行中：在讀到的位置掛一個小書籤（本風格的書籤母題，只用在「讀到哪裡」）
+.read-progress.is-reading .read-progress-track::after {
+  content: "";
+  position: absolute;
+  top: -.1875rem;
+  left: var(--p, 0%);
+  width: .5625rem;
+  height: .875rem;
+  margin-left: -.28125rem;
+  background-color: $bookmark-color;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%);
+}
+
+// 已讀完：鼠尾草綠填滿，文字前加勾勾
+.read-progress.is-done {
+  .read-progress-track::before {
+    width: 100%;
+    background-color: $sage;
+  }
+  .read-progress-text { color: $sage; }
+}
+
+// 尚未開始：空軌（虛線框、沒有填色）
+.read-progress.is-unstarted {
+  .read-progress-track {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px $hairline-strong;
+    background-image: none;
+
+    &::before { display: none; }
+  }
+  .read-progress-text { color: $warm-gray; }
+}
+
+// ③ 付費牆版：軌道粗一點、文字大一點
+.read-progress.is-lg {
+  .read-progress-track { height: .5rem; }
+  .read-progress-text { font-size: .9375rem; }
+}

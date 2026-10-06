@@ -1,0 +1,213 @@
+// ============================================================
+// 方案卡 PlanCard 與比較矩陣 ComparisonTable（方案頁、Guideline）
+// - 三張方案卡共用髮絲線，像報刊並排的三欄；等高、按鈕貼底
+// - 推薦方案（月費）：2px 深藍外框＋頂端「★ 最多人選」標籤，固定在月費卡，不放大卡片
+// - 比較矩陣：細線分隔（Notion 指定的本風格招牌處理）、表頭報頭雙線、推薦欄霧白紙淡底
+// ============================================================
+
+// ---------- 方案卡 ----------
+.plan-grid {
+  display: grid;
+  gap: 2.5rem; // 手機堆疊時留出推薦標籤的位置
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+  }
+}
+.plan-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem 1.5rem 1.5rem;
+  border: 1px solid $rule;
+  background-color: $paper;
+
+  @include media-breakpoint-up(lg) {
+    padding: 2rem 1.75rem 1.75rem;
+
+    & + & { margin-left: -1px; } // 相鄰兩張共用一條線
+  }
+
+  .btn {
+    margin-top: auto;
+    width: 100%;
+  }
+}
+.plan-card.is-featured {
+  z-index: 1;
+  border-color: $oxford;
+  box-shadow: inset 0 0 0 1px $oxford; // 合成 2px 外框
+}
+// 「★ 最多人選」：深藍實心標籤，貼在卡片上緣
+.plan-flag {
+  position: absolute;
+  left: -1px;
+  bottom: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .25rem .75rem;
+  background-color: $oxford;
+  color: $paper;
+  font-size: .8125rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+  white-space: nowrap;
+}
+.plan-name {
+  margin-bottom: 1rem;
+  font-size: 1.375rem;
+}
+.plan-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .125rem .375rem;
+  margin-bottom: .5rem;
+  color: $oxford;
+
+  .figure-num {
+    font-size: 3rem;
+  }
+}
+.plan-currency,
+.plan-period {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $slate;
+}
+.plan-fit {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid $rule;
+  font-size: $font-size-sm;
+  color: $slate;
+}
+// ✓／✗ 權益清單：圖示形狀不同＋文字；✗ 項目保留、用次要色，不加刪除線
+.benefit-list {
+  flex: 1 0 auto;
+  margin: 0 0 1.75rem;
+  padding: 0;
+  list-style: none;
+  font-size: $font-size-sm;
+
+  li {
+    display: flex;
+    gap: .625rem;
+    padding-block: .3125rem;
+  }
+  .bi {
+    flex: 0 0 auto;
+    margin-top: .1875rem;
+    font-size: .875rem;
+  }
+  .is-yes .bi { color: $oxford; }
+  .is-no {
+    color: $slate;
+    .bi { color: $slate-light; }
+  }
+}
+
+// ---------- 比較矩陣 ----------
+// <div class="compare table-responsive"><table class="table compare-table">…</table></div>
+.compare {
+  padding-top: $rule-double-height;
+  @include rule-double(top);
+}
+.compare-table {
+  min-width: 40rem;
+  margin-bottom: 0;
+  font-size: $font-size-sm;
+  font-variant-numeric: tabular-nums;
+
+  th,
+  td {
+    padding: .875rem 1rem;
+    border-bottom: 1px solid $rule;
+    vertical-align: middle;
+  }
+  // 欄線：方案欄之間的細直線
+  td + td,
+  th + th {
+    border-left: 1px solid $rule;
+  }
+  thead th {
+    border-bottom: 1px solid $oxford;
+    font-family: $font-family-serif;
+    font-size: 1.0625rem;
+    font-weight: $font-weight-bold;
+    color: $oxford;
+    white-space: nowrap;
+  }
+  thead th:first-child {
+    font-family: $font-family-sans-serif;
+    font-size: $small-font-size;
+    font-weight: $font-weight-medium;
+    color: $slate;
+  }
+  tbody th {
+    font-weight: $font-weight-normal;
+    color: $ink;
+  }
+  // 方案欄置中
+  td,
+  thead th:not(:first-child) {
+    text-align: center;
+  }
+  // 推薦欄（月費）：霧白紙淡底；表頭多一行「★ 最多人選」
+  .is-featured {
+    background-color: $mist;
+  }
+  .compare-flag {
+    display: block;
+    margin-top: .125rem;
+    font-family: $font-family-sans-serif;
+    font-size: .75rem;
+    font-weight: $font-weight-medium;
+    color: $oxford;
+  }
+  // 平均月費列：上方深藍線，年費的 NT$ 150 加粗
+  .is-total > * {
+    border-top: 1px solid $oxford;
+    border-bottom: 0;
+  }
+  // 首欄凍結：手機橫向捲動時權益項目固定在左側
+  th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    min-width: 11rem;
+    background-color: $paper;
+    text-align: left;
+    box-shadow: inset -1px 0 0 $rule;
+  }
+}
+// ✓ 有／✗ 無／— 不適用：圖示＋文字
+.mark-yes,
+.mark-no {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  white-space: nowrap;
+}
+.mark-yes {
+  color: $oxford;
+  font-weight: $font-weight-medium;
+}
+.mark-no {
+  color: $slate;
+  .bi { color: $slate-light; }
+}
+.mark-na {
+  color: $slate-light;
+}
+// 手機提示：< 992px 才顯示
+.compare-hint {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .75rem;
+  font-size: $small-font-size;
+  color: $slate;
+}

@@ -1,0 +1,697 @@
+// ============================================================
+// 全站基礎：字體、字距、區塊節奏、焦點、共用小工具
+// 以及本風格的招牌工具：報頭雙線（rule-double）
+// ============================================================
+
+// 單一淺色主題：原生捲軸、日期選擇器等表單元件也固定用淺色（作業系統切深色時不會出現淺底白字）
+:root {
+  color-scheme: light;
+  accent-color: $oxford;
+}
+
+body {
+  letter-spacing: $letter-spacing-body;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+// 標題：Newsreader（英數）＋ Noto Serif TC（中文），字型由 $headings-font-family 設定
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  letter-spacing: $letter-spacing-heading;
+  text-wrap: balance; // 標題多行時平均分配，避免最後一行只剩一兩個字
+}
+h1, .h1 {
+  font-weight: $font-weight-bolder; // H1 用 900，報刊大標的重量
+}
+h5, .h5, h6, .h6 {
+  font-family: $font-family-sans-serif; // 小標用無襯線，和襯線大標分出層級
+}
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty; // 內文避免孤字
+}
+
+// 容器：手機左右 20px，≥ 992px 改為 32px（規格 §2.1）
+.container {
+  @include media-breakpoint-up(lg) {
+    --bs-gutter-x: 4rem;
+  }
+}
+
+// sticky 頁首不遮住焦點與錨點目標（值同 $sticky-top-offset）
+html {
+  scroll-padding-top: $sticky-top-offset;
+}
+
+::selection {
+  background-color: $oxford-tint;
+  color: $oxford;
+}
+
+// ---------- 報頭雙線（本風格的招牌） ----------
+// 2px 粗線＋2px 白隙＋1px 細線。頁首底部、圖表（.exhibit）頂端、方案矩陣表頭、頁尾頂端共用
+// 用背景漸層畫（不佔 border），元素本身的底色用 background-color 設定即可
+@mixin rule-double($side: top, $color: $oxford) {
+  $thin-offset: $masthead-rule-thick + $masthead-rule-gap;
+  background-image: linear-gradient($color, $color), linear-gradient($color, $color);
+  background-repeat: no-repeat;
+  background-size: 100% $masthead-rule-thick, 100% $masthead-rule-thin;
+  @if $side == top {
+    background-position: 0 0, 0 $thin-offset;
+  } @else {
+    background-position: 0 100%, 0 calc(100% - #{$thin-offset});
+  }
+}
+$rule-double-height: $masthead-rule-thick + $masthead-rule-gap + $masthead-rule-thin; // 5px
+
+// 單獨一條雙線：<hr class="rule-double">
+.rule-double {
+  @include rule-double(top);
+  height: $rule-double-height;
+  margin: 0;
+  border: 0;
+  opacity: 1;
+}
+
+// ---------- 字體與數字 ----------
+// 襯線：引言、署名、非 h 標籤的短標題
+.font-serif {
+  font-family: $font-family-serif;
+  letter-spacing: $letter-spacing-heading;
+}
+// 大數字：到期日、價格、數據卡、Hero 數字列。Newsreader 的等高數字（lining）＋等寬（tabular）
+// 字級由所在位置決定，例如 <p class="figure-num display-5">2027/10/02</p>
+.figure-num {
+  font-family: $font-family-serif;
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: 0;
+  line-height: 1.1;
+  color: $oxford;
+  white-space: nowrap;
+}
+// 表格、日期、字數：Noto Sans TC 的等寬數字，上下對齊
+.num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .01em;
+}
+
+// 次要說明文字
+.text-note {
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+}
+// 中繼資料列（字數 ‧ 閱讀時間 ‧ 日期）：Notion 原文就用「‧」串接，照用；換行時不拆開單一項目
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: $small-font-size;
+  color: $body-tertiary-color;
+
+  > li,
+  > span {
+    white-space: nowrap;
+  }
+  > li + li::before,
+  > span + span::before {
+    content: "‧";
+    margin-right: .5rem;
+    color: $rule-strong;
+  }
+}
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、標點與 <wbr> 處換行；用在標題、短說明，長段落不要用
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 區塊節奏 ----------
+// 區塊上下留白：手機 52px → 桌機 72px；緊湊區塊 44px
+.section {
+  padding-block: 3.25rem;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7);
+  }
+}
+.section-compact {
+  padding-block: 2.75rem;
+}
+.section-alt {
+  background-color: $mist;
+}
+// 相鄰的兩個白底區塊之間用髮絲線分隔
+.section:not(.section-alt):not(.section-dark) + .section:not(.section-alt):not(.section-dark) {
+  border-top: 1px solid $rule;
+}
+
+// 區塊標題列：左側標題（＋副標）、右側動作；手機上下排
+// <div class="section-head">
+//   <div><h2>標題</h2><p class="section-sub">副標（只有 Notion 寫明的才放）</p></div>
+//   <a class="btn btn-outline-primary" href="…">動作</a>
+// </div>
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: map-get($spacers, 3) map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 5);
+
+  h2,
+  .h2 {
+    margin-bottom: 0;
+  }
+}
+.section-sub {
+  margin: .5rem 0 0;
+  max-width: 40em;
+  color: $body-secondary-color;
+}
+
+// ---------- 頁面標題區（文章列表、訂閱方案、個人頁面） ----------
+// 麵包屑 → H1 → 說明或控制項，三頁同一組間距，切換頁面時標題位置不跳動
+.page-header {
+  padding-top: map-get($spacers, 3);
+  padding-bottom: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 4);
+    padding-bottom: map-get($spacers, 6);
+  }
+
+  .breadcrumb {
+    margin-bottom: map-get($spacers, 3);
+  }
+  h1,
+  .h1 {
+    margin-bottom: 0;
+  }
+}
+.page-lead {
+  max-width: 40em;
+  margin: map-get($spacers, 3) 0 0;
+  color: $body-secondary-color;
+}
+
+// ---------- 麵包屑 ----------
+.breadcrumb {
+  align-items: center;
+}
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem; // 觸控目標 44px
+  color: $body-secondary-color;
+  text-decoration: none;
+
+  &:hover {
+    color: $oxford;
+    text-decoration: underline;
+  }
+}
+
+// ---------- 按鈕 ----------
+// 主要：.btn-primary（深藍底＋白字），同一個區塊只放一個
+// 次要：.btn-outline-primary（白底＋深藍框＋深藍字）
+// 文字連結：.btn-text
+// 停用：保留原尺寸，改成霧白紙底＋淡石板字＋深髮絲框，滑鼠是 not-allowed
+.btn {
+  --bs-btn-focus-box-shadow: #{$focus-ring-double};
+  letter-spacing: $letter-spacing-label;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+
+  &:disabled,
+  &.disabled {
+    cursor: not-allowed;
+    pointer-events: auto; // 讓 cursor: not-allowed 生效（Bootstrap 預設會關掉滑鼠事件）
+  }
+}
+.btn-primary {
+  --bs-btn-hover-bg: #{$oxford-hover};
+  --bs-btn-hover-border-color: #{$oxford-hover};
+  --bs-btn-active-bg: #{$oxford-hover};
+  --bs-btn-active-border-color: #{$oxford-hover};
+  --bs-btn-disabled-bg: #{$mist};
+  --bs-btn-disabled-border-color: #{$rule-strong};
+  --bs-btn-disabled-color: #{$slate-light};
+}
+.btn-outline-primary {
+  --bs-btn-bg: #{$paper};
+  --bs-btn-hover-bg: #{$oxford-tint};
+  --bs-btn-hover-color: #{$oxford};
+  --bs-btn-hover-border-color: #{$oxford};
+  --bs-btn-active-bg: #{$oxford-tint};
+  --bs-btn-active-color: #{$oxford};
+  --bs-btn-active-border-color: #{$oxford};
+  --bs-btn-disabled-bg: #{$mist};
+  --bs-btn-disabled-border-color: #{$rule-strong};
+  --bs-btn-disabled-color: #{$slate-light};
+}
+// 深藍帶上的按鈕：白底深藍字（主要）、白框白字（次要）
+.btn-light {
+  --bs-btn-bg: #{$paper};
+  --bs-btn-color: #{$oxford};
+  --bs-btn-border-color: #{$paper};
+  --bs-btn-hover-bg: #{$oxford-tint};
+  --bs-btn-hover-color: #{$oxford};
+  --bs-btn-hover-border-color: #{$oxford-tint};
+  --bs-btn-active-bg: #{$oxford-tint};
+  --bs-btn-active-color: #{$oxford};
+  --bs-btn-focus-box-shadow: 0 0 0 2px #{$oxford}, 0 0 0 4px #{$paper};
+}
+.btn-outline-light {
+  --bs-btn-color: #{$paper};
+  --bs-btn-border-color: #{$on-oxford-muted};
+  --bs-btn-hover-bg: #{$paper};
+  --bs-btn-hover-color: #{$oxford};
+  --bs-btn-hover-border-color: #{$paper};
+  --bs-btn-active-bg: #{$on-oxford-muted};
+  --bs-btn-active-color: #{$oxford};
+  --bs-btn-focus-box-shadow: 0 0 0 2px #{$oxford}, 0 0 0 4px #{$paper};
+}
+// 文字連結型按鈕：深藍字＋細底線，無外框；內建 44px 觸控高度
+.btn-text {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: .25rem;
+  --bs-btn-color: #{$oxford};
+  --bs-btn-hover-color: #{$oxford-hover};
+  --bs-btn-active-color: #{$oxford-hover};
+  --bs-btn-border-width: 0;
+  --bs-btn-disabled-color: #{$slate-light};
+  min-height: 2.75rem;
+  text-decoration: underline;
+  text-decoration-color: $rule-strong;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .35em;
+  vertical-align: baseline;
+
+  &:hover { text-decoration-color: currentColor; }
+  &:focus-visible {
+    box-shadow: none;
+    outline: 2px solid $oxford;
+    outline-offset: 3px;
+  }
+}
+// 小號按鈕仍維持 44px 觸控高度
+.btn-sm {
+  min-height: 2.75rem;
+}
+
+// 內文裡沒有 class 的連結：細底線，hover 加深
+a:not([class]) {
+  text-decoration-color: rgba($oxford, .35);
+  text-underline-offset: .25em;
+
+  &:hover { text-decoration-color: currentColor; }
+}
+
+// ---------- 表單 ----------
+.form-control,
+.form-select {
+  caret-color: $oxford;
+}
+.form-label-optional {
+  margin-left: map-get($spacers, 2);
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  font-weight: $font-weight-normal;
+}
+// 錯誤文字：圖示＋文字，不只靠紅框
+.invalid-feedback,
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin-top: .375rem;
+  font-size: $small-font-size;
+  color: $crimson;
+}
+.form-control.is-invalid ~ .invalid-feedback {
+  display: flex;
+}
+// 多行字數提示：靠右的小字
+.form-count {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: .375rem;
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+}
+// 核取方塊、radio、開關：只有鍵盤操作時顯示焦點環
+.form-check-input:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+.form-check-input:disabled ~ .form-check-label {
+  cursor: not-allowed;
+}
+
+// ---------- 分段控制（月／年切換、字級、付費層級、數據期間） ----------
+// <div class="btn-group segmented" role="group" aria-label="…">
+//   <input type="radio" class="btn-check" name="…" id="…" checked><label class="btn" for="…">月繳</label>
+// </div>
+.segmented {
+  --seg-pad-y: .5rem;
+  border: 1px solid $oxford;
+  background-color: $paper;
+  flex-wrap: nowrap;
+
+  > .btn {
+    --bs-btn-padding-y: var(--seg-pad-y);
+    --bs-btn-padding-x: 1rem;
+    --bs-btn-font-size: #{$font-size-sm};
+    --bs-btn-color: #{$oxford};
+    --bs-btn-border-width: 0;
+    --bs-btn-hover-color: #{$oxford};
+    --bs-btn-hover-bg: #{$oxford-tint};
+    --bs-btn-active-bg: #{$oxford};
+    --bs-btn-active-color: #{$paper};
+    min-height: 2.75rem;
+    white-space: nowrap;
+  }
+  > .btn + .btn,
+  > .btn-check + .btn {
+    border-left: 1px solid $rule;
+  }
+  > .btn-check:checked + .btn {
+    background-color: $oxford;
+    color: $paper;
+    border-color: $oxford;
+  }
+  > .btn-check:focus-visible + .btn {
+    z-index: 1;
+    box-shadow: inset 0 0 0 2px $paper, inset 0 0 0 4px $oxford;
+  }
+}
+// 小號（表格裡的付費層級切換）
+.segmented-sm {
+  > .btn {
+    --bs-btn-padding-x: .625rem;
+    --bs-btn-font-size: #{$small-font-size};
+    min-height: 2.25rem;
+  }
+}
+
+// ---------- 底線分頁籤（排序、收藏、我的文章、審核佇列） ----------
+.nav-underline {
+  --bs-nav-underline-gap: 1.75rem;
+  --bs-nav-underline-border-width: 2px;
+  --bs-nav-underline-link-active-color: #{$oxford};
+  border-bottom: 1px solid $rule;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  .nav-link {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding-block: .75rem;
+    color: $body-secondary-color;
+    white-space: nowrap;
+    &:hover { color: $oxford; }
+  }
+  .nav-link.active {
+    font-weight: $font-weight-bold;
+    border-bottom-color: $oxford;
+  }
+  .nav-link:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px $oxford;
+  }
+  .nav-link:not(.active):focus:not(:focus-visible) {
+    border-bottom-color: transparent;
+  }
+
+  @include media-breakpoint-down(md) {
+    --bs-nav-underline-gap: 1.25rem;
+  }
+}
+// 分頁文字後的數量
+.tab-count {
+  margin-left: .25rem;
+  font-size: .75rem;
+  font-weight: $font-weight-normal;
+  color: $body-tertiary-color;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- 標籤 #成本結構 ----------
+// 一般：白底細框；選中：深藍底白字＋勾勾；0 篇：虛線框＋灰字（仍顯示，不隱藏）
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  min-height: 2rem;
+  padding: .25rem .625rem;
+  border: 1px solid $rule-strong;
+  background-color: $paper;
+  color: $ink;
+  font-size: $font-size-sm;
+  line-height: 1.4;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: $oxford;
+    color: $oxford;
+  }
+  &.is-selected,
+  .btn-check:checked + & {
+    border-color: $oxford;
+    background-color: $oxford;
+    color: $paper;
+  }
+  .btn-check:focus-visible + & {
+    box-shadow: $focus-ring-double;
+  }
+  &.is-zero {
+    border-style: dashed;
+    color: $slate-light;
+  }
+}
+// 觸控：標籤列在手機上整列加高到 44px 的點擊範圍
+label.tag,
+a.tag {
+  cursor: pointer;
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -6px 0;
+  }
+}
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------- 提示框 Callout：左側色條＋圖示＋文字（＋一個按鈕） ----------
+// <div class="callout callout-warning" role="status">
+//   <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+//   <div class="callout-body"><p class="callout-title">標題（選用）</p><p>內容</p><a class="btn …">動作</a></div>
+// </div>
+.callout {
+  --callout-color: #{$cerulean};
+  --callout-bg: #{$cerulean-subtle};
+  display: flex;
+  gap: .75rem;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--callout-color);
+  background-color: var(--callout-bg);
+  color: $ink;
+
+  > .bi {
+    flex: 0 0 auto;
+    margin-top: .125rem;
+    color: var(--callout-color);
+    font-size: 1.125rem;
+    line-height: 1.5;
+  }
+  p {
+    margin-bottom: 0;
+  }
+  .btn {
+    margin-top: .75rem;
+  }
+}
+.callout-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.callout-title {
+  margin-bottom: .25rem !important;
+  font-weight: $font-weight-bold;
+  color: var(--callout-color);
+}
+.callout-success { --callout-color: #{$green};   --callout-bg: #{$green-subtle}; }
+.callout-warning { --callout-color: #{$amber};   --callout-bg: #{$amber-subtle}; }
+.callout-danger  { --callout-color: #{$crimson}; --callout-bg: #{$crimson-subtle}; }
+// 品牌強調（洞察、編輯器提示）：深藍淡底＋深藍條
+.callout-brand   { --callout-color: #{$oxford};  --callout-bg: #{$oxford-tint}; }
+
+// ---------- 空狀態：圖示＋一句說明＋一個下一步按鈕 ----------
+// 不責怪使用者、不用驚嘆號；放在原本列表的位置，起點與列表相同
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: map-get($spacers, 4) 0;
+  border-top: 1px solid $rule;
+  border-bottom: 1px solid $rule;
+
+  > .bi {
+    font-size: 1.75rem;
+    line-height: 1;
+    color: $slate;
+  }
+  p {
+    max-width: 32em;
+    margin: 0;
+    color: $ink;
+  }
+}
+
+// ---------- 資料表 DataTable ----------
+// 外框＋表頭霧白紙底＋列分隔線；數字欄 .text-end.num；外層 .table-responsive
+.table-data {
+  margin-bottom: 0;
+  border: 1px solid $rule;
+  font-size: $font-size-sm;
+
+  > thead > tr > th {
+    background-color: $mist;
+    color: $slate;
+    font-size: $small-font-size;
+    font-weight: $font-weight-medium;
+    white-space: nowrap;
+    border-bottom-color: $rule-strong;
+  }
+  td,
+  th {
+    vertical-align: middle;
+  }
+  // 資料欄位不換行，窄螢幕在 .table-responsive 裡橫向捲動（Guideline 的說明表 .gl-table 例外）
+  &:not(.gl-table) td {
+    white-space: nowrap;
+  }
+}
+.table-responsive {
+  position: relative; // 讓表格裡的 .visually-hidden（絕對定位）以捲動容器為準，不會把整頁撐出水平捲軸
+  scrollbar-width: thin;
+}
+
+// ---------- 進度條（閱讀進度：卡片、付費牆、編輯器設定面板） ----------
+// 進行中：深藍；已讀完：綠；尚未開始：空軌（只有框線，沒有填色）
+.progress {
+  box-shadow: inset 0 0 0 1px $rule;
+}
+.progress-bar.is-done {
+  background-color: $green;
+}
+.progress.is-empty {
+  background-color: $paper;
+  box-shadow: inset 0 0 0 1px $rule-strong;
+}
+
+// ---------- 浮層陰影：$enable-shadows 關閉時 Bootstrap 不會輸出，這裡手動套用 ----------
+.dropdown-menu {
+  box-shadow: var(--bs-dropdown-box-shadow);
+}
+.modal-content {
+  box-shadow: $box-shadow-lg;
+}
+
+// ---------- 鍵盤焦點：深藍 2px 實線，外推 2px 露出白隙 ----------
+:focus-visible {
+  outline: 2px solid $oxford;
+  outline-offset: 2px;
+}
+.offcanvas:focus-visible,
+.modal:focus-visible {
+  outline: 0;
+}
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+.btn:focus-visible,
+.btn-close:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible {
+  outline: none;
+}
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: $zindex-fixed + 10;
+  padding: .5rem 1rem;
+  background: $oxford;
+  color: $paper;
+  &:focus { top: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
+
+// ---------- 手機滿版橫向捲動列 ----------
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+  }
+}
+.bleed-x {
+  @include bleed-x;
+}
+
+// ---------- 圖片框：固定比例、裁切填滿 ----------
+.img-frame {
+  position: relative;
+  overflow: hidden;
+  background-color: $mist;
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+.ratio-cover { aspect-ratio: 1200 / 630; }
+.ratio-16x9 { aspect-ratio: 16 / 9; }

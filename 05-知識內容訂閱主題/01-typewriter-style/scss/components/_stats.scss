@@ -1,0 +1,132 @@
+// ============================================================
+// 數據卡 StatTile 與閱讀漏斗圖（個人頁面的我的文章、內容數據；Guideline 的數據圖表）
+// 漏斗：等比例橫條、同一個刻度、同一個顏色（炭黑）、直接標註人數；不畫梯形、不用雙軸
+// 用 CSS 畫，不用圖表套件；外層 role="img"＋完整的 aria-label，下方一定附數據表
+// ============================================================
+
+// 數據卡：小字標籤＋大號數字（tabular-nums）＋單位
+.stat-tile {
+  height: 100%;
+  padding: 1.25rem 1.25rem 1rem;
+  border-top: 2px solid $ink;
+  background-color: $paper-gray;
+
+  // 唯一強調的一張（由本篇帶來的訂閱）：炭黑墨塊
+  &.is-key {
+    background-color: $ink;
+    color: $paper;
+    .stat-tile-label { color: $paper; }
+  }
+}
+.stat-tile-label {
+  margin-bottom: .375rem;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+}
+.stat-tile-value {
+  margin: 0;
+  font-size: 2rem;
+
+  @include media-breakpoint-up(xl) {
+    font-size: 2.25rem;
+  }
+}
+
+// ---------- 漏斗圖 ----------
+// <div class="funnel" role="img" aria-label="…">
+//   <div class="funnel-row" style="--value-num: 1">
+//     <span class="funnel-label">開啟文章</span>
+//     <span class="funnel-track"><span class="funnel-bar"></span><span class="funnel-value">18,420</span></span>
+//   </div>
+// </div>
+// --value-num 是相對第一段的比例（18,420 = 1、6,208 = .337），條長＝ --value-num ×（軌道寬 − 標註保留寬）
+.funnel {
+  --funnel-ink: #{$ink};
+  --funnel-text: #{$ink};
+  --funnel-muted: #{$ink-muted};
+  --funnel-axis: #{$control};
+  display: grid;
+  gap: .875rem;
+  color: var(--funnel-text);
+  font-size: $font-size-sm;
+
+  // 深色底：條改白紙、字改白紙（Guideline 示範兩種底色都可讀）
+  &.is-dark {
+    --funnel-ink: #{$paper};
+    --funnel-text: #{$paper};
+    --funnel-muted: #{$rule};
+    --funnel-axis: #{$ink-faint};
+  }
+}
+.funnel-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  align-items: center;
+  gap: .75rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 7rem 1fr;
+  }
+}
+.funnel-label {
+  text-align: right;
+  white-space: nowrap;
+}
+.funnel-track {
+  --reserve: 10.5rem; // 右側標註（人數＋佔前一階段）保留的寬度
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  min-height: 2.25rem;
+  border-left: 1px solid var(--funnel-axis); // 0 的基準線（實線）
+
+  @include media-breakpoint-down(sm) {
+    --reserve: 6rem;
+    flex-wrap: wrap;
+    row-gap: .125rem;
+  }
+}
+.funnel-bar {
+  flex-shrink: 0;
+  width: calc((100% - var(--reserve)) * var(--value-num, 1));
+  min-width: 2px;
+  height: 1.75rem;
+  background-color: var(--funnel-ink);
+}
+.funnel-value {
+  font-family: $font-family-typewriter;
+  font-size: 1rem;
+  font-weight: $font-weight-bold;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.funnel-rate {
+  color: var(--funnel-muted);
+  white-space: nowrap;
+
+  @include media-breakpoint-down(sm) {
+    flex-basis: 100%;
+  }
+}
+// 圖表標題＋副標
+.chart-head {
+  margin-bottom: 1.25rem;
+
+  h3,
+  h4 { margin-bottom: .25rem; font-size: 1.125rem; }
+  p { margin: 0; color: $body-secondary-color; font-size: $font-size-sm; }
+}
+.chart-panel {
+  padding: map-get($spacers, 4);
+  border: 1px solid $ink;
+  background-color: $paper;
+
+  &.is-dark {
+    border-color: $ink;
+    background-color: $ink;
+    color: $paper;
+    .chart-head h3,
+    .chart-head h4 { color: $paper; }
+    .chart-head p { color: $rule; }
+  }
+}

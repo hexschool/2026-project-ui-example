@@ -1,0 +1,190 @@
+// ============================================================
+// 數據：數據卡 StatTile、資料表 DataTable、閱讀漏斗圖（inline SVG）
+// ============================================================
+
+// ---------- 數據卡：小字標籤＋大號數字（tabular-nums）＋單位 ----------
+// <div class="stat-tile"><p class="stat-label">總瀏覽</p><p class="stat-value">142,860</p></div>
+// 唯一要強調的一張加 .is-highlight（駝色奶霧底＋焦糖字）
+.stat-tile {
+  height: 100%;
+  padding: map-get($spacers, 3) + .25rem map-get($spacers, 4);
+  border: 1px solid $hairline;
+  border-radius: $border-radius-lg;
+  background-color: $oat-milk;
+
+  &.is-highlight {
+    border-color: mix($caramel, $camel-mist, 35%);
+    background-color: $camel-mist;
+
+    .stat-label,
+    .stat-value { color: $caramel-deep; }
+  }
+}
+.stat-label {
+  margin-bottom: .25rem;
+  font-size: .875rem;
+  color: $warm-gray;
+}
+.stat-value {
+  margin: 0;
+  font-family: $font-family-reading;
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: $cocoa;
+  font-variant-numeric: lining-nums tabular-nums;
+
+  small {
+    margin-left: .25rem;
+    font-family: $font-family-base;
+    font-size: .9375rem;
+    font-weight: $font-weight-normal;
+    color: $warm-gray;
+  }
+}
+
+// ---------- 資料表：外框＋表頭淺底＋列分隔線；數字欄靠右 ----------
+// <div class="table-responsive data-table"><table class="table">…</table></div>
+.data-table {
+  border: 1px solid $hairline;
+  border-radius: $border-radius-lg;
+  background-color: $oat-milk;
+
+  .table {
+    margin: 0;
+    font-size: .9375rem;
+    vertical-align: middle;
+  }
+  thead th {
+    background-color: $oat-husk;
+    color: $cocoa;
+    font-size: .875rem;
+    font-weight: $font-weight-bold;
+    white-space: nowrap;
+  }
+  tbody tr:last-child > * { border-bottom: 0; }
+  .is-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .is-muted { color: $warm-gray; }
+  caption {
+    padding: .75rem 1rem;
+    font-size: .8125rem;
+    color: $warm-gray;
+  }
+}
+// 表格裡的文字按鈕群（編輯、查看數據、下架…）
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1rem;
+
+  .btn-text {
+    font-size: .875rem;
+    white-space: nowrap;
+  }
+}
+
+// ---------- 閱讀漏斗圖（HTML＋CSS 橫條，不用圖表套件） ----------
+// 等比例橫條、同一個刻度、同一個顏色（焦糖）；每段右側直接標人數，後 3 段再標「佔前一階段」
+// 用 HTML 而不是 SVG：手機上文字不會跟著縮小。--w 是佔第一段的比例（同一個刻度）
+// <div class="funnel" role="img" aria-label="…完整數字…">
+//   <div class="funnel-row" style="--w: 1" aria-hidden="true">
+//     <span class="funnel-label">開啟文章</span>
+//     <span class="funnel-track"><span class="funnel-bar"></span><span class="funnel-value">18,420</span></span>
+//   </div>…
+// </div>
+// 顏色都用 class 控制，同一張圖放在深色底（.funnel-card.is-dark）也能換色
+.funnel-card {
+  padding: map-get($spacers, 4);
+  border: 1px solid $hairline;
+  border-radius: $border-radius-lg;
+  background-color: $oat-milk;
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 5);
+  }
+}
+.funnel-title {
+  margin-bottom: .25rem;
+  font-size: 1.25rem;
+}
+.funnel-sub {
+  margin-bottom: map-get($spacers, 4);
+  font-size: .875rem;
+  color: $warm-gray;
+}
+// 版面依圖表本身的寬度決定（container query）：寬 ≥ 34rem 時標籤在左、數字在橫條右側；
+// 窄的時候（手機、Guideline 並列）標籤在上、數字換到橫條下一行，橫條仍是同一個刻度
+.funnel {
+  container-type: inline-size;
+  display: grid;
+  gap: map-get($spacers, 3);
+  font-variant-numeric: tabular-nums;
+}
+.funnel-row {
+  display: grid;
+  gap: .375rem;
+
+  @container (min-width: 34rem) {
+    grid-template-columns: 7rem 1fr;
+    gap: 1rem;
+    align-items: center;
+  }
+}
+.funnel-label {
+  font-size: .9375rem;
+  color: $cocoa;
+
+  @container (min-width: 34rem) {
+    text-align: right;
+  }
+}
+// 軌道：左側一條實線當基準軸，橫條從軸線長出來；寬版右邊留 12rem 給數字與百分比
+.funnel-track {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .75rem;
+  min-height: 2.25rem;
+  padding-left: 0;
+  border-left: 1px solid $control;
+}
+.funnel-bar {
+  flex: none;
+  width: calc((100% - 1px) * var(--w, 1));
+  min-width: 3px;
+  height: 2.25rem;
+  border-radius: 0 $border-radius-sm $border-radius-sm 0;
+  background-color: $caramel;
+
+  @container (min-width: 34rem) {
+    width: calc((100% - 12rem) * var(--w, 1));
+  }
+}
+.funnel-value {
+  font-size: 1rem;
+  font-weight: $font-weight-bold;
+  color: $cocoa;
+}
+.funnel-rate {
+  font-size: .875rem;
+  color: $warm-gray;
+}
+
+// 深色底版本（Guideline 示範：圖表在深色與淺色風格下都維持可讀性）
+.funnel-card.is-dark {
+  border-color: $cocoa;
+  background-color: $cocoa;
+  color: $oat-milk;
+
+  .funnel-title,
+  .funnel-label,
+  .funnel-value { color: $oat-milk; }
+  .funnel-sub,
+  .funnel-rate { color: mix($oat-milk, $cocoa, 75%); } // 對可可底 7.6:1
+  .funnel-bar { background-color: $camel; }              // 駝色對可可底 5.5:1
+  .funnel-track { border-left-color: mix($oat-milk, $cocoa, 55%); }
+}
