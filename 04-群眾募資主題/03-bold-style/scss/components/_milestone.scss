@@ -1,0 +1,132 @@
+// ============================================================
+// 生產時間軸 MilestoneTimeline：垂直時間軸，節點 4 種狀態＋延遲
+// <ol class="milestones">
+//   <li class="milestone is-done|is-live|is-todo|is-late">
+//     <span class="milestone-node" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+//     <div class="milestone-body">…</div>
+//   </li>
+// </ol>
+// 已完成：薄荷綠實心＋勾　進行中：亮黃實心＋脈動外框　未開始：虛線空心、標題灰墨　延遲：珊瑚紅＋驚嘆號
+// 節點之間的連線：已完成段落是 3px 實線，往未開始的那一段是虛線
+// ============================================================
+.milestones {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.milestone {
+  --node: 2.75rem;
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--node) minmax(0, 1fr);
+  gap: 1rem;
+  padding-bottom: 2rem;
+
+  // 連線：從節點下緣到下一個節點
+  &:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    top: var(--node);
+    bottom: 0;
+    left: calc(var(--node) / 2 - 1.5px);
+    border-left: $border-width solid $ink;
+  }
+  &.is-live:not(:last-child)::before { border-left-style: dashed; } // 進行中 → 未開始：還沒走到
+  &:last-child { padding-bottom: 0; }
+}
+.milestone-node {
+  display: grid;
+  place-items: center;
+  width: var(--node);
+  height: var(--node);
+  border: $border-width solid $ink;
+  border-radius: 50%;
+  background-color: $paper;
+  font-size: 1.25rem;
+}
+.is-done .milestone-node { background-color: $ok-bg; }
+.is-live .milestone-node {
+  background-color: $yellow;
+  animation: milestone-pulse 1.8s ease-out infinite;
+}
+.is-todo .milestone-node { border-style: dashed; background-color: transparent; }
+.is-late .milestone-node { background-color: $err-bg; }
+
+// 進行中的脈動：往外擴散的深黑外框（prefers-reduced-motion 時由 _base.scss 停掉）
+@keyframes milestone-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba($ink, .55); }
+  70%  { box-shadow: 0 0 0 .75rem rgba($ink, 0); }
+  100% { box-shadow: 0 0 0 0 rgba($ink, 0); }
+}
+
+.milestone-body { padding-top: .5rem; }
+.milestone-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .75rem;
+  margin-bottom: .5rem;
+}
+.milestone-title {
+  margin: 0;
+  font-size: 1.1875rem;
+}
+.is-todo .milestone-title { color: $ink-muted; }
+.milestone-date {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+}
+// 最新一則更新：沙色底的便條
+.milestone-update {
+  margin: 0;
+  padding: .75rem 1rem;
+  border-radius: $border-radius;
+  background-color: $sand;
+}
+.milestone-update-date {
+  display: inline-block;
+  margin-right: .5rem;
+  padding: 0 .5rem;
+  border-radius: $border-radius-sm;
+  background-color: $ink;
+  color: $cream;
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+}
+.milestone-toggle {
+  margin-top: .25rem;
+
+  &::after {
+    content: map-get($bootstrap-icons-map, "dash-lg");
+    font-family: bootstrap-icons;
+    font-weight: normal;
+  }
+  &.collapsed::after { content: map-get($bootstrap-icons-map, "plus-lg"); }
+}
+.milestone-photos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  max-width: 30rem;
+  margin: .5rem 0;
+
+  img {
+    width: 100%;
+    height: auto; // 蓋掉 height 屬性，讓 aspect-ratio 生效
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: $border-radius;
+  }
+}
+// 延遲範例：放在時間軸下方
+.milestone-delay {
+  margin-top: map-get($spacers, 5);
+  padding-top: map-get($spacers, 4);
+  border-top: $border-thin dashed $ink;
+}
+.milestone-reschedule {
+  margin-bottom: .75rem;
+  font-weight: $font-weight-medium;
+
+  s { text-decoration-thickness: 2px; }
+}

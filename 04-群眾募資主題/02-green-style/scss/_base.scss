@@ -1,0 +1,812 @@
+// ============================================================
+// 全站基礎：字體、區塊節奏、焦點、按鈕、狀態徽章、提示框與共用小工具
+// 用法與示範都在 guideline.html；新頁面直接套用，不要在 pages/* 另寫一份
+// ============================================================
+
+// 單一淺色主題：原生捲軸、日期選擇器也用淺色（作業系統是深色模式時也不反轉）
+:root {
+  color-scheme: light;
+  accent-color: $forest;
+}
+
+body {
+  letter-spacing: $letter-spacing-body;
+  text-rendering: optimizeLegibility;
+}
+
+// ≥ 992px 時容器左右留白從 20px 放大成 32px（.row 的 gutter 仍是 24px，不會溢出）
+@include media-breakpoint-up(lg) {
+  .container,
+  .container-fluid {
+    --bs-gutter-x: 4rem;
+  }
+}
+
+// 標題：Chiron GoRound TC 圓體
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  letter-spacing: $letter-spacing-heading;
+  text-wrap: balance; // 多行時平均分配，避免最後一行只剩一兩個字
+}
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty; // 內文避免孤字
+}
+
+// sticky 頁首不遮住錨點目標與焦點（值同 $sticky-top-offset）
+// 全站統一由這裡扣掉頁首高度；個別元素的 scroll-margin-top 只寫「額外」要扣的高度（例如故事目錄），兩者會相加
+html {
+  scroll-padding-top: $sticky-top-offset;
+}
+
+::selection {
+  background-color: $sprout-soft;
+  color: $ink;
+}
+
+// ---------- 字體與數字 ----------
+// 圓體：非 h 標籤但要用圓體的地方（金額、方案名稱、按鈕型連結）
+.font-round {
+  font-family: $font-family-round;
+  letter-spacing: $letter-spacing-heading;
+}
+
+// 大數字：目前金額、達成率、數據卡數字。圓體 700、比例字寬（單獨出現的數字不需要上下對齊）
+// 字級由所在位置決定（<data class="figure-num display-4" value="1235600">NT$ 1,235,600</data>）
+.figure-num {
+  font-family: $font-family-round;
+  font-weight: $font-weight-bold;
+  line-height: 1.15;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+// 表格、清單裡要上下對齊的數字：等寬數字
+.num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.nowrap {
+  white-space: nowrap;
+}
+
+// 次要說明文字
+.text-note {
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+}
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、標點與 <wbr> 處換行，「帆布包」「量產備料」這類詞不會被拆開；整段放不下時才強制斷行
+// 用在專案名稱、短標題；長段落不要用（會讓行尾參差）
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 區塊節奏 ----------
+// 區塊上下留白：手機 64px → 桌機 96px
+// 背景：預設再生紙；.section-leaf 葉影、.section-kraft 牛皮紙、.section-surface 白
+.section {
+  padding-block: map-get($spacers, 7);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 8);
+  }
+}
+.section-tight {
+  padding-block: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7);
+  }
+}
+.section-leaf    { background-color: $leaf; }
+.section-kraft   { background-color: $kraft; }
+.section-surface { background-color: $surface; }
+
+// 區塊標題：標題＋一句說明；右側可放「看全部」連結（< sm 時連結換到下一行）
+// <div class="section-heading">
+//   <div><h2>…</h2><p>…</p></div>
+//   <a class="btn-text" href="…">看全部專案</a>
+// </div>
+.section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: map-get($spacers, 3) map-get($spacers, 5);
+  margin-bottom: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: map-get($spacers, 6);
+  }
+
+  h2,
+  .h2 {
+    margin-bottom: map-get($spacers, 2);
+  }
+  p {
+    max-width: 36em;
+    margin-bottom: 0;
+    color: $body-secondary-color;
+  }
+}
+.section-heading-center {
+  justify-content: center;
+  text-align: center;
+
+  p { margin-inline: auto; }
+}
+
+// ---------- 頁面標題區（首頁以外的頁面共用） ----------
+// 葉影色帶＋底部細線；結構固定，切換頁面時標題位置不跳動
+// <header class="page-head">
+//   <div class="container">
+//     <nav aria-label="目前位置"><ol class="breadcrumb">…</ol></nav>
+//     <h1>頁面標題</h1>
+//     <p class="page-lead">一句說明</p>
+//   </div>
+// </header>
+.page-head {
+  padding-block: map-get($spacers, 3) map-get($spacers, 5);
+  background-color: $leaf;
+  border-bottom: 1px solid $line;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 4) map-get($spacers, 6);
+  }
+
+  .breadcrumb {
+    margin-bottom: map-get($spacers, 2);
+  }
+  h1,
+  .h1 {
+    margin-bottom: map-get($spacers, 2);
+  }
+}
+// 只有麵包屑的版本（專案細節）
+.page-head-crumb {
+  padding-block: map-get($spacers, 2);
+
+  .breadcrumb { margin-bottom: 0; }
+}
+.page-lead {
+  max-width: 36em;
+  margin-bottom: 0;
+  color: $body-secondary-color;
+}
+
+// ---------- 麵包屑：連結苔灰、目前頁墨土；單一項目不從中間斷行 ----------
+.breadcrumb {
+  align-items: center;
+  font-family: $font-family-sans-serif;
+}
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.breadcrumb-item.active {
+  white-space: normal; // 最後一項（專案名稱）太長時可以換行
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem; // 觸控目標 44px
+  color: $body-secondary-color;
+  text-decoration: none;
+
+  &:hover {
+    color: $forest;
+    text-decoration: underline;
+  }
+}
+
+// ---------- 按鈕 ----------
+// 主要：.btn-primary（森林墨綠底＋白字），同一組動作只放一個
+// 強調：.btn-sprout（初生綠底＋墨土字），給「建立」「評價」「重新送審」這類正向的下一步
+// 次要：.btn-outline-primary（白底＋森林墨綠框）
+// 深色底上：.btn-on-dark（再生紙底＋深林字）
+// 文字連結：.btn-text；圓形圖示鈕：.btn-icon
+.btn {
+  --bs-btn-focus-box-shadow: #{$focus-ring-double};
+  letter-spacing: $letter-spacing-label;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+}
+.btn-primary {
+  --bs-btn-hover-bg: #{$forest-hover};
+  --bs-btn-hover-border-color: #{$forest-hover};
+  --bs-btn-active-bg: #{$forest-deep};
+  --bs-btn-active-border-color: #{$forest-deep};
+  // 停用：淡葉影底＋淡苔灰字（不用透明度，避免字幾乎看不見）
+  --bs-btn-disabled-bg: #{$tone-idle-bg};
+  --bs-btn-disabled-border-color: #{$tone-idle-bg};
+  --bs-btn-disabled-color: #{$tone-idle};
+}
+.btn-sprout {
+  --bs-btn-color: #{$ink};
+  --bs-btn-bg: #{$sprout};
+  --bs-btn-border-color: #{$sprout};
+  --bs-btn-hover-color: #{$ink};
+  --bs-btn-hover-bg: #{mix($sprout, $forest, 85%)};
+  --bs-btn-hover-border-color: #{mix($sprout, $forest, 85%)};
+  --bs-btn-active-color: #{$ink};
+  --bs-btn-active-bg: #{mix($sprout, $forest, 75%)};
+  --bs-btn-active-border-color: #{mix($sprout, $forest, 75%)};
+  --bs-btn-disabled-bg: #{$tone-idle-bg};
+  --bs-btn-disabled-border-color: #{$tone-idle-bg};
+  --bs-btn-disabled-color: #{$tone-idle};
+}
+.btn-outline-primary {
+  --bs-btn-bg: #{$surface};
+  --bs-btn-border-color: #{$line-strong};
+  --bs-btn-hover-color: #{$forest};
+  --bs-btn-hover-bg: #{$leaf};
+  --bs-btn-hover-border-color: #{$forest};
+  --bs-btn-active-color: #{$forest};
+  --bs-btn-active-bg: #{$sprout-soft};
+  --bs-btn-active-border-color: #{$forest};
+  --bs-btn-disabled-color: #{$tone-idle};
+  --bs-btn-disabled-bg: #{$paper};
+  --bs-btn-disabled-border-color: #{$line-strong};
+}
+.btn-on-dark {
+  --bs-btn-color: #{$forest-deep};
+  --bs-btn-bg: #{$paper};
+  --bs-btn-border-color: #{$paper};
+  --bs-btn-hover-color: #{$forest-deep};
+  --bs-btn-hover-bg: #{$sprout};
+  --bs-btn-hover-border-color: #{$sprout};
+  --bs-btn-active-color: #{$forest-deep};
+  --bs-btn-active-bg: #{$sprout};
+  --bs-btn-active-border-color: #{$sprout};
+  --bs-btn-focus-box-shadow: 0 0 0 2px #{$forest-deep}, 0 0 0 4px #{$sprout};
+}
+// 圓形圖示鈕（追蹤、分享）：48px；.btn-sm 時 44px
+.btn-icon {
+  --bs-btn-padding-x: 0;
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  font-size: 1.125rem;
+
+  &.btn-sm { width: 2.75rem; height: 2.75rem; }
+}
+// 追蹤：aria-pressed="true" 時換成實心愛心（.bi-heart-fill 由 HTML 決定）
+.btn[aria-pressed="true"] .bi-heart-fill { color: $tone-err; }
+
+// 文字連結型按鈕：森林墨綠字＋底線，內建 44px 觸控高度，不要再加 py-*
+.btn-text {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: $font-family-round;
+  font-weight: $font-weight-bold;
+  color: $forest;
+  text-decoration: underline;
+  text-decoration-color: rgba($forest, .35);
+  text-decoration-thickness: 2px;
+  text-underline-offset: .35em;
+
+  &:hover { color: $forest-hover; text-decoration-color: currentColor; }
+  &:focus-visible { outline-offset: 4px; }
+}
+// 沒有目的頁的佔位連結（<a> 不帶 href）：外觀照常，但不顯示手指游標
+a:not([href]).btn,
+a:not([href]).btn-text {
+  cursor: default;
+}
+
+// 內文裡沒有 class 的連結
+a:not([class]) {
+  text-decoration-color: rgba($forest, .4);
+  text-underline-offset: .3em;
+
+  &:hover { text-decoration-color: currentColor; }
+}
+
+// ---------- 表單微調 ----------
+.form-control,
+.form-select {
+  caret-color: $forest;
+}
+.form-control:-webkit-autofill {
+  -webkit-text-fill-color: $ink;
+  box-shadow: inset 0 0 0 100px $surface;
+}
+// 核取方塊、radio、開關：只有鍵盤操作時顯示焦點環
+.form-check-input:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+.form-switch .form-check-input {
+  width: 2.75em;
+  height: 1.5em;
+  margin-top: .15em;
+}
+.form-label-optional {
+  margin-left: map-get($spacers, 2);
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  font-weight: $font-weight-normal;
+}
+
+// ---------- 鍵盤焦點：森林墨綠 2px，外推 2px 露出底色當間隙 ----------
+:focus-visible {
+  outline: 2px solid $forest;
+  outline-offset: 2px;
+}
+.offcanvas:focus-visible,
+.modal:focus-visible,
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+.btn:focus-visible,
+.btn-close:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible {
+  outline: none; // 這些元件由 Bootstrap 的 box-shadow 畫焦點環
+}
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: $zindex-fixed + 10;
+  padding: .5rem 1rem;
+  border-radius: $border-radius-pill;
+  background: $forest;
+  color: $surface;
+  &:focus { top: .75rem; }
+}
+
+// 動態：只有「進行中」節點的脈動與 hover 微動；減少動態時全部關掉
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+// ---------- 圖片框：固定比例、圓角、裁切填滿 ----------
+// <div class="img-frame ratio ratio-4x3"><img src="…" alt="…"></div>
+.img-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: $border-radius-lg;
+  background-color: $leaf; // 圖片載入前的底色
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+// Bootstrap .ratio 沒有 4:5、3:2，補上
+.ratio-4x5 { --bs-aspect-ratio: 125%; }
+.ratio-3x2 { --bs-aspect-ratio: 66.6667%; }
+
+// ---------- 頭像 ----------
+// 照片：<img class="avatar" src="images/proposer-avatar.jpg" alt="…" width="48" height="48">
+// 文字頭像：<span class="avatar avatar-text" aria-hidden="true">彥</span>
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: $leaf;
+}
+.avatar-sm { width: 2.5rem; height: 2.5rem; }
+.avatar-lg { width: 4.5rem; height: 4.5rem; }
+.avatar-text {
+  font-family: $font-family-round;
+  font-weight: $font-weight-bold;
+  color: $forest;
+  background-color: $sprout-soft;
+}
+
+// ---------- 狀態徽章（WIREFRAME_SPEC §2.6 的 6 種語意） ----------
+// 一律「圖示＋文字」，不只靠顏色。live 是實心森林墨綠，其他 5 種是淡底
+// <span class="status status-live"><i class="bi bi-hourglass-split" aria-hidden="true"></i>募資中</span>
+// <span class="status status-ok"><i class="bi bi-truck" aria-hidden="true"></i>已出貨</span>
+// 已下架：.status-idle.status-dashed（虛線框，和草稿區分）
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .25rem .75rem;
+  border: 1px solid transparent;
+  border-radius: $border-radius-pill;
+  font-family: $font-family-round;
+  font-size: .8125rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.4;
+  letter-spacing: $letter-spacing-label;
+  white-space: nowrap;
+
+  .bi { font-size: .875em; }
+}
+.status-live {
+  color: $surface;
+  background-color: $tone-live-bg;
+
+  // 進行中的圓點：初生綠（沒有圖示時用）
+  &.has-dot::before {
+    content: "";
+    width: .5rem;
+    height: .5rem;
+    border-radius: 50%;
+    background-color: $sprout;
+  }
+}
+@each $name, $pair in $tones {
+  .status-#{$name} {
+    color: nth($pair, 1);
+    background-color: nth($pair, 2);
+  }
+}
+.status-dashed {
+  background-color: transparent;
+  border: 1px dashed currentColor;
+}
+// 疊在照片上的徽章：白底（時間警示除外）＋淡陰影，照片再亮也看得清楚
+.status-on-photo {
+  box-shadow: $box-shadow-sm;
+}
+
+// ---------- 提示框 Callout ----------
+// 左側粗線＋淡底；語意：ok 安心提示、warn 風險與挑戰／洞察、err 退件原因與逾期、info 資訊、idle 權限提示
+// 不放關閉鈕（重要資訊不能被關掉）
+// <div class="callout callout-ok"><i class="bi bi-shield-check callout-icon" aria-hidden="true"></i><p>…</p></div>
+.callout {
+  display: flex;
+  gap: .75rem;
+  padding: 1rem 1.25rem;
+  border-left: 4px solid currentColor;
+  border-radius: $border-radius-sm $border-radius $border-radius $border-radius-sm;
+
+  > :last-child { margin-bottom: 0; }
+  p { color: $ink; }
+}
+.callout-body {
+  flex: 1;
+  min-width: 0;
+
+  > :last-child { margin-bottom: 0; }
+}
+.callout-icon {
+  flex-shrink: 0;
+  font-size: 1.125rem;
+  line-height: $line-height-base;
+}
+.callout-title {
+  margin-bottom: .25rem;
+  font-family: $font-family-round;
+  font-weight: $font-weight-bold;
+  color: inherit;
+}
+@each $name, $pair in $tones {
+  .callout-#{$name} {
+    color: nth($pair, 1);
+    background-color: nth($pair, 2);
+  }
+}
+
+// ---------- 標籤 ----------
+// 分類／地點／提案者：白底＋淡原木框＋原木褐字（照片上也看得清楚）
+// <span class="tag">設計生活</span>
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .25rem .75rem;
+  border: 1px solid $wood-soft;
+  border-radius: $border-radius-pill;
+  background-color: $surface;
+  color: $wood;
+  font-size: .8125rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+// 中性標籤（草稿缺少的項目、規格）
+.tag-plain {
+  border-color: $line-strong;
+  color: $ink-muted;
+}
+
+// ---------- 篩選標籤（FilterChip）：可選中的膠囊，用 .btn-check＋label ----------
+// <input type="checkbox" class="btn-check" id="…" checked><label class="chip" for="…">募資中</label>
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  padding: .375rem 1rem;
+  border: 1px solid $line-strong;
+  border-radius: $border-radius-pill;
+  background-color: $surface;
+  color: $ink;
+  font-size: .9375rem;
+  line-height: 1.4;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color .15s ease, border-color .15s ease;
+
+  &:hover { border-color: $forest; background-color: $leaf; color: $forest; }
+
+  .chip-count {
+    font-size: .8125rem;
+    color: $ink-muted;
+    font-variant-numeric: tabular-nums;
+  }
+}
+// 選中：森林墨綠框＋淡初生綠底＋勾（不只靠顏色）
+.btn-check:checked + .chip,
+.chip.active {
+  border-color: $forest;
+  background-color: $sprout-soft;
+  color: $forest;
+  font-weight: $font-weight-medium;
+
+  &::before {
+    content: "\F633"; // bi-check-lg
+    font-family: bootstrap-icons;
+    font-weight: normal;
+  }
+}
+.btn-check:focus-visible + .chip {
+  box-shadow: $focus-ring-double;
+}
+// 已套用標籤（可移除）
+.chip-applied {
+  min-height: 2.25rem;
+  padding: .25rem .375rem .25rem .875rem;
+  border-color: $forest;
+  background-color: $sprout-soft;
+  color: $forest;
+  cursor: default;
+
+  &:hover { background-color: $sprout-soft; }
+}
+.chip-remove {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-block: -.5rem; // 觸控範圍 44px，外觀仍是小膠囊
+  margin-right: -.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+
+  &:hover { color: $forest-hover; }
+}
+
+// ---------- 底線分頁籤：目前分頁是 3px 圓頭的森林墨綠底線 ----------
+// 首頁的專案分頁、個人頁的贊助紀錄篩選、留言篩選共用；手機在自己的容器內橫向捲動
+.nav-underline {
+  --bs-nav-underline-gap: 1.75rem;
+  --bs-nav-underline-border-width: 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid $line;
+
+  .nav-link {
+    position: relative;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding-block: .75rem;
+    font-family: $font-family-round;
+    font-weight: $font-weight-medium;
+    color: $ink-muted;
+    white-space: nowrap;
+
+    &:hover { color: $forest; }
+  }
+  .nav-link.active {
+    color: $forest;
+    font-weight: $font-weight-bold;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 3px;
+      border-radius: $border-radius-pill;
+      background-color: $forest;
+    }
+  }
+  // 捲動容器會裁掉外擴的焦點環，改畫在內側
+  .nav-link:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px $forest;
+    border-radius: $border-radius-sm;
+  }
+
+  @include media-breakpoint-down(md) {
+    --bs-nav-underline-gap: 1.25rem;
+  }
+}
+// 分頁文字後面的數量
+.tab-count {
+  margin-left: .375rem;
+  font-size: .8125rem;
+  font-weight: $font-weight-normal;
+  color: $ink-faint;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- 表格：數字靠右、表頭小字 ----------
+.table > thead th {
+  font-size: .8125rem;
+  font-weight: $font-weight-medium;
+  color: $ink-muted;
+  white-space: nowrap;
+}
+.table td.num,
+.table th.num {
+  text-align: right;
+}
+// 外框圓角表格：<div class="table-frame"><table class="table">…</table></div>
+.table-frame {
+  overflow-x: auto; // 窄螢幕時表格在框內橫向捲動，不撐開頁面
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $surface;
+
+  .table { margin-bottom: 0; }
+  .table > :not(caption) > * > * { padding-inline: 1.25rem; }
+  .table > tbody > tr:last-child > * { border-bottom: 0; }
+}
+
+// ---------- 定義清單：標籤在上、數字在下（StatTile、儀表板、提案者紀錄共用） ----------
+// <dl class="stat-list"><div><dt>贊助人數</dt><dd>…</dd></div></dl>
+.stat-list {
+  margin: 0;
+
+  dt {
+    font-size: .875rem;
+    font-weight: $font-weight-normal;
+    color: $ink-muted;
+  }
+  dd { margin-bottom: 0; }
+}
+
+// ---------- 設計稿狀態示意 ----------
+// 頁面底部示範「另一種狀態」的畫面：上方虛線分隔、標籤「設計稿狀態示意」，和正式內容明顯分開
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag"><i class="bi bi-eye" aria-hidden="true"></i>設計稿狀態示意</p>
+//   <h2 id="…" class="demo-state-title">…</h2>
+//   <p class="text-note">什麼情況下出現</p>
+//   <div class="demo-state-grid">…<div class="demo-state-stage">…</div>…</div>
+// </section>
+.demo-state {
+  margin-top: map-get($spacers, 8);
+  padding-top: map-get($spacers, 5);
+  border-top: 2px dashed $line-strong;
+
+  > .text-note { margin-bottom: map-get($spacers, 4); }
+}
+.demo-state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: map-get($spacers, 3);
+  padding: .25rem .75rem;
+  border: 1px dashed $line-strong;
+  border-radius: $border-radius-pill;
+  color: $ink-muted;
+  font-size: .8125rem;
+}
+.demo-state-title {
+  margin-bottom: map-get($spacers, 1);
+  font-size: $h4-font-size;
+}
+.demo-state-grid {
+  display: grid;
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.demo-state-grid-3 {
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+// 每個示意的外框：虛線＋小標題，表示這是示意，不是正式版面
+.demo-state-stage {
+  padding: map-get($spacers, 4);
+  border: 1px dashed $line-strong;
+  border-radius: $border-radius-lg;
+  background-color: rgba($surface, .6);
+}
+.demo-state-label {
+  margin-bottom: map-get($spacers, 3);
+  font-family: $font-family-round;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  color: $ink-muted;
+}
+
+// ---------- 空狀態 ----------
+// 線性 icon → 文案 → 一個主要行動；置中、最大寬約 32em，不放插畫
+// <div class="empty-state"><i class="bi bi-search empty-state-icon" aria-hidden="true"></i><p>…</p><a class="btn btn-primary">…</a></div>
+.empty-state {
+  max-width: 32em;
+  margin-inline: auto;
+  padding-block: map-get($spacers, 5);
+  text-align: center;
+
+  > p {
+    margin-bottom: map-get($spacers, 4);
+    color: $ink;
+  }
+  > :last-child { margin-bottom: 0; }
+}
+.empty-state-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: map-get($spacers, 3);
+  border-radius: 50%;
+  background-color: $leaf;
+  color: $forest;
+  font-size: 1.5rem;
+}
+
+// ---------- 角色切換（account.html 的 data-role） ----------
+// 外層 <div data-role="proposer|backer">：提案者才看得到 .for-proposer，贊助者才看得到 .for-backer
+[data-role="backer"] .for-proposer,
+[data-role="proposer"] .for-backer {
+  display: none !important;
+}
+
+// ---------- 浮層陰影：$enable-shadows 關閉時 Bootstrap 不會輸出，這裡手動套用 ----------
+.dropdown-menu {
+  box-shadow: var(--bs-dropdown-box-shadow);
+  padding: .5rem;
+
+  .dropdown-item { border-radius: $border-radius-sm; }
+}
+
+// ---------- 手機滿版橫向捲動列 ----------
+// 手機（< 576px）時讓橫向捲動的分頁列貼齊螢幕兩側，第一項仍對齊版心
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+  }
+}
+.bleed-x {
+  @include bleed-x;
+}

@@ -1,0 +1,978 @@
+// ============================================================
+// 全站基礎：字體、區塊節奏、按鈕、焦點、共用小工具
+// 以及本風格的共用類別：
+//   .mega-pct（超大達成率）、.fund-bar（募資進度條）、.badge-state（狀態徽章）、
+//   .callout（提示框）、.stat-tile（數據卡）、.chip（篩選標籤）、.pop（硬陰影浮起）
+// ============================================================
+
+// 只有一套淺色主題：作業系統是深色模式時，原生捲軸、日期選擇器也維持淺色，不會出現淺底白字
+:root {
+  color-scheme: light;
+  accent-color: $ink;
+}
+
+body {
+  letter-spacing: .02em;
+  font-feature-settings: "palt" 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  letter-spacing: .01em;
+  text-wrap: balance; // 標題多行時平均分配，避免最後一行只剩一兩個字
+}
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty; // 內文避免孤字
+}
+
+// 手機區塊標題縮小一階（32px → 26px）
+@include media-breakpoint-down(md) {
+  h2, .h2 { font-size: 1.625rem; }
+}
+
+// 容器：手機左右各 20px，≥ 992px 各 32px
+@include media-breakpoint-up(lg) {
+  .container,
+  .container-fluid {
+    --#{$prefix}gutter-x: 4rem;
+  }
+}
+
+// sticky 頁首不遮住焦點與錨點目標（值同 $sticky-top-offset）
+html {
+  scroll-padding-top: $sticky-top-offset;
+}
+
+::selection {
+  background-color: $yellow;
+  color: $ink;
+}
+
+// 內文連結：深黑＋2px 底線，hover 時底線變成亮黃色塊
+a:not([class]) {
+  text-decoration-thickness: 2px;
+  text-underline-offset: .25em;
+
+  &:hover {
+    background-color: $yellow;
+    text-decoration-color: $ink;
+  }
+}
+
+// ---------- 數字 ----------
+// Bricolage Grotesque 的窄體（寬度 75%）＋800 字重：所有「要被看見」的數字
+// 金額、達成率、天數這類獨立的大數字用比例字寬；表格與需要上下對齊的欄位用 .num（等寬）
+.num-display {
+  font-family: $font-family-numeric;
+  font-stretch: 75%;
+  font-weight: 800;
+  font-variant-numeric: lining-nums proportional-nums;
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+// 金額：NT$ 1,235,600（比例字寬，不換行）
+.amount {
+  font-family: $font-family-numeric;
+  font-stretch: 85%;
+  font-weight: 700;
+  font-variant-numeric: lining-nums;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+// 表格、列表裡需要上下對齊的數字
+.num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+// ★ 招牌元素一：超大達成率
+// <data class="mega-pct" value="247">247<span class="mega-pct-unit">%</span></data>
+// 字級由 --mega-size 決定（預設 $mega-pct-size）；% 縮成一半、對齊數字頂端，數字本身更大
+.mega-pct {
+  --mega-size: #{$mega-pct-size};
+  display: inline-flex;
+  align-items: flex-start;
+  font-family: $font-family-numeric;
+  font-size: var(--mega-size);
+  font-stretch: 75%;
+  font-weight: 800;
+  line-height: .82;
+  letter-spacing: -.02em;
+  white-space: nowrap;
+}
+.mega-pct-unit {
+  font-size: .48em;
+  line-height: 1;
+  margin-left: .04em;
+  padding-top: .06em;
+}
+
+// 小標籤：數字上方的「目前募得」「達成率」
+.label {
+  display: block;
+  margin-bottom: map-get($spacers, 1);
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+  color: $body-secondary-color;
+}
+
+// 次要說明文字
+.text-note {
+  font-size: $font-size-sm;
+  color: $body-secondary-color;
+}
+
+// 品名、標題、短說明：只在空白與 <wbr> 處換行，詞組不被拆開；不要用在長段落
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 區塊節奏 ----------
+// 區塊上下留白：手機 48px → 桌機 72px；.section-tight 緊湊區塊 32 → 48px
+.section {
+  padding-block: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7);
+  }
+}
+.section-tight {
+  padding-block: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 6);
+  }
+}
+// 色塊區塊：上下各一條 3px 深黑線，把版面切成一塊一塊的海報
+.section-yellow,
+.section-sand,
+.section-ink {
+  border-block: $border-width solid $ink;
+}
+.section-yellow { background-color: $yellow; }
+.section-sand   { background-color: $sand; }
+.section-ink {
+  background-color: $ink;
+  color: $on-dark;
+
+  h2, h3, .h2, .h3 { color: $on-dark; }
+  .text-note,
+  .label { color: $on-dark-muted; }
+}
+// 兩個色塊區塊相鄰時，中間只留一條線
+.section-yellow + .section-sand,
+.section-sand + .section-yellow,
+.section-ink + .section-yellow,
+.section-yellow + .section-ink,
+.section-sand + .section-ink,
+.section-ink + .section-sand {
+  border-top: 0;
+}
+
+// 區塊標題：左側標題＋副標，右側（可選）一個連結；< sm 連結移到下一行
+// <div class="section-heading">
+//   <div><h2>…</h2><p>…</p></div>
+//   <a class="btn-text" href="…">…</a>
+// </div>
+.section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: map-get($spacers, 3) map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: map-get($spacers, 6);
+  }
+
+  h2, .h2 { margin-bottom: map-get($spacers, 2); }
+  p {
+    max-width: 36em;
+    margin-bottom: 0;
+    color: $body-secondary-color;
+  }
+}
+.section-yellow .section-heading p { color: $ink; } // 亮黃上的副標直接用深黑
+
+// ---------- 頁面標題區：一整條亮黃色塊（首頁以外的頁面）----------
+// <div class="page-head">
+//   <div class="container">
+//     <nav aria-label="麵包屑">…</nav>
+//     <h1 class="page-title">探索專案</h1>
+//     <p class="page-lead">…</p>
+//   </div>
+// </div>
+.page-head {
+  padding-block: map-get($spacers, 4) map-get($spacers, 5);
+  background-color: $yellow;
+  border-bottom: $border-width solid $ink;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 5) map-get($spacers, 6);
+  }
+
+  .breadcrumb { margin-bottom: map-get($spacers, 3); }
+}
+.page-title {
+  margin-bottom: map-get($spacers, 2);
+  font-size: clamp(2.25rem, 1.6rem + 2.4vw, 3.5rem);
+  line-height: 1.1;
+}
+.page-lead {
+  max-width: 40em;
+  margin-bottom: 0;
+  font-size: $lead-font-size;
+  font-weight: $font-weight-medium;
+}
+// 只有麵包屑的頁面標題區（專案細節）：窄一點，不放大標
+.page-head-slim {
+  padding-block: map-get($spacers, 3);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 3);
+  }
+
+  .breadcrumb { margin-bottom: 0; }
+}
+
+// 麵包屑：連結 700 字重、無底線；最後一項是目前頁
+.breadcrumb {
+  flex-wrap: wrap;
+  row-gap: map-get($spacers, 1);
+  font-weight: $font-weight-medium;
+}
+.breadcrumb a {
+  color: $ink;
+  font-weight: $font-weight-bold;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .25em;
+
+  &:hover { text-decoration-color: transparent; }
+}
+.breadcrumb-item.active { word-break: keep-all; }
+
+// ---------- 按鈕 ----------
+// 主要：.btn-primary（亮黃底＋深黑框＋小硬陰影；hover 浮起、按下時陷進去）
+// 強調：.btn-dark（深黑底＋奶白字），一個區塊裡最重要、但不是「贊助」的動作
+// 次要：.btn-outline-dark（紙白底＋深黑框，沒有陰影）
+// 文字：.btn-text（底線連結）；圖示鈕：.btn-icon（44 × 44）
+.btn {
+  --#{$prefix}btn-focus-box-shadow: #{$focus-ring-double};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 2.75rem; // 觸控目標 44px
+  word-break: keep-all;
+  transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
+
+  .bi { font-size: 1.125em; }
+
+  &:disabled,
+  &.disabled {
+    border-style: dashed;
+    box-shadow: none;
+    transform: none;
+  }
+}
+.btn-primary {
+  --#{$prefix}btn-color: #{$ink};
+  --#{$prefix}btn-bg: #{$yellow};
+  --#{$prefix}btn-border-color: #{$ink};
+  --#{$prefix}btn-hover-color: #{$ink};
+  --#{$prefix}btn-hover-bg: #{$yellow};
+  --#{$prefix}btn-hover-border-color: #{$ink};
+  --#{$prefix}btn-active-color: #{$ink};
+  --#{$prefix}btn-active-bg: #{$yellow};
+  --#{$prefix}btn-active-border-color: #{$ink};
+  --#{$prefix}btn-disabled-color: #{$ink-muted};
+  --#{$prefix}btn-disabled-bg: #{$sand};
+  --#{$prefix}btn-disabled-border-color: #{$ink-muted};
+  box-shadow: $shadow-sm;
+
+  &:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 $ink; }
+  &:active { transform: translate(3px, 3px); box-shadow: none; }
+  &:focus-visible { box-shadow: $focus-ring-double; }
+}
+.btn-dark {
+  --#{$prefix}btn-color: #{$cream};
+  --#{$prefix}btn-bg: #{$ink};
+  --#{$prefix}btn-border-color: #{$ink};
+  --#{$prefix}btn-hover-color: #{$yellow};
+  --#{$prefix}btn-hover-bg: #{$ink};
+  --#{$prefix}btn-hover-border-color: #{$ink};
+  --#{$prefix}btn-active-color: #{$yellow};
+  --#{$prefix}btn-active-bg: #{$ink-soft};
+  --#{$prefix}btn-active-border-color: #{$ink};
+  --#{$prefix}btn-disabled-color: #{$ink-muted};
+  --#{$prefix}btn-disabled-bg: #{$sand};
+  --#{$prefix}btn-disabled-border-color: #{$ink-muted};
+}
+.btn-outline-dark {
+  --#{$prefix}btn-color: #{$ink};
+  --#{$prefix}btn-bg: #{$paper};
+  --#{$prefix}btn-border-color: #{$ink};
+  --#{$prefix}btn-hover-color: #{$ink};
+  --#{$prefix}btn-hover-bg: #{$yellow-pale};
+  --#{$prefix}btn-hover-border-color: #{$ink};
+  --#{$prefix}btn-active-color: #{$ink};
+  --#{$prefix}btn-active-bg: #{$yellow};
+  --#{$prefix}btn-active-border-color: #{$ink};
+  --#{$prefix}btn-disabled-color: #{$ink-muted};
+  --#{$prefix}btn-disabled-bg: transparent;
+  --#{$prefix}btn-disabled-border-color: #{$ink-muted};
+}
+// 深色底上的次要按鈕：透明底＋奶白框
+.btn-outline-light {
+  --#{$prefix}btn-color: #{$cream};
+  --#{$prefix}btn-border-color: #{$cream};
+  --#{$prefix}btn-hover-color: #{$ink};
+  --#{$prefix}btn-hover-bg: #{$cream};
+  --#{$prefix}btn-hover-border-color: #{$cream};
+  --#{$prefix}btn-active-color: #{$ink};
+  --#{$prefix}btn-active-bg: #{$yellow};
+  --#{$prefix}btn-active-border-color: #{$yellow};
+}
+// 深色底上的焦點環：深黑間隙＋亮黃外圈
+.section-ink .btn,
+.on-dark .btn {
+  --#{$prefix}btn-focus-box-shadow: 0 0 0 3px #{$ink}, 0 0 0 6px #{$yellow};
+}
+
+// 文字連結型按鈕：粗底線，hover 底線變色塊；高度 44px
+.btn-text {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-weight: $font-weight-bold;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .3em;
+  word-break: keep-all;
+
+  &:hover { text-decoration-thickness: 4px; }
+  &:focus-visible {
+    outline: $focus-ring-width solid $ink;
+    outline-offset: 2px;
+  }
+}
+
+// 圖示按鈕：44 × 44 方塊（追蹤 ♡、分享、搜尋）
+.btn-icon {
+  width: 2.75rem;
+  padding: 0;
+  flex: 0 0 auto;
+}
+// 追蹤：aria-pressed="true" 時愛心實心＋淡黃底
+.btn-follow[aria-pressed="true"] {
+  --#{$prefix}btn-bg: #{$yellow-pale};
+
+  .bi-heart::before { content: map-get($bootstrap-icons-map, "heart-fill"); }
+}
+
+// ---------- 狀態徽章（WIREFRAME_SPEC §2.6）----------
+// 色塊底＋2px 深黑框＋深黑字＋圖示，6 種語意色調都達 7:1 以上，不只靠顏色
+// <span class="badge-state is-live"><i class="bi bi-hourglass-split" aria-hidden="true"></i>募資中</span>
+// .is-dashed：虛線框（已下架，和草稿區分）
+.badge-state {
+  display: inline-flex;
+  align-items: center;
+  gap: .3125rem;
+  padding: .1875rem .625rem;
+  border: $border-thin solid $ink;
+  border-radius: $border-radius-pill;
+  background-color: $idle-bg;
+  color: $ink;
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+  white-space: nowrap;
+
+  .bi { font-size: 1.05em; }
+
+  &.is-dashed { border-style: dashed; background-color: $paper; }
+  &.is-lg { padding: .3125rem .875rem; font-size: $font-size-sm; }
+}
+@each $name, $pair in $tones {
+  .badge-state.is-#{$name} { background-color: nth($pair, 1); }
+  .text-#{$name} { color: nth($pair, 2) !important; } // 淺底上的狀態文字（例如「↑ 今日 +37」）
+}
+
+// 一般標籤：分類、地點（紙白底＋細框）；.tag-ink：疊在圖片上的深黑標籤
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .1875rem .625rem;
+  border: $border-thin solid $ink;
+  border-radius: $border-radius-pill;
+  background-color: $paper;
+  color: $ink;
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+  white-space: nowrap;
+  text-decoration: none;
+}
+a.tag:hover { background-color: $yellow; }
+.tag-ink {
+  border-color: $ink;
+  background-color: $ink;
+  color: $cream;
+}
+
+// ---------- ★ 招牌元素三：募資進度條 ----------
+// 進度條是裝飾（aria-hidden），數字一定要以文字出現在旁邊
+// 未達標：<div class="fund-bar" style="--fund: 68%" aria-hidden="true"></div>
+// 剛好達標：<div class="fund-bar is-full" aria-hidden="true"></div>
+// 超額：  <div class="fund-bar is-over" style="--target: 40.5%" aria-hidden="true"></div>
+//         滿格亮黃；目標之後疊斜線網紋，目標位置一根粗黑刻度（位置＝目標 ÷ 已募，CONTENT 附錄 B.5）
+// 尺寸：預設中（卡片）14px、.fund-bar-lg 大（儀表板）22px、.fund-bar-sm 小（贊助紀錄）10px
+.fund-bar {
+  --fund: 0%;
+  --target: 100%;
+  --bar-h: .875rem;
+  position: relative;
+  height: var(--bar-h);
+  border: $border-thin solid $ink;
+  border-radius: $border-radius-pill;
+  background-color: $paper;
+  overflow: hidden;
+
+  // 填色
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--fund);
+    background-color: $yellow;
+    border-right: $border-thin solid $ink;
+  }
+
+  &.is-full::before,
+  &.is-over::before {
+    width: 100%;
+    border-right: 0;
+  }
+
+  // 超過目標的部分：斜線網紋
+  &.is-over::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 0 var(--target);
+    border-left: 3px solid $ink; // 目標刻度
+    background-image: repeating-linear-gradient(-45deg, $ink 0 2px, transparent 2px 7px);
+  }
+}
+.fund-bar-lg { --bar-h: 1.375rem; border-width: $border-width; }
+.fund-bar-sm { --bar-h: .625rem; }
+// 刻度下方的「目標 100%」小字（選用，只放在大進度條）
+.fund-scale {
+  position: relative;
+  height: 1.25rem;
+  margin-top: .25rem;
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+
+  span {
+    position: absolute;
+    left: var(--target);
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+}
+
+// ---------- 提示框 Callout ----------
+// 粗黑框＋語意底色＋左側圖示（不加關閉鈕）。字級和內文相同，不用小字
+// <div class="callout is-ok"><i class="bi bi-shield-check callout-icon" aria-hidden="true"></i><div>…</div></div>
+.callout {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: .875rem 1rem;
+  border: $border-width solid $ink;
+  border-radius: $border-radius-lg;
+  background-color: $paper;
+  color: $ink;
+
+  > div > :last-child { margin-bottom: 0; }
+}
+.callout-icon {
+  flex: 0 0 auto;
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+.callout-title {
+  margin-bottom: .25rem;
+  font-weight: $font-weight-bolder;
+}
+@each $name, $pair in $tones {
+  .callout.is-#{$name} { background-color: mix(nth($pair, 1), $paper, 45%); }
+}
+
+// ---------- 數據卡 StatTile ----------
+// 小標籤 → 大數字 → 一行補充；色塊底（沒有框），強調的那一格用語意色＋粗框
+.stat-tile {
+  height: 100%;
+  padding: 1rem 1.125rem;
+  border-radius: $border-radius-lg;
+  background-color: $sand;
+
+  .label { color: $ink-muted; }
+}
+.stat-value {
+  display: block;
+  font-family: $font-family-numeric;
+  font-size: $num-tile-size;
+  font-stretch: 75%;
+  font-weight: 800;
+  line-height: 1.05;
+  white-space: nowrap;
+
+  small {
+    margin-left: .125rem;
+    font-family: $font-family-base;
+    font-size: 1rem;
+    font-weight: $font-weight-bold;
+  }
+}
+.stat-value.is-long { font-size: 1.875rem; line-height: 1.25; } // 金額這種較長的數字縮一階
+.stat-meta {
+  margin-top: .375rem;
+  margin-bottom: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+.stat-tile.is-ok {
+  border: $border-width solid $ink;
+  background-color: $ok-bg;
+
+  .label { color: $ink; }
+}
+
+// 統計列：Notion 的一行文字拆成數格，數字放大、文字照原文
+// <ul class="stat-strip"><li>共贊助 <strong class="stat-strip-num">14</strong> 件專案</li>…</ul>
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $border-width;
+  margin: 0 0 map-get($spacers, 4);
+  padding: 0;
+  list-style: none;
+  border: $border-width solid $ink;
+  border-radius: $border-radius-lg;
+  background-color: $ink; // 格線：用 gap 露出深黑底
+  overflow: hidden;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  > li {
+    padding: .875rem 1rem;
+    background-color: $paper;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    line-height: 1.5;
+  }
+  .is-ok { background-color: $ok-bg; }
+}
+.stat-strip-num {
+  margin-inline: .125rem;
+  font-family: $font-family-numeric;
+  font-size: 1.75rem;
+  font-stretch: 75%;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+// ---------- 篩選標籤 FilterChip ----------
+// <input type="checkbox" class="btn-check" id="s1" checked><label class="chip" for="s1">募資中</label>
+// 選中：亮黃底＋小硬陰影＋勾勾（不只靠顏色）
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  padding: .375rem .875rem;
+  border: $border-thin solid $ink;
+  border-radius: $border-radius-pill;
+  background-color: $paper;
+  color: $ink;
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.4;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: transform .12s ease, box-shadow .12s ease;
+
+  &:hover { background-color: $yellow-pale; }
+}
+.chip-count {
+  font-variant-numeric: tabular-nums;
+  color: $ink-muted;
+  font-size: $small-font-size;
+}
+.btn-check:checked + .chip {
+  background-color: $yellow;
+  font-weight: $font-weight-bold;
+  box-shadow: $shadow-sm;
+
+  &::before {
+    content: map-get($bootstrap-icons-map, "check-lg");
+    font-family: bootstrap-icons;
+    font-weight: normal;
+    line-height: 1;
+  }
+  .chip-count { color: $ink; }
+}
+.btn-check:focus-visible + .chip {
+  box-shadow: $focus-ring-double;
+}
+
+// 已套用的篩選：深黑底＋移除鈕
+.chip-applied {
+  display: inline-flex;
+  align-items: center;
+  gap: .125rem;
+  padding-left: .75rem;
+  border: $border-thin solid $ink;
+  border-radius: $border-radius-pill;
+  background-color: $ink;
+  color: $cream;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+
+  button {
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: inherit;
+
+    &:hover { color: $yellow; }
+    &:focus-visible { outline: $focus-ring-width solid $yellow; outline-offset: -4px; }
+  }
+}
+
+// ---------- 分頁籤 ----------
+// Bootstrap .nav-underline：目前分頁 900 字重＋4px 深黑底線；整列下方一條 2px 深黑基線
+.nav-underline {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: $border-thin solid $ink;
+
+  &::-webkit-scrollbar { display: none; }
+
+  .nav-link {
+    flex: 0 0 auto;
+    min-height: 2.75rem;
+    margin-bottom: -$border-thin; // 底線壓在基線上
+    padding-inline: .125rem;
+    color: $ink-muted;
+    font-weight: $font-weight-bold;
+    white-space: nowrap;
+
+    &:hover { color: $ink; border-bottom-color: $ink-muted; }
+    &.active {
+      color: $ink;
+      font-weight: $font-weight-bolder;
+      border-bottom-color: $ink;
+    }
+    // 捲動容器會裁掉外擴的焦點環，改畫在內側
+    &:focus-visible { box-shadow: inset 0 0 0 3px $ink; border-radius: $border-radius-sm; }
+  }
+}
+// 亮黃區塊上的分頁籤：未選中用深黑（灰墨在亮黃上 5.3:1 也可讀，但深黑更穩）
+.section-yellow .nav-underline .nav-link { color: $ink; }
+.tab-count {
+  margin-left: .25rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: $font-weight-medium;
+}
+
+// ---------- 硬陰影浮起：可點的卡片 hover／focus 時往左上浮起 ----------
+.pop {
+  transition: transform .15s ease, box-shadow .15s ease;
+
+  &:hover,
+  &:focus-within {
+    transform: translate(-3px, -3px);
+    box-shadow: $shadow-lift;
+  }
+}
+
+// ---------- 頭像 ----------
+// 照片：<img class="avatar" …>；文字頭像：<span class="avatar avatar-letter" aria-hidden="true">宇</span>
+.avatar {
+  --avatar-size: 2.75rem;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  border: $border-thin solid $ink;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: $sand;
+}
+.avatar-letter {
+  background-color: $yellow;
+  color: $ink;
+  font-weight: $font-weight-bolder;
+  font-size: calc(var(--avatar-size) * .42);
+  line-height: 1;
+}
+.avatar-lg { --avatar-size: 4.5rem; border-width: $border-width; }
+
+// ---------- 圖片框 ----------
+.img-frame {
+  overflow: hidden;
+  border: $border-width solid $ink;
+  border-radius: $border-radius-lg;
+  background-color: $sand;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+// ---------- 可橫向捲動的容器（圖表、表格、縮圖列）----------
+.scroll-x {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+// 576px 以下讓橫向捲動列貼齊螢幕兩側，第一項仍對齊版心
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: calc(var(--#{$prefix}gutter-x) * -.5);
+    padding-inline: calc(var(--#{$prefix}gutter-x) * .5);
+  }
+}
+.bleed-x { @include bleed-x; }
+
+// ---------- 表單 ----------
+.form-control:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 100px $paper inset;
+  -webkit-text-fill-color: $ink;
+}
+.form-check-input { border-width: $border-thin; }
+.form-check-input:focus:not(:focus-visible) { box-shadow: none; }
+.form-check { min-height: 1.75rem; }
+.form-check-label { font-weight: $font-weight-medium; }
+.input-group-text { font-weight: $font-weight-bold; }
+// 錯誤狀態：框線加粗成 3px 珊瑚紅文字色、底色淡紅，不只靠顏色（下方一定有 .invalid-feedback 文字）
+.form-control.is-invalid {
+  border-color: $err-ink;
+  border-width: $border-width;
+  background-color: mix($err-bg, $paper, 15%);
+}
+.invalid-feedback {
+  font-weight: $font-weight-bold;
+
+  &::before {
+    content: map-get($bootstrap-icons-map, "exclamation-circle-fill");
+    font-family: bootstrap-icons;
+    margin-right: .25rem;
+    vertical-align: -.125em;
+  }
+}
+
+// 粗框表格：外框 3px、表頭沙色、列與列之間細線
+.table-bold {
+  margin-bottom: 0;
+  border: $border-width solid $ink;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: $border-radius-lg;
+  overflow: hidden;
+  background-color: $paper;
+
+  > :not(caption) > * > * { border-bottom-width: 1px; }
+  > tbody > tr:last-child > * { border-bottom-width: 0; }
+  > thead th {
+    background-color: $sand;
+    border-bottom: $border-thin solid $ink;
+    font-size: $small-font-size;
+    white-space: nowrap;
+  }
+  .num { text-align: right; }
+}
+
+// ---------- 鍵盤焦點 ----------
+// 一般元素：3px 深黑實線外推 2px；亮黃間隙由按鈕、表單的雙層 box-shadow 處理
+:focus-visible {
+  outline: $focus-ring-width solid $ink;
+  outline-offset: 2px;
+}
+.btn:focus-visible,
+.btn-close:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible,
+.page-link:focus-visible,
+.accordion-button:focus-visible {
+  outline: 0;
+}
+.section-ink :focus-visible,
+.on-dark :focus-visible { outline-color: $yellow; }
+.offcanvas:focus-visible,
+.modal:focus-visible,
+[tabindex="-1"]:focus-visible,
+main:focus-visible { outline: 0; }
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  top: -4rem;
+  left: 1rem;
+  z-index: $zindex-fixed + 10;
+  padding: .625rem 1rem;
+  border: $border-width solid $ink;
+  border-radius: $border-radius;
+  background-color: $yellow;
+  color: $ink;
+  font-weight: $font-weight-bold;
+  text-decoration: none;
+
+  &:focus { top: 1rem; }
+}
+
+// ---------- 下拉選單、對話框：粗框＋硬陰影 ----------
+.dropdown-menu {
+  box-shadow: $shadow;
+  padding: .375rem;
+}
+.dropdown-item {
+  border-radius: $border-radius-sm;
+  font-weight: $font-weight-medium;
+}
+.modal-content { box-shadow: $shadow-lift; }
+
+// ---------- Accordion：題目之間 12px 間隔，每題一個獨立粗框 ----------
+.accordion-item {
+  margin-bottom: .75rem;
+  border-radius: $accordion-border-radius !important;
+  overflow: hidden;
+
+  &:not(:first-of-type) { border-top: $accordion-border-width solid $ink; }
+}
+.accordion-button {
+  font-weight: $font-weight-bold;
+  border-radius: 0 !important;
+
+  &:not(.collapsed) { box-shadow: inset 0 (-$border-width) 0 $ink; }
+}
+
+// ---------- 空狀態 ----------
+// <div class="empty-state">
+//   <i class="bi bi-inbox empty-state-icon" aria-hidden="true"></i>
+//   <p>Notion 的狀態文案</p>
+//   <a class="btn btn-primary" href="projects.html">探索專案</a>
+// </div>
+.empty-state {
+  max-width: 32em;
+  margin-inline: auto;
+  padding: map-get($spacers, 5) map-get($spacers, 3);
+  text-align: center;
+
+  > p {
+    margin-bottom: map-get($spacers, 3);
+    font-weight: $font-weight-medium;
+  }
+  > :last-child { margin-bottom: 0; }
+}
+.empty-state-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: map-get($spacers, 3);
+  border: $border-width solid $ink;
+  border-radius: 50%;
+  background-color: $paper;
+  font-size: 1.5rem;
+}
+
+// ---------- 設計稿狀態示意 ----------
+// 和正式內容以 3px 深黑虛線分隔；標籤是斜線網紋底的貼紙
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag">設計稿狀態示意</p>
+//   <h2 id="…" class="demo-state-title">…</h2>
+//   <p class="text-note">什麼情況下出現</p>
+//   <div class="demo-state-grid">…</div>
+// </section>
+.demo-state {
+  margin-top: map-get($spacers, 7);
+  padding-top: map-get($spacers, 5);
+  border-top: $border-width dashed $ink;
+}
+.demo-state-tag {
+  display: inline-block;
+  margin-bottom: map-get($spacers, 3);
+  padding: .1875rem .75rem;
+  border: $border-thin solid $ink;
+  border-radius: $border-radius-pill;
+  background-color: $paper;
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+}
+.demo-state-title {
+  margin-bottom: map-get($spacers, 2);
+  font-size: 1.5rem;
+}
+// 每個示意情境一格：小標＋說明＋畫面
+.demo-case {
+  height: 100%;
+  padding: map-get($spacers, 4);
+  border: $border-thin dashed $ink;
+  border-radius: $border-radius-lg;
+}
+.demo-case-title {
+  margin-bottom: map-get($spacers, 1);
+  font-size: 1rem;
+  font-weight: $font-weight-bolder;
+}
+.demo-case > .text-note { margin-bottom: map-get($spacers, 3); }
+
+// ---------- 減少動態 ----------
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .pop:hover,
+  .pop:focus-within,
+  .btn-primary:hover { transform: none; }
+}

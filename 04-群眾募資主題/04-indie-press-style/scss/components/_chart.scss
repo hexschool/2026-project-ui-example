@@ -1,0 +1,176 @@
+// ============================================================
+// 數據圖表（ChartCard）：inline SVG 折線／面積圖、HTML／CSS 橫條圖、表格檢視
+// 規則：單一數列一色、不用雙軸、格線 1px 實線、只有目標線是虛線、直接標註端點與極值、每張圖都有表格檢視
+// SVG 裡不寫色碼：線、面、字都用 class，顏色由下面的 CSS 變數決定。
+// 深色底版本只要外層加 .is-dark，數據色換成亮霧藍（不是自動反轉）
+// ============================================================
+.chart-card {
+  --chart-data:   #{$slate-deep};          // 數據線（對白報紙 7.7:1）
+  --chart-area:   #{rgba($slate, .16)};    // 面積（淡霧藍）
+  --chart-grid:   #{$rule};                // 格線（裝飾）
+  --chart-text:   #{$ink};                 // 標註文字
+  --chart-muted:  #{$ink-muted};           // 座標文字（6.6:1）
+  --chart-target: #{$ink};                 // 目標線（虛線）
+  --chart-bg:     #{$paper};
+  padding: map-get($spacers, 4);
+  border: 1px solid $rule;
+  background-color: var(--chart-bg);
+  color: var(--chart-text);
+
+  & + & {
+    margin-top: map-get($spacers, 4);
+  }
+
+  // 深色底：鉛字黑面＋亮霧藍數據（8.1:1），格線降到 1.6:1
+  &.is-dark {
+    --chart-data:   #{$slate-light};
+    --chart-area:   #{rgba($slate-light, .16)};
+    --chart-grid:   #{$on-ink-rule};
+    --chart-text:   #{$on-ink};
+    --chart-muted:  #{$on-ink-muted};
+    --chart-target: #{$on-ink};
+    --chart-bg:     #{$ink};
+    border-color: $ink;
+
+    .chart-card-sub,
+    .meta-line { color: var(--chart-muted); }
+    .meta-line > li::before { border-left-color: $on-ink-muted; }
+    .btn-text {
+      --bs-btn-color: #{$on-ink};
+      --bs-btn-hover-color: #{$on-ink};
+      text-decoration-color: $on-ink-muted;
+    }
+    :focus-visible { outline-color: $on-ink; }
+  }
+}
+.chart-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: map-get($spacers, 2) map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 3);
+}
+.chart-card-title {
+  margin-bottom: .25rem;
+  font-size: 1.125rem;
+  color: var(--chart-text); // 深色底時跟著換成象牙白
+}
+.chart-card-sub {
+  margin-bottom: 0;
+  font-size: $small-font-size;
+}
+
+// 手機：SVG 至少 600px 寬，只在圖卡內橫向捲動
+.chart-scroll {
+  overflow-x: auto;
+
+  > svg {
+    display: block;
+    width: 100%;
+    height: auto;
+
+    @include media-breakpoint-down(md) {
+      min-width: 37.5rem;
+    }
+  }
+}
+
+// SVG 元素
+.chart-grid line { stroke: var(--chart-grid); stroke-width: 1; shape-rendering: crispEdges; }
+.chart-axis      { fill: var(--chart-muted); font-family: $font-family-numeric; font-size: 11px; }
+.chart-area      { fill: var(--chart-area); }
+.chart-line      { fill: none; stroke: var(--chart-data); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart-dot       { fill: var(--chart-data); stroke: var(--chart-bg); stroke-width: 2; }
+.chart-label     { fill: var(--chart-text); font-family: $font-family-base; font-size: 12px; font-weight: 500; }
+.chart-label-num { fill: var(--chart-text); font-family: $font-family-numeric; font-size: 13px; font-weight: 600; }
+.chart-target    { stroke: var(--chart-target); stroke-width: 1.25; stroke-dasharray: 5 4; }
+.chart-guide     { stroke: var(--chart-muted); stroke-width: 1; }
+
+// 提示框（hover 時出現的格式示範；設計稿固定顯示一個）
+.chart-tooltip-box  { fill: var(--chart-text); }
+.chart-tooltip-text { fill: var(--chart-bg); font-family: $font-family-base; font-size: 11.5px; }
+
+// ---------- 橫條圖（HTML／CSS） ----------
+// 依金額由高到低；五條同一個數據色（名目分類），「已額滿」「即將額滿」用文字標註，不換色
+// <ol class="bar-chart">
+//   <li class="bar-chart-row" style="--w: 100%">
+//     <span class="bar-chart-label">標準單入組</span>
+//     <span class="bar-chart-track"><span class="bar-chart-bar"></span><data class="bar-chart-value" value="1395360">NT$ 1,395,360</data></span>
+//     <span class="bar-chart-note">612</span>
+//   </li>
+// </ol>
+.bar-chart {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bar-chart-row {
+  --w: 0%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "label note"
+    "track track";
+  gap: .25rem map-get($spacers, 3);
+  padding-block: .625rem;
+  border-bottom: 1px solid var(--chart-grid);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 7rem minmax(0, 1fr) 9.5rem;
+    grid-template-areas: "label track note";
+    align-items: center;
+  }
+}
+.bar-chart-label {
+  grid-area: label;
+  font-size: .875rem;
+  font-weight: $font-weight-medium;
+}
+// 長條與數值疊在同一個格線儲存格：儲存格寬＝軌道寬扣掉 8.5rem（留給數值），
+// 長條寬 var(--w)、數值的左外距 var(--w)＋.5rem——格線項目的百分比以儲存格為準，所以數值永遠貼在長條尖端
+.bar-chart-track {
+  grid-area: track;
+  display: grid;
+  grid-template-columns: minmax(0, calc(100% - min(8.5rem, 45%))); // 軌道很窄時，最多只留 45% 給數值
+  align-items: center;
+  min-width: 0;
+}
+.bar-chart-bar,
+.bar-chart-value {
+  grid-area: 1 / 1;
+  justify-self: start;
+}
+.bar-chart-bar {
+  width: var(--w);
+  min-width: 2px;
+  height: .875rem;
+  background-color: var(--chart-data);
+}
+.bar-chart-value {
+  margin-left: calc(var(--w) + .5rem);
+  font-family: $font-family-numeric;
+  font-size: .9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.bar-chart-note {
+  grid-area: note;
+  font-size: $small-font-size;
+  color: var(--chart-muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+// 表格檢視：圖卡內的數據表
+.chart-table {
+  margin-top: map-get($spacers, 3);
+  margin-bottom: 0;
+  font-size: .875rem;
+
+  thead th {
+    font-size: .8125rem;
+    color: $ink-muted;
+    white-space: nowrap;
+  }
+}

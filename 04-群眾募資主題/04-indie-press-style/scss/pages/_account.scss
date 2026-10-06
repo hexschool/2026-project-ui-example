@@ -1,0 +1,635 @@
+// ============================================================
+// 個人頁面 account.html「我的島造」（class 前綴 acct-）
+// 同一個版型、兩種角色：外層 data-role="proposer|backer"，js/main.js 切換（account.html?role=backer 直接開贊助者畫面）
+// ============================================================
+
+// ---------- 角色：只在某一種角色顯示的元素 ----------
+// 用 !important 是為了蓋過元素上的 d-flex、nav 等 display 設定
+[data-role="backer"] .for-proposer,
+[data-role="proposer"] .for-backer {
+  display: none !important;
+}
+
+// ---------- 頁面標題區：頭像＋H1＋姓名＋認證徽章；右側角色切換 ----------
+.acct-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: map-get($spacers, 4);
+}
+.acct-id {
+  display: flex;
+  align-items: center;
+  gap: map-get($spacers, 3);
+  min-width: 0;
+
+  h1 {
+    margin-bottom: .25rem;
+  }
+  @include media-breakpoint-up(md) {
+    gap: map-get($spacers, 4);
+  }
+}
+.acct-id-avatar {
+  box-shadow: 0 0 0 1px $ink;
+
+  @include media-breakpoint-down(sm) {
+    --avatar-size: 4rem;
+  }
+}
+.acct-id-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .75rem;
+  margin-bottom: 0;
+}
+.acct-id-name {
+  font-family: $font-family-serif;
+  font-size: 1.125rem;
+  font-weight: $font-weight-bold;
+}
+.acct-id-since {
+  font-size: .875rem;
+  color: $ink-muted;
+}
+
+// 角色切換（設計稿狀態示意）：兩顆相連的按鈕，選中為鉛字黑底＋象牙白字
+.acct-role {
+  .demo-state-tag {
+    margin-bottom: map-get($spacers, 2);
+  }
+}
+.acct-role-switch {
+  display: inline-flex;
+
+  button {
+    min-height: 2.75rem;
+    padding: .5rem 1rem;
+    border: 1px solid $ink;
+    background-color: $paper;
+    color: $ink;
+    font-size: .875rem;
+    font-weight: $font-weight-medium;
+    letter-spacing: $letter-spacing-label;
+
+    & + button {
+      margin-left: -1px;
+    }
+    &:hover {
+      background-color: $ivory;
+    }
+    &[aria-pressed="true"] {
+      background-color: $ink;
+      color: $ivory;
+    }
+    &:focus-visible {
+      position: relative;
+      z-index: 1;
+    }
+  }
+}
+
+// ---------- 側邊導覽（≥ 992px sticky）與手機的頂部下拉 ----------
+.acct-aside {
+  position: sticky;
+  top: $sticky-top-offset;
+}
+.acct-upgrade .btn {
+  margin-top: 0;
+}
+
+// 992px 以下：頂部下拉固定在頁首下方，捲動長頁時隨時可以換區塊
+.acct-nav-mobile {
+  position: sticky;
+  top: $site-header-height;
+  z-index: $zindex-sticky - 1;
+  margin-top: -1 * map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 4);
+  padding-block: map-get($spacers, 2);
+  background-color: $ivory;
+  border-bottom: 1px solid $rule;
+}
+.acct-nav-mobile-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+}
+.acct-nav-mobile-menu {
+  width: 100%;
+
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: map-get($spacers, 2);
+    min-height: 2.75rem;
+  }
+  .dropdown-item.active .account-nav-count {
+    color: rgba($ivory, .8);
+  }
+  .dropdown-header {
+    font-size: $small-font-size;
+    font-weight: $font-weight-bold;
+    letter-spacing: $letter-spacing-label;
+  }
+  // 佔位項目（沒有 href）：維持一般項目的樣子
+  a:not([href]) {
+    cursor: default;
+  }
+}
+
+// ---------- 內容區塊 ----------
+.acct-section {
+  scroll-margin-top: $sticky-top-offset;
+
+  & + & {
+    margin-top: map-get($spacers, 6);
+  }
+  // 992px 以下多了一條 sticky 下拉，錨點要再往下讓
+  @include media-breakpoint-down(lg) {
+    scroll-margin-top: calc(#{$site-header-height} + 5rem);
+  }
+}
+.acct-heading {
+  margin-bottom: map-get($spacers, 4);
+
+  h2 {
+    font-size: calc(1.4rem + .6vw);
+
+    @include media-breakpoint-up(xl) {
+      font-size: 1.875rem;
+    }
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+  }
+}
+
+// 統計列：Notion 的一行文字拆成 4 格，數字放大（文字順序不變）；< 576px 2 × 2
+.acct-tally {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 0 map-get($spacers, 4);
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid $ink;
+  border-bottom: 1px solid $rule;
+
+  // 第 2 格是金額（「累積 NT$ 28,640」「累積募資 NT$ 2,471,200」），給寬一點，數字才不會被擠到下一行
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  li {
+    padding: map-get($spacers, 3);
+    font-size: .875rem;
+    line-height: 1.5;
+    color: $ink-muted;
+
+    // 欄線：< 576px 每列第二格左線＋第二列上線；≥ 576px 第 2 格以後左線
+    &:nth-child(2n) { border-left: 1px solid $rule; }
+    &:nth-child(n + 3) { border-top: 1px solid $rule; }
+
+    @include media-breakpoint-up(sm) {
+      &:nth-child(n + 2) { border-left: 1px solid $rule; }
+      &:nth-child(n + 3) { border-top: 0; }
+    }
+    &:first-child { padding-left: 0; }
+    @include media-breakpoint-down(sm) {
+      &:nth-child(3) { padding-left: 0; }
+    }
+
+    // 強調格（準時出貨率）：ok 底色＋圖示
+    &.is-ok {
+      padding-left: map-get($spacers, 3);
+      background-color: $ok-bg;
+      color: $ok;
+
+      .bi { margin-right: .25rem; }
+    }
+  }
+}
+.acct-tally-num {
+  display: inline-block;
+  margin-inline: .125rem;
+  font-family: $font-family-numeric;
+  font-optical-sizing: auto;
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: $ink;
+  white-space: nowrap;
+
+  .is-ok & { color: $ok; }
+
+  @include media-breakpoint-up(md) {
+    font-size: 1.625rem;
+  }
+  @include media-breakpoint-up(lg) {
+    font-size: 1.5rem;
+  }
+  @include media-breakpoint-up(xl) {
+    font-size: 1.75rem;
+  }
+}
+
+// ---------- 區塊一：贊助紀錄 ----------
+.acct-filter {
+  margin-bottom: map-get($spacers, 3);
+}
+.acct-backing-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+// 紀錄卡：≥ 576px 縮圖 3：資訊 6：操作 3；< 576px 縮圖在左上、操作排到下方
+.acct-backing {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  grid-template-areas:
+    "thumb info"
+    "actions actions";
+  gap: map-get($spacers, 3);
+  padding-block: map-get($spacers, 4);
+  border-bottom: 1px solid $rule;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr);
+    grid-template-areas: "thumb info actions";
+    gap: map-get($spacers, 4);
+  }
+
+  &:first-child {
+    border-top: 1px solid $rule;
+  }
+
+  // 募資失敗 ‧ 已退款：整張卡降一階（淡底、標題次要色、縮圖降透明度）
+  &.is-muted {
+    padding-inline: map-get($spacers, 3);
+    background-color: $idle-bg;
+
+    .acct-backing-title a { color: $ink-muted; }
+    .acct-backing-thumb > img { opacity: .55; filter: grayscale(.4); }
+  }
+}
+.acct-backing-thumb {
+  grid-area: thumb;
+  align-self: start;
+}
+.acct-backing-info {
+  grid-area: info;
+  min-width: 0;
+}
+.acct-backing-title {
+  margin-bottom: .125rem;
+  font-size: 1.125rem;
+  line-height: 1.45;
+
+  a {
+    color: $ink;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: .25em;
+    }
+  }
+  @include media-breakpoint-up(md) {
+    font-size: 1.25rem;
+  }
+}
+.acct-backing-by {
+  margin-bottom: map-get($spacers, 2);
+  font-size: .875rem;
+  color: $ink-muted;
+}
+.acct-backing-plan {
+  margin-bottom: map-get($spacers, 3);
+  color: $ink;
+}
+// 狀態徽章是這張卡的主角：徽章在前、說明在後
+.acct-backing-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .75rem;
+
+  .status {
+    font-size: .875rem;
+    padding: .25rem .625rem;
+  }
+}
+.acct-backing-bar {
+  max-width: 18rem;
+  margin-top: map-get($spacers, 3);
+}
+.acct-backing-actions {
+  grid-area: actions;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: map-get($spacers, 2);
+
+  @include media-breakpoint-up(sm) {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+
+    .btn-text { align-self: center; }
+  }
+}
+.acct-backings .empty-state {
+  padding-block: map-get($spacers, 5);
+}
+
+// ---------- 區塊二：我的提案 ----------
+.acct-permission {
+  padding: map-get($spacers, 4);
+
+  p {
+    margin-bottom: map-get($spacers, 3) !important;
+    font-family: $font-family-serif;
+    font-size: $font-size-lg;
+  }
+}
+.acct-projects {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+// 專案列：≥ 992px 三段 5：4：3（徽章＋名稱｜數據或說明｜操作靠右）；< 992px 上下排
+.acct-project {
+  display: grid;
+  gap: map-get($spacers, 3);
+  padding: map-get($spacers, 4) 0;
+  border-bottom: 1px solid $rule;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 3fr);
+    align-items: center;
+    gap: map-get($spacers, 4);
+  }
+
+  &:first-child {
+    border-top: 1px solid $rule;
+  }
+
+  // 審核未通過：整列校對紅外框（列表層就看得到退件原因）
+  &.is-rejected {
+    margin-block: map-get($spacers, 2);
+    padding-inline: map-get($spacers, 3);
+    border: 1px solid $err;
+  }
+  // 草稿：整列降一階
+  &.is-draft {
+    padding-inline: map-get($spacers, 3);
+    background-color: $idle-bg;
+
+    .acct-project-title { color: $ink-muted; }
+  }
+}
+.acct-project-name {
+  min-width: 0;
+
+  .status {
+    margin-bottom: map-get($spacers, 2);
+  }
+}
+.acct-project-title {
+  margin-bottom: 0;
+  font-size: 1.125rem;
+  line-height: 1.45;
+
+  @include media-breakpoint-up(md) {
+    font-size: 1.25rem;
+  }
+}
+.acct-project-data {
+  min-width: 0;
+}
+.acct-project-figures {
+  display: flex;
+  align-items: baseline;
+  gap: .75rem;
+  margin-bottom: .375rem;
+
+  .amount {
+    font-size: 1.5rem;
+  }
+}
+.acct-project-money {
+  font-family: $font-family-numeric;
+  font-size: 1rem;
+  font-weight: 500;
+}
+.acct-project-meta {
+  margin-top: .5rem;
+  color: $ink;
+}
+// 操作：< 992px 橫排；≥ 992px 靠右直排、按鈕等寬（和贊助紀錄卡的操作欄一致）
+.acct-project-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 2);
+
+  @include media-breakpoint-up(lg) {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 11rem;
+    margin-left: auto;
+  }
+}
+.acct-reject {
+  padding: .75rem .875rem;
+  font-size: .9375rem;
+}
+.acct-missing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: map-get($spacers, 2);
+
+  .tag {
+    background-color: $paper;
+  }
+}
+.acct-missing-label {
+  font-size: .875rem;
+  font-weight: $font-weight-medium;
+}
+
+// ---------- 區塊三：募資數據 ----------
+.acct-period {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 2) map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 4);
+}
+.acct-period-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 2);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.acct-period-range {
+  color: $ink;
+}
+.acct-stats {
+  margin-bottom: map-get($spacers, 4);
+
+  .stat:first-child { padding-left: 0; }
+  @include media-breakpoint-down(lg) {
+    .stat:nth-child(3) { padding-left: 0; }
+  }
+  // 數據卡在內容欄（9 欄）裡比較窄，金額縮一級才不會碰到欄線
+  .stat-value {
+    font-size: 1.5rem;
+
+    @include media-breakpoint-up(md) {
+      font-size: 1.75rem;
+    }
+    // 992–1199px：側欄出現、內容欄最窄，金額縮到 22px
+    @include media-breakpoint-up(lg) {
+      font-size: 1.375rem;
+    }
+    @include media-breakpoint-up(xl) {
+      font-size: 1.625rem;
+    }
+    @include media-breakpoint-up(xxl) {
+      font-size: 1.75rem;
+    }
+  }
+}
+// 數據表：數字與日期不換行，窄螢幕在表格容器內橫向捲動
+.acct-chart .chart-table {
+  th,
+  td {
+    white-space: nowrap;
+  }
+  // 列標題（日期、方案名稱）是內容，不是表頭小字：維持一般字級與鉛字黑
+  tbody th {
+    font-size: inherit;
+    color: $ink;
+  }
+}
+// 額滿、即將額滿、不限量：在數量後面用文字標註，不換長條的顏色
+.acct-bar-flag {
+  margin-left: .5rem;
+  padding-left: .5rem;
+  border-left: 1px solid $rule-strong;
+}
+.acct-insight {
+  margin-top: map-get($spacers, 4);
+}
+
+// ---------- 區塊四：收件資訊＋帳號設定 ----------
+.acct-address {
+  padding: map-get($spacers, 4);
+  border: 1px solid $rule;
+  background-color: $paper;
+
+  & + & {
+    margin-top: map-get($spacers, 3);
+  }
+  // 預設地址：鉛字黑外框強調
+  &.is-default {
+    border-color: $ink;
+    box-shadow: inset 0 0 0 1px $ink;
+  }
+}
+.acct-address-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 2);
+  margin-bottom: map-get($spacers, 3);
+}
+.acct-address-actions {
+  display: flex;
+  gap: map-get($spacers, 3);
+}
+.acct-address-name {
+  margin-bottom: .25rem;
+  font-weight: $font-weight-bold;
+}
+.acct-address-line {
+  margin-bottom: map-get($spacers, 2);
+  color: $ink;
+
+  > li {
+    white-space: normal;
+  }
+}
+.acct-card {
+  padding: map-get($spacers, 4);
+  border: 1px solid $rule;
+  background-color: $paper;
+
+  & + .acct-card,
+  & + .callout {
+    margin-top: map-get($spacers, 3);
+  }
+}
+.acct-card-title {
+  margin-bottom: map-get($spacers, 3);
+  padding-bottom: map-get($spacers, 2);
+  border-bottom: 1px solid $ink;
+  font-size: 1.125rem;
+}
+.acct-switch {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 2.75rem;
+  margin-bottom: 0;
+  padding-left: 0;
+
+  .form-check-input {
+    flex: 0 0 auto;
+    margin: 0;
+    float: none;
+  }
+  & + & {
+    border-top: 1px solid $rule;
+  }
+}
+
+// ---------- 設計稿狀態示意 ----------
+.acct-demo-title {
+  margin-bottom: .25rem;
+  font-family: $font-family-base;
+  font-size: 1rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-body;
+}
+.acct-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 2) map-get($spacers, 3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.acct-demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: map-get($spacers, 2) map-get($spacers, 3);
+}
+.acct-inline-icon {
+  vertical-align: -.125em;
+}

@@ -1,0 +1,400 @@
+// ============================================================
+// 本風格的招牌：精緻刻度的交付時間軸
+// 1. .sched-ruler  排程尺：2026/08–2027/02 的水平尺規，月份長刻度＋每週短刻度，4 個里程碑標在所在月份
+// 2. .timeline     垂直時間軸：左側日期像尺規上的數字，中間是帶細刻度的脊線，節點 4 種狀態＋延遲
+// 3. .delay-ruler  延遲範例的迷你尺：原定月份（空心）→ 調整後月份（校對紅實心）
+// 刻度都是裝飾：排程尺用 role="img"＋aria-label 說明，時間軸的文字（里程碑、狀態、日期）都在 HTML 裡
+// ============================================================
+
+// ---------- 1. 排程尺 ----------
+// 一個月一段（--months），每段 4 道短刻度（約一週一道）。位置用百分比：
+//   第 m 個月的中點＝(m − 0.5) ÷ 總月數，例如 7 個月的第 1 個月＝7.14%、第 3 個月＝35.71%
+// <div class="sched-ruler" style="--months: 7" role="img" aria-label="…">
+//   <div class="sched-ruler-track">
+//     <span class="sched-ruler-seg is-done" style="--from: 0%; --to: 35.71%"></span>   ← 已完成：實線
+//     <span class="sched-ruler-seg is-live" style="--from: 35.71%; --to: 64.29%"></span> ← 進行中：斜紋
+//     <span class="sched-ruler-seg is-todo" style="--from: 64.29%; --to: 92.86%"></span> ← 未開始：虛線
+//     <span class="sched-ruler-pin is-done" style="--at: 7.14%">1</span> …
+//   </div>
+//   <div class="sched-ruler-scale"></div>
+//   <ol class="sched-ruler-months"><li>08<span class="sched-ruler-year">2026</span></li><li>09</li>…</ol>
+// </div>
+.sched-ruler {
+  --months: 7;
+  position: relative;
+  padding-inline: .75rem; // 讓兩端的節點不超出容器
+  font-family: $font-family-numeric;
+  color: $ink;
+}
+.sched-ruler-track {
+  position: relative;
+  height: 2rem;
+}
+.sched-ruler-seg {
+  position: absolute;
+  top: 50%;
+  left: var(--from);
+  width: calc(var(--to) - var(--from));
+  height: 2px;
+  margin-top: -1px;
+  background-color: $ink;
+
+  &.is-live {
+    height: .5rem;
+    margin-top: -.25rem;
+    background: repeating-linear-gradient(-45deg, $slate-deep 0 1.5px, $slate-tint 1.5px $hatch-size);
+    box-shadow: inset 0 0 0 1px $slate-deep;
+  }
+  &.is-todo {
+    height: 0;
+    margin-top: -1px;
+    background: none;
+    border-top: 2px dashed $rule-strong;
+  }
+}
+.sched-ruler-pin {
+  position: absolute;
+  top: 50%;
+  left: var(--at);
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: -.75rem 0 0 -.75rem;
+  border-radius: 50%;
+  font-size: .8125rem;
+  font-weight: 600;
+  line-height: 1;
+
+  &.is-done {
+    background-color: $ink;
+    color: $ivory;
+  }
+  &.is-live {
+    background-color: $slate-deep;
+    color: $ivory;
+    box-shadow: 0 0 0 4px $slate-tint;
+  }
+  &.is-todo {
+    border: 1.5px dashed $ink-muted;
+    background-color: $ivory;
+    color: $ink-muted;
+  }
+  &.is-delay {
+    background-color: $err;
+    color: $ivory;
+  }
+}
+// 刻度：每月一道長刻度（含最後一道），每週一道短刻度
+.sched-ruler-scale {
+  position: relative;
+  height: .875rem;
+  border-top: 1px solid $ink;
+  background:
+    repeating-linear-gradient(90deg, $ink 0 $tick-width, transparent $tick-width calc(100% / var(--months))) 0 0 / 100% .875rem no-repeat,
+    repeating-linear-gradient(90deg, $ink-muted 0 $tick-width, transparent $tick-width calc(100% / var(--months) / 4)) 0 0 / 100% .4375rem no-repeat;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: .875rem;
+    border-right: $tick-width solid $ink;
+  }
+}
+// 月份：數字貼在長刻度右邊（尺規的讀法），換年的月份下方標年份
+.sched-ruler-months {
+  display: grid;
+  grid-template-columns: repeat(var(--months), minmax(0, 1fr));
+  margin: .25rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: .9375rem;
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: 1.2;
+
+  li {
+    position: relative;
+    padding-left: .25rem;
+  }
+}
+.sched-ruler-year {
+  display: block;
+  font-size: .75rem;
+  color: $ink-muted;
+  letter-spacing: .04em;
+}
+
+// ---------- 2. 垂直時間軸 ----------
+// 欄位：日期（尺規數字）｜刻度｜節點｜內容。< 576px 隱藏日期欄（日期也寫在內容的標題列）
+// <ol class="timeline">
+//   <li class="timeline-item is-done">                    ← is-done／is-live／is-todo／is-delay
+//     <span class="timeline-date" aria-hidden="true">2026/08</span>
+//     <span class="timeline-node" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+//     <div class="timeline-body">
+//       <div class="timeline-head"><h3 class="timeline-title">里程碑 1｜設計定版</h3>徽章＋日期</div>
+//       <p class="timeline-update"><span class="timeline-update-date">更新 09/02：</span>…</p>
+//     </div>
+//   </li>
+// </ol>
+.timeline {
+  --tl-date: 5rem;     // 日期欄
+  --tl-ruler: .875rem; // 刻度欄（刻度貼著脊線）
+  --tl-node: 1.75rem;  // 節點直徑＝脊線所在欄
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-down(sm) {
+    --tl-date: 0rem;
+    --tl-ruler: .625rem;
+  }
+}
+.timeline-item {
+  --tl-tick: #{$ink-muted};
+  --tl-spine: #{$ink};
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--tl-date) var(--tl-ruler) var(--tl-node) minmax(0, 1fr);
+  padding-bottom: map-get($spacers, 5);
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+
+  // 刻度：每 8px 一道短刻度、每 40px 一道長刻度，貼在脊線左側
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--tl-date);
+    width: calc(var(--tl-ruler) + var(--tl-node) / 2);
+    background:
+      repeating-linear-gradient(to bottom, var(--tl-tick) 0 $tick-width, transparent $tick-width .5rem) right top / .375rem 100% no-repeat,
+      repeating-linear-gradient(to bottom, var(--tl-tick) 0 $tick-width, transparent $tick-width 2.5rem) right top / .75rem 100% no-repeat;
+    pointer-events: none;
+  }
+  // 脊線：從這個節點的中心連到下一個節點的中心，顏色代表「這一段」的狀態
+  &::after {
+    content: "";
+    position: absolute;
+    top: calc(var(--tl-node) / 2);
+    bottom: calc(var(--tl-node) / -2);
+    left: calc(var(--tl-date) + var(--tl-ruler) + var(--tl-node) / 2 - 1px);
+    width: 2px;
+    background-color: var(--tl-spine);
+  }
+  &:last-child::after {
+    display: none;
+  }
+
+  &.is-live::after {
+    background: repeating-linear-gradient(to bottom, $slate-deep 0 .375rem, transparent .375rem .625rem);
+  }
+  &.is-todo {
+    --tl-tick: #{$rule-strong};
+  }
+  &.is-todo::after {
+    background: repeating-linear-gradient(to bottom, $rule-strong 0 .25rem, transparent .25rem .5rem);
+  }
+}
+.timeline-date {
+  grid-column: 1;
+  grid-row: 1;
+  padding-right: .625rem;
+  overflow: hidden;
+  font-family: $font-family-numeric;
+  font-size: .9375rem;
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: var(--tl-node);
+  text-align: right;
+  white-space: nowrap;
+  color: $ink;
+
+  .is-todo & { color: $ink-muted; }
+
+  @include media-breakpoint-down(sm) {
+    display: none;
+  }
+}
+.timeline-node {
+  position: relative;
+  z-index: 1;
+  grid-column: 3;
+  grid-row: 1;
+  display: grid;
+  place-items: center;
+  width: var(--tl-node);
+  height: var(--tl-node);
+  border-radius: 50%;
+  font-size: .875rem;
+  line-height: 1;
+
+  // 已完成：實心鉛字黑＋勾
+  .is-done & {
+    background-color: $ink;
+    color: $ivory;
+  }
+  // 進行中：深霧藍實心＋淡霧藍外圈，外圈再一道脈動光暈（prefers-reduced-motion 時不動）
+  .is-live & {
+    background-color: $slate-deep;
+    color: $ivory;
+    box-shadow: 0 0 0 4px $slate-tint;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      animation: timeline-pulse 2s ease-out infinite;
+    }
+  }
+  // 未開始：虛線空心
+  .is-todo & {
+    border: 2px dashed $rule-strong;
+    background-color: $ivory;
+  }
+  // 延遲：校對紅實心＋驚嘆號
+  .is-delay & {
+    background-color: $err;
+    color: $ivory;
+  }
+}
+@keyframes timeline-pulse {
+  from { box-shadow: 0 0 0 4px rgba($slate-deep, .45); }
+  to   { box-shadow: 0 0 0 16px rgba($slate-deep, 0); }
+}
+.timeline-body {
+  grid-column: 4;
+  grid-row: 1;
+  min-width: 0;
+  padding-left: map-get($spacers, 3);
+}
+.timeline-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .75rem;
+  min-height: var(--tl-node);
+  margin-bottom: .375rem;
+}
+.timeline-title {
+  margin-bottom: 0;
+  font-size: 1.125rem;
+  line-height: 1.55;
+
+  .is-todo & { color: $idle; }
+}
+.timeline-when {
+  font-size: .875rem;
+  color: $ink-muted;
+}
+.timeline-update {
+  margin-bottom: 0;
+  font-size: .9375rem;
+
+  .is-todo & { color: $ink-muted; }
+}
+.timeline-update-date {
+  font-weight: $font-weight-bold;
+}
+// 展開的進度照片：兩張小縮圖＋「查看全部 6 則進度更新」
+.timeline-photos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: map-get($spacers, 2) map-get($spacers, 3);
+  padding-top: map-get($spacers, 3);
+
+  .img-frame {
+    width: 9rem;
+    max-width: calc(50% - .5rem);
+  }
+}
+.timeline-toggle {
+  margin-top: .25rem;
+  font-size: .875rem;
+
+  .bi {
+    transition: transform .2s ease;
+  }
+  &[aria-expanded="true"] .bi {
+    transform: rotate(180deg);
+  }
+}
+
+// 時間軸摘要徽章列（左欄：已完成 2、進行中 1、未開始 1）
+.timeline-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------- 3. 延遲的迷你尺 ----------
+// 4 個月一段：原定月份是空心圓＋刪除線數字，調整後是校對紅實心；中間一道箭頭線
+// <div class="delay-ruler" aria-hidden="true">
+//   <span>11</span><span class="is-from">12</span><span class="is-to">01</span><span>02</span>
+// </div>
+.delay-ruler {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-width: 18rem;
+  margin-block: map-get($spacers, 3);
+  padding-top: 1.125rem;
+  border-top: 1px solid $ink;
+  font-family: $font-family-numeric;
+  font-size: .875rem;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: $ink-muted;
+  background:
+    repeating-linear-gradient(90deg, $ink 0 $tick-width, transparent $tick-width 25%) 0 0 / 100% .625rem no-repeat,
+    repeating-linear-gradient(90deg, $ink-muted 0 $tick-width, transparent $tick-width 6.25%) 0 0 / 100% .3125rem no-repeat;
+
+  span {
+    position: relative;
+    padding-left: .25rem;
+  }
+  // 節點：月份段的中點，畫在尺的上緣
+  .is-from::before,
+  .is-to::before {
+    content: "";
+    position: absolute;
+    top: -1.125rem;
+    left: 50%;
+    width: .875rem;
+    height: .875rem;
+    margin: -.4375rem 0 0 -.4375rem;
+    border-radius: 50%;
+  }
+  .is-from {
+    text-decoration: line-through;
+    &::before {
+      border: 1.5px solid $ink-muted;
+      background-color: $err-bg;
+    }
+  }
+  .is-to {
+    color: $err;
+    font-weight: 600;
+    &::before {
+      background-color: $err;
+    }
+  }
+  // 箭頭線：從原定的中點到調整後的中點
+  &::after {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: calc(37.5% + .5rem);
+    width: calc(25% - 1rem);
+    height: 0;
+    border-top: 2px solid $err;
+  }
+}

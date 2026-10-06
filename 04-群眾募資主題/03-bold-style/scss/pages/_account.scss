@@ -1,0 +1,322 @@
+// ============================================================
+// 個人頁面 account.html（class 前綴 account-；贊助紀錄 backing-、提案 proposal-、收件 address-、設定 settings-）
+// 側邊導覽與角色規則在 components/_account-nav.scss、圖表在 components/_chart.scss
+// ============================================================
+
+// 頁面標題區：頭像＋H1＋姓名與認證徽章；右側是角色切換（設計稿狀態示意）
+.account-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.25rem 2rem;
+}
+.account-id {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+.account-avatar {
+  --avatar-size: 5rem;
+  border-width: $border-width;
+  box-shadow: $shadow-sm;
+
+  @include media-breakpoint-up(md) { --avatar-size: 6rem; }
+}
+.account-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .75rem;
+  margin: 0;
+  font-weight: $font-weight-medium;
+}
+// 角色切換：segmented control，選中＝深黑底奶白字
+.role-switch {
+  padding: .625rem .75rem .75rem;
+  border: $border-thin dashed $ink;
+  border-radius: $border-radius-lg;
+  background-color: $paper;
+}
+.role-switch-label {
+  margin-bottom: .375rem;
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+}
+.role-switch-group {
+  display: flex;
+  border: $border-thin solid $ink;
+  border-radius: $border-radius;
+  overflow: hidden;
+
+  .btn {
+    --#{$prefix}btn-border-width: 0;
+    --#{$prefix}btn-border-radius: 0;
+    --#{$prefix}btn-bg: #{$paper};
+    --#{$prefix}btn-hover-bg: #{$yellow-pale};
+    flex: 1 1 auto;
+    font-weight: $font-weight-bold;
+
+    & + .btn { border-left: $border-thin solid $ink; }
+    &[aria-pressed="true"] {
+      --#{$prefix}btn-bg: #{$ink};
+      --#{$prefix}btn-color: #{$cream};
+      --#{$prefix}btn-hover-bg: #{$ink};
+      --#{$prefix}btn-hover-color: #{$yellow};
+    }
+  }
+}
+
+// 內容區的每個區塊：之間 3px 深黑線分隔
+.account-section {
+  padding-bottom: map-get($spacers, 6);
+
+  & + & {
+    padding-top: map-get($spacers, 6);
+    border-top: $border-width solid $ink;
+  }
+}
+.account-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  margin-bottom: map-get($spacers, 4);
+
+  .account-section-title { margin-bottom: 0; }
+}
+.account-section-title { margin-bottom: map-get($spacers, 4); }
+
+// 一列裡的多個欄位：用小圓點分隔（不是印出「‧」）
+.meta-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .125rem .625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li + li::before {
+    content: "";
+    display: inline-block;
+    width: .3125rem;
+    height: .3125rem;
+    margin-right: .625rem;
+    border-radius: 50%;
+    background-color: currentColor;
+    vertical-align: middle;
+  }
+}
+
+// ---------- 贊助紀錄 ----------
+.backing-filter { margin-bottom: map-get($spacers, 4); }
+.backing-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+// ≥ 576px：縮圖 3：資訊 6：操作 3；< 576px 上下排
+.backing-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: $border-width solid $ink;
+  border-radius: $border-radius-lg;
+  background-color: $paper;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 3fr 6fr 3fr;
+    align-items: start;
+  }
+  &[hidden] { display: none; }
+}
+.backing-thumb {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9; // 手機上下排時不要太高
+
+  @include media-breakpoint-up(sm) { aspect-ratio: 4 / 3; }
+  object-fit: cover;
+  border: $border-thin solid $ink;
+  border-radius: $border-radius;
+}
+.backing-title {
+  margin-bottom: .125rem;
+  font-size: 1.125rem;
+}
+.backing-maker {
+  margin-bottom: .5rem;
+  color: $ink-muted;
+  font-size: $font-size-sm;
+}
+.backing-info .meta-inline { font-size: $font-size-sm; }
+.backing-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .75rem;
+  margin-top: .75rem;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+.backing-bar { max-width: 16rem; margin-top: .625rem; }
+.backing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+
+  @include media-breakpoint-up(sm) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  @include media-breakpoint-down(sm) {
+    .btn { flex: 1 1 auto; }
+  }
+  .btn-text { justify-content: center; }
+}
+// 募資失敗 ‧ 已退款：降一階
+.backing-card.is-muted {
+  border-color: $ink-muted;
+  background-color: $sand;
+
+  .backing-thumb { opacity: .55; filter: grayscale(.6); }
+  .backing-title { color: $ink-muted; }
+}
+
+// ---------- 我的提案：≥ 992px 三段 5：4：3（名稱＋狀態｜數據或說明｜操作） ----------
+.proposal-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.proposal-row {
+  display: grid;
+  gap: .875rem 1.5rem;
+  padding: 1rem 1.25rem;
+  border: $border-width solid $ink;
+  border-radius: $border-radius-lg;
+  background-color: $paper;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: 5fr 4fr 3fr;
+    align-items: center;
+  }
+}
+.proposal-name .badge-state { margin-bottom: .375rem; }
+.proposal-title {
+  margin: 0;
+  font-size: 1.125rem;
+}
+.proposal-figures {
+  display: flex;
+  align-items: baseline;
+  gap: .75rem;
+  margin-bottom: .5rem;
+
+  .mega-pct { --mega-size: 2rem; }
+  .amount { font-size: 1rem; }
+}
+.proposal-mid { font-size: $font-size-sm; }
+.proposal-missing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+}
+.proposal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+
+  @include media-breakpoint-up(lg) { justify-content: flex-end; }
+}
+.proposal-reason { padding: .625rem .875rem; font-size: $font-size-sm; }
+// 審核未通過：整列珊瑚紅淡底；草稿、已下架：沙色底降一階
+.proposal-row.is-rejected { background-color: mix($err-bg, $paper, 18%); }
+.proposal-row.is-muted {
+  border-color: $ink-muted;
+  background-color: $sand;
+
+  .proposal-title { color: $ink-muted; }
+}
+.proposal-row-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .75rem;
+
+  p { margin: 0; }
+}
+
+// 權限提示（贊助者看到的 #my-projects）：S17
+.permission-notice {
+  max-width: 32em;
+  padding: map-get($spacers, 5) map-get($spacers, 4);
+  border: $border-width dashed $ink;
+  border-radius: $border-radius-lg;
+  background-color: $paper;
+  text-align: center;
+  margin-inline: auto;
+
+  p { font-weight: $font-weight-bold; }
+}
+
+// ---------- 募資數據 ----------
+.period-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  margin-bottom: map-get($spacers, 4);
+}
+.period-range {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+}
+// 達成率數據卡：深黑底亮黃字（呼應首頁 Hero 卡的超大達成率）
+.stat-tile-ink {
+  background-color: $ink;
+  color: $yellow;
+
+  .label { color: $on-dark-muted; }
+  .stat-meta { color: $on-dark; }
+}
+
+// ---------- 收件資訊＋帳號設定 ----------
+.address-card,
+.settings-card {
+  margin: 0 0 1rem;
+  padding: 1.25rem;
+  border: $border-width solid $ink;
+  border-radius: $border-radius-lg;
+  background-color: $paper;
+}
+.address-card .meta-inline { font-size: $font-size-sm; }
+.address-card.is-default { box-shadow: $shadow; }
+.address-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+.settings-title {
+  margin-bottom: 1rem;
+  padding: 0;
+  font-size: 1.125rem;
+  font-weight: $font-weight-bolder;
+}
+fieldset.settings-card {
+  min-width: 0;
+
+  .form-check + .form-check { margin-top: .5rem; }
+}

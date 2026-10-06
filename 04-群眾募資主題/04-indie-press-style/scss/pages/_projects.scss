@@ -1,0 +1,278 @@
+// ============================================================
+// 專案列表 projects.html（class 前綴 plist-）
+// 篩選側欄（.offcanvas-lg：≥ 992px sticky 側欄、< 992px 全螢幕浮層）＋工具列＋ProjectRow＋分頁
+// ProjectRow 本身的樣式在 components/_project-card.scss
+// ============================================================
+.plist-page {
+  padding-bottom: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-bottom: map-get($spacers, 7);
+  }
+}
+
+// ---------- 篩選側欄 ----------
+.plist-filter {
+  // < 992px：全螢幕浮層（Bootstrap 的 offcanvas-start 預設 400px 寬）
+  @include media-breakpoint-down(lg) {
+    --bs-offcanvas-width: 100%;
+    --bs-offcanvas-padding-x: 1.25rem;
+    --bs-offcanvas-padding-y: 1rem;
+  }
+
+  // ≥ 992px：sticky 側欄。篩選項目比視窗高時，側欄自己捲動
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+    max-height: calc(100vh - #{$sticky-top-offset} - 1rem);
+    overflow-y: auto;
+    padding: 0 .25rem .5rem; // 留空間給焦點框，不被捲動容器裁掉
+    margin-inline: -.25rem;
+    scrollbar-width: thin;
+    transition: none; // 側欄不需要浮層的滑入動畫（視窗跨過 992px 時也不會閃一下）
+  }
+}
+// 標題列「篩選」＋「清除全部」：Bootstrap 在 ≥ 992px 會隱藏 offcanvas-header，這裡讓它保留
+.plist-filter .plist-filter-head {
+  align-items: center;
+  gap: map-get($spacers, 3);
+  border-bottom: $rule-heavy solid $ink;
+
+  @include media-breakpoint-up(lg) {
+    display: flex;
+    padding: 0 0 .25rem;
+  }
+  .btn-close {
+    width: 2.75rem;
+    height: 2.75rem;
+    margin: 0 -.75rem 0 0;
+    padding: 0;
+  }
+}
+.plist-filter-title {
+  margin: 0 auto 0 0;
+  font-size: 1.375rem;
+  font-weight: $font-weight-black;
+}
+.plist-filter-body {
+  @include media-breakpoint-up(lg) {
+    display: block; // Bootstrap 在 ≥ 992px 給 flex，表單要撐滿寬度
+  }
+}
+.plist-filter-foot {
+  padding: map-get($spacers, 3) 1.25rem calc(#{map-get($spacers, 3)} + env(safe-area-inset-bottom));
+  border-top: 1px solid $ink;
+  background-color: $ivory;
+}
+
+// 篩選群組：群組之間一條版線，不做成一張張卡片
+.plist-group {
+  margin: 0;
+  padding-block: map-get($spacers, 3) map-get($spacers, 4);
+  border: 0;
+  border-top: 1px solid $rule;
+
+  &:first-child {
+    border-top: 0;
+  }
+}
+// legend 維持 Bootstrap reboot 的 float: left＋width: 100%：
+// 不浮動的 legend 會被瀏覽器畫進 fieldset 的上框線（版線從標題中間穿過）
+.plist-legend {
+  display: block;
+  margin-bottom: map-get($spacers, 2);
+  padding: 0;
+  font-family: $font-family-base;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+  line-height: 1.5;
+}
+legend.plist-legend {
+  float: left;
+  width: 100%;
+}
+.plist-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 2);
+
+  // 件數：Newsreader 的數字在 .chip 的置中對齊下會偏高，這裡改用黑體的等寬數字
+  .chip-count {
+    font-family: $font-family-base;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// 關鍵字：框線輸入框＋放大鏡
+.plist-search {
+  position: relative;
+
+  .bi {
+    position: absolute;
+    left: .875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $ink-muted;
+    pointer-events: none;
+  }
+  .form-control {
+    min-height: 2.75rem;
+    padding-left: 2.5rem;
+    font-size: .9375rem;
+  }
+}
+
+// 排序：一列一個選項（44px 高），目前項目＝粗體＋左側 2px 鉛字黑線＋右側勾勾
+.plist-sort {
+  border-top: 1px solid $rule;
+}
+.plist-sort-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 2.75rem;
+  padding: .5rem .75rem;
+  border-bottom: 1px solid $rule;
+  border-left: 2px solid transparent;
+  font-size: .9375rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $paper;
+  }
+}
+.btn-check:checked + .plist-sort-option {
+  border-left-color: $ink;
+  background-color: $paper;
+  font-weight: $font-weight-bold;
+
+  &::after {
+    content: "\f633"; // bi-check-lg
+    font-family: "bootstrap-icons";
+    font-weight: normal;
+    line-height: 1;
+  }
+}
+.btn-check:focus-visible + .plist-sort-option {
+  outline: 2px solid $slate-deep;
+  outline-offset: -2px;
+}
+
+// ---------- 工具列 ----------
+.plist-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 2) map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 3);
+}
+.plist-applied {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: map-get($spacers, 2);
+}
+.plist-applied-label,
+.plist-count {
+  margin: 0;
+  font-size: .875rem;
+  color: $ink-muted;
+}
+.plist-applied-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+// 移除鈕：撐滿標籤高度，觸控範圍 44px
+.plist-applied .chip-remove {
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: -.375rem -.25rem -.375rem 0;
+}
+.plist-toolbar-end {
+  display: flex;
+  align-items: center;
+  gap: map-get($spacers, 3);
+  margin-left: auto;
+
+  .plist-count .num {
+    font-size: 1.0625rem;
+    color: $ink;
+  }
+}
+.plist-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+}
+
+// ---------- 專案列（補充 components/_project-card.scss 的 .project-row） ----------
+.plist-media > img {
+  transition: transform .4s ease;
+}
+.project-row:hover .plist-media > img {
+  transform: scale(1.03);
+}
+// 數字列：達成率（大）靠左、目前金額靠右
+.plist-figures {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: map-get($spacers, 2);
+  margin-bottom: map-get($spacers, 2);
+}
+.plist-rate {
+  font-size: 2rem;
+}
+.plist-money {
+  font-family: $font-family-numeric;
+  font-size: 1.125rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.project-row-meta {
+  font-size: .875rem;
+  color: $ink-muted;
+
+  .meta-line {
+    font-size: inherit;
+  }
+}
+
+// ---------- 分頁 ----------
+.plist-pager {
+  margin-top: map-get($spacers, 5);
+  padding-top: map-get($spacers, 4);
+  border-top: 1px solid $ink;
+
+  .pagination {
+    margin-bottom: 0;
+  }
+}
+.plist-pager-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .375rem;
+  font-family: $font-family-base;
+  font-size: .9375rem;
+}
+// 上一頁／下一頁的文字：手機只留箭頭（文字仍給螢幕閱讀器）
+.plist-pager-text {
+  @include media-breakpoint-down(sm) {
+    @include visually-hidden;
+  }
+}
+.page-item.disabled .plist-pager-gap {
+  border-color: transparent;
+}
+// 停用的「上一頁」：和停用按鈕一樣用虛線框
+.page-item.disabled .plist-pager-step {
+  border-style: dashed;
+  border-color: $rule-strong;
+}

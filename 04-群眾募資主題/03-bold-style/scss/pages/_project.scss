@@ -1,0 +1,485 @@
+// ============================================================
+// 專案細節 project.html（class 前綴 pd-；儀表板 dashboard-、故事 story-、提案者 proposer-、手機行動列 mobile-action-bar）
+// 回饋方案、時間軸、留言的元件樣式在 components/
+// ============================================================
+
+// ---------- 區塊一＋二的版型：手機「主視覺 → 標題 → 儀表板 → 故事」，桌機 7：5 ----------
+.pd-top { padding-top: map-get($spacers, 4); }
+.pd-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "media" "head" "aside" "story";
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-areas:
+      "media aside"
+      "head  aside"
+      "story aside";
+    column-gap: map-get($spacers, 6);
+  }
+}
+.pd-media { grid-area: media; }
+.pd-head  { grid-area: head; }
+.pd-story { grid-area: story; min-width: 0; }
+.pd-aside {
+  grid-area: aside;
+  display: grid;
+  gap: 1.25rem;
+
+  @include media-breakpoint-up(lg) {
+    align-self: start;
+    position: sticky;
+    top: $sticky-top-offset;
+  }
+}
+
+// 主視覺輪播：粗框＋圓角；縮圖列是 Bootstrap 的 .carousel-indicators，重設成縮圖樣式
+.pd-gallery .carousel-inner {
+  border: $border-width solid $ink;
+  border-radius: $border-radius-xl;
+  background-color: $sand;
+
+  img { object-fit: cover; }
+}
+.pd-video-tag {
+  position: absolute;
+  top: .875rem;
+  left: .875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .25rem .75rem .25rem .5rem;
+  border: $border-thin solid $ink;
+  border-radius: $border-radius-pill;
+  background-color: $yellow;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+
+  .bi { font-size: 1.25rem; line-height: 1; }
+}
+.pd-thumbs {
+  position: static;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(3.5rem, 1fr));
+  justify-content: start; // Bootstrap 預設置中：內容超出時左側會捲不到
+  gap: .5rem;
+  margin: .75rem 0 0;
+  padding: .25rem .25rem .5rem;
+  overflow-x: auto;
+
+  @include media-breakpoint-up(sm) { gap: .75rem; }
+
+  [data-bs-target] {
+    position: relative;
+    box-sizing: border-box;
+    flex: initial;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    aspect-ratio: 4 / 3;
+    border: $border-thin solid $ink;
+    border-radius: $border-radius;
+    background: $sand;
+    text-indent: 0;
+    opacity: 1;
+    overflow: hidden;
+    transition: transform .12s ease, box-shadow .12s ease;
+
+    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    &:hover { transform: translate(-2px, -2px); box-shadow: $shadow-sm; }
+  }
+  // 選中的縮圖：3px 框＋下緣亮黃色條
+  .active {
+    border-width: $border-width;
+    box-shadow: inset 0 -6px 0 $yellow, $shadow-sm;
+  }
+}
+.pd-thumb-more {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background-color: rgba($ink, .72);
+  color: $cream;
+  font-family: $font-family-numeric;
+  font-size: 1.5rem;
+  font-stretch: 75%;
+  font-weight: 800;
+}
+
+// 標題區
+.pd-title {
+  margin-bottom: .5rem;
+  font-size: clamp(2rem, 1.4rem + 2.2vw, 3rem);
+  line-height: 1.2;
+}
+.pd-lead {
+  margin-bottom: 1rem;
+  font-size: $lead-font-size;
+  font-weight: $font-weight-medium;
+}
+.pd-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------- 募資儀表板 ----------
+.dashboard {
+  padding: 1.25rem;
+  border: $border-width solid $ink;
+  border-radius: $border-radius-xl;
+  background-color: $paper;
+  box-shadow: $shadow;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.5rem 1.75rem 1.75rem;
+  }
+  > .btn { margin-top: 1rem; }
+}
+// 目前金額：全頁最大的數字
+.dashboard-amount {
+  margin-bottom: .75rem;
+
+  .num-display { font-size: $num-dashboard-size; }
+}
+// 達成率：一整條深黑帶，左側亮黃超大達成率、右側目標金額；右上角斜貼「超額達成」貼紙
+.dashboard-rate {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: .75rem;
+  padding: .875rem 1.125rem 1rem;
+  border-radius: $border-radius-lg;
+  background-color: $ink;
+  color: $on-dark;
+
+  .label { color: $on-dark-muted; }
+  .mega-pct {
+    --mega-size: clamp(3rem, 2.2rem + 2vw, 3.375rem); // 48 → 54px，比目前金額小一階
+    color: $yellow;
+  }
+}
+.dashboard-sticker {
+  position: absolute;
+  top: -.875rem;
+  right: 1rem;
+  box-shadow: 3px 3px 0 $yellow;
+  transform: rotate(4deg);
+}
+.dashboard-goal { font-size: 1.25rem; }
+.dashboard-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin: 1.25rem 0 0;
+}
+.dashboard-tile {
+  padding: .75rem 1rem;
+  border: $border-thin solid $ink;
+  border-radius: $border-radius;
+
+  dd { margin: 0; }
+}
+.dashboard-tile-value {
+  font-weight: $font-weight-bold;
+
+  .num-display { font-size: 2.25rem; }
+}
+.dashboard-tile-meta {
+  margin-top: .25rem !important;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+}
+.dashboard-period {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 .625rem;
+  margin: 1rem 0 0;
+  font-size: $font-size-sm;
+}
+.dashboard-secondary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin: .75rem 0 1rem;
+}
+// 狀態示意用的縮小版儀表板
+.dashboard-mini {
+  padding: 1.25rem;
+  box-shadow: $shadow-sm;
+}
+
+// 提案者小卡
+.proposer-mini {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border: $border-width solid $ink;
+  border-radius: $border-radius-lg;
+  background-color: $paper;
+  color: $ink;
+  text-decoration: none;
+  transition: transform .15s ease, box-shadow .15s ease;
+
+  &:hover { transform: translate(-3px, -3px); box-shadow: $shadow-lift; }
+}
+.proposer-mini-body { display: grid; gap: .125rem; }
+.proposer-mini-name { font-size: 1.125rem; font-weight: $font-weight-bolder; }
+.proposer-mini-place { font-size: $font-size-sm; color: $ink-muted; }
+.proposer-mini-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .375rem;
+  margin-top: .375rem;
+}
+
+// ---------- 頁內導覽：深黑長條，項目在自己的容器內橫向捲動 ----------
+.pd-jump {
+  margin-bottom: map-get($spacers, 3);
+  border-radius: $border-radius-lg;
+  background-color: $ink;
+  overflow: hidden;
+}
+.pd-jump-list {
+  display: flex;
+  margin: 0;
+  padding: .375rem;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: .375rem;
+    min-height: 2.75rem;
+    padding: .25rem 1rem;
+    border-radius: $border-radius;
+    color: $cream;
+    font-weight: $font-weight-bold;
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover { background-color: $ink-soft; color: $yellow; }
+    &:focus-visible { outline: $focus-ring-width solid $yellow; outline-offset: -3px; }
+  }
+}
+.pd-jump-count {
+  padding: 0 .4375rem;
+  border-radius: $border-radius-pill;
+  background-color: $yellow;
+  color: $ink;
+  font-size: $small-font-size;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- 專案故事 ----------
+// 浮動目錄：sticky 貼在頁首下方，ScrollSpy 標示目前章節（亮黃膠囊）
+.story-toc {
+  position: sticky;
+  top: $site-header-height;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: map-get($spacers, 4);
+  padding: .5rem 0;
+  border-bottom: $border-width solid $ink;
+  background-color: $cream;
+}
+.story-toc-label {
+  flex: 0 0 auto;
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bolder;
+}
+.story-toc-list {
+  flex-wrap: nowrap;
+  gap: .25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: .25rem .625rem;
+    border: $border-thin solid transparent;
+    border-radius: $border-radius-pill;
+    color: $ink;
+    font-size: .9375rem;
+    font-weight: $font-weight-medium;
+    white-space: nowrap;
+
+    &:hover { border-color: $ink; }
+    &.active {
+      border-color: $ink;
+      background-color: $yellow;
+      font-weight: $font-weight-bolder;
+    }
+    &:focus-visible { box-shadow: inset 0 0 0 3px $ink; outline: 0; }
+  }
+}
+
+// 長文排版（§4.2）：文字欄最大 720px、17px／行高 1.95、段距 1.25em、h2 上距遠大於下距
+.story {
+  max-width: $story-max-width;
+  font-size: $story-font-size;
+  line-height: $story-line-height;
+
+  p,
+  ul { margin-bottom: $story-paragraph-gap; }
+  ul { padding-left: 1.25em; }
+  li + li { margin-top: .375em; }
+  li::marker { color: $ink; }
+
+  h2 {
+    margin-top: 2.75rem;
+    margin-bottom: .875rem;
+    padding-top: .625rem;
+    border-top: $border-width solid $ink;
+    font-size: 1.625rem;
+    line-height: 1.35;
+    scroll-margin-top: 3.5rem; // 再扣掉 sticky 目錄的高度
+  }
+  h2:first-child { margin-top: 0; }
+  h3 {
+    margin-top: 2rem;
+    margin-bottom: .625rem;
+    font-size: 1.25rem;
+    font-weight: $font-weight-bolder;
+  }
+}
+.story-figure {
+  margin: 1.5rem 0 2rem;
+
+  img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border: $border-width solid $ink;
+    border-radius: $border-radius-lg;
+    display: block;
+  }
+}
+.story-specs {
+  font-size: 1rem;
+
+  th { width: 6em; background-color: $sand; }
+  td.num { text-align: left; }
+}
+
+// ---------- 生產排程左欄 ----------
+.timeline-intro {
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+  }
+}
+.timeline-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------- 關於提案者 ----------
+.proposer-id {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.proposer-name {
+  margin: 0;
+  font-size: 1.375rem;
+}
+.proposer-intro {
+  margin-bottom: map-get($spacers, 4);
+  font-size: 1.1875rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.85;
+}
+
+// ---------- 留言左欄 ----------
+.comments-side {
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+  }
+  h2 { margin-bottom: map-get($spacers, 3); }
+}
+
+// ---------- 風險與挑戰：字級同內文、不可收合 ----------
+.risk-callout {
+  padding: 1.25rem 1.5rem;
+  font-size: 1rem;
+
+  p { margin-bottom: 1em; }
+}
+
+// 狀態示意：登入引導
+.login-prompt {
+  padding: 1.25rem;
+  border: $border-width solid $ink;
+  border-radius: $border-radius-lg;
+  background-color: $yellow;
+  text-align: center;
+
+  .empty-state-icon { margin-bottom: .75rem; }
+  p { font-weight: $font-weight-bold; }
+}
+
+// ---------- 手機底部行動列（< 992px） ----------
+.mobile-action-bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: $zindex-fixed;
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  padding: .75rem calc(var(--#{$prefix}gutter-x, 1.25rem) * .5 + .25rem) calc(.75rem + env(safe-area-inset-bottom));
+  border-top: $border-width solid $ink;
+  background-color: $cream;
+
+  .btn-primary { flex: 0 0 auto; padding-inline: 1rem; }
+}
+.mobile-action-bar-info {
+  flex: 1 1 auto;
+  min-width: 0;
+
+  .amount { display: block; font-size: 1.25rem; font-stretch: 75%; font-weight: 800; line-height: 1.1; }
+  .fund-bar { margin-top: .375rem; }
+}
+.mobile-action-bar-meta {
+  display: flex;
+  gap: .25rem;
+  font-size: $small-font-size;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+// 頁尾留出行動列的高度，不被蓋住
+@include media-breakpoint-down(lg) {
+  body:has(.mobile-action-bar) .site-footer {
+    padding-bottom: calc(#{map-get($spacers, 5)} + 5.5rem + env(safe-area-inset-bottom));
+  }
+}

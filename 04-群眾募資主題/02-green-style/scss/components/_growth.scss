@@ -1,0 +1,102 @@
+// ============================================================
+// 生長條 .growth：本風格的招牌（Notion：溫和的圓角進度條）
+// 粗的全圓角進度條，三種狀態：
+//   未達標  填色長度＝達成率，整段森林墨綠            style="--value: 68%"
+//   剛好達標 整條森林墨綠                             .is-full
+//   超額達成 整條填滿：目標以前森林墨綠、超過目標「新長出來」的部分初生綠，
+//           兩段之間一道刻痕＝目標 100%               .is-over style="--target: 40.5%"（目標 ÷ 已募）
+// 三種尺寸：.growth-lg（16px，儀表板、Hero 專案卡）、.growth-md（10px，卡片、列表）、.growth-sm（6px，贊助紀錄）
+// 進度條只是視覺輔助：一律 aria-hidden="true"，數字一定要以文字出現在旁邊
+// 不用顏色深淺表示達成率高低；初生綠只代表「超過目標的部分」
+//
+// <div class="growth growth-md is-over" style="--target: 40.5%" aria-hidden="true"><span></span></div>
+// 大尺寸可在下方標出刻痕的意思：
+// <div class="growth-mark" style="--target: 40.5%" aria-hidden="true">目標</div>
+// ============================================================
+.growth {
+  --value: 100%;
+  --target: 100%;
+  --growth-notch: #{$growth-notch}; // 刻痕＝所在面的底色；放在葉影底上時改成 $leaf
+  position: relative;
+  height: map-get($growth-heights, "md");
+  overflow: hidden;
+  border-radius: $border-radius-pill;
+  background-color: $growth-track;
+
+  > span {
+    display: block;
+    width: var(--value);
+    height: 100%;
+    border-radius: inherit;
+    background-color: $growth-fill;
+    transform-origin: left center;
+    animation: growth-in 1.1s cubic-bezier(.22, .9, .3, 1) both;
+  }
+}
+@each $size, $height in $growth-heights {
+  .growth-#{$size} { height: $height; }
+}
+
+.growth.is-full > span {
+  width: 100%;
+}
+
+// 超額：兩段硬邊（不是漸層），刻痕畫在目標位置
+.growth.is-over {
+  > span {
+    width: 100%;
+    background-image: linear-gradient(90deg, $growth-fill var(--target), $growth-new var(--target));
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--target);
+    width: $growth-notch-width;
+    margin-left: $growth-notch-width * -.5;
+    background-color: var(--growth-notch);
+  }
+}
+
+// 刻痕下方的小字「目標」：只用在大尺寸
+.growth-mark {
+  position: relative;
+  height: 1.375rem;
+  margin-top: .25rem;
+  font-size: .75rem;
+  color: $ink-muted;
+
+  &::before {
+    content: attr(data-label);
+    position: absolute;
+    top: 0;
+    left: var(--target);
+    transform: translateX(-50%);
+    padding-top: .375rem;
+    white-space: nowrap;
+  }
+  // 小三角指向刻痕
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: var(--target);
+    width: 0;
+    height: 0;
+    margin-left: -.25rem;
+    border: .25rem solid transparent;
+    border-top: 0;
+    border-bottom: .3125rem solid $ink-muted;
+  }
+}
+
+// 放在葉影底上（數據卡、葉影面板）時，刻痕顏色跟著底色
+.growth-on-leaf {
+  --growth-notch: #{$leaf};
+}
+
+// 生長動畫：載入時由左往右長出來一次；prefers-reduced-motion 時由 _base.scss 關閉
+@keyframes growth-in {
+  from { transform: scaleX(0); }
+}

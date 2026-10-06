@@ -1,0 +1,266 @@
+// ============================================================
+// 募資數字：進度條 .fund-bar、募資倒數刻度 .day-ruler、限量格 .slot-bar、數據卡 .stat-row
+// 進度條與刻度都是裝飾（aria-hidden="true"），數字一定要以文字出現在旁邊
+// ============================================================
+
+// ---------- 募資進度條 ----------
+// 三種狀態，填色長度與樣式都不同（不用顏色深淺表示達成率高低）：
+//   未達標    <div class="fund-bar" style="--fill: 68%" aria-hidden="true"></div>
+//             鉛字黑實心填到達成率，右側是版線色的空軌
+//   剛好達標  <div class="fund-bar is-full" aria-hidden="true"></div>
+//             滿格實心，尾端一道目標刻度
+//   超額達成  <div class="fund-bar is-over" style="--goal: 40.5%" aria-hidden="true"></div>
+//             滿格；目標以前是實心，目標以後是深霧藍斜紋（像印刷網點），--goal＝目標 ÷ 已募（CONTENT 附錄 B.5）
+// 尺寸：.fund-bar-lg（儀表板 10px）、預設（卡片 6px）、.fund-bar-sm（贊助紀錄 4px）
+.fund-bar {
+  --bar-h: .375rem;
+  --fill: 0%;
+  --goal: 100%;
+  position: relative;
+  height: var(--bar-h);
+  background:
+    linear-gradient($ink, $ink) 0 0 / var(--fill) 100% no-repeat,
+    $rule;
+
+  &.is-full {
+    --fill: 100%;
+    --goal: 100%;
+  }
+  &.is-over {
+    background:
+      linear-gradient($ink, $ink) 0 0 / var(--goal) 100% no-repeat,
+      repeating-linear-gradient(-45deg, $slate-deep 0 1.5px, $slate-tint 1.5px $hatch-size);
+  }
+
+  // 目標刻度（100%）：上下各凸出 4px 的 2px 直線
+  &.is-full::after,
+  &.is-over::after {
+    content: "";
+    position: absolute;
+    top: -.25rem;
+    bottom: -.25rem;
+    left: var(--goal);
+    width: 2px;
+    margin-left: -1px;
+    background-color: $ink;
+  }
+  &.is-full::after {
+    margin-left: -2px;
+  }
+}
+.fund-bar-lg { --bar-h: .625rem; }
+.fund-bar-sm { --bar-h: .25rem; }
+
+// ---------- 募資倒數刻度（儀表板「剩餘天數」下方） ----------
+// 一天一格：募資期間 09/15–10/15 共 31 天＝31 道刻度；每 5 天一道長刻度。
+// 已經過去的刻度是鉛字黑，今天是深霧藍長刻度＋三角記號，剩下的是深版線。
+// --days：總天數減 1（刻度間隔數）；--today：今天是第幾格（從 0 起算）
+// <div class="day-ruler" style="--days: 30; --today: 19" aria-hidden="true">
+//   <span class="day-ruler-start">09/15</span><span class="day-ruler-end">10/15</span>
+// </div>
+.day-ruler {
+  --days: 30;
+  --today: 0;
+  --minor: #{$tick-color-future};
+  position: relative;
+  height: 2.25rem;
+  margin-inline: .5px;
+  font-family: $font-family-numeric;
+  font-size: .8125rem;
+  color: $ink-muted;
+
+  // 兩層刻度：上層畫「已過去」（用 clip-path 只露出今天以前），下層畫全部
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: .875rem;
+    background:
+      repeating-linear-gradient(90deg, var(--minor) 0 $tick-width, transparent $tick-width calc(100% / var(--days))) 0 0 / 100% .5rem no-repeat,
+      repeating-linear-gradient(90deg, var(--minor) 0 $tick-width, transparent $tick-width calc(100% * 5 / var(--days))) 0 0 / 100% .875rem no-repeat;
+    border-right: $tick-width solid var(--minor); // 最後一道刻度
+  }
+  &::after {
+    --minor: #{$tick-color};
+    clip-path: inset(0 calc(100% - 100% * var(--today) / var(--days) + 1px) 0 0);
+  }
+}
+// 今天：深霧藍長刻度＋下方三角
+.day-ruler-today {
+  position: absolute;
+  top: -.125rem;
+  left: calc(100% * var(--today) / var(--days));
+  width: 2px;
+  height: 1.125rem;
+  margin-left: -1px;
+  background-color: $slate-deep;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -.25rem;
+    border: .25rem solid transparent;
+    border-top: 0;
+    border-bottom: .3125rem solid $slate-deep;
+    transform: translateY(1px) rotate(180deg);
+  }
+}
+.day-ruler-start,
+.day-ruler-end {
+  position: absolute;
+  bottom: 0;
+  line-height: 1;
+}
+.day-ruler-start { left: 0; }
+.day-ruler-end { right: 0; }
+
+// ---------- 限量格（回饋方案的已選購／限量） ----------
+// 一格代表一個名額（限量 20）或固定的份數（限量 300 → 30 格，每格 10 份），已選購的格子塗黑
+// <div class="slot-bar" style="--slots: 20; --taken: 16" aria-hidden="true"></div>
+.slot-bar {
+  --slots: 20;
+  --taken: 0;
+  position: relative;
+  max-width: 16rem;
+  height: .5rem;
+  background: repeating-linear-gradient(90deg, $rule 0 calc(100% / var(--slots) - 2px), transparent calc(100% / var(--slots) - 2px) calc(100% / var(--slots)));
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(90deg, $ink 0 calc(100% / var(--slots) - 2px), transparent calc(100% / var(--slots) - 2px) calc(100% / var(--slots)));
+    clip-path: inset(0 calc(100% - 100% * var(--taken) / var(--slots)) 0 0);
+  }
+}
+
+// ---------- 募資數字列（首頁 Hero 卡、專案卡、儀表板共用的「標籤＋數字」） ----------
+// <dl class="figures">
+//   <div><dt>目前募得</dt><dd><data class="amount" value="1235600">NT$ 1,235,600</data></dd></div>
+// </dl>
+.figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 2) map-get($spacers, 4);
+  margin-bottom: 0;
+
+  > div {
+    min-width: 0;
+  }
+  dt {
+    margin-bottom: .125rem;
+    font-size: $small-font-size;
+    font-weight: $font-weight-medium;
+    color: $ink-muted;
+    letter-spacing: $letter-spacing-body;
+  }
+  dd {
+    margin-bottom: 0;
+  }
+}
+// 一列小字資料（目標、人數、天數）：用欄線分隔，不用「｜」字元
+// <ul class="meta-line"><li>目標 NT$ 500,000</li><li>1,042&nbsp;人贊助</li><li>剩 12&nbsp;天</li></ul>
+// 欄線畫在項目左側的間隔裡；換行後每行第一項的欄線落在清單外面，被 overflow 裁掉，行首不會多一條線
+.meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem 1.5rem;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+  font-size: .875rem;
+  color: $ink-muted;
+
+  > li {
+    position: relative;
+    white-space: nowrap;
+  }
+  > li::before {
+    content: "";
+    position: absolute;
+    top: .25em;
+    bottom: .25em;
+    left: -.75rem;
+    border-left: 1px solid $rule-strong;
+  }
+}
+
+// ---------- 數據卡（StatTile）列 ----------
+// 一排 2 或 4 格，格與格之間 1px 欄線；強調格（準時出貨率）用 ok 底色＋圖示
+// <dl class="stat-row">
+//   <div class="stat"><dt>贊助人數</dt><dd><data class="stat-value" value="1042">1,042</data></dd><dd class="stat-note">…</dd></div>
+// </dl>
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 0;
+  border-top: 1px solid $ink;
+  border-bottom: 1px solid $rule;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(var(--stat-cols, 4), minmax(0, 1fr));
+  }
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: map-get($spacers, 3) map-get($spacers, 3) map-get($spacers, 3);
+  border-left: 1px solid $rule;
+
+  // 每列第一格不畫左線（手機 2 欄、桌機 4 欄）
+  &:nth-child(2n + 1) { border-left: 0; }
+  &:nth-child(n + 3) { border-top: 1px solid $rule; }
+
+  @include media-breakpoint-up(lg) {
+    &:nth-child(2n + 1) { border-left: 1px solid $rule; }
+    &:nth-child(n + 3) { border-top: 0; }
+    &:first-child { border-left: 0; }
+  }
+
+  dt {
+    margin-bottom: .25rem;
+    font-size: $small-font-size;
+    font-weight: $font-weight-medium;
+    color: $ink-muted;
+  }
+  dd {
+    margin-bottom: 0;
+  }
+  &.is-ok {
+    background-color: $ok-bg;
+
+    dt,
+    .stat-value { color: $ok; }
+  }
+}
+.stat-value {
+  font-family: $font-family-numeric;
+  font-optical-sizing: auto;
+  font-variant-numeric: lining-nums;
+  font-size: clamp(1.5rem, 1.1rem + .9vw, 2rem); // 4 欄放在窄欄裡時，金額不會擠到欄線
+  font-weight: 600;
+  line-height: 1.15;
+  white-space: nowrap;
+
+  small {
+    margin-left: .25rem;
+    font-family: $font-family-base;
+    font-size: .875rem;
+    font-weight: $font-weight-normal;
+  }
+}
+.stat-note {
+  margin-top: .25rem;
+  font-size: $small-font-size;
+  color: $ink-muted;
+
+  &.is-up {
+    color: $ok;
+    font-weight: $font-weight-medium;
+  }
+}

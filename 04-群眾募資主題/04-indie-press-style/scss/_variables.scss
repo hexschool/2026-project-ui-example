@@ -1,0 +1,513 @@
+// ============================================================
+// 島造 ISLANDMAKE｜04 獨立出版文藝 — Bootstrap 5 變數覆寫（design token）
+// 規則：只在這裡改 Bootstrap 變數；元件與頁面樣式一律引用變數，不寫死色碼
+//
+// 這是「單一淺色主題」：不使用 data-bs-theme，也不輸出深色模式變數。
+// 作業系統切成深色時畫面維持象牙白紙＋鉛字黑字（_base.scss 設定 color-scheme: light）。
+// 對比度皆以 WCAG 2.x 公式計算，未註明時是對頁面底色「象牙白」$ivory 的比值
+// ============================================================
+
+// ---------- 1. 色彩：鉛字黑、霧灰藍、象牙白 ----------
+// 基礎色票（設計 Guideline 的「色彩」章節即以此為準）
+
+// 紙：頁面是象牙白，浮起的面是更白一點的白報紙；冷調區塊用霧面
+$ivory:       #F5F2EA; // 象牙白：頁面底色
+$paper:       #FBFAF6; // 白報紙：卡片、輸入框、儀表板、方案卡、下拉選單（1.07:1，要靠版線畫邊界）
+$mist:        #DFE5E9; // 霧面：冷調區塊（首頁「正在發生的提案」、頁尾）
+
+// 墨：鉛字黑三階
+$ink:         #1C1F23; // 鉛字黑：主文字、標題、主要按鈕、粗版線（14.8:1；對白報紙 15.8:1、對霧面 13.0:1）
+$ink-muted:   #555B62; // 鉛灰：次要文字、說明（6.1:1；對白報紙 6.6:1、對霧面 5.4:1）
+$ink-faint:   #5E646A; // 淡鉛灰：placeholder、停用文字、最弱的說明（5.4:1；對白報紙 5.7:1、對霧面 4.7:1）
+$ink-soft:    #2B3036; // 淡一階的鉛字黑：主要按鈕 hover（11.9:1）
+
+// 版線：裝飾線不承載資訊；表單控制項的邊框要達非文字 3:1
+$rule:        #CFD3D4; // 版線：髮絲分隔、表格線、卡片外框（1.35:1，裝飾用）
+$rule-strong: #A7AEB2; // 深版線：虛線框、停用框、未開始的刻度（2.0:1，裝飾用）
+$control:     #788087; // 表單框線：輸入框、核取方塊、篩選標籤的邊框（3.6:1；對白報紙 3.8:1、對霧面 3.2:1）
+
+// 霧灰藍：製版藍線。淺的只當圖形（刻度、引文線、圖表數據），深的才能當文字
+$slate:       #71899A; // 霧灰藍：刻度、引文線、圖表數據線（非文字 3.3:1；不要用在霧面上，2.9:1）
+$slate-deep:  #36536A; // 深霧藍：強調按鈕、選取外框、live 狀態（7.2:1；上面放象牙白字 7.2:1）
+$slate-tint:  #E1E9EF; // 淡霧藍：選取中的方案底、live 狀態底（鉛字黑字 13.5:1）
+$slate-light: #A3B9C8; // 亮霧藍：深色底上的圖表數據線（對鉛字黑 8.1:1）
+
+// 鉛字黑底上的文字（Guideline 的深色底圖表、首頁提案者轉換帶）
+$on-ink:       $ivory;   // 主文字（14.8:1）
+$on-ink-muted: #B5BCC2;  // 次要文字、座標（對鉛字黑 8.6:1）
+$on-ink-rule:  #3A4047;  // 格線（1.6:1，裝飾用）
+
+// 6 種語意色調（WIREFRAME_SPEC §2.6）：每種一組「文字色／底色」，圓點與框線用文字色
+// 括號內是文字色對自己底色的對比
+$live:     #2F5470; $live-bg: #E1E9EF; // 進行中：募資中、進行中的里程碑、提案者回覆（6.5:1）
+$info:     #5B4E85; $info-bg: #EAE6F2; // 等待中：已達標待生產、即將開始（6.0:1）
+$warn:     #83560A; $warn-bg: #F5EBD3; // 注意：生產中、審核中、即將額滿、剩 ≤ 7 天（5.4:1）
+$ok:       #2C6A4B; $ok-bg:   #DFEDE4; // 成功：已出貨、募資成功、已完成、準時出貨率（5.3:1）
+$err:      #A2392A; $err-bg:  #F6E1DC; // 錯誤：審核未通過、募資失敗、延遲（校對紅，5.3:1）
+$idle:     #585E64; $idle-bg: #E7E7E4; // 中性：草稿、未開始、已退款、已下架、已額滿（5.3:1）
+
+// Sass map：.status、.callout、Guideline 的色票都由這份 map 產生
+$tones: (
+  "live": ($live, $live-bg),
+  "info": ($info, $info-bg),
+  "warn": ($warn, $warn-bg),
+  "ok":   ($ok,   $ok-bg),
+  "err":  ($err,  $err-bg),
+  "idle": ($idle, $idle-bg),
+);
+
+$primary:   $ink;        // 主要按鈕＝鉛字黑底＋象牙白字
+$secondary: $ink-muted;
+$success:   $ok;
+$info-color: $info;      // Bootstrap 的 $info 名稱已被語意色調用掉，theme-colors 用這個
+$warning:   $warn;
+$danger:    $err;
+$light:     $paper;
+$dark:      $ink;
+
+$theme-colors: (
+  "primary":   $primary,
+  "secondary": $secondary,
+  "success":   $success,
+  "info":      $info-color,
+  "warning":   $warning,
+  "danger":    $danger,
+  "light":     $light,
+  "dark":      $dark,
+);
+
+// 按鈕、標籤上的文字色：Bootstrap 的 color-contrast() 依序試「淺色 → 深色」，取第一個達 4.5:1 的
+$color-contrast-light: $ivory;
+$color-contrast-dark:  $ink;
+$min-contrast-ratio:   4.5;
+
+// 只有一套淺色主題，不輸出 [data-bs-theme="dark"] 那一份變數
+$enable-dark-mode: false;
+
+// ---------- 全站底色與文字（Bootstrap 的 --bs-body-* 等 CSS 變數由這裡產生） ----------
+$body-bg:               $ivory;
+$body-color:            $ink;
+$body-secondary-color:  $ink-muted;
+$body-secondary-bg:     $paper;
+$body-tertiary-color:   $ink-faint;
+$body-tertiary-bg:      $mist;
+$body-emphasis-color:   $ink;
+$border-color:          $rule;
+$border-color-translucent: rgba($ink, .12);
+$headings-color:        $ink;
+
+// 連結：鉛字黑＋細底線（深版線），hover 底線變成鉛字黑
+$link-color:            $ink;
+$link-hover-color:      $ink;
+$link-decoration:       underline;
+$link-underline-offset: .28em;
+
+// 各狀態色的「文字、淡底、淡框」三件組（alert、.text-*-emphasis、.bg-*-subtle 共用）
+$primary-text-emphasis:   $ink;
+$secondary-text-emphasis: $ink;
+$success-text-emphasis:   $ok;
+$info-text-emphasis:      $info;
+$warning-text-emphasis:   $warn;
+$danger-text-emphasis:    $err;
+$light-text-emphasis:     $ink;
+$dark-text-emphasis:      $ink;
+
+$primary-bg-subtle:       $slate-tint;
+$secondary-bg-subtle:     $paper;
+$success-bg-subtle:       $ok-bg;
+$info-bg-subtle:          $info-bg;
+$warning-bg-subtle:       $warn-bg;
+$danger-bg-subtle:        $err-bg;
+$light-bg-subtle:         $paper;
+$dark-bg-subtle:          $mist;
+
+$primary-border-subtle:   $rule-strong;
+$secondary-border-subtle: $rule;
+$success-border-subtle:   mix($ok, $ok-bg, 40%);
+$info-border-subtle:      mix($info, $info-bg, 40%);
+$warning-border-subtle:   mix($warn, $warn-bg, 40%);
+$danger-border-subtle:    mix($err, $err-bg, 40%);
+$light-border-subtle:     $rule;
+$dark-border-subtle:      $rule-strong;
+
+// 元件的「選中」：鉛字黑底＋象牙白字（下拉選單、分頁、核取方塊、篩選標籤共用）
+$component-active-bg:    $ink;
+$component-active-color: $ivory;
+
+// 焦點環：深霧藍 2px 實線，外推 2px 露出底色當間隙（對象牙白 7.2:1、對白報紙 7.7:1）
+$focus-ring-width:   2px;
+$focus-ring-opacity: 1;
+$focus-ring-blur:    0;
+$focus-ring-color:   $slate-deep;
+$focus-ring-double:  0 0 0 2px $ivory, 0 0 0 4px $slate-deep; // 自訂：內圈象牙白間隙、外圈深霧藍
+$focus-ring-box-shadow: $focus-ring-double;
+
+$code-color: $slate-deep;
+$mark-bg:    $slate-tint;
+$mark-color: $ink;
+$kbd-bg:     $ink;
+$kbd-color:  $ivory;
+
+$hr-color:   $rule;
+$hr-opacity: 1;
+
+// ---------- 2. 字體與字級 ----------
+// 明體（Noto Serif TC）負責標題與長文；黑體（Noto Sans TC）負責介面；Newsreader 負責英數與金額
+// Newsreader 只有拉丁字，中文會落到後面的 Noto Serif TC，所以「NT$ 1,235,600」「247%」一律用它
+$font-family-serif:      "Noto Serif TC", "Songti TC", "PMingLiU", serif;          // 自訂：標題、長文、引文
+$font-family-numeric:    "Newsreader", "Noto Serif TC", Georgia, serif;           // 自訂：金額、達成率、刻度數字（.num）
+$font-family-sans-serif: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+$font-family-base:       $font-family-sans-serif;
+$headings-font-family:   $font-family-serif;
+$display-font-family:    $font-family-serif;
+
+$font-size-base:   1rem;     // 16px
+$font-size-sm:     .875rem;  // 14px
+$font-size-lg:     1.125rem; // 18px
+$small-font-size:  .8125rem; // 13px
+
+// 黑體載入 400／500／700；明體載入 400（長文）／700（區塊標題）／900（H1、Display）
+$font-weight-light:    400;
+$font-weight-normal:   400;
+$font-weight-medium:   500;
+$font-weight-semibold: 700;
+$font-weight-bold:     700;
+$font-weight-bolder:   900;
+$font-weight-black:    900; // 自訂：特粗明體大標
+
+$line-height-base: 1.8;  // 中文內文需要較寬鬆的行高
+$line-height-sm:   1.5;
+$line-height-lg:   1.95; // 專案故事長文
+
+// 字級階層：特粗明體大標 vs. 400 的內文，字重差最大，「階層標題鮮明」
+$h1-font-size: 2.75rem;   // 44px：頁面標題（H1，900）
+$h2-font-size: 2rem;      // 32px：區塊標題（700）
+$h3-font-size: 1.375rem;  // 22px：子標題、卡片標題（700）
+$h4-font-size: 1.125rem;  // 18px
+$h5-font-size: 1rem;      // 16px
+$h6-font-size: .875rem;   // 14px
+
+$headings-font-weight:   700;
+$headings-line-height:   1.4;
+$headings-margin-bottom: .75rem;
+
+$display-font-sizes: (
+  1: 5rem,     // 80px：首頁 H1（桌機）
+  2: 4rem,
+  3: 3.5rem,   // 56px：首頁 H1（平板）
+  4: 3rem,
+  5: 2.5rem,   // 40px：首頁 H1（手機）
+  6: 2.25rem,
+);
+$display-font-weight: 900;
+$display-line-height: 1.22;
+
+$lead-font-size:   1.1875rem; // 19px：導言（明體 400）
+$lead-font-weight: 400;
+
+// 自訂：字距（非 Bootstrap 變數，於 _base.scss 使用）
+$letter-spacing-body:    .02em;
+$letter-spacing-heading: .04em;
+$letter-spacing-label:   .06em; // 小字、標籤、按鈕
+$letter-spacing-brand:   .14em; // 副字標 ISLANDMAKE
+
+// 自訂：專案故事長文（WIREFRAME_SPEC §4.2 的下限：內文 ≥ 16px、行高 ≥ 1.8、段距 ≥ 1em）
+$story-max-width:    45rem;    // 720px（Notion 規定）
+$story-font-size:    1.0625rem; // 17px
+$story-line-height:  1.95;
+$story-paragraph-gap: 1.5rem;  // 段距 24px
+$story-h2-size:      1.75rem;  // 28px，上距 3.5rem／下距 1rem
+$story-h3-size:      1.25rem;  // 20px（Guideline 示範用），上距 2.25rem／下距 .625rem
+
+// ---------- 3. 間距：擴充 6–8 階，用於區塊留白 ----------
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * .25,  // 4px
+  2: $spacer * .5,   // 8px
+  3: $spacer,        // 16px
+  4: $spacer * 1.5,  // 24px
+  5: $spacer * 3,    // 48px
+  6: $spacer * 4,    // 64px
+  7: $spacer * 6,    // 96px
+  8: $spacer * 7.5,  // 120px
+);
+
+$grid-gutter-width: 2rem;      // 32px
+$container-padding-x: 2.5rem;  // 左右各 20px（Bootstrap 取一半），需 ≥ gutter 才不會讓 .row 溢出；≥ 992px 改 32px（_base.scss）
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1160px,
+  xxl: 1320px,
+);
+// RWD 斷點沿用 Bootstrap 預設：sm 576 / md 768 / lg 992 / xl 1200 / xxl 1400
+
+// ---------- 4. 圓角與陰影：直角、靠版線分層 ----------
+// 圓角一律 0（印刷品的裁切邊）；只有頭像、狀態圓點、radio、開關是圓的。
+// 不用 $enable-rounded: false，因為那會連 radio 的圓形一起拿掉
+$border-width:       1px;
+$border-radius-sm:   0;
+$border-radius:      0;
+$border-radius-lg:   0;
+$border-radius-xl:   0;
+$border-radius-xxl:  0;
+$border-radius-pill: 50rem; // 只給頭像、圓點、radio、開關
+
+$enable-shadows: false;
+// 陰影只用在浮起來的層：sticky 儀表板、手機底部行動列、下拉選單、圖表提示框
+$box-shadow-sm:    0 1px 2px rgba($ink, .06);
+$box-shadow:       0 10px 28px -12px rgba($ink, .22);
+$box-shadow-lg:    0 24px 48px -20px rgba($ink, .3);
+$box-shadow-inset: inset 0 1px 2px rgba($ink, .06);
+
+$enable-negative-margins: true;
+
+// ---------- 5. 元件 ----------
+// 按鈕：主要＝鉛字黑底＋象牙白字（14.8:1）；強調＝深霧藍底（.btn-accent，_base.scss）；次要＝鉛字黑細框
+$btn-padding-y:        .6875rem; // 高約 48px
+$btn-padding-x:        1.5rem;
+$btn-font-size:        .9375rem;
+$btn-line-height:      1.6;
+$btn-padding-y-sm:     .5rem;    // 高約 44px，符合觸控目標
+$btn-padding-x-sm:     1rem;
+$btn-font-size-sm:     .875rem;
+$btn-padding-y-lg:     .875rem;
+$btn-padding-x-lg:     2rem;
+$btn-font-size-lg:     1rem;
+$btn-font-weight:      500;
+$btn-border-radius:    0;
+$btn-border-radius-sm: 0;
+$btn-border-radius-lg: 0;
+$btn-disabled-opacity: 1;        // 停用不疊透明度，改成虛線框＋淡鉛灰字（_base.scss）
+$btn-focus-width:      $focus-ring-width;
+$btn-link-disabled-color: $ink-faint;
+
+// 表單：白報紙底、表單框線（3.8:1）、placeholder 淡鉛灰（5.6:1）
+$input-bg:                    $paper;
+$input-color:                 $ink;
+$input-border-color:          $control;
+$input-placeholder-color:     $ink-faint;
+$input-plaintext-color:       $ink;
+$input-padding-y:             .6875rem;
+$input-padding-x:             .875rem;
+$input-font-size:             1rem;
+$input-border-radius:         0;
+$input-focus-bg:              $paper;
+$input-focus-color:           $ink;
+$input-focus-border-color:    $ink;
+$input-focus-box-shadow:      0 0 0 1px $ink; // 與 1px 邊框合成 2px 鉛字黑實線
+$input-disabled-bg:           $ivory;
+$input-disabled-color:        $ink-faint;
+$input-disabled-border-color: $rule-strong;
+$input-group-addon-bg:        $ivory;
+$input-group-addon-color:     $ink-muted;
+$input-group-addon-border-color: $control;
+$form-label-font-size:        .875rem;
+$form-label-font-weight:      500;
+$form-label-color:            $ink;
+$form-label-margin-bottom:    .375rem;
+$form-text-color:             $ink-muted;
+
+$form-select-indicator-color: $ink;
+$form-select-focus-box-shadow: $input-focus-box-shadow;
+
+// 核取方塊、radio：白報紙底＋表單框線；選中為鉛字黑底＋象牙白勾勾
+$form-check-input-bg:                   $paper;
+$form-check-input-border:               1px solid $control;
+$form-check-input-border-radius:        0;
+$form-check-input-checked-color:        $ivory;
+$form-check-input-checked-bg-color:     $ink;
+$form-check-input-checked-border-color: $ink;
+$form-check-input-focus-border:         $ink;
+$form-check-input-focus-box-shadow:     $focus-ring-double;
+$form-check-input-width:                1.125em;
+
+// 開關：未開為表單框線圓鈕、開啟為象牙白圓鈕在鉛字黑軌道上
+$form-switch-color:         $control;
+$form-switch-focus-color:   $ink;
+$form-switch-checked-color: $ivory;
+$form-switch-width:         2.25em;
+
+$form-feedback-valid-color:   $ok;
+$form-feedback-invalid-color: $err;
+$form-feedback-font-size:     .875rem;
+
+$btn-close-color:         $ink;
+$btn-close-opacity:       .7;
+$btn-close-hover-opacity: 1;
+$btn-close-focus-shadow:  $focus-ring-double;
+
+// 卡片
+$card-bg:            $paper;
+$card-color:         $ink;
+$card-border-color:  $rule;
+$card-border-radius: 0;
+$card-cap-bg:        transparent;
+$card-spacer-y:      1.5rem;
+$card-spacer-x:      1.5rem;
+
+// 頁首高度：sticky 儀表板、故事目錄、側欄、小計卡、錨點捲動的位移都以此為準
+$site-header-height: 4.4375rem; // 實測 71px：$navbar-padding-y 上下各 .75rem＋44px 圖示按鈕＋3px 雙線
+$sticky-top-offset:  $site-header-height + 1.5rem; // 95px
+
+// 導覽列
+$navbar-padding-y:             .75rem;
+$navbar-nav-link-padding-x:    .875rem;
+$navbar-light-color:           $ink-muted;
+$navbar-light-hover-color:     $ink;
+$navbar-light-active-color:    $ink;
+$navbar-light-brand-color:     $ink;
+$navbar-light-brand-hover-color: $ink;
+$navbar-light-toggler-border-color: transparent;
+$navbar-toggler-border-radius: 0;
+$nav-link-font-size:           .9375rem;
+$nav-link-font-weight:         500;
+$nav-link-color:               $ink-muted;
+$nav-link-hover-color:         $ink;
+$nav-link-disabled-color:      $ink-faint;
+$nav-tabs-border-color:        $rule;
+$nav-tabs-link-active-color:   $ink;
+$nav-tabs-link-active-bg:      transparent;
+$nav-pills-link-active-bg:     $ink;
+$nav-pills-link-active-color:  $ivory;
+$nav-underline-border-width:   2px;
+$nav-underline-link-active-color: $ink;
+
+// 下拉選單
+$dropdown-bg:                 $paper;
+$dropdown-color:              $ink;
+$dropdown-border-color:       $ink;
+$dropdown-divider-bg:         $rule;
+$dropdown-box-shadow:         $box-shadow;
+$dropdown-link-color:         $ink;
+$dropdown-link-hover-color:   $ink;
+$dropdown-link-hover-bg:      $ivory;
+$dropdown-link-active-color:  $ivory;
+$dropdown-link-active-bg:     $ink;
+$dropdown-link-disabled-color: $ink-faint;
+$dropdown-header-color:       $ink-muted;
+$dropdown-item-padding-y:     .625rem;
+
+// 對話框、側邊抽屜
+$modal-content-bg:            $paper;
+$modal-content-color:         $ink;
+$modal-content-border-color:  $ink;
+$modal-content-border-radius: 0;
+$modal-header-border-color:   $rule;
+$modal-backdrop-bg:           $ink;
+$modal-backdrop-opacity:      .45;
+$offcanvas-bg-color:          $ivory;
+$offcanvas-color:             $ink;
+$offcanvas-border-color:      $ink;
+$offcanvas-backdrop-bg:       $ink;
+$offcanvas-backdrop-opacity:  .45;
+
+// 列表群組
+$list-group-color:              $ink;
+$list-group-bg:                 transparent;
+$list-group-border-color:       $rule;
+$list-group-hover-bg:           $paper;
+$list-group-active-color:       $ivory;
+$list-group-active-bg:          $ink;
+$list-group-active-border-color: $ink;
+$list-group-action-color:       $ink-muted;
+$list-group-action-hover-color: $ink;
+$list-group-action-active-bg:   $paper;
+
+// Accordion：透明底，題目用明體，展開時加一條鉛字黑上線
+$accordion-color:               $ink;
+$accordion-bg:                  transparent;
+$accordion-border-color:        $rule;
+$accordion-border-radius:       0;
+$accordion-inner-border-radius: 0;
+$accordion-button-color:        $ink;
+$accordion-button-active-bg:    transparent;
+$accordion-button-active-color: $ink;
+$accordion-button-padding-y:    1.125rem;
+$accordion-button-padding-x:    0;
+$accordion-body-padding-x:      0;
+$accordion-body-padding-y:      0;
+$accordion-icon-color:          $ink;
+$accordion-icon-active-color:   $ink;
+$accordion-button-focus-box-shadow: inset 0 0 0 2px $slate-deep;
+
+// 標籤
+$badge-font-size:     .8125rem;
+$badge-font-weight:   500;
+$badge-color:         $ivory;
+$badge-border-radius: 0;
+$badge-padding-y:     .3125em;
+$badge-padding-x:     .625em;
+
+// 麵包屑：分隔符號是斜線，連結鉛灰、目前頁鉛字黑
+$breadcrumb-divider:        quote("/");
+$breadcrumb-font-size:      .875rem;
+$breadcrumb-divider-color:  $rule-strong;
+$breadcrumb-active-color:   $ink;
+$breadcrumb-item-padding-x: .625rem;
+
+// 分頁：Newsreader 數字、直角方格；目前頁鉛字黑底
+$pagination-padding-y:            .5rem;
+$pagination-padding-x:            .875rem;
+$pagination-color:                $ink;
+$pagination-bg:                   transparent;
+$pagination-border-color:         $rule;
+$pagination-hover-color:          $ink;
+$pagination-hover-bg:             $paper;
+$pagination-hover-border-color:   $ink;
+$pagination-focus-color:          $ink;
+$pagination-focus-bg:             $paper;
+$pagination-focus-box-shadow:     $focus-ring-double;
+$pagination-active-color:         $ivory;
+$pagination-active-bg:            $ink;
+$pagination-active-border-color:  $ink;
+$pagination-disabled-color:       $ink-faint;
+$pagination-disabled-bg:          transparent;
+$pagination-disabled-border-color: $rule;
+$pagination-border-radius:        0;
+
+// 提示框、彈出框
+$tooltip-bg:            $ink;
+$tooltip-color:         $ivory;
+$tooltip-opacity:       1;
+$tooltip-border-radius: 0;
+$popover-bg:            $paper;
+$popover-border-color:  $ink;
+$popover-border-radius: 0;
+
+// 表格：透明底、版線分隔；數字欄靠右（.text-end）並用 tabular-nums
+$table-color:          $ink;
+$table-bg:             transparent;
+$table-border-color:   $rule;
+$table-striped-bg:     rgba($ink, .025);
+$table-hover-bg:       rgba($ink, .04);
+$table-active-bg:      $slate-tint;
+$table-cell-padding-y: .625rem;
+$table-cell-padding-x: .75rem;
+$table-th-font-weight: 500;
+
+// 提示（alert 顏色由上面的「文字、淡底、淡框」三件組決定；本風格的提示框用 .callout，見 _base.scss）
+$alert-border-radius: 0;
+$alert-padding-y:     1rem;
+$alert-padding-x:     1.25rem;
+
+// 進度條（Bootstrap 的 .progress 只在 Guideline 對照用；募資進度條是 .fund-bar，見 components/_funding.scss）
+$progress-bg:            $rule;
+$progress-bar-bg:        $ink;
+$progress-border-radius: 0;
+$progress-height:        .5rem;
+
+$figure-caption-color: $ink-muted;
+
+// ---------- 6. 本風格的招牌：刻度與版線 ----------
+// 刻度（排程尺、時間軸脊線、募資倒數）：細刻度 1px、間距由元件決定；已完成用鉛字黑、未開始用深版線
+$tick-color:        $ink;         // 已發生的刻度
+$tick-color-future: $rule-strong; // 未發生的刻度
+$tick-width:        1px;
+// 斜紋（超額達成的進度條、進行中的排程區段）：像印刷網點，2px 線＋2px 間隔
+$hatch-size: 4px;
+// 版線：區塊標題上方的短粗線、頁首與頁尾的雙線
+$rule-heavy:  2px;  // 區塊標題、專題 h2 上方的短粗線
+$rule-double: 3px;  // border-style: double 時，3px 剛好是兩條 1px 線＋1px 間隙

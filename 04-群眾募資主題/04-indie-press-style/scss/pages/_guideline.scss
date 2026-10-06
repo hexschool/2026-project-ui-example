@@ -1,0 +1,757 @@
+// ============================================================
+// 設計 Guideline guideline.html（class 前綴 gl-）
+// 只放「文件本身」的樣式：目錄、章節、色票、示範框、Do／Don't。
+// 元件示範一律用頁面上同一組類別（.status、.tier、.timeline、.chart-card…），不在這裡另寫一份
+// ============================================================
+
+// 色票：色塊由這份 map 產生（.gl-chip-ivory…），hex 與對比度寫在 guideline.html，改色時兩邊要同步
+$gl-swatches: (
+  "ivory":        $ivory,
+  "paper":        $paper,
+  "mist":         $mist,
+  "ink":          $ink,
+  "ink-muted":    $ink-muted,
+  "ink-faint":    $ink-faint,
+  "rule":         $rule,
+  "rule-strong":  $rule-strong,
+  "control":      $control,
+  "slate":        $slate,
+  "slate-deep":   $slate-deep,
+  "slate-tint":   $slate-tint,
+  "slate-light":  $slate-light,
+  "on-ink-muted": $on-ink-muted,
+);
+@each $name, $color in $gl-swatches {
+  .gl-chip-#{$name} { background-color: $color; }
+}
+
+// ---------- 頁首資訊 ----------
+.gl-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 2) map-get($spacers, 5);
+  margin: map-get($spacers, 4) 0 0;
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $rule;
+  font-size: .875rem;
+
+  dt {
+    font-weight: $font-weight-medium;
+    color: $ink-muted;
+  }
+  dd {
+    margin-bottom: 0;
+  }
+}
+
+// ---------- 目錄 ----------
+// 桌機：左側 sticky，章節編號用 Newsreader；目前章節鉛字黑底線＋粗體
+.gl-toc {
+  position: sticky;
+  top: $sticky-top-offset;
+  padding-top: map-get($spacers, 3);
+  border-top: $rule-heavy solid $ink;
+}
+.gl-toc-title {
+  margin-bottom: map-get($spacers, 2);
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+  color: $ink-muted;
+}
+.gl-toc-list {
+  margin: 0;
+  padding: 0;
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    min-height: 2.75rem;
+    padding: 0;
+    border-bottom: 1px solid $rule;
+    color: $ink-muted;
+    font-size: .9375rem;
+
+    &:hover { color: $ink; }
+    &:focus-visible { outline-offset: -2px; }
+  }
+  .nav-link.active {
+    color: $ink;
+    font-weight: $font-weight-bold;
+    border-bottom-color: $ink;
+  }
+}
+.gl-toc-num {
+  flex: 0 0 1.5rem;
+  font-family: $font-family-numeric;
+  font-size: .875rem;
+  font-weight: 500;
+  color: $ink-muted;
+}
+// 992px 以下：頁首下方可橫向捲動的章節列
+.gl-toc-mobile {
+  position: sticky;
+  top: $site-header-height;
+  z-index: 5;
+  margin-bottom: map-get($spacers, 4);
+  background-color: $ivory;
+  @include bleed-x;
+}
+
+// ---------- 章節 ----------
+.gl-section {
+  padding-block: map-get($spacers, 5) map-get($spacers, 6);
+  scroll-margin-top: $sticky-top-offset;
+
+  & + & {
+    border-top: $rule-double double $ink;
+  }
+  &:first-of-type {
+    padding-top: 0;
+  }
+}
+.gl-section-title {
+  display: flex;
+  align-items: baseline;
+  gap: map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 3);
+  font-size: clamp(1.875rem, 1.4rem + 1.4vw, 2.5rem);
+  font-weight: $font-weight-black;
+}
+// 章節編號：Guideline 是文件，有順序，保留編號
+.gl-section-num {
+  font-family: $font-family-numeric;
+  font-size: .6em;
+  font-weight: 500;
+  color: $ink-muted;
+}
+.gl-section-lead {
+  max-width: 40em;
+  margin-bottom: map-get($spacers, 5);
+  font-family: $font-family-serif;
+  font-size: $lead-font-size;
+  line-height: 1.8;
+  color: $ink-muted;
+}
+.gl-block {
+  margin-top: map-get($spacers, 5);
+}
+.gl-block-title {
+  margin-bottom: map-get($spacers, 3);
+  padding-bottom: map-get($spacers, 2);
+  border-bottom: 1px solid $ink;
+  font-size: 1.25rem;
+
+  code {
+    font-size: .8em;
+  }
+}
+.gl-note {
+  max-width: 48em;
+  font-size: .9375rem;
+  color: $ink-muted;
+}
+.gl-state-label {
+  margin-bottom: map-get($spacers, 2);
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+  color: $ink-muted;
+}
+.gl-rules {
+  padding-left: 1.25rem;
+  font-size: .9375rem;
+
+  li + li { margin-top: .375rem; }
+}
+
+// 規格清單（概覽、原則）：左標籤右內容
+.gl-spec {
+  margin-bottom: map-get($spacers, 3);
+
+  > div {
+    display: grid;
+    gap: .25rem map-get($spacers, 3);
+    padding-block: map-get($spacers, 3);
+    border-top: 1px solid $rule;
+
+    @include media-breakpoint-up(sm) {
+      grid-template-columns: 7.5rem minmax(0, 1fr);
+    }
+  }
+  > div:first-child {
+    border-top-color: $ink;
+  }
+  dt {
+    font-weight: $font-weight-bold;
+  }
+  dd {
+    margin-bottom: 0;
+  }
+}
+.gl-principles > div {
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 11rem minmax(0, 1fr);
+  }
+}
+.gl-quote {
+  margin: 0;
+  font-family: $font-family-serif;
+  font-size: 1.125rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.7;
+}
+
+// 三個風格要求：左說明、右實際元件
+.gl-pillar {
+  display: grid;
+  gap: map-get($spacers, 4);
+  padding-block: map-get($spacers, 4);
+  border-top: 1px solid $rule;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+  }
+  p { font-size: .9375rem; }
+}
+.gl-pillar-title {
+  margin-bottom: map-get($spacers, 2);
+  font-family: $font-family-serif;
+  font-size: 1.125rem !important;
+  font-weight: $font-weight-bold;
+}
+.gl-mini-story {
+  padding: map-get($spacers, 3);
+  border: 1px solid $rule;
+  background-color: $paper;
+
+  h2 { margin-top: 0; }
+}
+.gl-heading-stack {
+  padding: map-get($spacers, 3);
+  border: 1px solid $rule;
+  background-color: $paper;
+
+  p { margin-bottom: map-get($spacers, 2); }
+}
+.gl-heading-h1 {
+  font-family: $font-family-serif;
+  font-size: 1.75rem !important;
+  font-weight: $font-weight-black;
+  line-height: 1.3;
+}
+.gl-heading-h2 {
+  padding-top: map-get($spacers, 2);
+  border-top: $rule-heavy solid $ink;
+  font-family: $font-family-serif;
+  font-size: 1.25rem !important;
+  font-weight: $font-weight-bold;
+}
+.gl-heading-body {
+  margin-bottom: 0 !important;
+  color: $ink-muted;
+}
+
+// ---------- 色彩 ----------
+.gl-proportion {
+  margin-bottom: map-get($spacers, 4);
+}
+.gl-proportion-bar {
+  display: flex;
+  height: 2.5rem;
+  margin-bottom: map-get($spacers, 2);
+  border: 1px solid $rule;
+
+  > :nth-child(1) { flex: 62; }
+  > :nth-child(2) { flex: 14; }
+  > :nth-child(3) { flex: 14; }
+  > :nth-child(4) { flex: 7; }
+  > :nth-child(5) { flex: 3; }
+}
+.gl-swatch {
+  height: 100%;
+  padding-bottom: map-get($spacers, 3);
+  border-bottom: 1px solid $rule;
+  font-size: .875rem;
+
+  p { margin-bottom: .25rem; }
+}
+.gl-chip {
+  height: 4.5rem;
+  margin-bottom: map-get($spacers, 2);
+  border: 1px solid $rule;
+}
+.gl-swatch-name {
+  margin-bottom: .125rem;
+  font-size: 1rem;
+}
+.gl-swatch-code {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 .5rem;
+}
+.gl-swatch-use {
+  color: $ink-muted;
+}
+.gl-swatch-ratio {
+  font-weight: $font-weight-medium;
+}
+.gl-table {
+  font-size: .875rem;
+
+  thead th {
+    font-size: .8125rem;
+    color: $ink-muted;
+    white-space: nowrap;
+  }
+  th[scope="row"] {
+    font-weight: $font-weight-bold;
+  }
+  td, th {
+    vertical-align: middle;
+  }
+}
+.gl-badge-groups {
+  margin: 0;
+
+  > div {
+    display: grid;
+    gap: map-get($spacers, 2) map-get($spacers, 3);
+    padding-block: map-get($spacers, 3);
+    border-top: 1px solid $rule;
+
+    @include media-breakpoint-up(md) {
+      grid-template-columns: 9rem minmax(0, 1fr);
+    }
+  }
+  dt {
+    font-size: .875rem;
+  }
+  dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: map-get($spacers, 2);
+    margin-bottom: 0;
+  }
+}
+.gl-badge-note {
+  font-size: $small-font-size;
+  color: $ink-muted;
+}
+
+// ---------- 字級 ----------
+.gl-font {
+  height: 100%;
+  padding: map-get($spacers, 3);
+  border: 1px solid $rule;
+  background-color: $paper;
+
+  p { margin-bottom: .25rem; }
+}
+.gl-font-sample {
+  font-size: 1.75rem;
+  line-height: 1.3;
+}
+.gl-font-name {
+  font-weight: $font-weight-bold;
+}
+.gl-font-use {
+  font-size: .875rem;
+  color: $ink-muted;
+}
+.gl-type-table td:nth-child(2) {
+  min-width: 12rem;
+}
+.gl-type-display { font-family: $font-family-serif; font-weight: $font-weight-black; font-size: 2.5rem; line-height: 1.2; }
+.gl-type-h1      { font-family: $font-family-serif; font-weight: $font-weight-black; font-size: 2rem; }
+.gl-type-h2      { font-family: $font-family-serif; font-weight: $font-weight-bold; font-size: 1.5rem; }
+.gl-type-h3      { font-family: $font-family-serif; font-weight: $font-weight-bold; font-size: 1.125rem; }
+.gl-type-card    { font-family: $font-family-serif; font-weight: $font-weight-bold; font-size: 1.25rem; }
+.gl-type-story   { font-size: $story-font-size; }
+.gl-type-amount  { font-size: 2.25rem; }
+.gl-type-rate    { font-size: 1.875rem; }
+
+// 示範框：白報紙底＋小標
+.gl-demo {
+  margin-top: map-get($spacers, 3);
+  padding: map-get($spacers, 4);
+  border: 1px solid $rule;
+  background-color: $paper;
+}
+.gl-demo-label {
+  margin-bottom: map-get($spacers, 3);
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+  color: $ink-muted;
+}
+.gl-num-table {
+  font-size: .9375rem;
+
+  th { font-weight: $font-weight-normal; }
+}
+
+// ---------- 間距 ----------
+.gl-space-scale {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: 7.5rem 2rem 3.5rem;
+    align-items: center;
+    gap: map-get($spacers, 3);
+    padding-block: .375rem;
+    border-bottom: 1px solid $rule;
+    font-size: .875rem;
+  }
+}
+.gl-space-bar {
+  display: block;
+  width: var(--size);
+  height: .75rem;
+  background-color: $slate-deep;
+}
+.gl-layout-fig {
+  margin: 0;
+
+  figcaption {
+    margin-top: map-get($spacers, 2);
+    font-size: .875rem;
+  }
+}
+.gl-cols {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: .375rem;
+
+  > span {
+    grid-column: span var(--c);
+    display: grid;
+    place-items: center;
+    min-height: 3.5rem;
+    padding: .25rem;
+    border: 1px solid $ink;
+    background-color: $paper;
+    font-size: .75rem;
+    text-align: center;
+  }
+}
+
+// ---------- 圓角、陰影、版線 ----------
+.gl-shape {
+  font-size: .875rem;
+
+  p { margin-bottom: .25rem; }
+}
+.gl-shape-box {
+  display: block;
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: map-get($spacers, 2);
+  border: 1px solid $ink;
+  background-color: $paper;
+
+  &.is-round { border-radius: 50%; }
+}
+.gl-rule-demo {
+  hr,
+  > span {
+    margin-bottom: map-get($spacers, 2);
+  }
+  p {
+    margin-bottom: 0;
+    font-size: .875rem;
+  }
+}
+.gl-rule-heavy {
+  display: block;
+  border-top: $rule-heavy solid $ink;
+}
+.gl-rule-dashed {
+  display: block;
+  border-top: 1px dashed $rule-strong;
+}
+.gl-rule-columns {
+  display: flex;
+  height: 1.5rem;
+
+  > span {
+    flex: 1;
+  }
+  > span + span {
+    border-left: 1px solid $rule;
+  }
+}
+.gl-shadow-card {
+  height: 100%;
+  padding: map-get($spacers, 3);
+  background-color: $paper;
+
+  &.is-sm { box-shadow: $box-shadow-sm; }
+  &.is-md { box-shadow: $box-shadow; }
+  &.is-up { box-shadow: 0 -8px 24px -12px rgba($ink, .25); border-top: 1px solid $ink; }
+}
+
+// ---------- 元件狀態 ----------
+// 固定顯示 hover／focus 的樣子（只在本頁使用）
+.btn.is-hover {
+  color: var(--bs-btn-hover-color);
+  background-color: var(--bs-btn-hover-bg);
+  border-color: var(--bs-btn-hover-border-color);
+}
+.btn.is-focus {
+  box-shadow: var(--bs-btn-focus-box-shadow);
+}
+.btn-text.is-hover {
+  text-decoration-color: currentColor;
+}
+.btn-text.is-focus {
+  box-shadow: none;
+  outline: 2px solid $slate-deep;
+  outline-offset: 4px;
+}
+.form-control.is-focus {
+  border-color: $input-focus-border-color;
+  box-shadow: $input-focus-box-shadow;
+}
+.gl-states {
+  td {
+    white-space: nowrap;
+    padding-block: map-get($spacers, 3);
+  }
+  th[scope="row"] {
+    min-width: 11rem;
+  }
+}
+.gl-cell-note {
+  display: block;
+  font-size: .75rem;
+  font-weight: $font-weight-normal;
+  color: $ink-muted;
+}
+// 深色底的按鈕列：整列鉛字黑
+.gl-on-ink {
+  > th,
+  > td {
+    background-color: $ink;
+    color: $on-ink;
+    border-color: $on-ink-rule;
+  }
+  .gl-cell-note { color: $on-ink-muted; }
+  code { color: $slate-light; }
+}
+.gl-progress-list {
+  display: grid;
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .text-note {
+    margin: map-get($spacers, 2) 0 0;
+  }
+}
+.gl-tier-demo {
+  .gl-state-label {
+    margin-top: map-get($spacers, 4);
+  }
+  .gl-state-label:first-of-type {
+    margin-top: 0;
+  }
+  .tier + .gl-state-label {
+    margin-top: map-get($spacers, 4);
+  }
+}
+.gl-timeline-demo .timeline-title,
+.gl-tier-demo .tier-name {
+  font-size: 1.125rem;
+}
+// 頁首示範：靜態縮圖
+.gl-header-demo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: map-get($spacers, 3) map-get($spacers, 4);
+  padding: .75rem map-get($spacers, 3);
+  border: 1px solid $rule;
+  border-bottom: $rule-double double $ink;
+  background-color: $ivory;
+
+  .btn { pointer-events: none; }
+}
+.gl-header-demo-nav {
+  display: flex;
+  gap: map-get($spacers, 3);
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+  color: $ink-muted;
+
+  .is-current {
+    color: $ink;
+    font-weight: $font-weight-bold;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .5em;
+  }
+}
+.gl-header-demo-actions {
+  display: flex;
+  align-items: center;
+  gap: map-get($spacers, 3);
+  margin-left: auto;
+}
+.gl-comment-demo .comment {
+  border-top-color: $ink;
+}
+.gl-copy-table {
+  td:nth-child(3) {
+    min-width: 16rem;
+    font-family: $font-family-serif;
+    font-size: .9375rem;
+  }
+  td:nth-child(4),
+  td:nth-child(5) {
+    font-size: .8125rem;
+    color: $ink-muted;
+  }
+}
+// 手機底部行動列的靜態示範（不固定）
+.gl-actionbar-demo {
+  max-width: 24.375rem; // 390px
+  padding: .625rem map-get($spacers, 3);
+  border-top: 1px solid $ink;
+  background-color: $paper;
+  box-shadow: 0 -8px 24px -12px rgba($ink, .25);
+
+  .btn-primary { pointer-events: none; white-space: nowrap; }
+}
+
+// ---------- Do／Don't ----------
+.gl-dd {
+  padding-block: map-get($spacers, 4);
+  border-top: 1px solid $rule;
+
+  &:first-of-type { border-top: 0; }
+}
+.gl-dd-title {
+  margin-bottom: map-get($spacers, 3);
+  font-size: 1.125rem;
+}
+.gl-dd-pair {
+  display: grid;
+  gap: map-get($spacers, 3);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.gl-dd-item {
+  display: flex;
+  flex-direction: column;
+  padding: map-get($spacers, 3);
+  border: 1px solid $rule;
+  border-top: 3px solid $ok;
+  background-color: $paper;
+
+  &.is-dont {
+    border-top-color: $err;
+  }
+}
+.gl-dd-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: map-get($spacers, 2);
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  color: $ok;
+
+  .is-dont & { color: $err; }
+}
+.gl-dd-stage {
+  flex: 1 1 auto;
+  margin-bottom: map-get($spacers, 3);
+  padding: map-get($spacers, 3);
+  background-color: $ivory;
+}
+.gl-dd-why {
+  margin: 0;
+  font-size: .875rem;
+  color: $ink-muted;
+}
+.gl-dd-tier {
+  padding: map-get($spacers, 3);
+  border: 1px solid $rule;
+  background-color: $paper;
+
+  &.is-soldout {
+    border-style: dashed;
+    border-color: $rule-strong;
+    background-color: transparent;
+    color: $ink-muted;
+  }
+  .btn { pointer-events: none; }
+}
+// 小圖表（Do／Don't）：沿用圖表的 CSS 變數
+.gl-dd-chart {
+  --chart-data: #{$slate-deep};
+  --chart-grid: #{$rule};
+  --chart-muted: #{$ink-muted};
+  --chart-target: #{$ink};
+  --chart-bg: #{$ivory};
+  display: block;
+  width: 100%;
+  max-width: 22rem;
+  height: auto;
+}
+.gl-dd-line-2 {
+  stroke: $err;
+}
+.gl-dd-dot {
+  width: .875rem;
+  height: .875rem;
+  border-radius: 50%;
+
+  &.is-live { background-color: $live; }
+  &.is-warn { background-color: $warn; }
+  &.is-ok   { background-color: $ok; }
+}
+.gl-code {
+  margin: 0;
+  padding: map-get($spacers, 3);
+  background-color: $ink;
+  color: $on-ink;
+  font-size: .8125rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+
+  code { color: inherit; }
+}
+.gl-dd-list .guarantee {
+  padding-block: map-get($spacers, 2);
+}
+// 錯誤示範：圓角＋陰影卡片（本風格不用）
+.gl-dd-shadow-card {
+  padding: map-get($spacers, 3);
+  border-radius: .75rem;
+  background-color: $paper;
+  box-shadow: 0 8px 20px rgba($ink, .12);
+
+  & + & { margin-top: map-get($spacers, 2); }
+}
+// 錯誤示範：把刻度當成標題底線裝飾
+.gl-dd-ticks-title {
+  padding-bottom: .875rem;
+  font-family: $font-family-serif;
+  font-weight: $font-weight-bold;
+  background: repeating-linear-gradient(90deg, $slate 0 1px, transparent 1px 6px) left bottom / 100% .5rem no-repeat;
+}
+// 錯誤示範：全大寫英文眉標（本風格不用）
+.gl-dd-eyebrow {
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: .2em;
+  color: $slate-deep;
+}

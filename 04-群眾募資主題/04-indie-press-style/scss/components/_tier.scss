@@ -1,0 +1,252 @@
+// ============================================================
+// 回饋方案卡（RewardTierCard）與右欄的自訂金額、贊助小計
+// 4 種狀態：可選、已選取（深霧藍 2px 框＋淡霧藍底＋勾）、即將額滿（warn 徽章＋限量格）、已額滿（虛線框、停用）
+// 整張卡可點：radio 是 .btn-check（看不見但可聚焦），它的 <label> 是右下的「選擇這個方案」按鈕，
+// label 的 ::after 撐滿整張卡，點卡片任何地方都會選到這個方案；鍵盤用方向鍵在方案之間切換
+// ============================================================
+// <div class="tier">                                     ← 已額滿加 .is-soldout、即將額滿加 .is-low
+//   <div class="tier-body">
+//     <p class="tier-price"><data class="amount" id="tier-3-price" value="2280">NT$ 2,280</data></p>
+//     <h3 class="tier-name" id="tier-3-name">標準單入組</h3>
+//     <ul class="tier-items" id="tier-3-items"><li>帆布包 × 1</li>…</ul>
+//     <ul class="meta-line tier-meta"><li>已有 612 人選擇</li><li>不限量</li><li>預計出貨 2027 年 2 月</li></ul>
+//   </div>
+//   <div class="tier-action">
+//     <input class="btn-check" type="radio" name="reward" id="tier-3" value="standard" data-price="2280" data-name="標準單入組"
+//            aria-labelledby="tier-3-price tier-3-name" aria-describedby="tier-3-items" checked>
+//     <label class="btn tier-btn" for="tier-3"><span class="tier-btn-idle">選擇這個方案</span><span class="tier-btn-on">…已選擇</span></label>
+//   </div>
+// </div>
+.tier {
+  position: relative;
+  display: grid;
+  gap: map-get($spacers, 3);
+  padding: map-get($spacers, 4);
+  border: 1px solid $rule;
+  background-color: $paper;
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    gap: map-get($spacers, 4);
+    padding: map-get($spacers, 4) map-get($spacers, 4) + .5rem;
+  }
+
+  & + & {
+    margin-top: map-get($spacers, 3);
+  }
+  &:hover {
+    border-color: $ink;
+  }
+
+  // 已選取：深霧藍 2px 框（1px 邊框＋1px 內陰影）、淡霧藍底
+  &:has(.btn-check:checked) {
+    border-color: $slate-deep;
+    box-shadow: inset 0 0 0 1px $slate-deep;
+    background-color: $slate-tint;
+  }
+  // 鍵盤焦點：整張卡外框
+  &:has(.btn-check:focus-visible) {
+    outline: 2px solid $slate-deep;
+    outline-offset: 3px;
+  }
+
+  // 已額滿：留在頁面上，但虛線框、透明底、鉛灰字，按鈕停用
+  &.is-soldout {
+    border-style: dashed;
+    border-color: $rule-strong;
+    background-color: transparent;
+    color: $ink-muted;
+
+    &:hover { border-color: $rule-strong; }
+    .tier-name,
+    .tier-price { color: $ink-muted; }
+  }
+}
+.tier-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .75rem;
+  margin-bottom: .25rem;
+
+  .amount {
+    font-size: 1.75rem;
+  }
+}
+.tier-name {
+  margin-bottom: map-get($spacers, 3);
+  font-size: 1.25rem;
+}
+// 回饋內容：每一項一行，前面一個鉛字黑小方塊
+.tier-items {
+  margin: 0 0 map-get($spacers, 3);
+  padding: 0;
+  list-style: none;
+  font-size: .9375rem;
+
+  li {
+    position: relative;
+    padding-left: 1rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: .8em;
+      left: 0;
+      width: .3125rem;
+      height: .3125rem;
+      background-color: currentColor;
+    }
+  }
+  li + li {
+    margin-top: .125rem;
+  }
+}
+.tier-note {
+  margin: 0 0 map-get($spacers, 2);
+  font-size: .9375rem;
+}
+.tier-meta {
+  font-size: .8125rem;
+}
+.tier .slot-bar {
+  margin-bottom: map-get($spacers, 2);
+}
+
+// 右下的選擇按鈕：次要按鈕樣子；選取後變成深霧藍底＋勾
+.tier-action {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: map-get($spacers, 2);
+}
+.tier-btn {
+  --bs-btn-color: #{$ink};
+  --bs-btn-border-color: #{$ink};
+  --bs-btn-hover-color: #{$ivory};
+  --bs-btn-hover-bg: #{$ink};
+  --bs-btn-hover-border-color: #{$ink};
+  width: 100%;
+
+  // 撐滿整張卡：點卡片任何地方都會選到
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+}
+.tier-btn-on { display: none; }
+.btn-check:checked + .tier-btn {
+  --bs-btn-color: #{$ivory};
+  --bs-btn-bg: #{$slate-deep};
+  --bs-btn-border-color: #{$slate-deep};
+  --bs-btn-hover-color: #{$ivory};
+  --bs-btn-hover-bg: #{$slate-deep};
+  --bs-btn-active-color: #{$ivory};
+  --bs-btn-active-bg: #{$slate-deep};
+  --bs-btn-active-border-color: #{$slate-deep};
+  color: $ivory;
+  background-color: $slate-deep;
+  border-color: $slate-deep;
+
+  .tier-btn-idle { display: none; }
+  .tier-btn-on {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+  }
+}
+// .btn-check 的焦點已畫在整張卡上，按鈕不再重複
+.btn-check:focus-visible + .tier-btn {
+  box-shadow: none;
+}
+// 已額滿：按鈕停用（虛線框、淡鉛灰字），下方一行 S2 文案
+.btn-check:disabled + .tier-btn {
+  border-style: dashed;
+  border-color: $rule-strong;
+  color: $ink-faint;
+  background-color: transparent;
+  opacity: 1;
+  pointer-events: none;
+}
+.tier-soldout-note {
+  margin: 0;
+  font-size: .875rem;
+  color: $ink-muted;
+}
+
+// ---------- 自訂金額與贊助小計（右欄，≥ 992px sticky） ----------
+.pledge-card {
+  padding: map-get($spacers, 4);
+  border: 1px solid $rule;
+  background-color: $paper;
+
+  & + & {
+    margin-top: map-get($spacers, 3);
+  }
+}
+.pledge-card-title {
+  margin-bottom: .25rem;
+  font-family: $font-family-serif;
+  font-size: 1.125rem;
+  font-weight: $font-weight-bold;
+}
+.pledge-input {
+  .input-group-text {
+    font-family: $font-family-numeric;
+    font-weight: 500;
+  }
+  .form-control {
+    font-family: $font-family-numeric;
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+}
+.pledge-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 2);
+  margin-top: map-get($spacers, 3);
+
+  .btn {
+    font-family: $font-family-numeric;
+  }
+}
+// 小計：dl 兩欄，總計用粗線分隔
+.pledge-rows {
+  margin-bottom: 0;
+
+  > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: map-get($spacers, 3);
+    padding-block: .375rem;
+  }
+  dt {
+    font-weight: $font-weight-normal;
+    color: $ink-muted;
+  }
+  dd {
+    margin-bottom: 0;
+    text-align: right;
+    font-weight: $font-weight-medium;
+  }
+}
+.pledge-total {
+  margin-top: map-get($spacers, 2);
+  padding-top: map-get($spacers, 3) !important;
+  border-top: 1px solid $ink;
+
+  dt {
+    color: $ink;
+    font-weight: $font-weight-bold;
+  }
+  dd {
+    font-family: $font-family-numeric;
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+}

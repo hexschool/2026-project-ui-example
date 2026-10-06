@@ -1,0 +1,222 @@
+// ============================================================
+// 回饋方案卡 .reward（Notion：贊助方案卡片留白舒適）
+// 32–40px 內距、28px 圓角；整張卡是一個 <label>，對應前面的 radio（.btn-check）
+// 4 種狀態：可選｜已選取（森林墨綠 2px 框＋淡初生綠底＋實心勾）｜即將額滿（warn 徽章＋限量條）｜已額滿（虛線框、灰字、停用）
+//
+// <div class="reward">
+//   <input class="btn-check" type="radio" name="reward" id="reward-3" value="2280"
+//          data-reward-name="標準單入組" aria-labelledby="reward-3-title" checked>
+//   <label class="reward-card" for="reward-3">
+//     <span class="reward-mark" aria-hidden="true"></span>
+//     <span class="reward-info">…金額、方案名稱（#reward-3-title）、內容清單、已選購數／限量數、預計出貨…</span>
+//     <span class="reward-action">
+//       <span class="btn btn-outline-primary reward-cta" aria-hidden="true">
+//         <span class="reward-cta-idle">選擇這個方案</span><span class="reward-cta-on"><i class="bi bi-check-lg"></i>已選擇</span>
+//       </span>
+//     </span>
+//   </label>
+// </div>
+// 按鈕外觀只是提示，真正可操作的是 radio（點整張卡、或用方向鍵切換）
+// 注意：<label> 裡只能放行內元素，所以卡片內部一律用 <span>（清單也是 span 排成直列），不放 div、ul、h3
+// ============================================================
+.reward + .reward {
+  margin-top: 1rem;
+}
+.reward-card {
+  position: relative;
+  display: grid;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 1.75rem 1.5rem 1.5rem;
+  border: 1px solid $line;
+  border-radius: $border-radius-xl;
+  background-color: $surface;
+  cursor: pointer;
+  transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); // 卡片內部 8：4
+    gap: 2rem;
+    padding: 2.25rem 2.5rem 2.25rem 4.25rem; // 左側留給選取圓
+  }
+
+  &:hover {
+    border-color: $forest;
+  }
+}
+
+// 選取圓：未選＝空心圓；已選＝森林墨綠實心＋白勾；已額滿＝虛線圓
+.reward-mark {
+  position: absolute;
+  top: 1.75rem;
+  right: 1.5rem;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 2px solid $control;
+  border-radius: 50%;
+  background-color: $surface;
+  color: $surface;
+  font-size: 1rem;
+
+  @include media-breakpoint-up(md) {
+    top: 2.375rem;
+    left: 1.75rem;
+    right: auto;
+  }
+
+  &::before {
+    content: "\F633"; // bi-check-lg
+    font-family: bootstrap-icons;
+    opacity: 0;
+  }
+}
+
+// 金額（大字）→ 方案名稱 → 內容清單 → 已選購數／限量 → 預計出貨
+.reward-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .75rem;
+  margin-bottom: .25rem;
+  padding-right: 2.5rem; // 手機時右上角留給選取圓
+
+  @include media-breakpoint-up(md) { padding-right: 0; }
+
+  .figure-num { font-size: 1.875rem; color: $forest; }
+}
+.reward-name {
+  margin-bottom: 1rem;
+  font-size: 1.1875rem;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+// 回饋內容：葉片圖示當項目符號
+.reward-items {
+  display: grid;
+  gap: .375rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+
+  > span {
+    position: relative;
+    padding-left: 1.625rem;
+
+    &::before {
+      content: "\F90C"; // bi-leaf
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-family: bootstrap-icons;
+      color: $forest;
+      font-size: .875rem;
+      line-height: $line-height-base * 1rem;
+    }
+  }
+}
+.reward-desc {
+  margin-bottom: 1.25rem;
+}
+.reward-info,
+.reward-action {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+// 已選購數／限量數、預計出貨：每一項前面一個小圖示
+.reward-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem 1.25rem;
+  font-size: .875rem;
+  color: $ink-muted;
+
+  > span:not(.status) {
+    display: inline-flex;
+    align-items: baseline;
+    gap: .375rem;
+  }
+  .bi { color: $forest; }
+  .status .bi { color: inherit; }
+}
+// 限量條：用小尺寸的生長條
+.reward-limit {
+  display: block;
+  width: 100%;
+  max-width: 16rem;
+  margin-bottom: .75rem;
+}
+
+// 右欄：按鈕靠底
+.reward-action {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: .75rem;
+
+  .reward-cta { width: 100%; }
+}
+.reward-cta-on { display: none; }
+.reward-note {
+  margin: 0;
+  font-size: .875rem;
+  color: $ink-muted;
+}
+
+// ---------- 已選取 ----------
+.btn-check:checked + .reward-card {
+  border-color: $forest;
+  background-color: $sprout-soft;
+  box-shadow: inset 0 0 0 1px $forest; // 與 1px 邊框合成 2px，不會推動版面
+
+  .reward-mark {
+    border-color: $forest;
+    background-color: $forest;
+
+    &::before { opacity: 1; }
+  }
+  .reward-cta {
+    --bs-btn-color: #{$surface};
+    --bs-btn-bg: #{$forest};
+    --bs-btn-border-color: #{$forest};
+  }
+  .reward-cta-idle { display: none; }
+  .reward-cta-on { display: inline-flex; align-items: center; gap: .375rem; }
+}
+.btn-check:focus-visible + .reward-card {
+  box-shadow: $focus-ring-double;
+}
+
+// ---------- 即將額滿：稻穗黃框（徽章與文字由 HTML 提供） ----------
+.reward-card.is-limited {
+  border-color: mix($tone-warn, $surface, 35%);
+}
+
+// ---------- 已額滿：虛線框、灰字、不可點；留在頁面上當作「很搶手」的社會證明 ----------
+.btn-check:disabled + .reward-card {
+  border-style: dashed;
+  border-color: $line-strong;
+  background-color: $paper;
+  cursor: not-allowed;
+
+  .reward-price .figure-num,
+  .reward-name,
+  .reward-items > span { color: $ink-muted; }
+  .reward-items > span::before,
+  .reward-facts .bi { color: $ink-faint; }
+  .reward-mark {
+    border-style: dashed;
+    border-color: $line-strong;
+    background-color: transparent;
+  }
+  .reward-cta {
+    --bs-btn-color: #{$tone-idle};
+    --bs-btn-bg: #{$tone-idle-bg};
+    --bs-btn-border-color: #{$tone-idle-bg};
+  }
+  // 限量條滿格但改成石灰色：「已經結束」而不是「還在長」
+  .growth > span { background-color: $ink-faint; }
+}

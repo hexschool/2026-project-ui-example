@@ -1,0 +1,179 @@
+// ============================================================
+// 本風格的招牌：雜誌專題式的長文（專案故事 project.html#story，Guideline 的長文示範）
+// 文字欄最大 720px；明體內文 17px／行高 1.95／段距 24px；h2 特粗明體＋上方短粗線；
+// 第一段首字放大；圖片滿欄＋圖說（只用 alt 的內容）；引文只摘錄原文句子，用 aria-hidden 避免讀兩次
+// 數值對應 _variables.scss 的 $story-*，改了要同步 Guideline「長文排版」表格
+// 結構：<article class="story"><section class="story-part" id="why"><h2 id="why-title">…</h2><p>…</p></section>…</article>
+// ============================================================
+.story {
+  max-width: $story-max-width;
+  font-family: $font-family-serif;
+  font-size: $story-font-size;
+  line-height: $story-line-height;
+  letter-spacing: .03em;
+
+  p,
+  ul,
+  ol {
+    margin-bottom: $story-paragraph-gap;
+  }
+
+  // h2：特粗明體 28px，上方一條 2.5rem 的鉛字黑短粗線；上距明顯大於下距（標題屬於下一段）
+  h2 {
+    margin-top: 3.5rem;
+    margin-bottom: 1rem;
+    padding-top: .875rem;
+    font-size: $story-h2-size;
+    font-weight: $font-weight-black;
+    line-height: 1.4;
+
+    &::before {
+      content: "";
+      display: block;
+      width: 2.5rem;
+      margin-top: -.875rem;
+      margin-bottom: .875rem;
+      border-top: $rule-heavy solid $ink;
+    }
+  }
+  // 第一個標題不留上距（不論是直接放在 .story 裡，或包在第一個章節 section 裡）
+  > h2:first-child,
+  > .story-part:first-child > h2:first-child {
+    margin-top: 0;
+  }
+  // h3（project.html 不使用；Guideline 示範長文的第三層）
+  h3 {
+    margin-top: 2.25rem;
+    margin-bottom: .625rem;
+    font-size: $story-h3-size;
+    font-weight: $font-weight-bold;
+    line-height: 1.5;
+  }
+
+  // 清單：與內文同字級、同行高，項目前一個鉛字黑小方塊
+  ul {
+    padding-left: 0;
+    list-style: none;
+
+    li {
+      position: relative;
+      padding-left: 1.25rem;
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: .85em;
+        left: .125rem;
+        width: .375rem;
+        height: .375rem;
+        background-color: $ink;
+      }
+    }
+    li + li {
+      margin-top: .375rem;
+    }
+  }
+}
+
+// 章節：project.html 每個 h2 連同內文包一層 <section class="story-part" id="why">，
+// 目錄連結與 ScrollSpy 以整個章節為目標（Bootstrap 5.3 的 ScrollSpy 要目標元素有高度，只標 h2 會一閃即逝）
+// 錨點捲動要扣掉 sticky 頁首與 sticky 故事目錄的高度
+.story-part {
+  scroll-margin-top: calc(#{$site-header-height} + 4.5rem);
+}
+
+// 首字放大：第一段的第一個字跨三行
+.story-dropcap::first-letter {
+  float: left;
+  margin: .2em .5rem 0 0;
+  font-size: 3.6em;
+  font-weight: $font-weight-black;
+  line-height: .9;
+}
+
+// 引文（pull quote）：摘錄故事原文的一句。上方 2px 粗線、下方髮絲線，左側霧灰藍的大引號
+// 內容和正文重複，所以加 aria-hidden="true"，讓螢幕閱讀器不重複朗讀
+.story-pullquote {
+  position: relative;
+  margin-block: 2.5rem;
+  padding: 1.5rem 0 1.5rem 3rem;
+  border-top: $rule-heavy solid $ink;
+  border-bottom: 1px solid $rule;
+
+  &::before {
+    content: "\f6b0"; // bi-quote
+    position: absolute;
+    top: 1.375rem;
+    left: 0;
+    font-family: "bootstrap-icons";
+    font-size: 2rem;
+    line-height: 1;
+    color: $slate;
+  }
+  p {
+    margin: 0 !important;
+    font-size: 1.375rem;
+    font-weight: $font-weight-bold;
+    line-height: 1.7;
+  }
+
+  @include media-breakpoint-up(md) {
+    p { font-size: 1.5rem; }
+  }
+}
+
+// 圖片：滿欄，下方圖說（小字黑體＋左側短線）
+.story-figure {
+  margin-block: 2rem;
+
+  .img-frame {
+    aspect-ratio: 16 / 9;
+  }
+  figcaption {
+    display: flex;
+    gap: .625rem;
+    margin-top: .625rem;
+    font-family: $font-family-base;
+    font-size: $small-font-size;
+    line-height: 1.6;
+    letter-spacing: $letter-spacing-body;
+    color: $ink-muted;
+
+    &::before {
+      content: "";
+      flex: 0 0 1.5rem;
+      margin-top: .8em;
+      border-top: 1px solid $ink;
+      height: 0;
+    }
+  }
+}
+
+// 規格與尺寸：雜誌規格欄。上方粗線、項目之間髮絲線；項目名黑體小字、值用明體
+.story-specs {
+  width: 100%;
+  margin-bottom: $story-paragraph-gap;
+  border-top: $rule-heavy solid $ink;
+  border-bottom: 1px solid $ink;
+
+  th,
+  td {
+    padding: .625rem 0;
+    border-bottom: 1px solid $rule;
+    vertical-align: baseline;
+  }
+  tr:last-child th,
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  th {
+    width: 6.5rem;
+    font-family: $font-family-base;
+    font-size: .875rem;
+    font-weight: $font-weight-medium;
+    color: $ink-muted;
+  }
+  td {
+    font-variant-numeric: lining-nums;
+  }
+}

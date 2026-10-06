@@ -1,0 +1,257 @@
+// ============================================================
+// ★ 招牌元素二：回饋方案票券 RewardTierCard（Notion：回饋選項採粗黑厚邊框 Neo-brutalism）
+//
+// <div class="reward-tier [is-low|is-soldout]">
+//   <input class="btn-check" type="radio" name="reward" id="tier-3" value="2280" data-name="標準單入組" aria-labelledby="…">
+//   <span class="reward-tier-check" aria-hidden="true"><i class="bi bi-check-lg"></i></span>   ← 選中時的勾勾章
+//   <div class="reward-tier-main">金額（大字）→ 名稱 → 回饋清單 → 已選購／限量 → 預計出貨</div>
+//   <div class="reward-tier-side"><label class="btn reward-tier-choose" for="tier-3">選擇這個方案</label></div>
+// </div>
+//
+// 4 種狀態（不只靠顏色）：
+//   可選      紙白底＋3px 深黑框；hover 往左上浮起並出現硬陰影
+//   已選取    亮黃底＋6px 硬陰影＋右上勾勾章＋按鈕變深黑「已選擇」
+//   即將額滿  右上角斜貼橘色「即將額滿」貼紙＋限量進度條
+//   已額滿    虛線框＋斜線網紋底＋灰墨字＋「已額滿」貼紙；radio 與按鈕停用
+// ============================================================
+.reward-list {
+  display: grid;
+  gap: 1.25rem;
+}
+.reward-tier {
+  position: relative;
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: $border-width solid $ink;
+  border-radius: $border-radius-lg;
+  background-color: $paper;
+  transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); // 卡片內部 8：4
+    gap: 1.5rem;
+    padding: 1.5rem 1.75rem;
+  }
+
+  &:hover { transform: translate(-3px, -3px); box-shadow: $shadow-lift; }
+}
+
+// 選擇按鈕：label 的 ::after 撐滿整張卡，整張卡都可以點
+.reward-tier-choose {
+  width: 100%;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+  }
+}
+.reward-tier-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: .75rem;
+}
+
+.reward-tier-price {
+  margin-bottom: .125rem;
+
+  .amount {
+    font-size: 2rem;
+    font-stretch: 75%;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+}
+.reward-tier-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .625rem;
+  margin-bottom: .75rem;
+  font-size: 1.25rem;
+}
+.reward-tier-desc { margin-bottom: .75rem; }
+// 回饋內容清單：每項前面一個深黑小方塊
+.reward-tier-items {
+  margin: 0 0 .75rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    padding-left: 1.125rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: .7em;
+      width: .5rem;
+      height: .5rem;
+      background-color: $ink;
+    }
+  }
+}
+.reward-tier-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .375rem;
+  margin: 0 0 .5rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding: .125rem .625rem;
+    border: $border-thin solid $ink;
+    border-radius: $border-radius-pill;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+  }
+}
+.reward-tier-limit {
+  max-width: 22rem;
+  margin-bottom: .75rem;
+  font-size: $font-size-sm;
+}
+.reward-tier-ship {
+  display: flex;
+  align-items: baseline;
+  gap: .375rem;
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+}
+.reward-tier-note {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+
+// 右上角的貼紙（即將額滿、已額滿）：壓在框線上、微微傾斜
+.reward-tier-sticker {
+  position: absolute;
+  top: -.875rem;
+  right: 1.25rem;
+  z-index: 2;
+  padding: .3125rem .875rem;
+  font-size: $font-size-sm;
+  box-shadow: $shadow-sm;
+  transform: rotate(3deg);
+}
+// 選中時的勾勾章
+.reward-tier-check {
+  position: absolute;
+  top: -.875rem;
+  left: -.875rem;
+  z-index: 2;
+  display: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: $border-width solid $ink;
+  border-radius: 50%;
+  background-color: $ink;
+  color: $yellow;
+  font-size: 1.25rem;
+}
+
+// ---------- 已選取 ----------
+.reward-tier:has(.btn-check:checked) {
+  background-color: $yellow;
+  box-shadow: $shadow;
+
+  &:hover { transform: none; }
+  .reward-tier-check { display: grid; }
+  .reward-tier-facts li { background-color: $paper; }
+  .reward-tier-choose {
+    --#{$prefix}btn-bg: #{$ink};
+    --#{$prefix}btn-color: #{$cream};
+    --#{$prefix}btn-hover-bg: #{$ink};
+    --#{$prefix}btn-hover-color: #{$yellow};
+    --#{$prefix}btn-active-bg: #{$ink};
+    --#{$prefix}btn-active-color: #{$yellow};
+
+    &::before {
+      content: map-get($bootstrap-icons-map, "check-lg");
+      font-family: bootstrap-icons;
+    }
+  }
+}
+// 鍵盤焦點：radio 隱藏了，焦點環畫在整張卡上
+.reward-tier:has(.btn-check:focus-visible) {
+  box-shadow: $focus-ring-double, $shadow;
+}
+
+// ---------- 即將額滿 ----------
+.reward-tier.is-low { padding-top: 1.75rem; }
+
+// ---------- 已額滿：停用 ----------
+.reward-tier.is-soldout {
+  padding-top: 1.75rem;
+  border-style: dashed;
+  background-color: $sand;
+  background-image: repeating-linear-gradient(-45deg, rgba($ink, .05) 0 2px, transparent 2px 10px);
+  color: $ink-muted;
+
+  &:hover { transform: none; box-shadow: none; }
+  .reward-tier-name,
+  .reward-tier-price { color: $ink-muted; }
+  .reward-tier-items li::before { background-color: $ink-muted; }
+  .reward-tier-sticker { background-color: $idle-bg; color: $ink; }
+  .reward-tier-choose::after { cursor: not-allowed; }
+  .reward-tier-note { color: $ink; }
+}
+
+// ---------- 自訂金額＋贊助小計（右欄，≥ 992px sticky） ----------
+.pledge-aside {
+  display: grid;
+  gap: 1.25rem;
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+  }
+}
+.pledge-card,
+.pledge-summary {
+  padding: 1.25rem;
+  border: $border-width solid $ink;
+  border-radius: $border-radius-lg;
+  background-color: $paper;
+}
+.pledge-summary { box-shadow: $shadow; }
+.pledge-title {
+  margin-bottom: .25rem;
+  font-size: 1.125rem;
+}
+.pledge-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+
+  .btn { flex: 1 1 0; padding-inline: .5rem; }
+}
+.pledge-rows {
+  margin: 1rem 0 1.25rem;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: .375rem;
+  }
+  dt { font-weight: $font-weight-medium; }
+  dd { margin: 0; font-weight: $font-weight-bold; text-align: right; }
+}
+.pledge-total {
+  margin-top: .5rem;
+  padding-top: .75rem !important;
+  border-top: $border-width solid $ink;
+
+  dt { font-weight: $font-weight-bolder; }
+  .amount { font-size: 1.75rem; font-stretch: 75%; font-weight: 800; line-height: 1.1; }
+}

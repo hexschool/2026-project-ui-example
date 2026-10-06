@@ -1,0 +1,163 @@
+// ============================================================
+// 圖表卡 ChartCard：標題（h3）＋副標（期間 ‧ 單位）＋「切換表格檢視」＋圖表本體＋可展開的數據表
+// 規則（Guideline 第 6 章）：單一數列一色、禁止雙軸、格線實線退居背景、只有目標線是虛線並直接標註、
+// 只標端點與極值、每張圖都有表格檢視、單一數列不放圖例
+//
+// 淺色底：線＝深黑、面積＝亮黃 55%；深色底（.is-dark）：線＝亮黃、面積＝亮黃 22%。不是自動反轉，是另選一組在深色底可讀的顏色
+// SVG 裡不寫色碼，全部用 class，顏色由這裡的變數決定
+// ============================================================
+.chart-card {
+  --chart-line: #{$ink};
+  --chart-area: #{rgba($yellow, .55)};
+  --chart-grid: #{$rule};
+  --chart-base: #{$ink};
+  --chart-text: #{$ink-muted};
+  --chart-note: #{$ink};
+  --chart-point-bg: #{$paper};
+  --chart-target: #{$ink};
+  min-width: 0; // 放在 grid／flex 裡時，不讓 SVG 的最小寬撐開整張卡
+  padding: 1.25rem;
+  border: $border-width solid $ink;
+  border-radius: $border-radius-lg;
+  background-color: $paper;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.5rem;
+  }
+}
+.chart-card.is-dark {
+  --chart-line: #{$yellow};
+  --chart-area: #{rgba($yellow, .22)};
+  --chart-grid: #{$ink-soft};
+  --chart-base: #{$on-dark-muted};
+  --chart-text: #{$on-dark-muted};
+  --chart-note: #{$cream};
+  --chart-point-bg: #{$ink};
+  --chart-target: #{$cream};
+  background-color: $ink;
+  color: $on-dark;
+
+  .chart-card-title { color: $on-dark; }
+  .chart-card-sub { color: $on-dark-muted; }
+}
+.chart-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  margin-bottom: 1rem;
+}
+.chart-card-title {
+  margin-bottom: .125rem;
+  font-size: 1.125rem;
+}
+.chart-card-sub {
+  margin: 0;
+  color: $ink-muted;
+  font-size: $font-size-sm;
+}
+// < 768px：SVG 最小寬 600px，只有圖卡內可以橫向捲動（座標文字維持 ≥ 10px）
+.chart-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+.chart-svg {
+  display: block;
+  width: 100%;
+  min-width: 600px;
+  height: auto;
+  overflow: visible;
+  font-family: $font-family-base;
+
+  @include media-breakpoint-up(md) { min-width: 0; }
+
+  text { font-size: 11px; fill: var(--chart-text); }
+}
+.chart-grid { stroke: var(--chart-grid); stroke-width: 1; }
+.chart-grid.is-base { stroke: var(--chart-base); stroke-width: 1.5; }
+.chart-area { fill: var(--chart-area); }
+.chart-line {
+  fill: none;
+  stroke: var(--chart-line);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.chart-point {
+  fill: var(--chart-point-bg);
+  stroke: var(--chart-line);
+  stroke-width: 2.5;
+}
+.chart-target {
+  stroke: var(--chart-target);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+}
+.chart-svg .chart-note { fill: var(--chart-note); font-weight: $font-weight-medium; }
+.chart-svg .chart-note.is-strong { font-weight: $font-weight-bolder; }
+.chart-svg .chart-note.is-target { font-weight: $font-weight-bold; }
+
+// 提示框（選用，Guideline 示範）：格式「09/24（四）當日募資 NT$ 72,000」
+.chart-tooltip {
+  position: absolute;
+  padding: .5rem .75rem;
+  border: $border-thin solid $ink;
+  border-radius: $border-radius;
+  background-color: $paper;
+  box-shadow: $shadow-sm;
+  color: $ink;
+  font-size: $font-size-sm;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+
+  strong { display: block; font-family: $font-family-numeric; font-size: 1.125rem; font-stretch: 80%; }
+}
+
+// 圖表 3：HTML／CSS 橫條。長條最長＝欄寬扣掉數值的空間，其他依比例（--w：金額 ÷ 最大金額）
+.hbar-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+.hbar-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 .75rem;
+  margin-bottom: .25rem;
+  font-size: $font-size-sm;
+
+  span { color: $ink-muted; }
+  span + span::before { content: "／"; margin-right: .5rem; color: $ink-muted; }
+}
+.hbar {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.hbar-fill {
+  flex: 0 0 calc((100% - 7.5rem) * var(--w));
+  min-width: 4px;
+  height: 1.375rem;
+  border: $border-thin solid $ink;
+  border-radius: 0 $border-radius-sm $border-radius-sm 0;
+  background-color: $yellow;
+}
+.hbar-value {
+  font-family: $font-family-numeric;
+  font-stretch: 85%;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.chart-table {
+  margin-top: 1rem;
+  max-height: 22rem;
+  overflow: auto;
+
+  .table { font-size: $font-size-sm; }
+  td.num { text-align: right; }
+}

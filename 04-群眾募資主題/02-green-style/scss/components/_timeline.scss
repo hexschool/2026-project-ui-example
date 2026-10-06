@@ -1,0 +1,160 @@
+// ============================================================
+// 生產排程時間軸 .timeline（垂直）
+// 主幹像一根往下長的莖：已完成的段落是森林墨綠實線，之後是虛線
+// 節點 4 種＋延遲：
+//   .is-done    已完成：森林墨綠實心圓＋白勾
+//   .is-live    進行中：初生綠實心圓＋森林墨綠外圈，外圍一圈脈動光暈（prefers-reduced-motion 時不動）
+//   .is-todo    未開始：虛線空心圓、標題灰階
+//   .is-delayed 延遲：赤陶色三角警示（用在延遲狀態範例與 Guideline）
+//
+// <ol class="timeline">
+//   <li class="timeline-item is-done">
+//     <span class="timeline-node" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+//     <div class="timeline-body">
+//       <div class="timeline-head"><h3 class="timeline-title">里程碑 1｜設計定版</h3><span class="status status-ok">…</span><time …>2026/08</time></div>
+//       <p class="timeline-update">…</p>
+//     </div>
+//   </li>
+// </ol>
+// ============================================================
+.timeline {
+  --node: 2.25rem;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.timeline-item {
+  position: relative;
+  padding-left: calc(var(--node) + 1.25rem);
+  padding-bottom: 2.25rem;
+
+  &:last-child { padding-bottom: 0; }
+
+  // 主幹：從這個節點的中心往下連到下一個節點
+  &:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    top: var(--node);
+    bottom: 0;
+    left: calc(var(--node) / 2 - 1.5px);
+    width: 3px;
+    border-radius: $border-radius-pill;
+    background-color: $forest;
+  }
+  // 進行中之後的主幹：虛線（還沒長到）
+  &.is-live:not(:last-child)::before,
+  &.is-todo:not(:last-child)::before {
+    width: 0;
+    left: calc(var(--node) / 2 - 1px);
+    border-left: 2px dashed $line-strong;
+    background: none;
+  }
+}
+.timeline-node {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: var(--node);
+  height: var(--node);
+  border-radius: 50%;
+  font-size: 1.0625rem;
+}
+.is-done > .timeline-node {
+  background-color: $forest;
+  color: $surface;
+}
+.is-live > .timeline-node {
+  background-color: $sprout;
+  box-shadow: 0 0 0 3px $forest;
+  color: $forest;
+
+  // 脈動光暈
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba($sprout, .7);
+    animation: timeline-pulse 2s ease-out infinite;
+  }
+  // 中心的小圓
+  &::before {
+    content: "";
+    width: .625rem;
+    height: .625rem;
+    border-radius: 50%;
+    background-color: $forest;
+  }
+}
+.is-todo > .timeline-node {
+  border: 2px dashed $line-strong;
+  background-color: $surface;
+}
+.is-delayed > .timeline-node {
+  background-color: $tone-err-bg;
+  color: $tone-err;
+  box-shadow: inset 0 0 0 2px $tone-err;
+}
+
+@keyframes timeline-pulse {
+  70% { box-shadow: 0 0 0 .75rem rgba($sprout, 0); }
+  100% { box-shadow: 0 0 0 0 rgba($sprout, 0); }
+}
+
+.timeline-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .75rem;
+  min-height: var(--node);
+  margin-bottom: .375rem;
+
+  time,
+  .timeline-date {
+    font-size: .875rem;
+    color: $ink-muted;
+  }
+}
+.timeline-title {
+  margin: 0;
+  font-size: 1.1875rem;
+  word-break: keep-all;
+}
+.is-todo .timeline-title { color: $ink-muted; }
+
+// 最新一則更新：淡底小卡
+.timeline-update {
+  margin-bottom: 0;
+  padding: .75rem 1rem;
+  border-radius: $border-radius;
+  background-color: $paper;
+  font-size: .9375rem;
+  color: $ink;
+
+  time { font-weight: $font-weight-medium; color: $forest; }
+}
+.is-todo .timeline-update { color: $ink-muted; }
+
+// 展開的照片與更多更新
+.timeline-more {
+  margin-top: .75rem;
+}
+.timeline-photos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+  margin-top: .75rem;
+
+  .img-frame {
+    width: 9rem;
+    border-radius: $border-radius;
+  }
+}
+.timeline-toggle {
+  .bi { transition: transform .2s ease; }
+  &[aria-expanded="true"] .bi { transform: rotate(180deg); }
+}

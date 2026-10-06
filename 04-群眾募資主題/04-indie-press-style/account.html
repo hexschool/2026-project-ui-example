@@ -1,0 +1,956 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>我的島造｜島造 ISLANDMAKE 在地製造提案平台</title>
+  <meta name="description" content="我的島造：查看贊助紀錄與生產進度、管理提案與募資數據、設定收件資訊與通知。">
+  <meta name="theme-color" content="#F5F2EA">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Noto Serif TC（標題 700／900、長文 400）、Noto Sans TC（介面 400／500／700）、Newsreader（英數、金額、刻度數字） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-bs-spy="scroll" data-bs-target="#accountNav" data-bs-root-margin="-100px 0px -40%">
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="navbar navbar-expand-lg" aria-label="主要導覽">
+        <div class="container">
+          <a class="navbar-brand site-brand" href="index.html" aria-label="島造 ISLANDMAKE 首頁">
+            <span class="site-brand-name">島造</span>
+            <span class="site-brand-sub">ISLANDMAKE</span>
+          </a>
+
+          <!-- 992px 以下的圖示列（桌機另一組放在導覽之後，讓 Tab 順序與畫面順序一致） -->
+          <div class="site-header-mobile d-flex d-lg-none">
+            <button class="btn btn-icon site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearchMobile" aria-controls="siteSearchMobile" aria-expanded="false" aria-label="搜尋專案或提案者">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <a class="site-avatar" href="account.html" aria-label="我的島造（陳柏宇）">
+              <span class="avatar"><img src="images/proposer-avatar.jpg" alt="" width="1200" height="1200"></span>
+            </a>
+            <button class="navbar-toggler btn btn-icon site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="projects.html">探索專案</a></li>
+              <li class="nav-item"><a class="nav-link active" aria-current="page" href="account.html">我的島造</a></li>
+            </ul>
+            <!-- 992px 以下：「我要提案」放進選單 -->
+            <a class="btn btn-outline-secondary site-propose-mobile d-lg-none" href="index.html#propose">我要提案</a>
+            <!-- 桌機右側：搜尋 → 我要提案 → 頭像 -->
+            <div class="site-header-actions d-none d-lg-flex">
+              <form class="site-search" role="search" action="projects.html">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control" type="search" name="q" placeholder="搜尋專案或提案者" aria-label="搜尋專案或提案者">
+              </form>
+              <a class="btn btn-outline-secondary btn-sm" href="index.html#propose">我要提案</a>
+              <a class="site-avatar" href="account.html" aria-label="我的島造（陳柏宇）">
+                <span class="avatar"><img src="images/proposer-avatar.jpg" alt="" width="1200" height="1200"></span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- 992px 以下：點放大鏡展開的搜尋列 -->
+      <div id="siteSearchMobile" class="collapse d-lg-none site-search-mobile">
+        <div class="container">
+          <form class="site-search" role="search" action="projects.html">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input class="form-control" type="search" name="q" placeholder="搜尋專案或提案者" aria-label="搜尋專案或提案者">
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!--
+        個人頁面「我的島造」：同一個版型、兩種角色（WIREFRAME_SPEC §5）
+        - 外層 data-role="proposer"（預設，所有區塊都看得到）／"backer"（贊助者：沒有提案群組與募資數據）
+        - .for-proposer 只在提案者檢視顯示、.for-backer 只在贊助者檢視顯示（規則在 scss/pages/_account.scss）
+        - 切換按鈕與網址參數 account.html?role=backer 由 js/main.js 處理
+      -->
+      <div class="acct" data-role="proposer">
+        <div class="container">
+          <!-- ========== 頁面標題區：頭像＋我的島造＋姓名＋認證提案者；右側是角色切換（設計稿狀態示意） ========== -->
+          <header class="page-head acct-head">
+            <nav aria-label="目前位置">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+                <li class="breadcrumb-item active" aria-current="page">我的島造</li>
+              </ol>
+            </nav>
+            <div class="acct-head-row">
+              <div class="acct-id">
+                <span class="avatar avatar-xl acct-id-avatar"><img src="images/proposer-avatar.jpg" alt="" width="1200" height="1200"></span>
+                <div>
+                  <h1>我的島造</h1>
+                  <p class="acct-id-meta">
+                    <span class="acct-id-name">陳柏宇</span>
+                    <span class="status is-ok for-proposer"><i class="bi bi-patch-check" aria-hidden="true"></i>認證提案者</span>
+                    <span class="acct-id-since for-proposer">通過於 <time datetime="2025-04-18">2025/04/18</time></span>
+                  </p>
+                </div>
+              </div>
+
+              <!-- 角色切換：只用來檢視設計稿的兩種角色，正式產品依登入身分顯示 -->
+              <div class="acct-role">
+                <p class="demo-state-tag">設計稿狀態示意</p>
+                <div class="acct-role-switch" role="group" aria-label="切換檢視的角色">
+                  <button type="button" data-role-switch="proposer" aria-pressed="true">以提案者檢視</button>
+                  <button type="button" data-role-switch="backer" aria-pressed="false">以贊助者檢視</button>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <!-- 992px 以下：側邊導覽收成頂部下拉，捲動時固定在頁首下方；項目依角色顯示 -->
+          <div class="dropdown acct-nav-mobile d-lg-none">
+            <button class="btn btn-outline-secondary dropdown-toggle acct-nav-mobile-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <span class="visually-hidden">我的島造選單，目前位置：</span>我的贊助紀錄
+            </button>
+            <ul class="dropdown-menu acct-nav-mobile-menu">
+              <li><span class="dropdown-header">贊助</span></li>
+              <li><a class="dropdown-item active" aria-current="true" href="#backings">我的贊助紀錄<span class="account-nav-count">14</span></a></li>
+              <li><a class="dropdown-item">追蹤中的專案<span class="account-nav-count">6</span></a></li>
+              <li><a class="dropdown-item">我的留言<span class="account-nav-count">9</span></a></li>
+              <li><a class="dropdown-item" href="#shipping">收件資訊</a></li>
+              <li><a class="dropdown-item" href="#settings">帳號設定</a></li>
+              <li class="for-proposer"><hr class="dropdown-divider"></li>
+              <li class="for-proposer"><span class="dropdown-header">提案</span></li>
+              <li class="for-proposer"><a class="dropdown-item" href="#my-projects">我的提案<span class="account-nav-count">3</span></a></li>
+              <li class="for-proposer"><a class="dropdown-item">建立新專案</a></li>
+              <li class="for-proposer"><a class="dropdown-item" href="#dashboard">募資數據</a></li>
+              <li class="for-proposer"><a class="dropdown-item">留言管理<span class="account-nav-count is-unread">4<span class="visually-hidden"> 則未讀</span></span></a></li>
+              <li class="for-backer"><hr class="dropdown-divider"></li>
+              <li class="for-backer"><a class="dropdown-item">申請成為提案者</a></li>
+            </ul>
+          </div>
+
+          <div class="row gx-lg-5">
+            <!-- ========== 左：側邊導覽（≥ 992px sticky；ScrollSpy 標示目前區塊） ========== -->
+            <div class="col-lg-3 d-none d-lg-block">
+              <!-- 側邊導覽＋角色升級入口一起 sticky -->
+              <div class="acct-aside">
+                <nav id="accountNav" class="account-nav acct-nav" aria-label="我的島造">
+                  <p class="account-nav-group">贊助</p>
+                  <ul class="account-nav-list nav flex-column">
+                    <li><a class="nav-link account-nav-link active" href="#backings">我的贊助紀錄<span class="account-nav-count">14</span></a></li>
+                    <!-- 追蹤中的專案、我的留言、建立新專案、留言管理：還沒有頁面，不帶 href 的佔位連結 -->
+                    <li><a class="nav-link account-nav-link">追蹤中的專案<span class="account-nav-count">6</span></a></li>
+                    <li><a class="nav-link account-nav-link">我的留言<span class="account-nav-count">9</span></a></li>
+                    <li><a class="nav-link account-nav-link" href="#shipping">收件資訊</a></li>
+                    <li><a class="nav-link account-nav-link" href="#settings">帳號設定</a></li>
+                  </ul>
+                  <!-- 提案群組：只有通過審核的提案者看得到 -->
+                  <p class="account-nav-group for-proposer">提案</p>
+                  <ul class="account-nav-list nav flex-column for-proposer">
+                    <li><a class="nav-link account-nav-link" href="#my-projects">我的提案<span class="account-nav-count">3</span></a></li>
+                    <li><a class="nav-link account-nav-link">建立新專案</a></li>
+                    <li><a class="nav-link account-nav-link" href="#dashboard">募資數據</a></li>
+                    <li><a class="nav-link account-nav-link">留言管理<span class="account-nav-count is-unread">4<span class="visually-hidden"> 則未讀</span></span></a></li>
+                  </ul>
+                </nav>
+                <!-- 角色升級入口：一般會員才看得到 -->
+                <div class="account-upgrade acct-upgrade for-backer">
+                  <p>想把你的東西做出來嗎？</p>
+                  <button class="btn btn-accent btn-sm w-100" type="button">申請成為提案者</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ========== 右：內容（一頁長捲動：贊助紀錄 → 提案管理 → 募資數據 → 收件資訊＋帳號設定） ========== -->
+            <div class="col-lg-9">
+
+              <!-- ---------- 區塊一：我的贊助紀錄 ---------- -->
+              <section id="backings" class="acct-section" aria-labelledby="backings-title">
+                <div class="section-heading acct-heading">
+                  <h2 id="backings-title">我的贊助紀錄</h2>
+                </div>
+
+                <!-- 統計列：Notion 的一行文字拆成 4 格，文字照原文，只把數字放大 -->
+                <ul class="acct-tally">
+                  <li>共贊助 <data class="acct-tally-num" value="14">14</data> 件專案</li>
+                  <li>累積 <data class="acct-tally-num" value="28640">NT$ 28,640</data></li>
+                  <li>進行中 <data class="acct-tally-num" value="3">3</data> 件</li>
+                  <li>已收到 <data class="acct-tally-num" value="10">10</data> 件</li>
+                </ul>
+
+                <!-- 狀態篩選：js/main.js 依 data-filter 顯示對應 data-status 的卡片；「等待出貨」包含已達標待生產與生產中 -->
+                <div class="nav nav-underline acct-filter bleed-x" role="group" aria-label="依狀態篩選贊助紀錄" data-filter-list="#backingList">
+                  <button class="nav-link active" type="button" data-filter="all" aria-pressed="true">全部<span class="tab-count">14</span></button>
+                  <button class="nav-link" type="button" data-filter="funding" aria-pressed="false">募資中<span class="tab-count">1</span></button>
+                  <button class="nav-link" type="button" data-filter="ready producing" aria-pressed="false">等待出貨<span class="tab-count">2</span></button>
+                  <button class="nav-link" type="button" data-filter="shipped" aria-pressed="false">已完成<span class="tab-count">10</span></button>
+                  <button class="nav-link" type="button" data-filter="refunded" aria-pressed="false">已退款<span class="tab-count">1</span></button>
+                </div>
+
+                <div class="acct-backings">
+                  <ol id="backingList" class="acct-backing-list">
+                    <!-- 紀錄卡片 1：募資中（live） -->
+                    <li class="acct-backing" data-status="funding">
+                      <div class="img-frame ratio-4x3 acct-backing-thumb">
+                        <img src="images/project-01-canvas-bag.jpg" alt="原胚、墨綠、炭黑三色帆布通勤包" width="1600" height="1066" loading="lazy">
+                      </div>
+                      <div class="acct-backing-info">
+                        <h3 class="acct-backing-title text-phrase"><a href="project.html">一只走十年的<wbr>台南帆布包</a></h3>
+                        <p class="acct-backing-by">布作工房 第三代</p>
+                        <ul class="meta-line acct-backing-plan">
+                          <li>方案：標準單入組</li>
+                          <li><data value="2280">NT$ 2,280</data></li>
+                          <li>贊助於 <time datetime="2026-09-18">2026/09/18</time></li>
+                        </ul>
+                        <div class="acct-backing-state">
+                          <span class="status is-live"><i class="bi bi-hourglass-split" aria-hidden="true"></i>募資中</span>
+                          <ul class="meta-line">
+                            <li>目前達成 <data value="247">247%</data></li>
+                            <li>剩 12&nbsp;天</li>
+                          </ul>
+                        </div>
+                        <div class="fund-bar fund-bar-sm is-over acct-backing-bar" style="--goal: 40.5%" aria-hidden="true"></div>
+                      </div>
+                      <div class="acct-backing-actions">
+                        <a class="btn btn-outline-secondary btn-sm" href="project.html">查看專案</a>
+                        <a class="btn btn-outline-secondary btn-sm" href="#shipping">修改收件資訊</a>
+                        <button class="btn btn-text is-danger" type="button">取消贊助</button>
+                      </div>
+                    </li>
+
+                    <!-- 紀錄卡片 2：生產中（warn） -->
+                    <li class="acct-backing" data-status="producing">
+                      <div class="img-frame ratio-4x3 acct-backing-thumb">
+                        <img src="images/project-02-orbitlight.jpg" alt="磁吸底座與多支燈管模組組成的桌上照明" width="1600" height="1066" loading="lazy">
+                      </div>
+                      <div class="acct-backing-info">
+                        <h3 class="acct-backing-title text-phrase"><a href="project.html">OrbitLight 模組化<wbr>桌上照明系統</a></h3>
+                        <p class="acct-backing-by">微光製造所</p>
+                        <ul class="meta-line acct-backing-plan">
+                          <li>方案：雙燈管組</li>
+                          <li><data value="4280">NT$ 4,280</data></li>
+                          <li>贊助於 <time datetime="2026-07-02">2026/07/02</time></li>
+                        </ul>
+                        <div class="acct-backing-state">
+                          <span class="status is-warn"><i class="bi bi-gear" aria-hidden="true"></i>生產中</span>
+                          <ul class="meta-line">
+                            <li>目前進度：量產備料</li>
+                            <li>預計 <time datetime="2027-04">2027/04</time> 出貨</li>
+                          </ul>
+                        </div>
+                      </div>
+                      <div class="acct-backing-actions">
+                        <a class="btn btn-outline-secondary btn-sm" href="project.html">查看專案</a>
+                        <a class="btn btn-outline-secondary btn-sm" href="project.html#timeline">查看生產進度</a>
+                      </div>
+                    </li>
+
+                    <!-- 紀錄卡片 3：已出貨（ok） -->
+                    <li class="acct-backing" data-status="shipped">
+                      <div class="img-frame ratio-4x3 acct-backing-thumb">
+                        <img src="images/project-06-island-boardgame.jpg" alt="手繪台灣原生動植物卡牌與棲地板塊的桌遊" width="1600" height="1066" loading="lazy">
+                      </div>
+                      <div class="acct-backing-info">
+                        <h3 class="acct-backing-title text-phrase"><a href="project.html">島嶼生態｜<wbr>台灣原生種<wbr>策略桌遊</a></h3>
+                        <p class="acct-backing-by">山貓遊戲設計</p>
+                        <ul class="meta-line acct-backing-plan">
+                          <li>方案：標準版 × 1</li>
+                          <li><data value="1280">NT$ 1,280</data></li>
+                          <li>贊助於 <time datetime="2026-03-11">2026/03/11</time></li>
+                        </ul>
+                        <div class="acct-backing-state">
+                          <span class="status is-ok"><i class="bi bi-truck" aria-hidden="true"></i>已出貨</span>
+                          <ul class="meta-line">
+                            <li><time datetime="2026-09-24">2026/09/24</time> 寄出</li>
+                            <li>宅配通 2714-8830-xxxx</li>
+                          </ul>
+                        </div>
+                      </div>
+                      <div class="acct-backing-actions">
+                        <a class="btn btn-outline-secondary btn-sm" href="project.html">查看專案</a>
+                        <button class="btn btn-accent btn-sm" type="button">給予評價</button>
+                      </div>
+                    </li>
+
+                    <!-- 紀錄卡片 4：募資失敗 ‧ 已退款（idle）：整張卡降一階 -->
+                    <li class="acct-backing is-muted" data-status="refunded">
+                      <div class="img-frame ratio-4x3 acct-backing-thumb">
+                        <img src="images/project-07-coffee-cup.jpg" alt="咖啡渣壓製的隨行杯與一小堆咖啡渣" width="1600" height="1066" loading="lazy">
+                      </div>
+                      <div class="acct-backing-info">
+                        <h3 class="acct-backing-title text-phrase"><a href="project.html">回到土裡的<wbr>咖啡渣杯</a></h3>
+                        <p class="acct-backing-by">循環物料實驗室</p>
+                        <ul class="meta-line acct-backing-plan">
+                          <li>方案：雙入組</li>
+                          <li><data value="1280">NT$ 1,280</data></li>
+                          <li>贊助於 <time datetime="2026-05-06">2026/05/06</time></li>
+                        </ul>
+                        <div class="acct-backing-state">
+                          <span class="status is-idle"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>募資失敗 ‧ 已退款</span>
+                          <ul class="meta-line">
+                            <li>款項已於 <time datetime="2026-06-12">2026/06/12</time> 原路退回</li>
+                          </ul>
+                        </div>
+                      </div>
+                      <div class="acct-backing-actions">
+                        <a class="btn btn-outline-secondary btn-sm" href="project.html">查看專案</a>
+                      </div>
+                    </li>
+                  </ol>
+                  <!-- 篩選後沒有紀錄時顯示（js/main.js 控制 hidden） -->
+                  <div class="empty-state" data-filter-empty hidden>
+                    <i class="bi bi-inbox" aria-hidden="true"></i>
+                    <p>這個狀態目前沒有贊助紀錄。</p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ---------- 區塊二：我的提案（提案者）／權限提示（贊助者） ---------- -->
+              <section id="my-projects" class="acct-section" aria-labelledby="my-projects-title">
+                <div class="section-heading acct-heading">
+                  <h2 id="my-projects-title">我的提案</h2>
+                  <button class="btn btn-accent for-proposer" type="button"><i class="bi bi-plus-lg" aria-hidden="true"></i>建立新專案</button>
+                </div>
+
+                <!-- 贊助者檢視：提案區塊的位置改放權限提示（S17），從頁尾「提案管理」連進來會看到這裡 -->
+                <div class="callout is-idle acct-permission for-backer">
+                  <i class="bi bi-lock" aria-hidden="true"></i>
+                  <div>
+                    <p>這個區域需要提案者身分。</p>
+                    <button class="btn btn-outline-secondary btn-sm" type="button">申請成為提案者</button>
+                  </div>
+                </div>
+
+                <div class="for-proposer">
+                  <!-- 統計列：附錄 A，「提案 3 件」與下方 5 列、累積募資與列 1＋列 5 的加總都照 Notion 原文 -->
+                  <ul class="acct-tally">
+                    <li>提案 <data class="acct-tally-num" value="3">3</data> 件</li>
+                    <li>累積募資 <data class="acct-tally-num" value="2471200">NT$ 2,471,200</data></li>
+                    <li>累積贊助者 <data class="acct-tally-num" value="1840">1,840</data> 人</li>
+                    <li class="is-ok"><i class="bi bi-check-circle" aria-hidden="true"></i>準時出貨率 <data class="acct-tally-num" value="100">100%</data></li>
+                  </ul>
+
+                  <ol class="acct-projects">
+                    <!-- 列 1：募資中 -->
+                    <li class="acct-project">
+                      <div class="acct-project-name">
+                        <span class="status is-live"><i class="bi bi-hourglass-split" aria-hidden="true"></i>募資中</span>
+                        <h3 class="acct-project-title text-phrase">一只走十年的<wbr>台南帆布包</h3>
+                      </div>
+                      <div class="acct-project-data">
+                        <p class="acct-project-figures">
+                          <data class="amount" value="247">247%</data>
+                          <data class="acct-project-money" value="1235600">NT$ 1,235,600</data>
+                        </p>
+                        <div class="fund-bar fund-bar-sm is-over" style="--goal: 40.5%" aria-hidden="true"></div>
+                        <ul class="meta-line acct-project-meta">
+                          <li><data value="1042">1,042</data>&nbsp;人</li>
+                          <li>剩 12&nbsp;天</li>
+                        </ul>
+                      </div>
+                      <div class="acct-project-actions">
+                        <a class="btn btn-primary btn-sm" href="#dashboard">查看數據</a>
+                        <button class="btn btn-outline-secondary btn-sm" type="button">編輯</button>
+                        <button class="btn btn-outline-secondary btn-sm" type="button">更新進度</button>
+                      </div>
+                    </li>
+
+                    <!-- 列 2：審核中 -->
+                    <li class="acct-project">
+                      <div class="acct-project-name">
+                        <span class="status is-warn"><i class="bi bi-hourglass" aria-hidden="true"></i>審核中</span>
+                        <h3 class="acct-project-title text-phrase">帆布工作圍裙</h3>
+                      </div>
+                      <div class="acct-project-data">
+                        <ul class="meta-line acct-project-meta">
+                          <li>送審於 <time datetime="2026-09-28">2026/09/28</time></li>
+                          <li>預計 3 個工作天內完成</li>
+                        </ul>
+                      </div>
+                      <div class="acct-project-actions">
+                        <button class="btn btn-outline-secondary btn-sm" type="button">查看內容</button>
+                      </div>
+                    </li>
+
+                    <!-- 列 3：審核未通過——列表層就顯示管理員填寫的退件原因，唯一動作是重新送審 -->
+                    <li class="acct-project is-rejected">
+                      <div class="acct-project-name">
+                        <span class="status is-err"><i class="bi bi-x-circle" aria-hidden="true"></i>審核未通過</span>
+                        <h3 class="acct-project-title text-phrase">帆布筆袋小批量</h3>
+                      </div>
+                      <div class="acct-project-data">
+                        <div class="callout is-err acct-reject">
+                          <p><strong>退件原因：</strong>「回饋方案的出貨時間與生產排程不一致，請修正里程碑 4 的日期後重新送審。」</p>
+                        </div>
+                      </div>
+                      <div class="acct-project-actions">
+                        <button class="btn btn-accent btn-sm" type="button">修改後重新送審</button>
+                      </div>
+                    </li>
+
+                    <!-- 列 4：草稿（整列降一階） -->
+                    <li class="acct-project is-draft">
+                      <div class="acct-project-name">
+                        <span class="status is-idle"><i class="bi bi-pencil" aria-hidden="true"></i>草稿</span>
+                        <h3 class="acct-project-title text-phrase">老帆布改造提袋</h3>
+                      </div>
+                      <div class="acct-project-data">
+                        <div class="acct-missing">
+                          <span class="acct-missing-label">尚缺：</span>
+                          <ul class="tag-list mt-0">
+                            <li><span class="tag">主視覺</span></li>
+                            <li><span class="tag">風險說明</span></li>
+                            <li><span class="tag">里程碑設定</span></li>
+                          </ul>
+                        </div>
+                      </div>
+                      <div class="acct-project-actions">
+                        <button class="btn btn-outline-secondary btn-sm" type="button">繼續編輯</button>
+                      </div>
+                    </li>
+
+                    <!-- 列 5：募資成功 ‧ 已結案（172%，目標刻度 58.1%） -->
+                    <li class="acct-project">
+                      <div class="acct-project-name">
+                        <span class="status is-ok"><i class="bi bi-check-circle" aria-hidden="true"></i>募資成功 ‧ 已結案</span>
+                        <h3 class="acct-project-title text-phrase">第一代通勤包（2025）</h3>
+                      </div>
+                      <div class="acct-project-data">
+                        <p class="acct-project-figures">
+                          <data class="amount" value="172">172%</data>
+                          <data class="acct-project-money" value="862400">NT$ 862,400</data>
+                        </p>
+                        <div class="fund-bar fund-bar-sm is-over" style="--goal: 58.1%" aria-hidden="true"></div>
+                        <ul class="meta-line acct-project-meta">
+                          <li><data value="798">798</data>&nbsp;人</li>
+                          <li>已全數出貨</li>
+                        </ul>
+                      </div>
+                      <div class="acct-project-actions">
+                        <button class="btn btn-outline-secondary btn-sm" type="button">查看結案報告</button>
+                      </div>
+                    </li>
+                  </ol>
+                </div>
+              </section>
+
+              <!-- ---------- 區塊三：募資數據（只有提案者） ---------- -->
+              <section id="dashboard" class="acct-section for-proposer" aria-labelledby="dashboard-title">
+                <div class="section-heading acct-heading">
+                  <h2 id="dashboard-title" class="text-phrase">募資數據 ｜<wbr> 一只走十年的<wbr>台南帆布包</h2>
+                  <button class="btn btn-outline-secondary btn-sm" type="button"><i class="bi bi-download" aria-hidden="true"></i>匯出 CSV</button>
+                </div>
+
+                <!-- 期間篩選：放在所有圖表上方（設計稿只示範選中狀態，不真的重算） -->
+                <div class="acct-period">
+                  <fieldset class="acct-period-chips">
+                    <legend class="visually-hidden">數據期間</legend>
+                    <input class="btn-check" type="radio" name="period" id="period-all" checked>
+                    <label class="chip" for="period-all">募資全期</label>
+                    <input class="btn-check" type="radio" name="period" id="period-7">
+                    <label class="chip" for="period-7">近 7 天</label>
+                    <input class="btn-check" type="radio" name="period" id="period-30">
+                    <label class="chip" for="period-30">近 30 天</label>
+                    <input class="btn-check" type="radio" name="period" id="period-custom">
+                    <label class="chip" for="period-custom">自訂</label>
+                  </fieldset>
+                  <ul class="meta-line acct-period-range">
+                    <li><time datetime="2026-09-15">2026/09/15</time> – <time datetime="2026-10-04">2026/10/04</time></li>
+                    <li>第 20&nbsp;天</li>
+                  </ul>
+                </div>
+
+                <!-- 4 張數據卡 -->
+                <dl class="stat-row acct-stats">
+                  <div class="stat">
+                    <dt>目前金額</dt>
+                    <dd><data class="stat-value" value="1235600">NT$ 1,235,600</data></dd>
+                    <dd class="stat-note is-up"><i class="bi bi-arrow-up" aria-hidden="true"></i> 今日 +NT$ 48,200</dd>
+                  </div>
+                  <div class="stat">
+                    <dt>達成率</dt>
+                    <dd><data class="stat-value" value="247">247%</data></dd>
+                    <dd class="stat-note">目標 NT$ 500,000</dd>
+                  </div>
+                  <div class="stat">
+                    <dt>贊助人數</dt>
+                    <dd><data class="stat-value" value="1042">1,042</data></dd>
+                    <dd class="stat-note is-up"><i class="bi bi-arrow-up" aria-hidden="true"></i> 今日 +37</dd>
+                  </div>
+                  <div class="stat">
+                    <dt>剩餘天數</dt>
+                    <dd><data class="stat-value" value="12">12</data></dd>
+                    <dd class="stat-note"><time datetime="2026-10-15T23:59">10/15 23:59</time> 截止</dd>
+                  </div>
+                </dl>
+
+                <!-- 圖表 1：每日募資金額（折線＋淡面積）。SVG 不寫色碼，顏色由 components/_chart.scss 的 class 決定 -->
+                <section class="chart-card acct-chart" aria-labelledby="chart-daily-title">
+                  <div class="chart-card-head">
+                    <div>
+                      <h3 id="chart-daily-title" class="chart-card-title">每日募資金額趨勢（近 30 天）</h3>
+                      <ul class="meta-line chart-card-sub">
+                        <li>2026/09/15 – 10/04</li>
+                        <li>單位 NT$ 千元</li>
+                      </ul>
+                    </div>
+                    <button class="btn btn-text" type="button" data-bs-toggle="collapse" data-bs-target="#chartDailyTable" aria-expanded="false" aria-controls="chartDailyTable"><i class="bi bi-table" aria-hidden="true"></i>切換表格檢視</button>
+                  </div>
+                  <div class="chart-scroll">
+                  <svg viewBox="0 0 640 186" role="img" aria-label="每日募資金額趨勢：09/15 開賣首日 NT$ 274,000 為最高，之後回落到每日約 NT$ 30,000 至 50,000；09/24 媒體報導帶來 NT$ 72,000 的小高峰；今日 10/04 募得 NT$ 48,200。">
+                    <g class="chart-grid">
+                    <line x1="44" y1="150" x2="620" y2="150"/>
+                    <line x1="44" y1="103.33" x2="620" y2="103.33"/>
+                    <line x1="44" y1="56.67" x2="620" y2="56.67"/>
+                    <line x1="44" y1="10" x2="620" y2="10"/>
+                    </g>
+                    <g class="chart-axis">
+                    <text x="36" y="154" text-anchor="end">0</text>
+                    <text x="36" y="107.33" text-anchor="end">100</text>
+                    <text x="36" y="60.67" text-anchor="end">200</text>
+                    <text x="36" y="14" text-anchor="end">300</text>
+                    <text x="44" y="172" text-anchor="start">09/15</text>
+                    <text x="195.6" y="172" text-anchor="middle">09/20</text>
+                    <text x="347.2" y="172" text-anchor="middle">09/25</text>
+                    <text x="498.7" y="172" text-anchor="middle">09/30</text>
+                    <text x="620" y="172" text-anchor="end">10/04</text>
+                    </g>
+                    <path class="chart-area" d="M44,150 L44,22.13 L74.3,75.33 L104.6,110.15 L134.9,121.53 L165.3,127.6 L195.6,131.8 L225.9,134.13 L256.2,135.53 L286.5,130.4 L316.8,116.4 L347.2,130.87 L377.5,134.6 L407.8,136.47 L438.1,137.4 L468.4,135.53 L498.7,133.2 L529.1,129.47 L559.4,125.73 L589.7,127.6 L620,127.51 L620,150 Z"/>
+                    <polyline class="chart-line" points="44,22.13 74.3,75.33 104.6,110.15 134.9,121.53 165.3,127.6 195.6,131.8 225.9,134.13 256.2,135.53 286.5,130.4 316.8,116.4 347.2,130.87 377.5,134.6 407.8,136.47 438.1,137.4 468.4,135.53 498.7,133.2 529.1,129.47 559.4,125.73 589.7,127.6 620,127.51"/>
+                    <circle class="chart-dot" cx="44" cy="22.13" r="4"/>
+                    <circle class="chart-dot" cx="316.8" cy="116.4" r="4"/>
+                    <circle class="chart-dot" cx="620" cy="127.51" r="4"/>
+                    <text class="chart-label-num" x="58" y="21">NT$ 274,000</text>
+                    <text class="chart-label" x="58" y="37">09/15 開賣首日</text>
+                    <text class="chart-label" x="316.8" y="104" text-anchor="middle">09/24 媒體報導</text>
+                    <text class="chart-label" x="612" y="114" text-anchor="end">今日 <tspan class="chart-label-num">NT$ 48,200</tspan></text>
+                  </svg>
+                  </div>
+                  <div id="chartDailyTable" class="collapse">
+                    <div class="table-responsive">
+                      <table class="table chart-table">
+                        <caption class="visually-hidden">每日募資金額（09/15–10/04）</caption>
+                        <thead><tr><th scope="col">日期</th><th scope="col" class="text-end">當日募資</th></tr></thead>
+                        <tbody>
+                        <tr><th scope="row" class="fw-normal">09/15（二）</th><td class="text-end"><data value="274000">NT$ 274,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/16（三）</th><td class="text-end"><data value="160000">NT$ 160,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/17（四）</th><td class="text-end"><data value="85400">NT$ 85,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/18（五）</th><td class="text-end"><data value="61000">NT$ 61,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/19（六）</th><td class="text-end"><data value="48000">NT$ 48,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/20（日）</th><td class="text-end"><data value="39000">NT$ 39,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/21（一）</th><td class="text-end"><data value="34000">NT$ 34,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/22（二）</th><td class="text-end"><data value="31000">NT$ 31,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/23（三）</th><td class="text-end"><data value="42000">NT$ 42,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/24（四）</th><td class="text-end"><data value="72000">NT$ 72,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/25（五）</th><td class="text-end"><data value="41000">NT$ 41,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/26（六）</th><td class="text-end"><data value="33000">NT$ 33,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/27（日）</th><td class="text-end"><data value="29000">NT$ 29,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/28（一）</th><td class="text-end"><data value="27000">NT$ 27,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/29（二）</th><td class="text-end"><data value="31000">NT$ 31,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/30（三）</th><td class="text-end"><data value="36000">NT$ 36,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">10/01（四）</th><td class="text-end"><data value="44000">NT$ 44,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">10/02（五）</th><td class="text-end"><data value="52000">NT$ 52,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">10/03（六）</th><td class="text-end"><data value="48000">NT$ 48,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">10/04（日）</th><td class="text-end"><data value="48200">NT$ 48,200</data></td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- 圖表 2：累積募資金額 vs. 目標線（共用一個 y 軸；贊助人數不放進同一張圖） -->
+                <section class="chart-card acct-chart" aria-labelledby="chart-cum-title">
+                  <div class="chart-card-head">
+                    <div>
+                      <h3 id="chart-cum-title" class="chart-card-title">累積募資金額 vs. 目標線</h3>
+                      <ul class="meta-line chart-card-sub">
+                        <li>2026/09/15 – 10/04</li>
+                        <li>單位 NT$ 千元</li>
+                      </ul>
+                    </div>
+                    <button class="btn btn-text" type="button" data-bs-toggle="collapse" data-bs-target="#chartCumTable" aria-expanded="false" aria-controls="chartCumTable"><i class="bi bi-table" aria-hidden="true"></i>切換表格檢視</button>
+                  </div>
+                  <div class="chart-scroll">
+                  <svg viewBox="0 0 640 186" role="img" aria-label="累積募資金額 vs. 目標線：09/17 第 3 天跨過目標 NT$ 500,000，之後持續成長，到 10/04 累積 NT$ 1,235,600，達成 247%。">
+                    <g class="chart-grid">
+                    <line x1="44" y1="150" x2="620" y2="150"/>
+                    <line x1="44" y1="50" x2="620" y2="50"/>
+                    <line x1="44" y1="10" x2="620" y2="10"/>
+                    </g>
+                    <g class="chart-axis">
+                    <text x="36" y="154" text-anchor="end">0</text>
+                    <text x="36" y="104" text-anchor="end">500</text>
+                    <text x="36" y="54" text-anchor="end">1,000</text>
+                    <text x="36" y="14" text-anchor="end">1,400</text>
+                    <text x="44" y="172" text-anchor="start">09/15</text>
+                    <text x="195.6" y="172" text-anchor="middle">09/20</text>
+                    <text x="347.2" y="172" text-anchor="middle">09/25</text>
+                    <text x="498.7" y="172" text-anchor="middle">09/30</text>
+                    <text x="620" y="172" text-anchor="end">10/04</text>
+                    </g>
+                    <path class="chart-area" d="M44,150 L44,122.6 L74.3,106.6 L104.6,98.06 L134.9,91.96 L165.3,87.16 L195.6,83.26 L225.9,79.86 L256.2,76.76 L286.5,72.56 L316.8,65.36 L347.2,61.26 L377.5,57.96 L407.8,55.06 L438.1,52.36 L468.4,49.26 L498.7,45.66 L529.1,41.26 L559.4,36.06 L589.7,31.26 L620,26.44 L620,150 Z"/>
+                    <polyline class="chart-line" points="44,122.6 74.3,106.6 104.6,98.06 134.9,91.96 165.3,87.16 195.6,83.26 225.9,79.86 256.2,76.76 286.5,72.56 316.8,65.36 347.2,61.26 377.5,57.96 407.8,55.06 438.1,52.36 468.4,49.26 498.7,45.66 529.1,41.26 559.4,36.06 589.7,31.26 620,26.44"/>
+                    <!-- 目標線：全圖唯一的虛線，直接標註 -->
+                    <line class="chart-target" x1="44" y1="100" x2="620" y2="100"/>
+                    <text class="chart-label" x="616" y="116" text-anchor="end">目標 <tspan class="chart-label-num">NT$ 500,000</tspan></text>
+                    <!-- 達標交叉點（09/17，第 3 天） -->
+                    <line class="chart-guide" x1="97.7" y1="76" x2="97.7" y2="94"/>
+                    <circle class="chart-dot" cx="97.7" cy="100" r="4"/>
+                    <text class="chart-label" x="97.7" y="56" text-anchor="middle">09/17 達標</text>
+                    <text class="chart-label" x="97.7" y="71" text-anchor="middle">第 3 天</text>
+                    <circle class="chart-dot" cx="620" cy="26.44" r="4"/>
+                    <text class="chart-label-num" x="608" y="21" text-anchor="end">NT$ 1,235,600<tspan class="chart-label" dx="8">247%</tspan></text>
+                  </svg>
+                  </div>
+                  <div id="chartCumTable" class="collapse">
+                    <div class="table-responsive">
+                      <table class="table chart-table">
+                        <caption class="visually-hidden">累積募資金額（09/15–10/04），目標 NT$ 500,000</caption>
+                        <thead><tr><th scope="col">日期</th><th scope="col" class="text-end">累積募資</th></tr></thead>
+                        <tbody>
+                        <tr><th scope="row" class="fw-normal">09/15（二）</th><td class="text-end"><data value="274000">NT$ 274,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/16（三）</th><td class="text-end"><data value="434000">NT$ 434,000</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/17（四）</th><td class="text-end"><data value="519400">NT$ 519,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/18（五）</th><td class="text-end"><data value="580400">NT$ 580,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/19（六）</th><td class="text-end"><data value="628400">NT$ 628,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/20（日）</th><td class="text-end"><data value="667400">NT$ 667,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/21（一）</th><td class="text-end"><data value="701400">NT$ 701,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/22（二）</th><td class="text-end"><data value="732400">NT$ 732,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/23（三）</th><td class="text-end"><data value="774400">NT$ 774,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/24（四）</th><td class="text-end"><data value="846400">NT$ 846,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/25（五）</th><td class="text-end"><data value="887400">NT$ 887,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/26（六）</th><td class="text-end"><data value="920400">NT$ 920,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/27（日）</th><td class="text-end"><data value="949400">NT$ 949,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/28（一）</th><td class="text-end"><data value="976400">NT$ 976,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/29（二）</th><td class="text-end"><data value="1007400">NT$ 1,007,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">09/30（三）</th><td class="text-end"><data value="1043400">NT$ 1,043,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">10/01（四）</th><td class="text-end"><data value="1087400">NT$ 1,087,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">10/02（五）</th><td class="text-end"><data value="1139400">NT$ 1,139,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">10/03（六）</th><td class="text-end"><data value="1187400">NT$ 1,187,400</data></td></tr>
+                        <tr><th scope="row" class="fw-normal">10/04（日）</th><td class="text-end"><data value="1235600">NT$ 1,235,600</data></td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- 圖表 3：各回饋方案銷售分佈（HTML／CSS 橫條；五條同一個數據色，額滿狀態用文字標註）
+                     長條長度＝金額 ÷ 1,395,360；Notion 的金額加總與專案總額對不上（附錄 A），照原文 -->
+                <section class="chart-card acct-chart" aria-labelledby="chart-tier-title">
+                  <div class="chart-card-head">
+                    <div>
+                      <h3 id="chart-tier-title" class="chart-card-title">各回饋方案銷售分佈</h3>
+                      <ul class="meta-line chart-card-sub">
+                        <li>依方案累計金額排序</li>
+                        <li>共 5 個方案</li>
+                      </ul>
+                    </div>
+                    <button class="btn btn-text" type="button" data-bs-toggle="collapse" data-bs-target="#chartTierTable" aria-expanded="true" aria-controls="chartTierTable"><i class="bi bi-table" aria-hidden="true"></i>切換表格檢視</button>
+                  </div>
+                  <ol class="bar-chart" aria-label="各回饋方案的累計金額，由高到低">
+                    <li class="bar-chart-row" style="--w: 100%">
+                      <span class="bar-chart-label">標準單入組</span>
+                      <span class="bar-chart-track"><span class="bar-chart-bar"></span><data class="bar-chart-value" value="1395360">NT$ 1,395,360</data></span>
+                      <span class="bar-chart-note">612</span>
+                    </li>
+                    <li class="bar-chart-row" style="--w: 86.7%">
+                      <span class="bar-chart-label">雙入組</span>
+                      <span class="bar-chart-track"><span class="bar-chart-bar"></span><data class="bar-chart-value" value="1209600">NT$ 1,209,600</data></span>
+                      <span class="bar-chart-note">288</span>
+                    </li>
+                    <li class="bar-chart-row" style="--w: 40.4%">
+                      <span class="bar-chart-label">早鳥單入組</span>
+                      <span class="bar-chart-track"><span class="bar-chart-bar"></span><data class="bar-chart-value" value="564000">NT$ 564,000</data></span>
+                      <span class="bar-chart-note">300／300<span class="acct-bar-flag">已額滿</span></span>
+                    </li>
+                    <li class="bar-chart-row" style="--w: 13.8%">
+                      <span class="bar-chart-label">工廠開放日</span>
+                      <span class="bar-chart-track"><span class="bar-chart-bar"></span><data class="bar-chart-value" value="192000">NT$ 192,000</data></span>
+                      <span class="bar-chart-note">16／20<span class="acct-bar-flag">即將額滿</span></span>
+                    </li>
+                    <li class="bar-chart-row" style="--w: 1.8%">
+                      <span class="bar-chart-label">純支持</span>
+                      <span class="bar-chart-track"><span class="bar-chart-bar"></span><data class="bar-chart-value" value="25800">NT$ 25,800</data></span>
+                      <span class="bar-chart-note">86<span class="acct-bar-flag">不限量</span></span>
+                    </li>
+                  </ol>
+                  <!-- 表格檢視：預設展開 -->
+                  <div id="chartTierTable" class="collapse show">
+                    <div class="table-responsive">
+                      <table class="table chart-table">
+                        <caption class="visually-hidden">各回饋方案銷售分佈</caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">回饋方案</th>
+                            <th scope="col" class="text-end">單價</th>
+                            <th scope="col" class="text-end">售出 ／ 限量</th>
+                            <th scope="col" class="text-end">累計金額</th>
+                            <th scope="col">狀態</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr><th scope="row" class="fw-normal">標準單入組</th><td class="text-end">NT$ 2,280</td><td class="text-end">612</td><td class="text-end">NT$ 1,395,360</td><td>不限量</td></tr>
+                          <tr><th scope="row" class="fw-normal">雙入組</th><td class="text-end">NT$ 4,200</td><td class="text-end">288</td><td class="text-end">NT$ 1,209,600</td><td>不限量</td></tr>
+                          <tr><th scope="row" class="fw-normal">早鳥單入組</th><td class="text-end">NT$ 1,880</td><td class="text-end">300／300</td><td class="text-end">NT$ 564,000</td><td>已額滿</td></tr>
+                          <tr><th scope="row" class="fw-normal">工廠開放日</th><td class="text-end">NT$ 12,000</td><td class="text-end">16／20</td><td class="text-end">NT$ 192,000</td><td>即將額滿</td></tr>
+                          <tr><th scope="row" class="fw-normal">純支持</th><td class="text-end">NT$ 300</td><td class="text-end">86</td><td class="text-end">NT$ 25,800</td><td>不限量</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- 洞察提示 -->
+                <div class="callout is-info acct-insight">
+                  <i class="bi bi-lightbulb" aria-hidden="true"></i>
+                  <div>
+                    <p class="callout-title">洞察提示</p>
+                    <p>「雙入組」的客單價最高，剩餘 12 天可考慮在專案更新中再推一次。</p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ---------- 區塊四：收件資訊＋帳號設定（≥ 992px 7：5） ---------- -->
+              <section id="shipping" class="acct-section" aria-labelledby="shipping-title">
+                <div class="section-heading acct-heading">
+                  <div>
+                    <h2 id="shipping-title">收件資訊</h2>
+                    <p>存好的地址會在贊助時自動帶入，可隨時更換。</p>
+                  </div>
+                  <button class="btn btn-outline-secondary btn-sm" type="button"><i class="bi bi-plus-lg" aria-hidden="true"></i>新增地址</button>
+                </div>
+
+                <div class="row g-4 gx-xl-5">
+                  <div class="col-lg-7">
+                    <!-- 預設地址：外框強調；設計稿顯示已填寫狀態（focus、錯誤狀態見 Guideline） -->
+                    <div class="acct-address is-default" role="group" aria-labelledby="address-default-label">
+                      <div class="acct-address-head">
+                        <span id="address-default-label" class="status is-live"><span class="status-dot"></span>預設地址</span>
+                        <div class="acct-address-actions">
+                          <button class="btn btn-text" type="button">編輯</button>
+                          <button class="btn btn-text" type="button">刪除</button>
+                        </div>
+                      </div>
+                      <div class="row g-3">
+                        <div class="col-sm-6">
+                          <label class="form-label" for="shipName">收件人姓名</label>
+                          <input class="form-control" id="shipName" name="name" type="text" autocomplete="name" value="陳柏宇">
+                        </div>
+                        <div class="col-sm-6">
+                          <label class="form-label" for="shipTel">手機號碼</label>
+                          <input class="form-control" id="shipTel" name="tel" type="tel" inputmode="tel" autocomplete="tel" value="0912-345-678">
+                        </div>
+                        <div class="col-sm-4">
+                          <label class="form-label" for="shipZip">郵遞區號</label>
+                          <input class="form-control" id="shipZip" name="postal-code" type="text" inputmode="numeric" autocomplete="postal-code" value="70801">
+                        </div>
+                        <div class="col-sm-8">
+                          <label class="form-label" for="shipAddress">收件地址</label>
+                          <input class="form-control" id="shipAddress" name="address" type="text" autocomplete="street-address" value="台南市安平區平通路 128 號 5 樓">
+                        </div>
+                        <div class="col-12">
+                          <div class="form-check">
+                            <input class="form-check-input" id="shipDefault" type="checkbox" checked>
+                            <label class="form-check-label" for="shipDefault">設為預設地址</label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 第二組地址：摘要 -->
+                    <div class="acct-address">
+                      <p class="acct-address-name">陳柏宇（公司）</p>
+                      <ul class="meta-line acct-address-line">
+                        <li>0912-345-678</li>
+                        <li>10491 台北市中山區南京東路二段 100 號 8 樓</li>
+                      </ul>
+                      <div class="acct-address-actions">
+                        <button class="btn btn-text" type="button">設為預設</button>
+                        <button class="btn btn-text" type="button">編輯</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-5">
+                    <!-- 帳號設定（#settings） -->
+                    <div id="settings" class="acct-card">
+                      <h3 class="acct-card-title">帳號設定</h3>
+                      <div class="mb-3">
+                        <label class="form-label" for="accountName">顯示名稱</label>
+                        <input class="form-control" id="accountName" name="nickname" type="text" autocomplete="nickname" value="陳柏宇">
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label" for="accountEmail">Email</label>
+                        <input class="form-control" id="accountEmail" name="email" type="email" autocomplete="email" value="boyu.chen@example.com">
+                      </div>
+                      <button class="btn btn-outline-secondary btn-sm" type="button">變更密碼</button>
+                    </div>
+
+                    <div class="acct-card">
+                      <h3 class="acct-card-title">通知設定</h3>
+                      <div class="form-check form-switch acct-switch">
+                        <input class="form-check-input" id="notifyProgress" type="checkbox" role="switch" checked>
+                        <label class="form-check-label" for="notifyProgress">專案進度更新</label>
+                      </div>
+                      <div class="form-check form-switch acct-switch">
+                        <input class="form-check-input" id="notifyReply" type="checkbox" role="switch" checked>
+                        <label class="form-check-label" for="notifyReply">留言回覆</label>
+                      </div>
+                      <div class="form-check form-switch acct-switch">
+                        <input class="form-check-input" id="notifyEnding" type="checkbox" role="switch" checked>
+                        <label class="form-check-label" for="notifyEnding">追蹤專案即將結束</label>
+                      </div>
+                    </div>
+
+                    <!-- 提案者申請狀態：只有認證提案者看得到 -->
+                    <div class="callout is-ok for-proposer">
+                      <i class="bi bi-patch-check" aria-hidden="true"></i>
+                      <p>你已是認證提案者（通過於 <time datetime="2025-04-18">2025/04/18</time>）</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ========== 設計稿狀態示意：非預設的狀態集中在這裡，和正式內容以虛線分開 ========== -->
+              <section class="demo-state" aria-labelledby="acct-demo-title">
+                <p class="demo-state-tag">設計稿狀態示意</p>
+                <h2 id="acct-demo-title" class="demo-state-title">個人頁的其他狀態</h2>
+                <p class="text-note">正式畫面以「已登入的提案者 陳柏宇」呈現；下面是同一頁在其他資料或其他身分時的樣子。</p>
+
+                <div class="demo-case">
+                  <h3 class="acct-demo-title">贊助紀錄的 5 種狀態徽章</h3>
+                  <p class="text-note">「已達標待生產」在示意資料中沒有對應的紀錄，徽章樣式列在這裡。</p>
+                  <ul class="acct-badge-row">
+                    <li><span class="status is-live"><i class="bi bi-hourglass-split" aria-hidden="true"></i>募資中</span></li>
+                    <li><span class="status is-info"><i class="bi bi-clipboard-check" aria-hidden="true"></i>已達標待生產</span></li>
+                    <li><span class="status is-warn"><i class="bi bi-gear" aria-hidden="true"></i>生產中</span></li>
+                    <li><span class="status is-ok"><i class="bi bi-truck" aria-hidden="true"></i>已出貨</span></li>
+                    <li><span class="status is-idle"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>募資失敗 ‧ 已退款</span></li>
+                  </ul>
+                </div>
+
+                <div class="demo-case">
+                  <h3 class="acct-demo-title">贊助紀錄為空</h3>
+                  <p class="text-note">還沒有任何贊助時，取代統計列、分頁與紀錄卡。</p>
+                  <div class="demo-state-stage">
+                    <div class="empty-state">
+                      <i class="bi bi-inbox" aria-hidden="true"></i>
+                      <p>你還沒有贊助過任何專案，從一個你願意等的東西開始。</p>
+                      <a class="btn btn-primary" href="projects.html">探索專案</a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="demo-case">
+                  <h3 class="acct-demo-title">追蹤清單為空</h3>
+                  <p class="text-note">「追蹤中的專案」沒有項目時。</p>
+                  <div class="demo-state-stage">
+                    <div class="empty-state">
+                      <i class="bi bi-heart" aria-hidden="true"></i>
+                      <p>還沒有追蹤中的專案。看到喜歡的按下 <i class="bi bi-heart acct-inline-icon" role="img" aria-label="愛心"></i>，結束前會提醒你。</p>
+                      <a class="btn btn-outline-secondary" href="projects.html">探索專案</a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="demo-case">
+                  <h3 class="acct-demo-title">提案：募資失敗</h3>
+                  <p class="text-note">我的提案列表裡，募資期滿未達標的專案。</p>
+                  <div class="demo-state-stage">
+                    <div class="acct-demo-row">
+                      <span class="status is-err"><i class="bi bi-slash-circle" aria-hidden="true"></i>募資失敗</span>
+                      <p class="mb-0">這個專案未達成目標金額，所有款項已全額退回贊助者。</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="demo-case">
+                  <h3 class="acct-demo-title">提案：已下架</h3>
+                  <p class="text-note">提案者下架專案後；虛線徽章和「草稿」區分。</p>
+                  <div class="demo-state-stage">
+                    <div class="acct-demo-row">
+                      <span class="status is-idle is-dashed"><i class="bi bi-eye-slash" aria-hidden="true"></i>已下架</span>
+                      <p class="mb-0">這個專案目前已下架，已贊助的支持者仍可查看進度與留言。</p>
+                      <button class="btn btn-outline-secondary btn-sm" type="button">重新上架</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="demo-case">
+                  <h3 class="acct-demo-title">提案者尚無專案</h3>
+                  <p class="text-note">剛通過認證、還沒建立任何專案時，取代統計列與專案列。</p>
+                  <div class="demo-state-stage">
+                    <div class="empty-state">
+                      <i class="bi bi-folder2-open" aria-hidden="true"></i>
+                      <p>你還沒有建立任何專案，從一個你最想做出來的東西開始。</p>
+                      <button class="btn btn-accent" type="button"><i class="bi bi-plus-lg" aria-hidden="true"></i>建立新專案</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="row gy-4 site-footer-cols">
+          <div class="col-lg-5 col-xl-4">
+            <a class="site-brand" href="index.html" aria-label="島造 ISLANDMAKE 首頁">
+              <span class="site-brand-name">島造</span>
+              <span class="site-brand-sub">ISLANDMAKE</span>
+            </a>
+            <p class="site-footer-lead">專注台灣在地設計與製造的群眾募資平台。不做快消、不做轉賣，只收「說得出材料從哪來、工廠在哪裡、什麼時候能交到你手上」的提案。</p>
+          </div>
+          <!-- 沒有 href 的是佔位連結（還沒有設計頁面） -->
+          <div class="col-6 col-md-4 col-lg-2 offset-xl-1">
+            <h2 class="site-footer-title">贊助者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="projects.html">探索專案</a></li>
+              <li><a href="account.html#backings">我的贊助紀錄</a></li>
+              <li><a>追蹤中的專案</a></li>
+              <li><a href="project.html#faq">贊助常見問題</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">提案者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="index.html#propose">我要提案</a></li>
+              <li><a href="account.html#my-projects">提案管理</a></li>
+              <li><a href="account.html#dashboard">募資數據</a></li>
+              <li><a>排程與出貨規範</a></li>
+            </ul>
+          </div>
+          <div class="col-md-4 col-lg-3">
+            <h2 class="site-footer-title">平台</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a>關於島造</a></li>
+              <li><a>審核標準</a></li>
+              <li><a>退款政策</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 島造 ISLANDMAKE 在地製造提案平台｜<wbr>本站為課程設計稿範例，專案與金額皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

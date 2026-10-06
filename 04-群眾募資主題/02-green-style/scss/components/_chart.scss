@@ -1,0 +1,184 @@
+// ============================================================
+// 圖表卡 .chart-card（募資數據、Guideline 共用）
+// 圖表是靜態 inline SVG（折線、面積）或 HTML／CSS 長條，不引入圖表套件
+// 顏色全部走 CSS 變數，SVG 裡不寫色碼；深色底版本只要加 .chart-dark，換成在深色底上可讀的一組
+//   --chart-data   數據色（單一數列一色）    淺色底：森林墨綠    深色底：初生綠
+//   --chart-area   面積（數據色的淡版）
+//   --chart-grid   格線（1px 實線，退居背景）
+//   --chart-text   座標與標註文字（用文字色，不用數據色）
+//   --chart-target 目標線（唯一的虛線）
+// ============================================================
+.chart-card {
+  --chart-data: #{$forest};
+  --chart-area: #{rgba($sprout, .32)};
+  --chart-grid: #{$line};
+  --chart-text: #{$ink-muted};
+  --chart-strong: #{$ink};
+  --chart-target: #{$wood};
+  --chart-bg: #{$surface};
+  min-width: 0;
+  padding: 1.25rem;
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: var(--chart-bg);
+
+  @include media-breakpoint-up(md) {
+    padding: 1.5rem 1.75rem;
+  }
+}
+// 深色底：深林底＋初生綠數據色（對深林 7.1:1）、文字再生紙色
+.chart-dark {
+  --chart-data: #{$sprout};
+  --chart-area: #{rgba($sprout, .18)};
+  --chart-grid: #{$on-dark-line};
+  --chart-text: #{$on-dark-muted};
+  --chart-strong: #{$on-dark};
+  --chart-target: #{$wood-soft};
+  --chart-bg: #{$forest-deep};
+  border-color: $forest-deep;
+  color: $on-dark;
+
+  .chart-title { color: $on-dark; }
+  .btn-text { color: $sprout; text-decoration-color: rgba($sprout, .5); }
+  :focus-visible { outline-color: $sprout; }
+}
+
+.chart-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  margin-bottom: 1rem;
+}
+.chart-title {
+  margin-bottom: .125rem;
+  font-size: 1.125rem;
+}
+.chart-sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1rem;
+  margin: 0;
+  font-size: .8125rem;
+  color: var(--chart-text);
+}
+
+// 手機：SVG 給最小寬度，只在圖卡內橫向捲動
+.chart-scroll {
+  overflow-x: auto;
+  margin-inline: -.25rem;
+  padding-inline: .25rem;
+}
+.chart-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+
+  @include media-breakpoint-down(md) {
+    min-width: 37.5rem; // 600px：座標文字仍 ≥ 10px
+  }
+
+  text {
+    font-family: $font-family-sans-serif;
+    font-size: 11px;
+    fill: var(--chart-text);
+  }
+  .chart-label-strong {
+    font-family: $font-family-round;
+    font-weight: $font-weight-bold;
+    fill: var(--chart-strong);
+  }
+}
+.chart-grid line { stroke: var(--chart-grid); stroke-width: 1; }
+.chart-line { fill: none; stroke: var(--chart-data); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.chart-area { fill: var(--chart-area); stroke: none; }
+.chart-dot { fill: var(--chart-bg); stroke: var(--chart-data); stroke-width: 2.5; }
+.chart-dot-solid { fill: var(--chart-data); stroke: var(--chart-bg); stroke-width: 2; }
+.chart-target { stroke: var(--chart-target); stroke-width: 1.5; stroke-dasharray: 6 5; }
+.chart-guide { stroke: var(--chart-text); stroke-width: 1; stroke-dasharray: 2 3; opacity: .7; }
+
+// 提示框示意（選用）：hover 的樣子，固定畫在一個點上；淺色底用深林底白字，深色底反過來
+.chart-svg .chart-tooltip rect { fill: $forest-deep; }
+.chart-svg .chart-tooltip text { fill: $on-dark; }
+.chart-dark .chart-svg .chart-tooltip rect { fill: $paper; }
+.chart-dark .chart-svg .chart-tooltip text { fill: $forest-deep; }
+
+// ---------- 橫條圖（HTML／CSS）：圓頭長條，數值標在尖端 ----------
+// <ol class="bar-list">
+//   <li class="bar-row" style="--bar: 100%">
+//     <span class="bar-label">標準單入組</span>
+//     <span class="bar-track"><span class="bar-fill"></span><span class="bar-value">NT$ 1,395,360</span></span>
+//     <span class="bar-note">612</span>
+//   </li>
+// </ol>
+.bar-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .25rem 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    align-items: center;
+  }
+}
+.bar-label {
+  font-family: $font-family-round;
+  font-weight: $font-weight-bold;
+  font-size: .9375rem;
+  color: var(--chart-strong);
+}
+.bar-track {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  min-width: 0;
+}
+.bar-fill {
+  flex: 0 0 auto;
+  width: calc(var(--bar) * .6); // 預留右側 40% 給數值標註（手機）
+
+  @include media-breakpoint-up(md) {
+    width: calc(var(--bar) * .72); // 平板以上預留 28%
+  }
+  min-width: .75rem;
+  height: 1rem;
+  border-radius: $border-radius-pill;
+  background-color: var(--chart-data);
+}
+.bar-value {
+  font-family: $font-family-round;
+  font-weight: $font-weight-bold;
+  font-size: .875rem;
+  color: var(--chart-strong);
+  white-space: nowrap;
+}
+.bar-note {
+  font-size: .8125rem;
+  color: var(--chart-text);
+
+  @include media-breakpoint-up(md) {
+    grid-column: 2;
+  }
+}
+
+// 圖表下方展開的數據表
+.chart-table {
+  margin-top: 1rem;
+
+  .table { font-size: .875rem; }
+}
+.chart-dark .table {
+  --bs-table-color: #{$on-dark};
+  --bs-table-border-color: #{$on-dark-line};
+
+  thead th { color: $on-dark-muted; }
+}
