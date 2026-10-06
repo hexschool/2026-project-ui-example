@@ -1,0 +1,453 @@
+// ============================================================
+// StageOne 城市現場｜04 當代雙年展 — Bootstrap 5 變數覆寫（design token）
+// 規則：只在這裡改 Bootstrap 變數；元件與頁面樣式一律引用變數，不寫死色碼
+//
+// 本風格只有黑、白、灰，沒有任何彩色（連成功、錯誤都不用紅綠）。
+// 所有狀態改用一套「黑白狀態語法」表達（見第 7 節與 guideline.html 的色彩章節）：
+//   反白（黑底白字）＝現在、這一個　　斜線紋＝不能用
+//   粗框（3px 黑）＝看這裡　　　　　　虛線＝還沒到
+// 每一種狀態都再搭配圖示與文字，不靠顏色、也不只靠單一手法。
+// 對比度皆以 WCAG 公式計算，括號內沒有特別註明的是「對純白頁面底色」的比值
+// ============================================================
+
+// ---------- 1. 色彩：純黑、純白、中灰階 ----------
+// 基礎色票（設計 Guideline 的「色彩」章節即以此為準）
+$ink:      #000000; // 純黑：文字、黑色量體、主要按鈕、選中、條碼、QR 模組（21:1）
+$paper:    #FFFFFF; // 純白：頁面底色、卡片、黑底上的字（對純黑 21:1）
+$wall:     #EDEDED; // 展牆灰：區塊底（票種區、列表頁首）、已售出座位、類別標籤底（黑字 17.9:1）
+$graphite: #5C5C5C; // 石墨灰：次要文字、說明、圖說（6.7:1；對展牆灰 5.7:1）
+$concrete: #808080; // 水泥灰：表單框線、斜線紋、停用框線（非文字 4.0:1；對展牆灰 3.4:1；對純黑 5.3:1）
+$fog:      #A3A3A3; // 霧灰：黑底上的次要文字（對純黑 8.3:1）。白底上只有 2.5:1，不要放在白底
+$line:     #D4D4D4; // 髮絲灰：白底上的分隔線（1.5:1，裝飾用，不承載資訊）
+$carbon:   #333333; // 碳灰：黑底上的分隔線、進度條軌道（對純黑 1.7:1，裝飾用）
+
+// Bootstrap 主題色：沒有彩色，所以語意色全部收斂到黑與石墨灰。
+// 「成功」「錯誤」「警示」長得一樣是刻意的：差別由圖示、文字與狀態語法（反白、斜線紋、粗框）決定
+$primary:   $ink;
+$secondary: $graphite;
+$success:   $ink;
+$info:      $graphite;
+$warning:   $ink;
+$danger:    $ink;
+$light:     $wall;
+$dark:      $ink;
+
+$theme-colors: (
+  "primary":   $primary,
+  "secondary": $secondary,
+  "success":   $success,
+  "info":      $info,
+  "warning":   $warning,
+  "danger":    $danger,
+  "light":     $light,
+  "dark":      $dark,
+);
+
+// 按鈕、標籤上的文字色：Bootstrap 的 color-contrast() 依序試「淺色 → 深色」，取第一個達 4.5:1 的
+// 純黑、石墨灰上會選到純白；展牆灰上選到純黑
+$color-contrast-light: $paper;
+$color-contrast-dark:  $ink;
+$min-contrast-ratio:   4.5;
+
+// 單一淺色主題：不輸出 [data-bs-theme="dark"] 那一份變數（作業系統深色模式時畫面也不變）
+$enable-dark-mode: false;
+
+// ---------- 全站底色與文字（Bootstrap 的 --bs-body-* 等 CSS 變數由這裡產生） ----------
+$body-bg:                  $paper;
+$body-color:               $ink;
+$body-secondary-color:     $graphite;
+$body-secondary-bg:        $wall;
+$body-tertiary-color:      $graphite;
+$body-tertiary-bg:         $wall;
+$body-emphasis-color:      $ink;
+$border-color:             $line;
+$border-color-translucent: rgba($ink, .16);
+$headings-color:           inherit; // 標題跟著所在區塊的文字色（白底黑字、.on-ink 黑底白字）
+
+// 連結：純黑＋底線；hover 底線加粗（不換色，黑白風格沒有「連結色」）
+$link-color:                    $ink;
+$link-hover-color:              $ink;
+$link-decoration:               underline;
+$link-underline-offset:         .25em;
+
+// 各狀態色的「文字、淡底、淡框」三件組（alert、.text-*-emphasis、.bg-*-subtle 共用）
+// 全部是「展牆灰底＋純黑框＋純黑字」；alert 的差別寫在 _base.scss 的 .alert-*（反白、斜線紋、粗框）
+$primary-text-emphasis:   $ink;
+$secondary-text-emphasis: $ink;
+$success-text-emphasis:   $ink;
+$info-text-emphasis:      $ink;
+$warning-text-emphasis:   $ink;
+$danger-text-emphasis:    $ink;
+$light-text-emphasis:     $ink;
+$dark-text-emphasis:      $ink;
+
+$primary-bg-subtle:       $wall;
+$secondary-bg-subtle:     $wall;
+$success-bg-subtle:       $wall;
+$info-bg-subtle:          $paper;
+$warning-bg-subtle:       $paper;
+$danger-bg-subtle:        $paper;
+$light-bg-subtle:         $wall;
+$dark-bg-subtle:          $wall;
+
+$primary-border-subtle:   $ink;
+$secondary-border-subtle: $concrete;
+$success-border-subtle:   $ink;
+$info-border-subtle:      $ink;
+$warning-border-subtle:   $ink;
+$danger-border-subtle:    $ink;
+$light-border-subtle:     $line;
+$dark-border-subtle:      $ink;
+
+// 元件的「選中」：反白（純黑底＋純白字），下拉選單、列表群組、核取方塊共用
+$component-active-bg:    $ink;
+$component-active-color: $paper;
+
+// 焦點環：3px 純黑實線，外推 2px 露出白色間隙（21:1）。
+// 黑底區塊（.on-ink）裡改成純白，見 _base.scss 的 --focus-color
+$focus-ring-width:      3px;
+$focus-ring-opacity:    1;
+$focus-ring-blur:       0;
+$focus-ring-color:      $ink;
+$focus-ring-double:     0 0 0 2px $paper, 0 0 0 5px $ink; // 自訂：內圈白色間隙、外圈 3px 純黑
+$focus-ring-box-shadow: $focus-ring-double;
+
+$mark-bg:    $ink;
+$mark-color: $paper;
+$kbd-bg:     $ink;
+$kbd-color:  $paper;
+$code-color: $ink;
+
+$hr-color:   $ink;
+$hr-opacity: 1;
+
+// ---------- 2. 字體與字級 ----------
+// 單一字體堆疊：英數先用 Archivo（俐落的無襯線 grotesk，有字寬軸），中文落到 Noto Sans TC。
+// 兩者都是無襯線，Notion「俐落無襯線字體」；不用襯線、不用等寬字
+$font-family-sans-serif: "Archivo", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+$font-family-base:       $font-family-sans-serif;
+$headings-font-family:   $font-family-sans-serif;
+
+$font-size-base:  1rem;      // 16px
+$font-size-sm:    .875rem;   // 14px
+$font-size-lg:    1.125rem;  // 18px
+$small-font-size: .8125rem;  // 13px
+
+// 字重：內文 400、強調 500、標題 700、大標 900（Noto Sans TC Black 的海報感）
+$font-weight-light:    400;
+$font-weight-normal:   400;
+$font-weight-medium:   500;
+$font-weight-semibold: 700;
+$font-weight-bold:     700;
+$font-weight-bolder:   900;
+$font-weight-black:    900; // 自訂：H1、H2、Display
+
+$line-height-base: 1.75; // 中文內文需要較寬鬆的行高
+$line-height-sm:   1.5;
+$line-height-lg:   1.9;
+
+// 字級階層（大小反差拉大：標題很大、說明很小，中間層級少）
+// Bootstrap 會用 RFS 在小螢幕自動縮小 1.5rem 以上的字級
+$h1-font-size: 3.5rem;    // 56px：活動名、頁面標題
+$h2-font-size: 2.25rem;   // 36px：區塊標題
+$h3-font-size: 1.375rem;  // 22px：卡片標題、票種名
+$h4-font-size: 1.125rem;  // 18px
+$h5-font-size: 1rem;      // 16px
+$h6-font-size: .875rem;   // 14px
+
+$headings-font-weight:   700;
+$headings-line-height:   1.25;
+$headings-margin-bottom: 1rem;
+
+$display-font-sizes: (
+  1: 7rem,    // 112px：首頁主標（RFS 在手機縮到約 44px）
+  2: 5.5rem,  // 88px
+  3: 4.5rem,  // 72px：主辦方數據
+  4: 3.5rem,  // 56px：應付總額
+  5: 3rem,
+  6: 2.5rem,
+);
+$display-font-weight: 900;
+$display-line-height: 1.08;
+
+$lead-font-size:   1.25rem; // 20px
+$lead-font-weight: 400;
+
+// 自訂：字距（非 Bootstrap 變數，於 _base.scss 使用）
+$letter-spacing-body:    .02em;
+$letter-spacing-heading: 0;
+$letter-spacing-display: -.02em; // 大字收緊，像海報
+$letter-spacing-label:   .04em;  // 小字、標籤
+
+// 自訂：Archivo 的字寬（wdth 軸 62–125）。大數字加寬，看起來像展覽牆上的編號
+$font-stretch-wide: 112%;
+
+// ---------- 3. 間距：擴充 6–8 階，用於區塊留白 ----------
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * .25, // 4px
+  2: $spacer * .5,  // 8px
+  3: $spacer,       // 16px
+  4: $spacer * 1.5, // 24px
+  5: $spacer * 3,   // 48px
+  6: $spacer * 4,   // 64px
+  7: $spacer * 6,   // 96px
+  8: $spacer * 8,   // 128px
+);
+
+// 格線：左右各留 24px（≥ lg 32px，見 _base.scss），容器內距要 ≥ 欄距，.row 的負邊距才不會溢出
+$grid-gutter-width:   2rem;
+$container-padding-x: 3rem;
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  xxl: 1320px,
+);
+// RWD 斷點沿用 Bootstrap 預設：sm 576 / md 768 / lg 992 / xl 1200 / xxl 1400
+
+// ---------- 4. 圓角與陰影：直角、不用陰影 ----------
+// 全站 0 圓角（幾何方塊）。只有主辦方 Logo、radio、狀態圓點是圓的。
+// 不用 $enable-rounded: false，因為那會連 radio 的圓形一起拿掉
+$border-width:       1px;
+$border-radius-sm:   0;
+$border-radius:      0;
+$border-radius-lg:   0;
+$border-radius-xl:   0;
+$border-radius-xxl:  0;
+$border-radius-pill: 50rem; // 只給圓形 Logo、radio
+
+// 自訂：粗框的寬度（狀態語法「粗框＝看這裡」）
+$border-width-bold: 3px;
+
+// 分層不用陰影，用「黑框」與「反白」；陰影只留給浮層（對話框、下拉選單、底部固定列）
+$enable-shadows:   false;
+$box-shadow-sm:    0 1px 2px rgba($ink, .12);
+$box-shadow:       0 8px 24px rgba($ink, .16);
+$box-shadow-lg:    0 24px 64px rgba($ink, .24);
+$box-shadow-inset: inset 0 1px 2px rgba($ink, .1);
+
+$enable-negative-margins: true;
+
+// ---------- 5. 元件 ----------
+// 按鈕：主要＝純黑底＋純白字；次要＝白底＋2px 黑框。hover 一律「反白」（黑白互換）
+$btn-border-width:     2px;
+$btn-padding-y:        .625rem;  // 高 48px：(10 + 24 + 10) + 框線 2 × 2
+$btn-padding-x:        1.5rem;
+$btn-font-size:        1rem;
+$btn-line-height:      1.5;
+$btn-padding-y-sm:     .5rem;    // 高 44px，符合觸控目標
+$btn-padding-x-sm:     1rem;
+$btn-font-size-sm:     .875rem;
+$btn-padding-y-lg:     .875rem;  // 高 56px：付款按鈕
+$btn-padding-x-lg:     2rem;
+$btn-font-size-lg:     1.125rem;
+$btn-font-weight:      700;
+$btn-border-radius:    0;
+$btn-border-radius-sm: 0;
+$btn-border-radius-lg: 0;
+$btn-disabled-opacity: 1; // 停用不疊透明度，改用斜線紋與水泥灰（_base.scss），文字仍達 4.5:1
+$btn-focus-width:      $focus-ring-width;
+$btn-link-disabled-color: $graphite;
+
+// 表單：白底、水泥灰 1px 框（4.0:1）；focus 改成 2px 純黑框
+$input-bg:                    $paper;
+$input-color:                 $ink;
+$input-border-color:          $concrete;
+$input-border-width:          1px;
+$input-placeholder-color:     $graphite; // placeholder 也要 4.5:1（6.7:1）
+$input-padding-y:             .6875rem;  // 高 48px：(11 + 24 + 11) + 框線 1 × 2
+$input-padding-x:             1rem;
+$input-font-size:             1rem;
+$input-line-height:           1.5;
+$input-border-radius:         0;
+$input-focus-bg:              $paper;
+$input-focus-color:           $ink;
+$input-focus-border-color:    $ink;
+$input-focus-box-shadow:      0 0 0 1px $ink; // 與 1px 邊框合成 2px 純黑框
+$input-disabled-bg:           $wall;
+$input-disabled-color:        $graphite;
+$input-disabled-border-color: $line;
+$input-group-addon-bg:        $wall;
+$input-group-addon-color:     $ink;
+$input-group-addon-border-color: $concrete;
+$form-label-font-size:        .875rem;
+$form-label-font-weight:      700;
+$form-label-color:            $ink;
+$form-label-margin-bottom:    .5rem;
+$form-text-color:             $graphite;
+$form-text-font-size:         .8125rem;
+
+$form-select-indicator-color:  $ink;
+$form-select-focus-box-shadow: $input-focus-box-shadow;
+
+// 核取方塊、radio：白底＋水泥灰框；選中為反白（純黑底＋白勾）
+$form-check-input-width:                1.25em;
+$form-check-input-bg:                   $paper;
+$form-check-input-border:               2px solid $ink;
+$form-check-input-border-radius:        0;
+$form-check-input-checked-color:        $paper;
+$form-check-input-checked-bg-color:     $ink;
+$form-check-input-checked-border-color: $ink;
+$form-check-input-focus-border:         $ink;
+$form-check-input-focus-box-shadow:     $focus-ring-double;
+$form-check-input-disabled-opacity:     .45;
+$form-check-label-disabled-opacity:     1;
+
+// 驗證：錯誤框與訊息都是純黑；差別在 2px 粗框＋圖示＋文字（_base.scss）
+$form-feedback-valid-color:   $ink;
+$form-feedback-invalid-color: $ink;
+$form-feedback-font-size:     .875rem;
+$form-feedback-icon-valid-color:   $ink;
+$form-feedback-icon-invalid-color: $ink;
+
+// 關閉鈕 X：純黑
+$btn-close-color:         $ink;
+$btn-close-opacity:       1;
+$btn-close-hover-opacity: .7;
+$btn-close-focus-shadow:  $focus-ring-double;
+
+// 卡片：白底＋1px 純黑框（常態）；粗框、反白是狀態，不是裝飾
+$card-bg:            $paper;
+$card-color:         $ink;
+$card-border-color:  $ink;
+$card-border-radius: 0;
+$card-cap-bg:        transparent;
+$card-spacer-y:      1.5rem;
+$card-spacer-x:      1.5rem;
+
+// 頁首高度：sticky 側欄、步驟列、錨點捲動的位移都以此為準
+$site-header-height: 4.5rem;                     // 72px：上下內距 11px＋48px 的按鈕＋2px 純黑底線
+$sticky-top-offset:  $site-header-height + 2rem; // 104px：購票卡、篩選側欄、訂單明細（同 wireframe）
+
+// 導覽列
+$navbar-padding-y:                  .6875rem; // 11px：11 × 2 ＋ 48px 按鈕＋ 2px 底線 ＝ 72px
+$navbar-nav-link-padding-x:         1rem;
+$navbar-light-color:                $ink;
+$navbar-light-hover-color:          $ink;
+$navbar-light-active-color:         $paper; // 目前頁：反白（_header.scss）
+$navbar-light-brand-color:          $ink;
+$navbar-light-brand-hover-color:    $ink;
+$navbar-light-toggler-border-color: transparent;
+$navbar-toggler-border-radius:      0;
+$nav-link-font-size:                1rem;
+$nav-link-font-weight:              700;
+$nav-link-color:                    $ink;
+$nav-link-hover-color:              $ink;
+$nav-link-disabled-color:           $graphite;
+
+// 下拉選單
+$dropdown-bg:                  $paper;
+$dropdown-color:               $ink;
+$dropdown-border-color:        $ink;
+$dropdown-border-width:        2px;
+$dropdown-divider-bg:          $line;
+$dropdown-box-shadow:          $box-shadow;
+$dropdown-link-color:          $ink;
+$dropdown-link-hover-color:    $ink;
+$dropdown-link-hover-bg:       $wall;
+$dropdown-link-active-color:   $paper;
+$dropdown-link-active-bg:      $ink;
+$dropdown-link-disabled-color: $graphite;
+
+// 對話框、側邊抽屜：白底＋2px 純黑框；背後的遮罩是純黑七成
+$modal-content-bg:            $paper;
+$modal-content-color:         $ink;
+$modal-content-border-color:  $ink;
+$modal-content-border-width:  2px;
+$modal-content-border-radius: 0;
+$modal-header-border-color:   $ink;
+$modal-footer-border-color:   $line;
+$modal-header-padding:        1.25rem 1.5rem;
+$modal-inner-padding:         1.5rem;
+$modal-backdrop-bg:           $ink;
+$modal-backdrop-opacity:      .7;
+$offcanvas-bg-color:          $paper;
+$offcanvas-color:             $ink;
+$offcanvas-border-color:      $ink;
+$offcanvas-border-width:      2px;
+$offcanvas-backdrop-bg:       $ink;
+$offcanvas-backdrop-opacity:  .7;
+
+// Accordion：1px 純黑分隔；展開時標題不加底色，只把箭頭轉向
+$accordion-color:                   $ink;
+$accordion-bg:                      $paper;
+$accordion-border-color:            $ink;
+$accordion-border-radius:           0;
+$accordion-inner-border-radius:     0;
+$accordion-button-padding-y:        1.25rem;
+$accordion-button-padding-x:        1.25rem;
+$accordion-body-padding-y:          0;
+$accordion-body-padding-x:          1.25rem;
+$accordion-button-color:            $ink;
+$accordion-button-active-bg:        $paper;
+$accordion-button-active-color:     $ink;
+$accordion-icon-color:              $ink;
+$accordion-icon-active-color:       $ink;
+$accordion-button-focus-box-shadow: inset 0 0 0 3px $ink;
+
+// 標籤（Bootstrap .badge；本風格主要用 _base.scss 的 .tag）
+$badge-color:         $paper;
+$badge-font-weight:   700;
+$badge-border-radius: 0;
+$badge-padding-y:     .375em;
+$badge-padding-x:     .625em;
+
+// 麵包屑：分隔線「/」用石墨灰，目前頁純黑粗體
+$breadcrumb-divider:       quote("/");
+$breadcrumb-font-size:     .875rem;
+$breadcrumb-divider-color: $graphite;
+$breadcrumb-active-color:  $ink;
+$breadcrumb-margin-bottom: 0;
+
+// 提示框：白底＋純黑框；各狀態的反白、斜線紋、粗框寫在 _base.scss
+$alert-border-radius: 0;
+$alert-border-width:  2px;
+$alert-padding-y:     1rem;
+$alert-padding-x:     1.25rem;
+
+// 進度條（剩餘票數）：展牆灰軌道＋純黑條，高 6px；即將完售時軌道換成斜線紋（_base.scss .remaining）
+$progress-height:        .375rem;
+$progress-bg:            $wall;
+$progress-bar-bg:        $ink;
+$progress-border-radius: 0;
+$progress-bar-transition: none;
+
+// 表格
+$table-color:          $ink;
+$table-bg:             transparent;
+$table-border-color:   $ink;
+$table-cell-padding-y: .875rem;
+$table-cell-padding-x: 1rem;
+$table-striped-bg:     $wall;
+
+// 提示框、彈出框、toast：反白
+$tooltip-bg:            $ink;
+$tooltip-color:         $paper;
+$tooltip-opacity:       1;
+$tooltip-border-radius: 0;
+$toast-border-radius:   0;
+
+$figure-caption-color: $graphite;
+
+// ---------- 6. 票務專用語意（狀態語法） ----------
+// 斜線紋：45° 的水泥灰細線，代表「不能用」（售罄、不可選、逾時、失敗）
+// 用法：background-image: $hatch;（不要放在文字正後方，文字下面要墊一塊實色）
+$hatch-gap:   6px;
+$hatch:       repeating-linear-gradient(-45deg, $concrete 0 1px, transparent 1px $hatch-gap);
+$hatch-dense: repeating-linear-gradient(-45deg, $ink 0 1px, transparent 1px 4px); // 進度條軌道（細，要密一點才看得出）
+// 警示帶：黑白粗斜紋，只用在「失敗」類的大面積回饋（驗票失敗、付款失敗的圖示框）
+$hazard:      repeating-linear-gradient(-45deg, $ink 0 8px, $paper 8px 16px);
+
+// 剩餘票數 ≤ 25% 為「即將完售」（規格 §2.5 RemainingBar）
+$scarce-threshold: 25%;
+
+// 座位尺寸：至少 28px（規格 §2.11）。≥ xl 36px；md～xl 30px（8 欄寬也放得下 14 個座位）；< md 28px＋水平捲動
+$seat-size:    2.25rem;
+$seat-size-md: 1.875rem;
+$seat-size-sm: 1.75rem;
+
+// 底部固定列高度（活動細節的購票列、結帳的付款列）：<body> 要補同樣的 padding-bottom
+$mobile-bar-height: 4.5rem; // 72px

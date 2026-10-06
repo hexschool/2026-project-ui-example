@@ -1,0 +1,256 @@
+// ============================================================
+// ★ 本風格的招牌：工筆座位圖（.seatmap）
+//
+// 像建築師的音樂廳平面圖：舞台是雙細線的弧形＋斜線陰影，座位是 1px 細線畫的椅子，
+// 每一排沿著舞台排成弧形（兩端高、中間低，椅子微微轉向舞台）。
+//
+// 4 種座位狀態不只靠顏色，細線版本更要加符號：
+//   可選 .seat                         細線椅形
+//   已選 .seat[aria-pressed="true"]     赭紅實心＋象牙勾勾（靜態示意可用 .is-selected）
+//   已售出 .seat.is-sold（disabled）    米卡其底＋細線叉叉
+//   不可選 .seat.is-blocked（disabled） 虛線椅形＋斜線紋
+// 座位按鈕 32 × 32（≥ 28px）；整張圖放在 .seatmap-scroll 裡，放不下時在卡片內水平捲動
+// ============================================================
+.seatmap-scroll {
+  overflow-x: auto;
+  padding: .5rem .25rem 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: $rule-strong transparent;
+
+  &:focus-visible { outline-offset: -2px; }
+}
+.seatmap-canvas {
+  width: max-content;
+  margin-inline: auto;
+}
+
+// ---------- 舞台：半橢圓弧＋內側第二道弧線＋斜線陰影 ----------
+.seatmap-stage {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  width: 86%;
+  height: 3.25rem;
+  margin: 0 auto 2rem;
+  border: 1px solid $ink-muted;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  background:
+    repeating-linear-gradient(-45deg, transparent 0 5px, rgba($rule-strong, .55) 5px 6px),
+    $khaki;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 6px 7% -1px;
+    border: 1px solid $rule-strong;
+    border-bottom: 0;
+    border-radius: inherit;
+  }
+
+  span {
+    position: relative;
+    margin-bottom: .375rem;
+    padding: 0 .5rem 0 1rem;
+    border: 1px solid $rule;
+    background-color: $vellum;
+    font-size: .875rem;
+    letter-spacing: .5em; // 兩個字拉開，像平面圖上的標註
+  }
+}
+
+// ---------- 一排座位 ----------
+.seat-row {
+  display: flex;
+  align-items: flex-start;
+  gap: $seat-gap;
+  height: $seat-size + .5rem;
+}
+.seat-row-label {
+  flex: none;
+  width: 2.5rem;
+  padding-top: .375rem;
+  color: $ink-muted;
+  font-size: .8125rem;
+  font-variant-numeric: lining-nums tabular-nums;
+  white-space: nowrap;
+
+  &:first-child { text-align: right; margin-right: .25rem; }
+  &:last-child { margin-left: .25rem; }
+}
+// 號碼列（裝飾，aria-hidden）：與座位同樣排成弧形
+.seat-numbers {
+  display: flex;
+  gap: $seat-gap;
+  padding-left: 2.5rem + .25rem + $seat-gap;
+
+  span {
+    width: $seat-size;
+    color: $ink-faint;
+    font-size: .75rem;
+    text-align: center;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+}
+
+// 弧形排列：第 1～14 個座位依位置往下偏移、轉一點角度（中間最低、兩端最高）
+// 公式：偏移 = 弧高 × (1 − ((i − 7.5) ÷ 6.5)²)；角度 = (7.5 − i) × 1.6°
+@for $i from 1 through 14 {
+  $t: divide($i - 7.5, 6.5); // divide() 是 Bootstrap 提供的除法函式
+  .seat-row > .seat:nth-of-type(#{$i}),
+  .seat-numbers > span:nth-child(#{$i}) {
+    transform: translateY($seat-arc * (1 - $t * $t)) rotate(#{(7.5 - $i) * 1.6}deg);
+  }
+}
+
+// ---------- 座位（細線椅形） ----------
+// ::before 是椅背＋椅面（上緣圓弧的框），::after 是扶手與椅座的 U 形細線
+.seat {
+  position: relative;
+  flex: none;
+  width: $seat-size;
+  height: $seat-size;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $control;
+  cursor: pointer;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 2px 5px 7px;
+    border: 1px solid currentColor;
+    border-radius: 9px 9px 2px 2px;
+    background-color: $vellum;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    height: 9px;
+    border: 1px solid currentColor;
+    border-top: 0;
+    border-radius: 0 0 4px 4px;
+  }
+
+  &:hover:not(:disabled) {
+    color: $ochre;
+
+    &::before { background-color: $primary-bg-subtle; }
+  }
+  &:focus-visible {
+    outline: 2px solid $ochre;
+    outline-offset: 1px;
+    border-radius: $border-radius-sm;
+  }
+  &:disabled { cursor: not-allowed; }
+}
+// 已選：赭紅實心＋象牙勾勾
+.seat[aria-pressed="true"],
+.seat.is-selected {
+  color: $ochre;
+
+  &::before,
+  &:hover::before {
+    background-color: $ochre;
+    background-image: escape-svg(url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='#{$vellum}' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M3.5 8.5l3 3 6-7'/></svg>"));
+    background-size: 13px;
+  }
+}
+// 已售出：米卡其底＋細線叉叉
+.seat.is-sold {
+  color: $rule-strong;
+
+  &::before {
+    background-color: $khaki;
+    background-image:
+      linear-gradient(45deg, transparent calc(50% - .6px), $ink-muted calc(50% - .6px) calc(50% + .6px), transparent calc(50% + .6px)),
+      linear-gradient(-45deg, transparent calc(50% - .6px), $ink-muted calc(50% - .6px) calc(50% + .6px), transparent calc(50% + .6px));
+    background-size: 11px 11px;
+  }
+}
+// 不可選：虛線椅形＋斜線紋
+.seat.is-blocked {
+  color: $rule-strong;
+
+  &::before {
+    border-style: dashed;
+    background-color: transparent;
+    background-image: repeating-linear-gradient(135deg, transparent 0 3px, rgba($ink-muted, .45) 3px 4px);
+  }
+  &::after { border-style: dashed; }
+}
+
+// ---------- 圖例 ----------
+.seat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .5rem 1.5rem;
+  margin: .5rem 0 0;
+  padding: .75rem 0 0;
+  border-top: 1px solid $rule;
+  list-style: none;
+  font-size: .875rem;
+  color: $ink-muted;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+  }
+  // 圖例裡的座位只是示意，不是按鈕
+  .seat { cursor: default; transform: scale(.85); }
+}
+
+// ---------- 座位圖卡片 ----------
+.seatmap {
+  padding: 1.25rem;
+  border: 1px solid $rule;
+  border-radius: $border-radius-lg;
+  background-color: $vellum;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.5rem;
+  }
+}
+.seatmap-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .75rem 1.5rem;
+  margin-bottom: .75rem;
+
+  h3 { margin-bottom: 0; }
+}
+.seatmap-hint {
+  margin-bottom: 1rem;
+  color: $ink-muted;
+  font-size: .9375rem;
+}
+.seatmap-picked {
+  margin: 1rem 0 0;
+  padding: .75rem 1rem;
+  border-radius: $border-radius;
+  background-color: $parchment;
+  font-variant-numeric: lining-nums tabular-nums;
+
+  strong { font-weight: $font-weight-medium; }
+}
+
+// 992–1199px：8 欄的卡片較窄，座位縮成 30px、只顯示左側排號
+@include media-breakpoint-only(lg) {
+  .seatmap {
+    .seat-row { gap: .3125rem; }
+    .seat-numbers { gap: .3125rem; }
+  }
+}
+// 右側排號只在 1200px 以上顯示（Notion：排號在每排左側，右側選做）
+@include media-breakpoint-down(xl) {
+  .seat-row-label:last-child { display: none; }
+}

@@ -1,0 +1,280 @@
+// ============================================================
+// 本風格的招牌：切角全息電子票券（ETicket）＋全息防偽 QR Code
+//
+// 票券外形：左上、右下大切角（28px），撕線兩側是 V 形缺口（不是圓孔），不對稱、粗暴。
+// 做法：上下兩半各自用 clip-path 切：上半切掉左上角與底邊兩端，下半切掉頂邊兩端與右下角，
+//       兩半接起來，撕線兩側就是 V 形缺口。撕線本身是一條全息虛線。
+//
+// <article class="eticket" aria-label="電子票券 T-4471-01">
+//   <div class="eticket-head">…活動名、票種、時間…</div>
+//   <div class="eticket-body">
+//     <div class="eticket-qr"><div class="qr">…</div></div>
+//     <p class="eticket-note">每 60 秒自動更新，請勿截圖轉傳</p>
+//     <p class="eticket-no">票號 <span class="num">T-4471-01</span></p>
+//   </div>
+// </article>
+//
+// 狀態：預設＝有效（全息流動）、.is-used 已使用、.is-expired 已過期、.is-cancelled 活動已取消
+// ============================================================
+$eticket-notch-depth:  1.125rem; // V 形缺口的深度（18px）
+$eticket-notch-half:   .875rem;  // V 形缺口的半高（上下各 14px）
+
+.eticket {
+  --cut: #{$cut-lg};
+  position: relative;
+  width: 100%;
+  max-width: 23.75rem; // 380px
+  margin-inline: auto;
+  text-align: left;
+}
+
+// 上半：活動照片壓暗當底＋左側全息條＋活動資訊
+// <img class="eticket-bg" src="images/event-midnight-noise.jpg" alt="">（裝飾，alt 留空）
+.eticket-head {
+  position: relative;
+  isolation: isolate;
+  padding: 1.75rem 1.5rem 1.75rem 2rem;
+  background-color: $rack;
+  clip-path: polygon(
+    var(--cut) 0, 100% 0,
+    100% calc(100% - #{$eticket-notch-half}), calc(100% - #{$eticket-notch-depth}) 100%,
+    $eticket-notch-depth 100%, 0 calc(100% - #{$eticket-notch-half}),
+    0 var(--cut)
+  );
+
+  // 左側全息條：6px 寬，跟著上半的切角一起被切
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: .375rem;
+    background-image: $holo-gradient;
+    background-size: 100% 300%;
+    animation: holo-drift-y $holo-duration ease-in-out infinite alternate;
+  }
+}
+.eticket-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .32;
+  // 往下越暗，文字壓在暗部（頻閃白字 ≥ 12:1）
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
+  mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
+}
+@keyframes holo-drift-y {
+  from { background-position: 50% 0%; }
+  to   { background-position: 50% 100%; }
+}
+.eticket-title {
+  margin-bottom: .75rem;
+  font-size: 1.625rem;
+  line-height: 1.25;
+}
+.eticket-facts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+
+  li + li { margin-top: .25rem; }
+  strong {
+    color: $strobe;
+    font-weight: 700;
+  }
+}
+.eticket-type {
+  display: inline-flex;
+  margin-bottom: .75rem;
+  padding: .125rem .5rem;
+  background-color: $aurora;
+  color: $blackout;
+  font-size: .8125rem;
+  font-weight: 700;
+}
+
+// 下半：頻閃白底（QR 一定是深色模組＋淺色底），撕線是全息虛線
+.eticket-body {
+  position: relative;
+  padding: 1.75rem 1.5rem 2rem;
+  background-color: $strobe;
+  color: $blackout;
+  text-align: center;
+  clip-path: polygon(
+    $eticket-notch-depth 0, calc(100% - #{$eticket-notch-depth}) 0,
+    100% $eticket-notch-half, 100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%, 0 100%,
+    0 $eticket-notch-half
+  );
+
+  // 撕線：全息漸層用虛線遮罩切成一段一段
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 $eticket-notch-depth auto;
+    height: 3px;
+    background-image: $holo-gradient;
+    -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 .5rem, transparent .5rem .875rem);
+    mask-image: repeating-linear-gradient(90deg, #000 0 .5rem, transparent .5rem .875rem);
+  }
+}
+.eticket-note {
+  margin: 1rem 0 .25rem;
+  font-size: $small-font-size;
+  font-weight: 500;
+  color: #3A3A42; // 頻閃白上的次要字（10.3:1）；只在票券下半使用
+}
+.eticket-no {
+  margin: 0;
+  font-family: $font-family-display;
+  font-size: .9375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .04em;
+}
+// QR 的位置：最寬 216px 置中；狀態戳記疊在這一層（不放進 .qr，才不會跟著 QR 一起變灰）
+.eticket-qr {
+  position: relative;
+  max-width: 13.5rem;
+  margin-inline: auto;
+}
+// 狀態戳記：已使用／已過期／活動已取消（壓在 QR 上，只有這三種狀態的票券才放）
+// <p class="eticket-stamp"><i class="bi bi-check2-circle" aria-hidden="true"></i>已使用</p>
+.eticket-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .375rem .875rem;
+  border: 2px solid currentColor;
+  background-color: $blackout;
+  color: $strobe;
+  font-weight: 900;
+  font-size: 1.125rem;
+  white-space: nowrap;
+  transform: translate(-50%, -50%) rotate(-8deg);
+}
+
+// ---------- QRCode：全息防偽 ----------
+// <div class="qr">
+//   <img class="qr-code" src="images/qr-t-4471-01.svg" alt="入場 QR Code，票號 T-4471-01" width="200" height="200">
+//   <span class="qr-holo" aria-hidden="true"></span>
+// </div>
+// - .qr 的外框（6px）是全息漸層，非常慢地流動
+// - .qr-holo 是蓋在 QR 上的半透明全息細斜線，緩慢平移；用 mask 挖掉三個角的定位方塊，
+//   並用 mix-blend-mode: multiply 疊色：深色模組維持全黑，只有淺色底被染上細線，掃描不受影響
+// - prefers-reduced-motion 時兩者都停住，變成靜態紋理
+.qr {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: .375rem;
+  background-image: $holo-gradient;
+  background-size: 300% 100%;
+  animation: holo-drift $holo-duration ease-in-out infinite alternate;
+  vertical-align: top;
+}
+.qr-code {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+.qr-holo {
+  position: absolute;
+  inset: .375rem; // 跟 QR 圖片一樣大
+  mix-blend-mode: multiply;
+  opacity: .85;
+  pointer-events: none;
+  // 挖掉三個定位方塊：QR 是 33 格（25 格＋四周 4 格空白），定位方塊連同分隔線落在每個角的 12 格內（約 37%）
+  -webkit-mask:
+    linear-gradient(#000 0 0) top left / 37% 37% no-repeat,
+    linear-gradient(#000 0 0) top right / 37% 37% no-repeat,
+    linear-gradient(#000 0 0) bottom left / 37% 37% no-repeat,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) top left / 37% 37% no-repeat,
+    linear-gradient(#000 0 0) top right / 37% 37% no-repeat,
+    linear-gradient(#000 0 0) bottom left / 37% 37% no-repeat,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+
+  // 細斜線本體：全息漸層 × 斜線遮罩。遮罩是 12px 的正方形磚，斜線間距剛好是 12 ÷ √2，所以平移時接縫看不出來
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: $holo-gradient;
+    background-size: 200% 200%;
+    -webkit-mask-image: repeating-linear-gradient(45deg, #000 0 1.5px, transparent 1.5px 8.4853px);
+    -webkit-mask-size: 12px 12px;
+    mask-image: repeating-linear-gradient(45deg, #000 0 1.5px, transparent 1.5px 8.4853px);
+    mask-size: 12px 12px;
+    animation: qr-lines $holo-lines-duration linear infinite;
+  }
+}
+@keyframes qr-lines {
+  from { -webkit-mask-position: 0 0; mask-position: 0 0; }
+  to   { -webkit-mask-position: 120px 0; mask-position: 120px 0; }
+}
+
+// ---------- 票券狀態 ----------
+// 已使用：QR 蓋黑紗＋「已使用」戳記；全息停止並轉灰
+.eticket.is-used {
+  .qr,
+  .eticket-head::before {
+    animation: none;
+    filter: grayscale(1);
+  }
+  .qr::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba($blackout, .72);
+  }
+  .eticket-stamp { color: $aurora; }
+}
+// 已過期：整張降對比、QR 模糊
+.eticket.is-expired {
+  filter: grayscale(1);
+  opacity: .62;
+
+  .qr,
+  .eticket-head::before { animation: none; }
+  .qr-code { filter: blur(5px); }
+  .qr-holo { display: none; }
+  .eticket-stamp { color: $strobe; }
+}
+// 活動已取消：上半壓雷射紅斜紋警示帶、QR 隱藏
+.eticket.is-cancelled {
+  .eticket-head {
+    background-image: repeating-linear-gradient(-45deg, rgba($laser, .22) 0 .5rem, transparent .5rem 1rem);
+  }
+  .qr,
+  .eticket-head::before { animation: none; filter: grayscale(1); }
+  .qr-code { opacity: .08; }
+  .qr-holo { display: none; }
+  .eticket-stamp { color: $laser; }
+}
+
+// 多張票：第 1 張，共 3 張＋左右切換（Bootstrap Carousel）
+.eticket-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+}
+.eticket-carousel .carousel-item {
+  padding-bottom: .25rem;
+}

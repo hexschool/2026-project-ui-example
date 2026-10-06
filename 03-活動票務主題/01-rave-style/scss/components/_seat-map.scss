@@ -1,0 +1,151 @@
+// ============================================================
+// SeatMap 座位圖：A 區 4 排 × 14 號，舞台在上方
+// 每個座位是 <button type="button">，4 種狀態不只靠顏色：
+//   可選    空心框
+//   已選    極光綠實心＋勾勾（aria-pressed="true"）
+//   已售出  舞池灰底＋ ✕（disabled）
+//   不可選  斜線紋、虛線框（disabled）
+// < 768px 座位圖在卡片內水平捲動（整頁不會被撐寬），座位 32px（≥ 28px）
+// ============================================================
+.seat-map {
+  padding: 1.5rem;
+
+  @include media-breakpoint-down(sm) {
+    padding: 1.25rem 1rem;
+  }
+}
+.seat-map-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1.5rem;
+  margin-bottom: .75rem;
+
+  h3 { margin: 0; }
+}
+.seat-map-hint {
+  margin-bottom: 1.25rem;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+}
+// 可水平捲動的區域
+.seat-map-scroll {
+  overflow-x: auto;
+  padding-bottom: .5rem; // 捲軸不要貼著座位
+}
+.seat-map-grid {
+  min-width: 34rem; // 14 個座位＋排號放得下的寬度；容器較窄時在卡片內捲動
+}
+// 舞台：梯形，底邊一條極光綠光
+.seat-stage {
+  margin: 0 3.5rem 1.5rem;
+  padding: .5rem;
+  background-color: $floor;
+  border-bottom: 2px solid $aurora;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 1.5rem) 100%, 1.5rem 100%);
+  color: $strobe;
+  font-size: $small-font-size;
+  font-weight: 700;
+  letter-spacing: .4em;
+  text-align: center;
+}
+.seat-zone {
+  margin-bottom: .5rem;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  text-align: center;
+}
+.seat-row {
+  display: grid;
+  grid-template-columns: 3rem repeat(14, minmax(0, 1fr));
+  align-items: center;
+  gap: .375rem;
+
+  + .seat-row { margin-top: .375rem; }
+}
+.seat-row-label {
+  color: $body-secondary-color;
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.seat {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-width: 1.75rem; // 28px
+  aspect-ratio: 1;
+  max-height: 2.25rem;
+  padding: 0;
+  border: 1px solid $control;
+  background-color: transparent;
+  color: $blackout;
+  font-size: .875rem;
+  @include bevel(.25rem);
+
+  &::before {
+    font-family: bootstrap-icons;
+    line-height: 1;
+  }
+  &:hover:not(:disabled) {
+    border-color: $aurora;
+    background-color: rgba($aurora, .15);
+  }
+  &:focus-visible {
+    outline: 2px solid $aurora;
+    outline-offset: 2px;
+  }
+  // 已選：實心＋勾（圖例裡的 <span> 用 .is-selected）
+  &[aria-pressed="true"],
+  &.is-selected {
+    border-color: $aurora;
+    background-color: $aurora;
+
+    &::before { content: "\F633"; } // bi-check-lg 的字碼
+  }
+  // 已售出：✕
+  &.is-sold {
+    border-color: $floor;
+    background-color: $floor;
+    color: $dim;
+
+    &::before { content: "\F659"; } // bi-x-lg 的字碼
+  }
+  // 不可選：斜線紋＋虛線框
+  &.is-blocked {
+    border-style: dashed;
+    border-color: $line-strong;
+    @include hatch($line-strong, 5px);
+  }
+  &:disabled { cursor: not-allowed; }
+}
+// 圖例：用同一個 .seat 的小尺寸
+.seat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1.25rem;
+  margin: 1.25rem 0 0;
+  padding: 1rem 0 0;
+  border-top: 1px solid $line;
+  list-style: none;
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .seat {
+    width: 1.25rem;
+    min-width: 1.25rem;
+    font-size: .625rem;
+  }
+}
+.seat-selected {
+  margin: 1rem 0 0;
+  font-size: $font-size-sm;
+
+  strong { color: $aurora; }
+}

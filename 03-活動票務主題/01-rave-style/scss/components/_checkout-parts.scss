@@ -1,0 +1,269 @@
+// ============================================================
+// 結帳用的元件：CheckoutStepper 步驟列、OrderSummary 訂單明細、PaymentOptions 付款方式、ResultPanel 付款結果
+// （結帳頁與 Guideline 共用）
+// ============================================================
+
+// ---------- CheckoutStepper ----------
+// <div class="stepper">
+//   <ol class="stepper-steps">
+//     <li class="is-done">…確認訂單</li>
+//     <li class="is-current" aria-current="step">…填寫購票資訊</li>
+//     <li>…付款完成</li>
+//   </ol>
+//   <p class="countdown …" role="timer">…</p>
+// </div>
+// 三種步驟：已完成（綠框＋勾）、目前（綠實心＋粗體）、未到（虛線框＋編號）
+// 整列狀態：預設、.is-warn（剩 2 分鐘：整列霓虹粉框）、.is-expired（逾時：整列停用）
+.stepper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1.5rem;
+  padding: .875rem 1.25rem;
+  border: 1px solid $line-strong;
+  background-color: $rack;
+  @include bevel($cut-sm);
+
+  &.is-warn {
+    border: 2px solid $neon;
+    background-color: $warning-bg-subtle;
+  }
+  &.is-expired {
+    border-style: dashed;
+    background-color: $blackout;
+
+    .stepper-steps { opacity: .5; }
+  }
+
+  // < 768px：倒數換到第二行滿寬
+  @include media-breakpoint-down(md) {
+    .countdown { width: 100%; font-size: $font-size-sm; }
+  }
+}
+.stepper-steps {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    color: $body-secondary-color;
+    font-size: $font-size-sm;
+    white-space: nowrap;
+  }
+  // 步驟之間的連接線
+  li + li::before {
+    content: "";
+    width: 2rem;
+    height: 1px;
+    margin-right: .25rem;
+    background-color: $line-strong;
+
+    @include media-breakpoint-down(sm) { width: 1rem; }
+  }
+  li.is-done + li::before { background-color: $aurora; }
+  li.is-current {
+    color: $strobe;
+    font-weight: 700;
+  }
+  // < 768px：只顯示編號＋目前步驟的文字
+  @include media-breakpoint-down(md) {
+    li:not(.is-current) .stepper-text {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
+  }
+}
+.stepper-num {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px dashed $control;
+  font-family: $font-family-display;
+  font-size: .75rem;
+  font-weight: 700;
+  @include bevel(.25rem);
+
+  .is-done & {
+    border: 1px solid $aurora;
+    color: $aurora;
+  }
+  .is-current & {
+    border: 1px solid $aurora;
+    background-color: $aurora;
+    color: $blackout;
+  }
+}
+
+// ---------- OrderSummary 訂單明細 ----------
+.order-summary {
+  padding: 1.5rem;
+
+  hr { margin-block: 1.25rem; }
+}
+.order-summary-title {
+  margin-bottom: 1.25rem;
+  font-size: 1.25rem;
+}
+.order-summary-event {
+  display: grid;
+  grid-template-columns: 5.25rem 1fr;
+  gap: 1rem;
+  align-items: center;
+
+  .img-frame {
+    --cut: #{$cut-sm};
+    aspect-ratio: 4 / 3;
+    clip-path: $cut-polygon;
+  }
+  h3 { margin-bottom: .25rem; font-size: 1.0625rem; }
+  p { margin: 0; color: $body-secondary-color; font-size: $small-font-size; }
+}
+.order-summary-label {
+  margin-bottom: .75rem;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  font-weight: 500;
+}
+.order-summary-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: $font-size-sm;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  li + li { margin-top: .75rem; }
+  small {
+    display: block;
+    color: $body-secondary-color;
+  }
+  .price { font-size: .875rem; }
+}
+.order-summary-total {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: .5rem 1rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+
+  .price {
+    color: $aurora;
+    font-size: 2rem;
+    font-weight: 800;
+  }
+}
+.order-summary-note {
+  margin: 0;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+}
+
+// ---------- PaymentOptions 付款方式 ----------
+// 快速支付卡：一鍵付款，不需填卡號＋3 顆等寬按鈕（≥ 768px 一列，< 768px 上下排）
+.pay-quick {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+.pay-quick-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+
+  .bi { color: $aurora; }
+}
+.pay-quick-buttons {
+  display: grid;
+  gap: .75rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .btn { min-height: 3rem; }
+}
+// 其他付款方式：Bootstrap Accordion，題目前面畫一個單選圓點（展開＝選中）
+.pay-methods {
+  .accordion-item {
+    border-color: $line-strong;
+  }
+  .accordion-button {
+    gap: .75rem;
+    font-weight: 700;
+
+    // 單選圓點：收合時空心、展開時極光綠實心
+    &::before {
+      content: "";
+      flex: 0 0 auto;
+      width: 1.25rem;
+      height: 1.25rem;
+      border: 1px solid $control;
+      border-radius: 50%;
+      background-color: $rack;
+    }
+    &:not(.collapsed)::before {
+      border: 5px solid $aurora;
+      background-color: $blackout;
+    }
+  }
+  .accordion-button small {
+    color: $body-secondary-color;
+    font-weight: 400;
+  }
+}
+
+// ---------- ResultPanel 付款結果 ----------
+.result-panel {
+  text-align: center;
+}
+.result-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 1rem;
+  border-radius: 50%;
+  font-size: 2rem;
+
+  &.is-success { background-color: $aurora; color: $blackout; }
+  &.is-fail    { background-color: $laser;  color: $blackout; }
+}
+.result-title {
+  margin-bottom: .75rem;
+  font-size: 1.625rem;
+}
+.result-text {
+  max-width: 32em;
+  margin: 0 auto 1.75rem;
+  color: $body-secondary-color;
+
+  .countdown-num { color: $neon; font-size: 1.125em; }
+}
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .75rem;
+  margin-top: 1.75rem;
+
+  @include media-breakpoint-down(sm) {
+    .btn { flex: 1 1 100%; }
+  }
+}

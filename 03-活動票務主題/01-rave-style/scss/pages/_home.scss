@@ -1,0 +1,304 @@
+// ============================================================
+// 首頁 index.html（class 前綴 home-）
+// Hero 滿版 → 搜尋列（≥ lg 壓住 Hero 下緣）→ 價值主張 → 情境入口 → 本週熱門 → 評價與保障 → 主辦方轉換帶
+// ============================================================
+
+// ---------- Hero ----------
+// 滿版照片，高度約一個視窗扣掉頁首（至少 560px、最多 760px）；文字壓在左下
+// 倒數小卡：≥ 1200px 疊在右下；< 1200px 放在文字下方
+.home-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: clamp(35rem, calc(100svh - #{$site-header-height}), 47.5rem);
+  padding-block: map-get($spacers, 7) map-get($spacers, 6);
+  overflow: hidden;
+  isolation: isolate;
+
+  @include media-breakpoint-up(lg) {
+    padding-bottom: map-get($spacers, 7) + 1rem; // 留給往上壓的搜尋列
+  }
+}
+.home-hero-img {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+// 暗部：左下最暗（壓主標），往右上漸淡；底部再壓一層讓搜尋列與下一區接得起來
+.home-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(0deg, $blackout 0%, rgba($blackout, 0) 28%),
+    linear-gradient(20deg, rgba($blackout, .92) 10%, rgba($blackout, .55) 45%, rgba($blackout, .05) 75%);
+
+  // < 1200px 倒數小卡排在文字下方，文字被推到照片中段：上方留一點舞台光，其餘壓暗
+  @include media-breakpoint-down(xl) {
+    background: linear-gradient(180deg, rgba($blackout, .2) 0%, rgba($blackout, .72) 30%, rgba($blackout, .9) 55%, $blackout 100%);
+  }
+}
+.home-hero-inner {
+  display: grid;
+  gap: map-get($spacers, 5);
+  align-items: end;
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: 1fr 20rem;
+  }
+}
+// 主標：極粗、極大，帶一點雙色光的色散（靜態）
+.home-hero-title {
+  max-width: 6.5em; // 中文在逗號處換成兩行：「好的現場，」「不應該錯過。」
+  margin-bottom: map-get($spacers, 4);
+  font-size: clamp(3rem, 1.6rem + 5.6vw, 5.5rem);
+  font-weight: 900;
+  line-height: 1.12;
+  letter-spacing: -.02em;
+  text-shadow: $chroma-shadow;
+  word-break: keep-all;
+}
+.home-hero-lead {
+  max-width: 28em;
+  text-shadow: 0 1px .75rem rgba($blackout, .9); // 照片亮部上也讀得清楚
+  margin-bottom: map-get($spacers, 4);
+  color: $strobe;
+  font-size: $font-size-lg;
+}
+.home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+
+  @include media-breakpoint-down(sm) {
+    .btn { flex: 1 1 100%; }
+  }
+}
+
+// 倒數小卡：切角票券的縮小版
+.hero-ticket {
+  --cut: #{$cut-lg};
+  --cut-line: #{$line-strong};
+  --cut-fill: #{$rack};
+  padding: 1.5rem 1.5rem 1.5rem 1.75rem;
+
+  @include media-breakpoint-down(xl) {
+    max-width: 26rem;
+  }
+  // 左側霓虹粉條：稀缺的提醒
+  > .hero-ticket-bar {
+    position: absolute;
+    inset: var(--cut) auto 1rem 0;
+    width: 3px;
+    background-color: $neon;
+  }
+  .countdown { margin-block: 1rem; font-size: $font-size-sm; }
+  .remain { margin-bottom: 1.25rem; }
+}
+.hero-ticket-title {
+  margin-bottom: .375rem;
+  font-size: 1.375rem;
+}
+.hero-ticket-meta {
+  margin: 0;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+}
+
+// ---------- 搜尋列：≥ lg 往上壓住 Hero 下緣 ----------
+.home-search {
+  position: relative;
+  z-index: 2;
+  margin-top: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    margin-top: -3.5rem;
+  }
+}
+
+// ---------- 價值主張：xs 1 欄 → sm 2 欄 → lg 4 欄 ----------
+.home-why-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid $aurora;
+  color: $aurora;
+  font-size: 1.5rem;
+  @include bevel($cut-sm);
+}
+.home-why-item {
+  height: 100%;
+  padding-top: 1.5rem;
+  border-top: 1px solid $line-strong;
+
+  h3 { font-size: 1.25rem; }
+  p { margin: 0; color: $body-secondary-color; }
+}
+
+// ---------- 情境入口 ----------
+.home-cities {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1rem;
+  margin-top: map-get($spacers, 5);
+}
+.home-cities-label {
+  margin: 0;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+  font-weight: 500;
+}
+
+// ---------- 本週熱門：橫向捲動軌道 ----------
+// ≥ 1200px 4 張剛好一列（箭頭停用）；< 1200px 可橫向滑動，手機一張約 80% 寬、露出下一張的邊
+.home-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 80%;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0 0 .75rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  list-style: none;
+  @include bleed-x;
+
+  > li { scroll-snap-align: start; }
+
+  @include media-breakpoint-up(sm) { grid-auto-columns: 18.5rem; }
+  @include media-breakpoint-up(xl) {
+    grid-auto-columns: calc((100% - 3 * 1.25rem) / 4);
+    overflow-x: visible;
+  }
+}
+@include media-breakpoint-down(sm) {
+  .home-rail { scroll-padding-inline: $container-padding-x * .5; }
+}
+.home-rail-nav {
+  display: flex;
+  gap: .5rem;
+
+  @include media-breakpoint-up(xl) { display: none; } // 4 張剛好一列時不需要
+}
+
+// ---------- 評價與保障 ----------
+.home-review {
+  height: 100%;
+  margin: 0;
+  padding: 1.75rem;
+
+  blockquote {
+    position: relative;
+    margin: 0 0 1.5rem;
+    padding-top: 2.25rem;
+    font-size: 1.1875rem;
+    font-weight: 700;
+    line-height: 1.6;
+
+    // 大引號：霓虹粉，Unbounded
+    &::before {
+      content: "“";
+      position: absolute;
+      top: -.5rem;
+      left: 0;
+      color: $neon;
+      font-family: $font-family-display;
+      font-size: 3.5rem;
+      line-height: 1;
+    }
+  }
+  figcaption {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    color: $body-secondary-color;
+    font-size: $font-size-sm;
+  }
+}
+.home-review-avatar {
+  --cut: .375rem;
+  width: 3rem;
+  height: 3rem;
+  object-fit: cover;
+  clip-path: $cut-polygon;
+}
+.home-guarantee {
+  height: 100%;
+  padding: 1.75rem;
+}
+.home-guarantee-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .5rem;
+  color: $aurora;
+  font-size: $font-size-sm;
+  font-weight: 700;
+}
+.home-guarantee-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding-block: 1.25rem;
+    + li { border-top: 1px solid $line; }
+    &:last-child { padding-bottom: 0; }
+  }
+  h3 { margin-bottom: .375rem; font-size: 1.125rem; }
+  p { margin: 0; color: $body-secondary-color; font-size: $font-size-sm; }
+}
+
+// ---------- 主辦方轉換帶 ----------
+// 背景照片＋左側黑色遮罩；< lg 文字在上、按鈕在下滿寬
+.home-organizer {
+  position: relative;
+  padding-block: map-get($spacers, 7);
+  overflow: hidden;
+  isolation: isolate;
+  border-top: 1px solid $line;
+
+  > img {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 70% center;
+  }
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(90deg, rgba($blackout, .95) 0%, rgba($blackout, .8) 45%, rgba($blackout, .25) 100%);
+
+    @include media-breakpoint-down(lg) {
+      background: rgba($blackout, .78);
+    }
+  }
+}
+.home-organizer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 4);
+
+  h2 { margin-bottom: .5rem; font-size: clamp(1.75rem, 1.2rem + 2vw, 2.75rem); }
+  p { max-width: 30em; margin: 0; color: $strobe; }
+
+  @include media-breakpoint-down(lg) {
+    .btn { width: 100%; }
+  }
+}

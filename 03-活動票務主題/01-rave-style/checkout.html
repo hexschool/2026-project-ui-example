@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>購票確認與快速支付｜StageOne 城市現場</title>
+  <meta name="description" content="確認午夜噪音祭 Vol.7 的訂單、填寫購票人資訊，用 Apple Pay、Google Pay、LINE Pay 或信用卡快速付款，付款成功後票券直接存進手機。">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Unbounded（品牌字、英數大字、價格、倒數、票號）、Noto Sans TC（中文標題 900、內文 400） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="has-bottom-bar">
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="navbar navbar-expand-lg" aria-label="主要導覽">
+        <div class="container-xl">
+          <a class="navbar-brand site-brand" href="index.html">
+            <img class="site-brand-mark" src="images/logo.svg" alt="" width="32" height="32">
+            <span class="site-brand-name">StageOne</span>
+            <span class="site-brand-sub">城市現場</span>
+          </a>
+
+          <!-- 992px 以下：搜尋＋選單按鈕 -->
+          <div class="d-flex d-lg-none align-items-center gap-1">
+            <button class="site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋活動">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <button class="navbar-toggler site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="events.html">活動列表</a></li>
+            </ul>
+            <div class="site-header-actions">
+              <button class="btn btn-text site-search-toggle d-none d-lg-inline-flex" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false">
+                <i class="bi bi-search" aria-hidden="true"></i>搜尋
+              </button>
+              <button class="btn btn-text" type="button" data-bs-toggle="modal" data-bs-target="#loginModal">登入／註冊</button>
+              <a class="btn btn-primary btn-sm" href="index.html#organizer">我要辦活動</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- 點「搜尋」在頁首下方展開的搜尋列 -->
+      <div id="siteSearch" class="collapse site-search">
+        <div class="container-xl">
+          <form class="site-search-form" role="search" action="events.html">
+            <label class="visually-hidden" for="siteSearchInput">搜尋活動</label>
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input id="siteSearchInput" class="form-control" type="search" name="q" placeholder="想看什麼？試試「爵士」、「書展」或「高雄」">
+            <button class="btn btn-primary" type="submit">搜尋活動</button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <h1 class="visually-hidden">購票確認與快速支付</h1>
+
+      <!-- ============ 區塊一：結帳步驟列（整列 sticky 在頁首下方） ============ -->
+      <div class="co-stepper-bar">
+        <div class="container-xl">
+          <div id="stepper" class="stepper">
+            <ol class="stepper-steps">
+              <li class="is-done"><span class="stepper-num" aria-hidden="true"><i class="bi bi-check-lg"></i></span><span class="stepper-text">確認訂單<span class="visually-hidden">（已完成）</span></span></li>
+              <li class="is-current" aria-current="step"><span class="stepper-num" aria-hidden="true">2</span><span class="stepper-text">填寫購票資訊</span></li>
+              <li><span class="stepper-num" aria-hidden="true">3</span><span class="stepper-text">付款完成</span></li>
+            </ol>
+            <!-- 保留倒數：設計稿固定 09:12（不用 JS 跑）。剩 2 分鐘時整列轉警示，見下方狀態示意 -->
+            <p class="countdown" role="timer"><i class="bi bi-stopwatch" aria-hidden="true"></i><span>為你保留的票券還有 <b class="countdown-num">09:12</b>，逾時將自動釋出。</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="container-xl co-main">
+        <!-- 欄位順序：DOM 是「明細 → 狀態示意 → 表單」；
+             < 992px 照 DOM 順序（查看明細在最上面）；≥ 992px 用 order 排成「狀態示意滿寬 → 表單 7 欄＋明細 5 欄」 -->
+        <div class="row g-4 g-xl-5">
+          <!-- ============ 區塊二：訂單明細（≥ 992px 右欄 sticky；< 992px 收成「查看明細」） ============ -->
+          <aside class="col-lg-5 order-1 order-lg-3" aria-labelledby="summaryTitle">
+            <div class="co-summary">
+              <button class="co-summary-toggle d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#orderSummary" aria-expanded="false" aria-controls="orderSummary">
+                <span class="co-summary-toggle-label">查看明細<small>應付總額</small></span>
+                <span class="d-flex align-items-center gap-3"><span class="price">NT$ 5,974</span><i class="bi bi-chevron-down" aria-hidden="true"></i></span>
+              </button>
+              <!-- .collapse 在 < 992px 預設收合；.d-lg-block 讓它在桌機永遠顯示 -->
+              <div id="orderSummary" class="collapse d-lg-block">
+                <div class="order-summary cut-panel">
+                  <h2 id="summaryTitle" class="order-summary-title">訂單明細</h2>
+                  <div class="order-summary-event">
+                    <div class="img-frame">
+                      <img src="images/event-midnight-noise.jpg" alt="午夜噪音祭現場，電子音樂人在光束與煙霧中演出" width="1600" height="1067" loading="lazy">
+                    </div>
+                    <div>
+                      <h3>午夜噪音祭 Vol.7</h3>
+                      <p class="num">2026/10/18 (六) 20:00</p>
+                      <p>Zepp New Taipei</p>
+                    </div>
+                  </div>
+                  <hr>
+                  <p class="order-summary-label">票種明細</p>
+                  <ul class="order-summary-rows">
+                    <li><span>預售全票 × 2</span><span class="price">NT$ 3,000</span></li>
+                    <li><span>VIP 搖滾區 × 1<small>座位 A 區 12 排 7 號</small></span><span class="price">NT$ 2,800</span></li>
+                  </ul>
+                  <hr>
+                  <ul class="order-summary-rows">
+                    <li><span>票券小計</span><span class="price">NT$ 5,800</span></li>
+                    <li><span>平台服務費<small>（每張票 3%）</small></span><span class="price">NT$ 174</span></li>
+                  </ul>
+                  <hr>
+                  <p class="order-summary-total"><span>應付總額</span><span class="price">NT$ 5,974</span></p>
+                  <p class="order-summary-note">票券將於付款成功後立即發送至你的帳號，不另寄實體票。</p>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <!-- ============ 設計稿狀態示意：保留倒數的另外兩種狀態 ============ -->
+          <div class="col-12 order-2 order-lg-1">
+            <section class="demo-state mt-0" aria-labelledby="demoTimerTitle">
+              <p class="demo-state-tag">設計稿狀態示意</p>
+              <h2 id="demoTimerTitle" class="demo-state-title">保留時間快到與已到時</h2>
+              <p class="text-note">倒數只更新數字，不閃爍；剩 2 分鐘時整列換成霓虹粉框與警示圖示，逾時整列停用並提示重新選票。</p>
+              <div class="co-demo-steppers">
+                <div>
+                  <p class="demo-state-label">保留時間剩 2 分鐘時</p>
+                  <div class="stepper is-warn">
+                    <ol class="stepper-steps">
+                      <li class="is-done"><span class="stepper-num" aria-hidden="true"><i class="bi bi-check-lg"></i></span><span class="stepper-text">確認訂單</span></li>
+                      <li class="is-current"><span class="stepper-num" aria-hidden="true">2</span><span class="stepper-text">填寫購票資訊</span></li>
+                      <li><span class="stepper-num" aria-hidden="true">3</span><span class="stepper-text">付款完成</span></li>
+                    </ol>
+                    <p class="countdown is-warn" role="timer"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i><span>快沒時間了！剩 <b class="countdown-num">01:58</b>，完成付款才算購票成功。</span></p>
+                  </div>
+                </div>
+                <div>
+                  <p class="demo-state-label">保留時間到了時</p>
+                  <div class="stepper is-expired">
+                    <ol class="stepper-steps">
+                      <li class="is-done"><span class="stepper-num" aria-hidden="true"><i class="bi bi-check-lg"></i></span><span class="stepper-text">確認訂單</span></li>
+                      <li class="is-current"><span class="stepper-num" aria-hidden="true">2</span><span class="stepper-text">填寫購票資訊</span></li>
+                      <li><span class="stepper-num" aria-hidden="true">3</span><span class="stepper-text">付款完成</span></li>
+                    </ol>
+                    <p class="countdown is-expired" role="timer"><i class="bi bi-hourglass-bottom" aria-hidden="true"></i><span><b class="countdown-num">00:00</b></span></p>
+                  </div>
+                  <div class="alert alert-warning alert-action">
+                    <i class="bi bi-hourglass-bottom" aria-hidden="true"></i>
+                    <p>保留時間已到，票券已釋出。別擔心，還有 112 張可選。</p>
+                    <a class="btn btn-primary btn-sm" href="event.html#tickets">重新選票</a>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- ============ 左欄：購票人資訊、付款方式 ============ -->
+          <!-- 設計稿沒有後端：「確認付款」是連到 #result 的連結。串接金流時改成 <form> 送出，並在送出時把整個 fieldset 停用 -->
+          <div class="col-lg-7 order-3 order-lg-2">
+            <fieldset>
+              <legend class="visually-hidden">購票資訊與付款</legend>
+
+              <!-- ============ 區塊三：購票人資訊 ============ -->
+              <section id="attendee" class="co-section" aria-labelledby="attendeeTitle">
+                <h2 id="attendeeTitle" class="co-section-title">購票人資訊</h2>
+                <div class="co-panel cut-panel">
+                  <div class="form-check mb-4">
+                    <input id="useAccount" class="form-check-input" type="checkbox" checked>
+                    <label class="form-check-label" for="useAccount">使用我的帳號資料</label>
+                  </div>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label" for="buyerName">姓名（與證件相同）</label>
+                      <input id="buyerName" class="form-control" type="text" autocomplete="name" value="王小明">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label" for="buyerPhone">手機號碼</label>
+                      <input id="buyerPhone" class="form-control is-invalid" type="tel" autocomplete="tel" inputmode="numeric" value="0912-345-67" aria-invalid="true" aria-describedby="buyerPhoneError">
+                      <p id="buyerPhoneError" class="invalid-feedback"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> 手機號碼格式不正確，請輸入 10 碼數字。</p>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label" for="buyerEmail">Email（票券與通知寄送用）</label>
+                      <input id="buyerEmail" class="form-control" type="email" autocomplete="email" value="ming@example.com">
+                    </div>
+                  </div>
+                  <p class="co-form-note"><i class="bi bi-person-vcard" aria-hidden="true"></i>入場時可能需核對證件，請確認姓名正確。</p>
+                </div>
+
+                <!-- 設計稿狀態示意：實名制活動才展開每張票的取票人欄位 -->
+                <section class="demo-state" aria-labelledby="demoRealNameTitle">
+                  <p class="demo-state-tag">設計稿狀態示意</p>
+                  <h3 id="demoRealNameTitle" class="demo-state-title">實名制活動</h3>
+                  <p class="text-note">需要實名制的活動才出現這一塊，每張票各填一位使用者。</p>
+                  <div class="co-panel cut-panel">
+                    <p class="fw-bold">本活動採實名制，請填寫每張票的使用者姓名</p>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="form-label" for="holder1">票券 1：預售全票</label>
+                        <input id="holder1" class="form-control" type="text" placeholder="姓名">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label" for="holder2">票券 2：預售全票</label>
+                        <input id="holder2" class="form-control" type="text" placeholder="姓名">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label" for="holder3">票券 3：VIP 搖滾區</label>
+                        <input id="holder3" class="form-control" type="text" placeholder="姓名">
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </section>
+
+              <!-- ============ 區塊四：快速支付 ============ -->
+              <section id="payment" class="co-section" aria-labelledby="paymentTitle">
+                <h2 id="paymentTitle" class="co-section-title">選擇付款方式</h2>
+
+                <!-- 行動支付在最上方，一鍵完成 -->
+                <div class="pay-quick cut-panel mb-3">
+                  <p class="pay-quick-title"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i>一鍵付款，不需填卡號</p>
+                  <div class="pay-quick-buttons">
+                    <button class="btn btn-outline-light" type="button"><i class="bi bi-apple" aria-hidden="true"></i>Apple Pay</button>
+                    <button class="btn btn-outline-light" type="button"><i class="bi bi-google" aria-hidden="true"></i>Google Pay</button>
+                    <button class="btn btn-outline-light" type="button"><i class="bi bi-line" aria-hidden="true"></i>LINE Pay</button>
+                  </div>
+                </div>
+
+                <!-- 其他方式：單選的收合清單（data-bs-parent 讓同時只展開一個）。信用卡預設收合 -->
+                <div id="payMethods" class="accordion pay-methods">
+                  <div class="accordion-item">
+                    <h3 class="accordion-header">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#payCard" aria-expanded="false" aria-controls="payCard">
+                        <i class="bi bi-credit-card" aria-hidden="true"></i>信用卡付款
+                      </button>
+                    </h3>
+                    <div id="payCard" class="accordion-collapse collapse" data-bs-parent="#payMethods">
+                      <div class="accordion-body">
+                        <div class="row g-3">
+                          <div class="col-12">
+                            <label class="form-label" for="cardNumber">卡號</label>
+                            <input id="cardNumber" class="form-control num" type="text" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000">
+                          </div>
+                          <div class="col-6">
+                            <label class="form-label" for="cardExpiry">有效期限</label>
+                            <input id="cardExpiry" class="form-control num" type="text" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/YY">
+                          </div>
+                          <div class="col-6">
+                            <label class="form-label" for="cardCvc">安全碼</label>
+                            <input id="cardCvc" class="form-control num" type="text" inputmode="numeric" autocomplete="cc-csc" placeholder="CVC">
+                          </div>
+                        </div>
+                        <div class="form-check mt-3">
+                          <input id="rememberCard" class="form-check-input" type="checkbox">
+                          <label class="form-check-label" for="rememberCard">記住這張卡，下次更快</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <h3 class="accordion-header">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#payAtm" aria-expanded="false" aria-controls="payAtm">
+                        <i class="bi bi-bank" aria-hidden="true"></i><span>銀行 ATM 轉帳 <small>（限非熱門場次，24 小時內需完成）</small></span>
+                      </button>
+                    </h3>
+                    <div id="payAtm" class="accordion-collapse collapse" data-bs-parent="#payMethods">
+                      <div class="accordion-body">
+                        <p class="text-note mb-0">確認付款後顯示轉帳帳號與繳費期限。</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-check co-terms">
+                  <input id="agreeTerms" class="form-check-input" type="checkbox">
+                  <label class="form-check-label" for="agreeTerms">我已閱讀並同意 <a href="event.html#faq">購票須知</a> 與 <a href="event.html#faq">退票規則</a></label>
+                </div>
+
+                <!-- 付款按鈕：全寬、高 56px。設計稿連到 #result；正式版按下後立刻進入付款中並鎖定（見下方狀態示意） -->
+                <a class="btn btn-primary btn-lg w-100" href="#result">確認付款 <span class="price">NT$ 5,974</span></a>
+                <p class="co-secure"><i class="bi bi-lock" aria-hidden="true"></i>本頁採 SSL 加密，StageOne 不會儲存你的完整卡號。</p>
+
+                <!-- 設計稿狀態示意：付款中（按鈕停用＋spinner＋文字，整張表單鎖定） -->
+                <section class="demo-state" aria-labelledby="demoPayingTitle">
+                  <p class="demo-state-tag">設計稿狀態示意</p>
+                  <h3 id="demoPayingTitle" class="demo-state-title">按下確認付款、等待銀行回應時</h3>
+                  <p class="text-note">按鈕立刻變成付款中並鎖住，整張表單（&lt;fieldset disabled&gt;）一起停用，避免重複送出造成重複扣款。</p>
+                  <fieldset disabled aria-busy="true">
+                    <legend class="visually-hidden">付款中，表單已鎖定</legend>
+                    <div class="pay-quick-buttons mb-3">
+                      <button class="btn btn-outline-light" type="button"><i class="bi bi-apple" aria-hidden="true"></i>Apple Pay</button>
+                      <button class="btn btn-outline-light" type="button"><i class="bi bi-google" aria-hidden="true"></i>Google Pay</button>
+                      <button class="btn btn-outline-light" type="button"><i class="bi bi-line" aria-hidden="true"></i>LINE Pay</button>
+                    </div>
+                    <button class="btn btn-primary btn-lg w-100 is-loading" type="button">
+                      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>付款處理中，請勿關閉或重新整理頁面…
+                    </button>
+                  </fieldset>
+                </section>
+              </section>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 區塊五：付款結果與電子票券 #result ============ -->
+      <section id="result" class="section co-result" aria-labelledby="resultTitle">
+        <div class="container-xl">
+          <div class="demo-state mt-0">
+            <p class="demo-state-tag">設計稿狀態示意</p>
+            <h2 id="resultTitle" class="demo-state-title">按下確認付款之後</h2>
+            <p class="text-note">依金流回應顯示其中一種。成功時直接把票券長出來；失敗時寫出原因與下一步。</p>
+            <div class="row g-5 mt-0">
+              <!-- 付款成功 -->
+              <div class="col-lg-7">
+                <p class="demo-state-label">付款成功時</p>
+                <div class="result-panel">
+                  <span class="result-icon is-success" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+                  <h3 class="result-title">購票成功，票已經在你手機裡了</h3>
+                  <p class="result-text"><span class="num">訂單編號 #SO-20261018-4471</span><br>3 張票券已存入「我的票券」，入場時出示 QR Code 即可。</p>
+
+                  <!-- 3 張票橫向輪播，每張有獨立 QR Code 與票號（Bootstrap Carousel；張數文字由 js/main.js 第 8 項更新） -->
+                  <div id="ticketCarousel" class="carousel slide eticket-carousel" data-bs-touch="true">
+                    <div class="carousel-inner">
+                      <div class="carousel-item active">
+                          <article class="eticket" aria-label="電子票券 T-4471-01">
+                            <div class="eticket-head">
+                              <img class="eticket-bg" src="images/event-midnight-noise.jpg" alt="" width="1600" height="1067" loading="lazy">
+                              <p class="eticket-type">預售全票</p>
+                              <h4 class="eticket-title">午夜噪音祭 Vol.7</h4>
+                              <ul class="eticket-facts">
+                                <li>入場時間 <strong class="num">19:30</strong></li>
+                                <li class="num">2026/10/18 (六) ‧ Zepp New Taipei</li>
+                              </ul>
+                            </div>
+                            <div class="eticket-body">
+                              <div class="eticket-qr">
+                                <!-- 動態 QR Code：設計稿是固定的 SVG；外框與細斜線是全息防偽（components/_eticket.scss） -->
+                                <div class="qr">
+                                  <img class="qr-code" src="images/qr-t-4471-01.svg" alt="入場 QR Code，票號 T-4471-01" width="216" height="216">
+                                  <span class="qr-holo" aria-hidden="true"></span>
+                                </div>
+                              </div>
+                              <p class="eticket-note">每 60 秒自動更新，請勿截圖轉傳</p>
+                              <p class="eticket-no">票號 T-4471-01</p>
+                            </div>
+                          </article>
+                      </div>
+                      <div class="carousel-item">
+                          <article class="eticket" aria-label="電子票券 T-4471-02">
+                            <div class="eticket-head">
+                              <img class="eticket-bg" src="images/event-midnight-noise.jpg" alt="" width="1600" height="1067" loading="lazy">
+                              <p class="eticket-type">預售全票</p>
+                              <h4 class="eticket-title">午夜噪音祭 Vol.7</h4>
+                              <ul class="eticket-facts">
+                                <li>入場時間 <strong class="num">19:30</strong></li>
+                                <li class="num">2026/10/18 (六) ‧ Zepp New Taipei</li>
+                              </ul>
+                            </div>
+                            <div class="eticket-body">
+                              <div class="eticket-qr">
+                                <!-- 動態 QR Code：設計稿是固定的 SVG；外框與細斜線是全息防偽（components/_eticket.scss） -->
+                                <div class="qr">
+                                  <img class="qr-code" src="images/qr-t-4471-02.svg" alt="入場 QR Code，票號 T-4471-02" width="216" height="216">
+                                  <span class="qr-holo" aria-hidden="true"></span>
+                                </div>
+                              </div>
+                              <p class="eticket-note">每 60 秒自動更新，請勿截圖轉傳</p>
+                              <p class="eticket-no">票號 T-4471-02</p>
+                            </div>
+                          </article>
+                      </div>
+                      <div class="carousel-item">
+                          <article class="eticket" aria-label="電子票券 T-4471-03">
+                            <div class="eticket-head">
+                              <img class="eticket-bg" src="images/event-midnight-noise.jpg" alt="" width="1600" height="1067" loading="lazy">
+                              <p class="eticket-type">VIP 搖滾區</p>
+                              <h4 class="eticket-title">午夜噪音祭 Vol.7</h4>
+                              <ul class="eticket-facts">
+                                <li>入場時間 <strong class="num">19:30</strong></li>
+                                <li class="num">2026/10/18 (六) ‧ Zepp New Taipei</li>
+                                <li>座位 <strong>A 區 12 排 7 號</strong></li>
+                              </ul>
+                            </div>
+                            <div class="eticket-body">
+                              <div class="eticket-qr">
+                                <!-- 動態 QR Code：設計稿是固定的 SVG；外框與細斜線是全息防偽（components/_eticket.scss） -->
+                                <div class="qr">
+                                  <img class="qr-code" src="images/qr-t-4471-03.svg" alt="入場 QR Code，票號 T-4471-03" width="216" height="216">
+                                  <span class="qr-holo" aria-hidden="true"></span>
+                                </div>
+                              </div>
+                              <p class="eticket-note">每 60 秒自動更新，請勿截圖轉傳</p>
+                              <p class="eticket-no">票號 T-4471-03</p>
+                            </div>
+                          </article>
+                      </div>
+                    </div>
+                    <div class="eticket-pager">
+                      <button class="btn btn-outline-light btn-icon" type="button" data-bs-target="#ticketCarousel" data-bs-slide="prev" aria-label="上一張票券"><i class="bi bi-arrow-left" aria-hidden="true"></i></button>
+                      <p class="mb-0" aria-live="polite">第 <span class="num" data-carousel-index>1</span> 張，共 <span class="num">3</span> 張</p>
+                      <button class="btn btn-outline-light btn-icon" type="button" data-bs-target="#ticketCarousel" data-bs-slide="next" aria-label="下一張票券"><i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+                    </div>
+                  </div>
+
+                  <div class="result-actions">
+                    <button class="btn btn-outline-light" type="button"><i class="bi bi-calendar-plus" aria-hidden="true"></i>加入行事曆</button>
+                    <button class="btn btn-primary" type="button"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>查看我的票券</button>
+                    <button class="btn btn-outline-light" type="button"><i class="bi bi-share" aria-hidden="true"></i>分享給同行的朋友</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 付款失敗 -->
+              <div class="col-lg-5">
+                <p class="demo-state-label">付款失敗時</p>
+                <div class="result-panel co-result-fail cut-panel">
+                  <span class="result-icon is-fail" aria-hidden="true"><i class="bi bi-x-lg"></i></span>
+                  <h3 class="result-title">付款未完成，票券尚未保留</h3>
+                  <p class="result-text">銀行拒絕了這筆交易（代碼 51：額度不足）。你的票券保留時間還有 <b class="countdown-num">04:22</b>，可以換一張卡再試一次。</p>
+                  <div class="result-actions">
+                    <a class="btn btn-primary" href="#payment">重新付款</a>
+                    <a class="btn btn-outline-light" href="#payment">換一種付款方式</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ < 992px：底部固定「應付總額＋確認付款」 ============ -->
+      <div class="bottom-bar">
+        <div>
+          <p class="bottom-bar-sub">應付總額</p>
+          <p class="bottom-bar-price price">NT$ 5,974</p>
+        </div>
+        <a class="btn btn-primary" href="#result">確認付款</a>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container-xl">
+        <div class="row gy-5">
+          <div class="col-lg-4">
+            <a class="site-brand" href="index.html">
+              <img class="site-brand-mark" src="images/logo.svg" alt="" width="32" height="32">
+              <span class="site-brand-name">StageOne</span>
+              <span class="site-brand-sub">城市現場</span>
+            </a>
+            <p class="site-footer-lead text-phrase">
+              三步完成購票、<wbr>票券直接長在手機裡<br>
+              專為中小型現場活動<wbr>打造的售票平台。
+            </p>
+          </div>
+          <!-- 第二階段頁面（會員中心、主辦方後台、驗票工具）：不帶 href 的佔位連結 -->
+          <div class="col-6 col-lg-2 offset-lg-2">
+            <h2 class="site-footer-title">購票者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="events.html">探索活動</a></li>
+              <li><a>我的票券</a></li>
+              <li><a>購票紀錄</a></li>
+              <li><a>追蹤的主辦方</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h2 class="site-footer-title">主辦方</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="index.html#organizer">我要辦活動</a></li>
+              <li><a>主辦方後台</a></li>
+              <li><a>行動驗票工具</a></li>
+              <li><a>售票儀表板</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h2 class="site-footer-title">服務</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="event.html#faq">購票須知</a></li>
+              <li><a href="event.html#faq">退票規則</a></li>
+              <li><a href="event.html#faq">常見問題</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 StageOne 城市現場｜<wbr>本站為課程設計稿範例，活動與票券皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 登入／註冊 Modal：頁首「登入／註冊」與首頁「免費開賣我的第一場」共用。設計稿：兩顆按鈕都只關閉 Modal -->
+  <div class="modal fade login-modal" id="loginModal" tabindex="-1" aria-labelledby="loginModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h4" id="loginModalTitle">登入／註冊</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body">
+          <p class="login-modal-lead">登入後就能買票，註冊只要 30 秒。</p>
+          <form>
+            <div class="mb-3">
+              <label class="form-label" for="loginEmail">Email</label>
+              <input id="loginEmail" class="form-control" type="email" autocomplete="email" placeholder="you@example.com">
+            </div>
+            <div class="mb-4">
+              <label class="form-label" for="loginPassword">密碼</label>
+              <input id="loginPassword" class="form-control" type="password" autocomplete="current-password">
+            </div>
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary" type="button" data-bs-dismiss="modal">登入</button>
+              <button class="btn btn-outline-light" type="button" data-bs-dismiss="modal">註冊新帳號</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

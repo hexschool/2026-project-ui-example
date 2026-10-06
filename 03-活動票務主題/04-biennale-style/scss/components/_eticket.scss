@@ -1,0 +1,232 @@
+// ============================================================
+// 電子票券（ETicket）＋付款結果（ResultPanel）＋驗票回饋（ValidationScreen）
+// 票券是本風格「巨型條碼」的主場：上半黑色量體（活動資訊）、中段 QR Code、底部滿寬條碼＋票號
+// 狀態：有效（預設）／已使用 .is-used／已過期 .is-expired／活動已取消 .is-cancelled
+// ============================================================
+
+.eticket {
+  --barcode-height: 4.5rem;
+  max-width: 23.75rem; // 最寬 380px（規格 §3.04）
+  margin-inline: auto;
+  border: $border-width-bold solid $ink;
+  background-color: $paper;
+  color: $ink;
+  text-align: left;
+}
+// 上半：黑色量體
+.eticket-head {
+  display: grid;
+  gap: .25rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+  background-color: $ink;
+  color: $paper;
+
+  p { margin: 0; }
+}
+.eticket-brand {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .75rem !important;
+  font-weight: $font-weight-black;
+  font-stretch: $font-stretch-wide;
+
+  .site-brand-mark { width: .875rem; height: 1.125rem; }
+}
+.eticket-title {
+  margin: 0 0 .5rem;
+  font-size: 1.75rem;
+  font-weight: $font-weight-black;
+  letter-spacing: $letter-spacing-display;
+}
+.eticket-type {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1rem;
+  font-weight: $font-weight-bold;
+}
+.eticket-seat { font-weight: $font-weight-bold; }
+.eticket-date {
+  color: $fog;
+  font-size: .875rem;
+}
+// 中段：QR Code（深色模組＋白底）＋說明
+.eticket-body {
+  display: grid;
+  justify-items: center;
+  gap: .75rem;
+  padding: 1.5rem 1.5rem 1.25rem;
+
+  .qr { width: min(13rem, 100%); }
+}
+.eticket-note {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  font-size: .8125rem;
+  font-weight: $font-weight-bold;
+  text-align: center;
+}
+// 底部：滿寬巨型條碼（Code 128 編碼票號）
+.eticket-barcode {
+  padding: 1rem 1.5rem 1.25rem;
+  border-top: 1px solid $ink;
+}
+.eticket-no {
+  margin: .5rem 0 0;
+  font-size: 1.125rem;
+  font-weight: $font-weight-black;
+  font-stretch: $font-stretch-wide;
+  text-align: center;
+  letter-spacing: .04em;
+}
+
+// ---------- 票券狀態（Guideline） ----------
+// 已使用：QR 蓋一層半透明白＋反白戳記「已使用」
+.eticket-body { position: relative; }
+.eticket-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -60%;
+  display: grid;
+  gap: .125rem;
+  padding: .5rem 1rem;
+  background-color: $ink;
+  color: $paper;
+  font-weight: $font-weight-black;
+  text-align: center;
+  white-space: nowrap;
+
+  small { font-weight: $font-weight-bold; font-size: .75rem; }
+}
+.eticket.is-used .qr { opacity: .2; }
+// 已過期：整張降低對比＋斜線紋，QR 隱藏
+.eticket.is-expired,
+.eticket.is-cancelled {
+  border-color: $concrete;
+  background-image: $hatch;
+
+  .eticket-head { background-color: $graphite; }
+  .eticket-date { color: $wall; } // 石墨灰底上用展牆灰（5.7:1），霧灰只有 2.6:1
+  .qr { visibility: hidden; }
+  .eticket-barcode { color: $concrete; }
+  // 文字底下墊白，斜線紋上仍可閱讀（石墨灰 6.7:1）
+  .eticket-note,
+  .eticket-no {
+    padding-inline: .25rem;
+    background-color: $paper;
+    color: $graphite;
+  }
+}
+
+// ---------- 多張票券的切換（Bootstrap Carousel） ----------
+.eticket-carousel {
+  margin-block: 1.5rem;
+}
+.eticket-count {
+  margin: .75rem 0 0;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  text-align: center;
+}
+.eticket-pager {
+  display: flex;
+  justify-content: center;
+  gap: .5rem;
+  margin-top: .75rem;
+}
+
+// ---------- 付款結果（ResultPanel） ----------
+.result-panel {
+  padding: 1.5rem;
+  border: 2px solid $ink;
+  background-color: $paper;
+  text-align: center;
+
+  @include media-breakpoint-up(md) { padding: 2rem; }
+}
+.result-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  margin-bottom: 1.25rem;
+  font-size: 2.5rem;
+  line-height: 1;
+}
+// 成功：反白方塊＋勾
+.is-success .result-icon {
+  background-color: $ink;
+  color: $paper;
+}
+// 失敗：警示斜紋框＋✕（狀態語法：斜線紋＝不能用）
+.is-failure {
+  border-width: $border-width-bold;
+
+  .result-icon {
+    border: .5rem solid transparent;
+    background: linear-gradient($paper, $paper) padding-box, $hazard border-box;
+    color: $ink;
+  }
+}
+.result-title {
+  margin-bottom: .75rem;
+  font-size: $h3-font-size;
+  font-weight: $font-weight-black;
+}
+.result-text {
+  max-width: 32em;
+  margin: 0 auto;
+  color: $graphite;
+}
+.result-timer {
+  padding: 0 .25rem;
+  background-color: $ink;
+  color: $paper;
+}
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .75rem;
+  margin-top: 1.5rem;
+}
+
+// ---------- 驗票回饋（ValidationScreen，主辦方端，Guideline 用） ----------
+// 手機尺寸的示範畫面：成功＝全黑＋大勾；失敗＝全白＋警示斜紋框＋大 ✕。大面積＋圖示＋文字三者並用
+.validation-screen {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: .75rem;
+  aspect-ratio: 9 / 16;
+  max-width: 15rem;
+  margin-inline: auto;
+  padding: 1.5rem;
+  text-align: center;
+
+  .bi { font-size: 5rem; line-height: 1; }
+  p { margin: 0; }
+
+  &.is-valid {
+    background-color: $ink;
+    color: $paper;
+  }
+  &.is-invalid {
+    border: 1rem solid transparent;
+    background: linear-gradient($paper, $paper) padding-box, $hazard border-box;
+    color: $ink;
+  }
+}
+.validation-title {
+  font-size: 1.5rem;
+  font-weight: $font-weight-black;
+}
+.validation-meta {
+  display: grid;
+  gap: .125rem;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+}

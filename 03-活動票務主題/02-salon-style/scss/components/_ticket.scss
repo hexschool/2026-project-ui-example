@@ -1,0 +1,305 @@
+// ============================================================
+// ★ 本風格的招牌：擬真古典打孔票根（.ticket）
+//
+// 一張票分成「正券」.ticket-main 與「票根」.ticket-stub 兩段，接縫處：
+//   - 上下（或左右）各挖一個半圓缺口（CSS mask 的 radial-gradient）
+//   - 一排撕線圓點（.ticket-stub::before）
+// 外框不用 border，而是外層的 drop-shadow：它會沿著 mask 後的形狀描邊，缺口的弧線也有細線。
+//
+// <article class="ticket">                       ← 橫式：正券在左、票根在右
+//   <div class="ticket-part ticket-main">…</div>
+//   <div class="ticket-part ticket-stub">…</div>
+// </article>
+// <article class="ticket is-vertical">…</article>  ← 直式：正券在上、票根在下（電子票券、熱門卡）
+//
+// 狀態：.is-selected（赭紅雙描邊）、.is-soldout／.is-upcoming（虛線框、不浮起）、
+//       電子票券另有 .is-used（票根被打孔＋戳記）、.is-expired、.is-cancelled
+// 用在：電子票券、票種卡、首頁熱門卡、Hero 倒數小卡、Guideline
+// ============================================================
+
+// 在元素上挖出半圓缺口：傳入每個缺口圓心的位置（例如 "100% 0"＝右上角）
+// 每一層 radial-gradient 都是「圓內透明、圓外不透明」，多層用 intersect 疊起來＝每個圓都被挖掉
+@mixin notch-mask($positions...) {
+  $layers: ();
+  @each $pos in $positions {
+    $layers: append($layers, radial-gradient(circle $stub-notch at #{$pos}, transparent 97%, #000 100%), comma);
+  }
+  -webkit-mask-image: $layers;
+  mask-image: $layers;
+  -webkit-mask-composite: source-in; // Safari 舊版的寫法
+  mask-composite: intersect;
+}
+
+// 橫式：接縫是直線，缺口在正券的右上右下、票根的左上左下
+@mixin ticket-horizontal {
+  flex-direction: row;
+
+  > .ticket-main { @include notch-mask("100% 0", "100% 100%"); }
+  > .ticket-stub {
+    @include notch-mask("0 0", "0 100%");
+
+    &::before {
+      inset: $stub-notch auto $stub-notch 0;
+      width: 4px;
+      height: auto;
+      background: radial-gradient(circle at 2px 50%, $rule-strong 1.25px, transparent 1.75px) repeat-y;
+      background-size: 4px $stub-perf-gap;
+    }
+  }
+}
+// 直式：接縫是橫線，缺口在正券的左下右下、票根的左上右上
+@mixin ticket-vertical {
+  flex-direction: column;
+
+  > .ticket-main { @include notch-mask("0 100%", "100% 100%"); }
+  > .ticket-stub {
+    @include notch-mask("0 0", "100% 0");
+
+    &::before {
+      inset: 0 $stub-notch auto;
+      width: auto;
+      height: 4px;
+      background: radial-gradient(circle at 50% 2px, $rule-strong 1.25px, transparent 1.75px) repeat-x;
+      background-size: $stub-perf-gap 4px;
+    }
+  }
+}
+
+.ticket {
+  --ticket-edge: #{rgba($ink, .55)};
+  display: flex;
+  // 紙張描邊＋落在桌上的淡影（顏色由 --ticket-edge 控制，選中時換成赭紅）
+  filter: drop-shadow(0 0 .75px var(--ticket-edge)) drop-shadow(0 .375rem .625rem rgba($ink, .07));
+  @include ticket-horizontal;
+
+  &.is-vertical { @include ticket-vertical; }
+}
+.ticket-part {
+  position: relative;
+  padding: 1.25rem 1.5rem;
+  background-color: $vellum;
+}
+.ticket-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  border-radius: $border-radius-lg 0 0 $border-radius-lg;
+}
+.ticket-stub {
+  flex: none;
+  border-radius: 0 $border-radius-lg $border-radius-lg 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+  }
+}
+.ticket.is-vertical {
+  > .ticket-main { border-radius: $border-radius-lg $border-radius-lg 0 0; }
+  > .ticket-stub { border-radius: 0 0 $border-radius-lg $border-radius-lg; }
+}
+// 票根上色：米卡其（票根是另一種紙色，撕下來的那一截）
+.ticket-stub.is-tinted {
+  background-color: $khaki;
+}
+// 雕版內框（選用）：距邊 12px，避開半圓缺口
+.ticket-frame::after {
+  content: "";
+  position: absolute;
+  inset: .75rem;
+  border: 1px solid $rule;
+  border-radius: $border-radius-sm;
+  pointer-events: none;
+}
+
+// ---------- 狀態 ----------
+// 選中：描邊換成赭紅、加粗（兩層），票根換成淡赭紅底
+.ticket.is-selected {
+  --ticket-edge: #{$ochre};
+  filter: drop-shadow(0 0 .75px var(--ticket-edge)) drop-shadow(0 0 .75px var(--ticket-edge)) drop-shadow(0 0 .5px var(--ticket-edge)) drop-shadow(0 .375rem .625rem rgba($ochre, .12));
+
+  > .ticket-stub { background-color: $primary-bg-subtle; }
+}
+// 售罄、尚未開賣：不浮起，改用虛線框（缺口處虛線會斷開，像被撕過的紙）
+.ticket.is-soldout,
+.ticket.is-upcoming {
+  filter: none;
+
+  > .ticket-part {
+    border: 1px dashed $rule-strong;
+    background-color: rgba($vellum, .55);
+  }
+  > .ticket-main { border-right-width: 0; }
+  > .ticket-stub { border-left-width: 0; }
+}
+.ticket.is-vertical.is-soldout,
+.ticket.is-vertical.is-upcoming {
+  > .ticket-main { border-right-width: 1px; border-bottom-width: 0; }
+  > .ticket-stub { border-left-width: 1px; border-top-width: 0; }
+}
+
+// 戳記：「已使用」「活動已取消」，雙線框、斜放，像票口蓋的章
+.ticket-stamp {
+  position: absolute;
+  z-index: 2;
+  padding: .25rem .875rem;
+  border: 3px double currentColor;
+  border-radius: $border-radius;
+  background-color: rgba($vellum, .9);
+  color: $carmine;
+  font-size: 1.125rem;
+  font-weight: $font-weight-medium;
+  letter-spacing: .2em;
+  white-space: nowrap;
+  transform: rotate(-12deg);
+  pointer-events: none;
+}
+
+// ============================================================
+// 電子票券 ETicket（結帳 #result、Guideline）
+// 直式票券，最寬 380px。上半是正券（活動名、票種、時間、地點），下半是票根（QR Code、票號）
+// 正券底紋是兩組同心細弧交疊的「防偽紋」，右緣直印一行赭紅流水號（裝飾，aria-hidden）
+// ============================================================
+.eticket {
+  width: 100%;
+  max-width: 23.75rem;
+  margin-inline: auto;
+  text-align: left;
+
+  .ticket-main {
+    padding: 1.75rem 2.75rem 1.5rem 1.75rem;
+    background-color: $vellum;
+    background-image:
+      repeating-radial-gradient(circle at 0 110%, transparent 0 7px, rgba($ochre, .07) 7px 8px),
+      repeating-radial-gradient(circle at 100% 110%, transparent 0 7px, rgba($verdigris, .07) 7px 8px);
+  }
+  .ticket-stub {
+    display: grid;
+    justify-items: center;
+    gap: .5rem;
+    padding: 1.5rem 1.75rem 1.5rem;
+    text-align: center;
+  }
+}
+.eticket-brand {
+  margin-bottom: .75rem;
+  padding-bottom: .5rem;
+  border-bottom: 3px double $rule;
+  font-size: .8125rem;
+  color: $ink-muted;
+  letter-spacing: .12em;
+}
+.eticket-title {
+  margin-bottom: .5rem;
+  font-size: 1.5rem;
+}
+.eticket-meta {
+  margin-bottom: .125rem;
+  font-size: .9375rem;
+  color: $ink-muted;
+
+  > span { white-space: nowrap; } // 「入場時間 19:30」不拆成兩行
+  > span + span::before {
+    content: "｜";
+    margin-inline: .25rem;
+    color: $rule-strong;
+  }
+}
+// 直印流水號：裝飾，與票號相同
+.eticket-serial {
+  position: absolute;
+  top: 1.25rem;
+  right: .875rem;
+  margin: 0;
+  color: $ochre;
+  font-size: .875rem;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: .2em;
+  writing-mode: vertical-rl;
+}
+.eticket-note {
+  margin: 0;
+  font-size: .875rem;
+  color: $ink-muted;
+}
+.eticket-no {
+  margin: 0;
+  font-size: 1.0625rem;
+  letter-spacing: .08em;
+
+  .num { font-weight: $font-weight-medium; }
+}
+
+// ---------- 電子票券的狀態 ----------
+// 已使用：票根被打一個圓孔（再多挖一個缺口）＋「已使用」戳記＋ QR 半透明遮罩
+.eticket.is-used {
+  .ticket-stub {
+    @include notch-mask("0 0", "100% 0", "calc(100% - 2rem) 2.25rem");
+  }
+  .qr-frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba($vellum, .72);
+  }
+  .ticket-stamp {
+    top: 42%;
+    left: 50%;
+    translate: -50% 0;
+  }
+}
+// 已過期：整張降低對比，QR 模糊（掃不到）
+.eticket.is-expired {
+  filter: grayscale(1) drop-shadow(0 0 .75px rgba($ink, .4));
+  opacity: .62;
+
+  .qr { filter: blur(3px); }
+}
+// 活動已取消：正券蓋「活動已取消」戳記，QR 隱藏
+.eticket.is-cancelled {
+  .qr { visibility: hidden; }
+  .qr-frame {
+    background-image: repeating-linear-gradient(135deg, transparent 0 6px, rgba($ink-muted, .25) 6px 7px);
+  }
+  .ticket-stamp {
+    top: 38%;
+    left: 50%;
+    translate: -50% 0;
+  }
+}
+
+// ============================================================
+// QR Code（SVG）：25 × 25 模組＋四周 4 模組空白（viewBox 33 × 33）
+// 一律「深色模組＋淺色底」；外框是雕版細框＋四個角的定位短線，不蓋住 QR 本體
+// <div class="qr-frame">
+//   <svg class="qr" viewBox="0 0 33 33" role="img" aria-label="入場 QR Code，票號 T-4471-01">
+//     <rect class="qr-bg" width="33" height="33"/><path class="qr-modules" d="…"/>
+//   </svg>
+// </div>
+// ============================================================
+.qr-frame {
+  position: relative;
+  padding: .5rem;
+  border: 1px solid $rule;
+  border-radius: $border-radius-sm;
+  background-color: $vellum;
+  // 四個角的定位短線（工筆描角）
+  background-image:
+    linear-gradient($ink, $ink), linear-gradient($ink, $ink),
+    linear-gradient($ink, $ink), linear-gradient($ink, $ink),
+    linear-gradient($ink, $ink), linear-gradient($ink, $ink),
+    linear-gradient($ink, $ink), linear-gradient($ink, $ink);
+  background-size: 14px 1px, 1px 14px, 14px 1px, 1px 14px, 14px 1px, 1px 14px, 14px 1px, 1px 14px;
+  background-position: -1px -1px, -1px -1px, calc(100% + 1px) -1px, calc(100% + 1px) -1px,
+    -1px calc(100% + 1px), -1px calc(100% + 1px), calc(100% + 1px) calc(100% + 1px), calc(100% + 1px) calc(100% + 1px);
+  background-repeat: no-repeat;
+}
+.qr {
+  display: block;
+  width: 11.5rem;
+  max-width: 100%;
+  height: auto;
+  shape-rendering: crispEdges;
+}
+.qr-bg { fill: $vellum; }
+.qr-modules { fill: $ink; }

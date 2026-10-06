@@ -1,0 +1,579 @@
+// ============================================================
+// 全站基礎：字體、字距、區塊節奏、焦點、共用小工具
+// 以及本風格的形狀語言：切角（bevel mixin、.cut、.cut-panel）與全息（holo）
+// ============================================================
+
+// 單一深色主題：讓瀏覽器原生的捲軸、日期選擇器、下拉選單清單也用深色
+:root {
+  color-scheme: dark;
+  accent-color: $aurora;
+}
+
+body {
+  letter-spacing: $letter-spacing-body;
+  -webkit-font-smoothing: antialiased; // 黑底白字，不加會顯得太粗
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+// 標題：英數 Unbounded、中文 Noto Sans TC 900（字型由 $headings-font-family 設定）
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  letter-spacing: $letter-spacing-heading;
+  text-wrap: balance; // 標題多行時平均分配，避免最後一行只剩一兩個字
+}
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty; // 內文避免孤字
+}
+
+// sticky 頁首不遮住焦點與錨點目標
+html {
+  scroll-padding-top: $sticky-top-offset;
+}
+
+::selection {
+  background-color: $aurora;
+  color: $blackout;
+}
+
+// 容器：左右留白 24px，≥ 992px 32px（.row 的負邊距仍在留白之內）
+.container-xl {
+  @include media-breakpoint-up(lg) {
+    --bs-gutter-x: 4rem;
+  }
+}
+
+// ============================================================
+// 形狀語言 1：切角（45°）
+// - 小控制項（按鈕、輸入框、標籤、膠囊）：bevel() mixin，用 CSS 的 corner-shape: bevel 把圓角變成斜切角，
+//   框線、焦點環會跟著斜邊走。不支援的瀏覽器退回直角（不會變成圓角）。
+// - 大面積（票券、票種卡、活動卡、面板）：.cut 與 .cut-panel，用 clip-path，所有瀏覽器都一樣。
+// 切角都在「右上＋左下」對角，像用美工刀從海報上割下來
+// ============================================================
+@mixin bevel($size: $cut-sm) {
+  @supports (corner-shape: bevel) {
+    border-radius: 0 $size; // 左上 0、右上 $size、右下 0、左下 $size
+    corner-shape: bevel;
+  }
+}
+
+// 右上＋左下切角的多邊形（--cut 決定切多大）
+$cut-polygon: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
+
+// .cut：直接把元素切角（用在圖片框、沒有框線的卡片）
+// 注意：clip-path 會把元素外面的東西（焦點環、陰影）一起切掉，可聚焦的元素放在裡面，不要加在 <a>、<button> 本身
+// <div class="cut"><img …></div>   <div class="cut cut-lg">…</div>
+.cut {
+  --cut: #{$cut-md};
+  clip-path: $cut-polygon;
+}
+.cut-sm { --cut: #{$cut-sm}; }
+.cut-lg { --cut: #{$cut-lg}; }
+
+// .cut-panel：帶框線的切角面板。元素本身不 clip，形狀由兩層偽元素畫：
+//   ::before 是框線色（整塊），::after 往內縮 1px 是面板底色，兩層疊起來就是「斜邊也有框線」的切角
+// 裡面的焦點環、下拉選單不會被切掉。狀態只要改 CSS 變數：
+//   --cut-line（框線色）、--cut-fill（底色）、--cut-line-width（框線粗細）
+// <div class="cut-panel">…</div>
+// 也提供 mixin 版本，給只在某些寬度才是面板的元素用（例如活動列表的篩選側欄，< 992px 是 Offcanvas）
+@mixin cut-panel {
+  --cut: #{$cut-md};
+  --cut-line: #{$line};
+  --cut-fill: #{$rack};
+  --cut-line-width: 1px;
+  position: relative;
+  isolation: isolate; // 讓 z-index: -1 的偽元素留在面板內，不會掉到頁面底下
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    clip-path: $cut-polygon;
+    pointer-events: none;
+  }
+  &::before {
+    inset: 0;
+    background: var(--cut-line);
+  }
+  &::after {
+    inset: var(--cut-line-width);
+    background: var(--cut-fill);
+  }
+}
+.cut-panel {
+  @include cut-panel;
+}
+// 放在機櫃黑區塊（.section-alt）上的面板：底色自動改成全黑，才分得出來
+.section-alt .cut-panel {
+  --cut-fill: #{$blackout};
+}
+
+// ============================================================
+// 形狀語言 2：全息防偽（只用在電子票券：QR 外框、覆蓋線、撕線、票券全息條）
+// 很慢的流動（18 秒來回），像票券轉動角度時的反光；不閃爍。
+// prefers-reduced-motion 時停在靜態漸層（檔案最後統一處理）
+// ============================================================
+@keyframes holo-drift {
+  from { background-position: 0% 50%; }
+  to   { background-position: 100% 50%; }
+}
+// 全息底：.holo 直接把背景換成全息漸層並緩慢流動
+.holo {
+  background-image: $holo-gradient;
+  background-size: 300% 100%;
+  animation: holo-drift $holo-duration ease-in-out infinite alternate;
+}
+
+// ---------- 字體與數字 ----------
+// Unbounded：英數大字（價格、倒數、票號、Vol.7）；中文自動落到 Noto Sans TC
+.font-display {
+  font-family: $font-family-display;
+  letter-spacing: 0;
+}
+// 價格：Unbounded＋等寬數字，千分位與 NT$ 都不會換行。字級由所在位置決定
+.price {
+  font-family: $font-family-display;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+// 小數字（日期、張數、座位號、訂單編號）：Noto Sans TC 等寬數字
+.num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+}
+
+// 次要說明文字
+.text-note {
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+}
+
+// ---------- 區塊節奏 ----------
+// 區塊上下留白：手機 64px → 桌機 96px；同一頁節奏一致
+.section {
+  padding-block: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7);
+  }
+}
+// 相鄰的兩個區塊之間用一條掃描線分隔
+.section + .section {
+  border-top: 1px solid $line;
+}
+.section-alt {
+  background-color: $rack;
+}
+
+// 區塊標題列：左邊標題＋一句說明，右邊（≥ sm）放連結或箭頭
+// <div class="section-heading">
+//   <div><h2>…</h2><p>…</p></div>
+//   <a class="btn btn-text" href="…">…</a>
+// </div>
+.section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: map-get($spacers, 3) map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 5);
+
+  h2,
+  .h2 {
+    margin-bottom: map-get($spacers, 2);
+  }
+  p {
+    margin-bottom: 0;
+    color: $body-secondary-color;
+    max-width: 36em;
+  }
+}
+
+// ---------- 圖片框：固定比例、裁切填滿 ----------
+.img-frame {
+  position: relative;
+  overflow: hidden;
+  background-color: $floor; // 圖片載入前不會閃白
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+// ---------- 按鈕 ----------
+// 主要：.btn-primary（極光綠底＋全黑字），同一組動作只放一個
+// 次要：.btn-outline-light（透明底＋頻閃白細框）
+// 警示的次要：.btn-outline-warning（霓虹粉框字）——只用在「開賣前提醒我」這類跟時間有關的動作
+// 文字連結：.btn-text
+.btn {
+  @include bevel($cut-sm);
+  letter-spacing: $letter-spacing-label;
+  --bs-btn-focus-box-shadow: #{$focus-ring-double};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+}
+.btn-primary {
+  --bs-btn-hover-bg: #{$aurora-light};
+  --bs-btn-hover-border-color: #{$aurora-light};
+  --bs-btn-active-bg: #{$aurora-light};
+  --bs-btn-active-border-color: #{$aurora-light};
+  // 停用：舞池灰底＋暗場灰字（不是半透明的綠，避免看起來還能按）
+  --bs-btn-disabled-bg: #{$floor};
+  --bs-btn-disabled-border-color: #{$line-strong};
+  --bs-btn-disabled-color: #{$dim};
+}
+.btn-outline-light {
+  --bs-btn-color: #{$strobe};
+  --bs-btn-border-color: #{$control};
+  --bs-btn-hover-color: #{$blackout};
+  --bs-btn-hover-bg: #{$strobe};
+  --bs-btn-hover-border-color: #{$strobe};
+  --bs-btn-active-color: #{$blackout};
+  --bs-btn-active-bg: #{$haze};
+  --bs-btn-active-border-color: #{$haze};
+  --bs-btn-disabled-color: #{$dim};
+  --bs-btn-disabled-border-color: #{$line-strong};
+  --bs-btn-disabled-bg: transparent;
+}
+.btn-outline-primary {
+  --bs-btn-hover-color: #{$blackout};
+  --bs-btn-active-color: #{$blackout};
+  --bs-btn-disabled-color: #{$dim};
+  --bs-btn-disabled-border-color: #{$line-strong};
+}
+.btn-outline-warning {
+  --bs-btn-hover-color: #{$blackout};
+  --bs-btn-active-color: #{$blackout};
+}
+// 文字連結型按鈕：底線、無外框，內建 44px 觸控高度
+.btn-text {
+  --bs-btn-padding-x: .25rem;
+  --bs-btn-padding-y: .25rem;
+  --bs-btn-color: #{$strobe};
+  --bs-btn-hover-color: #{$aurora};
+  --bs-btn-active-color: #{$aurora};
+  --bs-btn-border-width: 0;
+  --bs-btn-font-weight: 500;
+  min-height: 2.75rem;
+  text-decoration: underline;
+  text-decoration-color: $control;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .4em;
+
+  &:hover { text-decoration-color: currentColor; }
+}
+// 只有圖示的方形按鈕（左右箭頭）：44 × 44，要加 aria-label
+.btn-icon {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+}
+// 大按鈕的高度至少 48px（付款按鈕）
+.btn-lg {
+  min-height: 3.5rem;
+}
+
+// 載入中（鎖定）：按鈕停用＋spinner＋文字。用在付款中、送出中
+// <button class="btn btn-primary is-loading" type="button" disabled aria-busy="true">
+//   <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>付款處理中…
+// </button>
+.btn.is-loading {
+  --bs-btn-disabled-bg: #{$floor};
+  --bs-btn-disabled-color: #{$strobe};
+  --bs-btn-disabled-border-color: #{$aurora};
+  cursor: progress;
+
+  .spinner-border {
+    color: $aurora;
+  }
+}
+
+// 核取方塊、radio：只有鍵盤操作時顯示焦點環
+.form-check-input:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+// 勾選框與文字的距離、點擊範圍
+.form-check {
+  min-height: 1.75rem;
+  .form-check-input { margin-top: .25em; }
+}
+
+// 內文裡沒有 class 的連結：極光綠底線
+a:not([class]) {
+  text-decoration-color: rgba($aurora, .7);
+  text-underline-offset: .3em;
+
+  &:hover { color: $aurora; }
+}
+
+// ---------- 表單 ----------
+.form-control,
+.form-select {
+  @include bevel($cut-sm);
+  caret-color: $aurora;
+  min-height: 3rem; // 48px
+}
+.form-control:-webkit-autofill {
+  -webkit-text-fill-color: $strobe;
+  box-shadow: inset 0 0 0 100px $rack;
+}
+// 錯誤：雷射紅框＋圖示＋文字（Bootstrap 的 .is-invalid＋.invalid-feedback，訊息前放 bi-exclamation-circle）
+.invalid-feedback {
+  font-size: $small-font-size;
+}
+
+// ---------- 麵包屑 ----------
+.breadcrumb {
+  align-items: center;
+}
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem; // 觸控目標 44px
+  color: $body-secondary-color;
+  text-decoration: none;
+
+  &:hover {
+    color: $aurora;
+    text-decoration: underline;
+  }
+}
+
+// 浮層：$enable-shadows 關閉時 Bootstrap 不會輸出陰影，這裡手動套用
+.dropdown-menu {
+  box-shadow: var(--bs-dropdown-box-shadow);
+}
+.modal-content {
+  @include bevel($cut-md);
+  box-shadow: $box-shadow-lg;
+}
+.alert {
+  @include bevel($cut-sm);
+}
+// Accordion 的題目放在 h3 裡（語意），但字型用內文的 Noto Sans TC：問題裡的「4 張」「ATM」不要變成 Unbounded 寬體字
+.accordion-header {
+  font-family: $font-family-base;
+  letter-spacing: $letter-spacing-body;
+}
+// 帶動作的提示框：圖示＋說明＋按鈕。< 576px 按鈕換到說明下方
+// <div class="alert alert-warning alert-action" role="alert">
+//   <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+//   <p>A 區 12 排 7 號剛剛被買走了，請重新選擇座位。</p>
+//   <button class="btn btn-outline-light btn-sm" type="button">重新選位</button>
+// </div>
+.alert-action {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: .75rem;
+
+  > .bi { align-self: start; margin-top: .2em; }
+  > p { margin: 0; }
+  > .btn { grid-column: 2; justify-self: start; }
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: auto 1fr auto;
+
+    > .btn { grid-column: auto; }
+  }
+}
+
+// ---------- 鍵盤焦點 ----------
+// 一律是極光綠 2px 實線，外推 2px 露出黑色當間隙（16.0:1）
+:focus-visible {
+  outline: 2px solid $aurora;
+  outline-offset: 2px;
+}
+.offcanvas:focus-visible,
+.modal:focus-visible,
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+// 按鈕、表單控制項由 Bootstrap 的 box-shadow 畫焦點，不再疊一層 outline
+.btn:focus-visible,
+.btn-close:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible {
+  outline: none;
+}
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: $zindex-fixed + 10;
+  padding: .5rem 1rem;
+  background: $aurora;
+  color: $blackout;
+  font-weight: 700;
+  &:focus { top: 1rem; }
+}
+
+// ---------- 頁首區塊（活動列表、Guideline 共用） ----------
+// <header class="page-header">
+//   <nav aria-label="目前位置"><ol class="breadcrumb">…</ol></nav>
+//   <h1>頁面標題</h1>
+//   <p class="page-lead">一句說明</p>
+// </header>
+.page-header {
+  padding-block: map-get($spacers, 4) map-get($spacers, 5);
+  border-bottom: 1px solid $line;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 4) map-get($spacers, 6);
+  }
+
+  .breadcrumb {
+    margin-bottom: map-get($spacers, 3);
+  }
+  h1,
+  .h1 {
+    margin-bottom: map-get($spacers, 2);
+  }
+}
+.page-lead {
+  max-width: 40em;
+  margin-bottom: 0;
+  color: $body-secondary-color;
+}
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、標點與 <wbr> 處換行，「Zepp New Taipei」「午夜噪音祭」這類詞組不會被拆開
+// 用在活動名、短標題；長段落不要用
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 手機滿版橫向捲動列 ----------
+// 手機（< 576px）時讓橫向捲動列貼齊螢幕兩側，內容起點仍對齊版心
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+  }
+}
+.bleed-x {
+  @include bleed-x;
+}
+
+// ---------- 設計稿狀態示意 ----------
+// 頁面上示範「另一種狀態」的畫面：虛線框＋「設計稿狀態示意」標籤，一看就知道不是正式內容
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag">設計稿狀態示意</p>
+//   <h2 id="…" class="demo-state-title">篩選後沒有活動時</h2>
+//   <p class="text-note">什麼情況下出現</p>
+//   <div class="demo-state-stage">…示意畫面…</div>
+// </section>
+.demo-state {
+  margin-top: map-get($spacers, 5);
+  padding: map-get($spacers, 4);
+  border: 1px dashed $line-strong;
+  background-image: repeating-linear-gradient(-45deg, rgba($strobe, .02) 0 1px, transparent 1px 12px); // 淡斜紋：和正式區塊分開
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 5);
+  }
+  > .text-note {
+    margin-bottom: map-get($spacers, 4);
+  }
+}
+.demo-state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: map-get($spacers, 2);
+  padding: .125rem .625rem;
+  border: 1px dashed $control;
+  color: $body-secondary-color;
+  font-size: .75rem;
+  letter-spacing: $letter-spacing-label;
+
+  &::before {
+    content: "\F4CA"; // bi-pencil-square 的字碼：設計稿標記
+    font-family: bootstrap-icons;
+  }
+}
+.demo-state-title {
+  margin-bottom: map-get($spacers, 1);
+  font-family: $font-family-base;
+  font-size: $font-size-lg;
+  font-weight: 700;
+  letter-spacing: $letter-spacing-body;
+}
+// 狀態示意裡每一格的小標（多個狀態並排時）
+.demo-state-label {
+  margin-bottom: map-get($spacers, 2);
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  font-weight: 500;
+}
+
+// ---------- 空狀態 ----------
+// 圖示＋標題＋說明＋一個動作
+// <div class="empty-state">
+//   <i class="bi bi-calendar-x empty-state-icon" aria-hidden="true"></i>
+//   <h3>這個條件下目前沒有活動</h3>
+//   <p>試著放寬日期或地區範圍。</p>
+//   <button class="btn btn-primary" type="button">清除篩選</button>
+// </div>
+.empty-state {
+  padding-block: map-get($spacers, 5);
+  text-align: center;
+
+  h3 { margin-bottom: map-get($spacers, 2); }
+  p {
+    max-width: 30em;
+    margin: 0 auto map-get($spacers, 4);
+    color: $body-secondary-color;
+  }
+}
+.empty-state-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: map-get($spacers, 3);
+  border: 1px solid $control;
+  color: $haze;
+  font-size: 1.5rem;
+  @include bevel($cut-sm);
+}
+
+// ---------- 斜線紋：停用、不可選、售罄共用的「不能用」紋理 ----------
+@mixin hatch($color: $line-strong, $gap: 7px) {
+  background-image: repeating-linear-gradient(-45deg, $color 0 1px, transparent 1px $gap);
+}
+
+// ---------- 減少動態 ----------
+// 系統設定「減少動態」時：全息流動、QR 覆蓋線、轉場全部停止，停在靜態紋理
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation: none !important;
+  }
+}

@@ -1,0 +1,121 @@
+// ============================================================
+// 結帳步驟列（CheckoutStepper）＋保留倒數
+// 步驟用方塊編號：已完成＝反白方塊＋勾；目前＝反白方塊＋編號＋粗體＋底線；未到＝2px 虛線方塊（還沒到）
+// 整列三種狀態：一般（白底）／警示 .is-warning（整列反白）／逾時 .is-expired（斜線紋、停用）
+// ============================================================
+
+// 外層：sticky 在頁首正下方，滿版白底＋2px 黑底線
+.checkout-stepper {
+  position: sticky;
+  top: $site-header-height;
+  z-index: $zindex-sticky - 1;
+  background-color: $paper;
+  border-bottom: 2px solid $ink;
+}
+.checkout-stepper-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1.5rem;
+  padding-block: .75rem;
+
+  .countdown { flex-shrink: 0; }
+
+  // < md：倒數換到第二行滿寬
+  @include media-breakpoint-down(md) {
+    .countdown { flex-basis: 100%; }
+  }
+
+  // 示意用的獨立步驟列（設計稿狀態示意裡）：自己畫框
+  .demo-state-stage & {
+    padding-inline: 1rem;
+    border: 2px solid $ink;
+  }
+  &.is-warning {
+    background-color: $ink;
+    color: $paper;
+    border-color: $ink;
+  }
+  &.is-expired {
+    border-color: $concrete;
+    background-image: $hatch;
+    color: $graphite;
+  }
+}
+
+.steps {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .9375rem;
+  white-space: nowrap;
+
+  // 步驟之間的連接線
+  & + &::before {
+    content: "";
+    width: 1rem;
+    height: 2px;
+    margin-right: .25rem;
+    background-color: currentColor;
+
+    @include media-breakpoint-up(md) { width: 2.5rem; }
+  }
+}
+.step-mark {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border: 2px dashed currentColor; // 未到：虛線（還沒到）
+  font-weight: $font-weight-black;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.step.is-done .step-mark,
+.step.is-current .step-mark {
+  border-style: solid;
+  border-color: $ink;
+  background-color: $ink;
+  color: $paper;
+}
+.step.is-current .step-label {
+  font-weight: $font-weight-black;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: .4em;
+}
+// 反白列：方塊改成白底黑字
+.is-warning .step.is-done .step-mark,
+.is-warning .step.is-current .step-mark {
+  border-color: $paper;
+  background-color: $paper;
+  color: $ink;
+}
+.is-expired .step-label { background-color: $paper; }
+.is-expired .step.is-done .step-mark,
+.is-expired .step.is-current .step-mark {
+  border-color: $graphite;
+  background-color: $graphite;
+}
+// < md：只顯示目前步驟的文字，其他步驟只留編號
+@include media-breakpoint-down(md) {
+  .step:not(.is-current) .step-label {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+  }
+}

@@ -1,0 +1,363 @@
+// ============================================================
+// 活動卡片：情境卡（SceneCard）、日期方塊（DateChip）、熱門活動卡（FeaturedCard）、活動列表卡（EventCard）
+// 三種卡刻意長得不一樣：情境卡是「照片＋黑色名牌」、熱門卡是黑底上的展品、列表卡是白底黑框的展品說明
+// ============================================================
+
+// ---------- 情境卡（首頁）：4:5 黑白照片，左下角壓一塊黑色名牌 ----------
+// 整張卡是一個連結；場次與票價在 ≥ lg 且能 hover 的裝置上 hover／focus 才浮現（規格 §2.5）
+.scene-card {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background-color: $ink;
+  color: $paper;
+  text-decoration: none;
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .4s ease;
+  }
+  &:hover { color: $paper; }
+  &:hover > img { transform: scale(1.03); }
+  &:focus-visible { outline-offset: 3px; }
+}
+// 名牌：貼齊左下角的黑色方塊（不是漸層遮罩）
+.scene-card-body {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  max-width: calc(100% - 1rem);
+  display: grid;
+  gap: .25rem;
+  padding: .75rem .875rem;
+  background-color: $ink;
+
+  @include media-breakpoint-up(md) {
+    padding: 1rem 1.25rem 1.125rem;
+  }
+}
+.scene-card-category {
+  font-size: .8125rem;
+  color: $fog;
+  letter-spacing: $letter-spacing-label;
+}
+.scene-card-title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-black;
+  line-height: 1.35;
+
+  @include media-breakpoint-up(md) {
+    font-size: $h3-font-size;
+  }
+}
+.scene-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .125rem .875rem;
+  font-size: .8125rem;
+  font-weight: $font-weight-bold;
+
+  > span + span {
+    padding-left: .875rem;
+    border-left: 1px solid $fog;
+  }
+}
+// 768px 以下：卡片只有約 170px 寬，名牌改接在照片下方（不壓在照片上），場次與票價改成兩行
+@include media-breakpoint-down(md) {
+  .scene-card {
+    display: flex;
+    flex-direction: column;
+    aspect-ratio: auto;
+    height: 100%;
+
+    > img { height: auto; aspect-ratio: 4 / 5; }
+  }
+  .scene-card-body {
+    position: static;
+    flex-grow: 1;
+    align-content: start;
+    max-width: none;
+  }
+  .scene-card-meta {
+    display: grid;
+    > span + span { padding-left: 0; border-left: 0; }
+  }
+}
+// 只有「≥ lg＋滑鼠」才收起資訊；觸控裝置與小螢幕一律顯示
+@include media-breakpoint-up(lg) {
+  @media (hover: hover) {
+    .scene-card-meta {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height .25s ease, opacity .25s ease;
+    }
+    .scene-card:hover .scene-card-meta,
+    .scene-card:focus-visible .scene-card-meta {
+      max-height: 3rem;
+      opacity: 1;
+    }
+  }
+}
+
+// ---------- 日期方塊（DateChip）：疊在主視覺左上的白色方塊，大數字是加寬的 Archivo ----------
+// <span class="date-chip"><span class="date-chip-month">10月</span><span class="date-chip-day">18</span></span>
+.date-chip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  justify-items: center;
+  min-width: 4rem;
+  padding: .5rem .625rem .625rem;
+  background-color: $paper;
+  color: $ink;
+  line-height: 1;
+}
+.date-chip-month {
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+}
+.date-chip-day {
+  margin-top: .25rem;
+  font-size: 2rem;
+  font-weight: $font-weight-black;
+  font-stretch: $font-stretch-wide;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- 熱門活動卡（首頁黑底區塊） ----------
+// 16:10 主視覺（左上日期方塊、右上稀缺標籤）→ 名稱 → 日期 ｜ 場地 → 剩餘票數 → 票價＋按鈕
+.featured-track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 80%;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: $concrete $ink;
+  padding-bottom: 1rem;
+
+  > li { scroll-snap-align: start; min-width: 0; }
+
+  @include media-breakpoint-up(sm) { grid-auto-columns: 46%; }
+  @include media-breakpoint-up(md) { grid-auto-columns: 40%; }
+  @include media-breakpoint-up(lg) { grid-auto-columns: calc((100% - 3rem) / 2.6); }
+  @include media-breakpoint-up(xl) {
+    grid-auto-columns: calc((100% - 4.5rem) / 4); // 4 張剛好一列
+    overflow-x: visible;
+    padding-bottom: 0;
+  }
+}
+// ≥ xl 4 張剛好一列，箭頭沒有作用，隱藏
+.home-featured-arrows {
+  display: flex;
+  gap: .5rem;
+
+  @include media-breakpoint-up(xl) { display: none; }
+}
+.featured-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid $carbon;
+}
+.featured-card-media {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  background-color: $carbon;
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+// 稀缺標籤：黑底白字＋白框（照片上也看得到）
+.featured-card-flag {
+  position: absolute;
+  top: .625rem;
+  right: .625rem;
+  border-color: $paper;
+}
+.featured-card-title {
+  margin-bottom: .5rem;
+  font-size: $h4-font-size;
+  font-weight: $font-weight-black;
+  line-height: 1.4;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    &:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: .3em; }
+  }
+}
+.featured-card-meta {
+  display: grid;
+  margin-bottom: 1rem;
+  color: $fog;
+  font-size: .875rem;
+}
+.featured-card-foot {
+  display: flex;
+  align-items: flex-end; // 票價換成兩行時（免費入場 ‧ 工作坊另計），按鈕對齊最後一行
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: auto;
+  padding-top: 1rem;
+
+  .price { margin: 0; font-size: 1.125rem; }
+  .btn { flex-shrink: 0; }
+}
+
+// ---------- 活動列表卡（EventCard） ----------
+// 橫式：≥ md 左 4:3 主視覺（4 欄）＋右內容（8 欄）；< md 圖在上
+// 白底＋1px 純黑框；即將完售的卡片不另外加框（稀缺由標籤與進度條表達）
+.event-card {
+  display: grid;
+  border: 1px solid $ink;
+  background-color: $paper;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 4fr 8fr;
+  }
+}
+.event-card-media {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: $wall;
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @include media-breakpoint-up(md) {
+    aspect-ratio: auto;
+    min-height: 100%;
+    border-right: 1px solid $ink;
+  }
+}
+.event-card-body {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "tags  price"
+    "title price"
+    "meta  meta"
+    "intro intro"
+    "types types"
+    "foot  foot";
+  column-gap: 1.5rem;
+  min-width: 0;
+  padding: 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.5rem 1.75rem;
+  }
+  // < md：票價移到名稱下方
+  @include media-breakpoint-down(md) {
+    grid-template-columns: 1fr;
+    grid-template-areas: "tags" "title" "price" "meta" "intro" "types" "foot";
+  }
+}
+.event-card-tags { grid-area: tags; margin-bottom: .75rem; }
+.event-card-title {
+  grid-area: title;
+  margin-bottom: .75rem;
+  font-size: 1.625rem;
+  font-weight: $font-weight-black;
+  line-height: 1.3;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    &:hover { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: .25em; }
+  }
+}
+.event-card-price {
+  grid-area: price;
+  margin-bottom: .75rem;
+  text-align: right;
+
+  .price { display: block; font-size: 1.375rem; line-height: 1.2; }
+  @include media-breakpoint-down(md) { text-align: left; }
+}
+.event-card-price-label {
+  display: block;
+  font-size: .75rem;
+  color: $graphite;
+}
+// 主辦、時間、地點：三行，各帶圖示
+.event-card-meta {
+  grid-area: meta;
+  display: grid;
+  gap: .25rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+  font-size: .875rem;
+
+  li {
+    display: grid;
+    grid-template-columns: 1.25rem 1fr;
+    gap: .375rem;
+  }
+  .bi { line-height: inherit; }
+}
+.event-card-intro {
+  grid-area: intro;
+  margin-bottom: 1rem;
+  color: $graphite;
+  font-size: .9375rem;
+}
+// 票種：Notion 原文，已售罄的票種加刪除線（不隱藏）
+.event-card-types {
+  grid-area: types;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem 1.25rem;
+  margin: 0 0 1.25rem;
+  padding: .75rem 0 0;
+  border-top: 1px solid $line;
+  list-style: none;
+  font-size: .875rem;
+
+  li { white-space: nowrap; }
+}
+.event-card-types-label {
+  font-weight: $font-weight-bold;
+}
+.is-sold-out-text {
+  color: $graphite;
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+// 底列：剩餘票數（撐滿）＋追蹤＋主按鈕；< md 進度條滿寬、按鈕在下一列
+.event-card-foot {
+  grid-area: foot;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: end;
+  gap: 1rem;
+
+  @include media-breakpoint-down(md) {
+    grid-template-columns: 1fr 1fr;
+
+    .remaining { grid-column: 1 / -1; }
+  }
+}

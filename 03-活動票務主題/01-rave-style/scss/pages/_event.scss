@@ -1,0 +1,335 @@
+// ============================================================
+// 活動細節 event.html（class 前綴 ev-）
+// 麵包屑 → 主視覺與標題＋活動介紹（8 欄）｜購票卡＋快速資訊（4 欄 sticky）
+// → 票種與選位 → 場地與交通 → 主辦方 → 購票須知 → 設計稿狀態示意；< 992px 底部固定購票列
+// ============================================================
+
+// ---------- 上半部：8:4 ----------
+// 用 CSS Grid 的區域排版，同一份 HTML：
+//   ≥ 992px  「主視覺｜購票卡」「活動介紹｜購票卡（延伸）」
+//   < 992px  主視覺 → 購票卡＋快速資訊 → 活動介紹（不用複製兩份購票卡）
+.ev-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "overview"
+    "aside"
+    "about";
+  gap: map-get($spacers, 5);
+  padding-bottom: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    grid-template-areas:
+      "overview aside"
+      "about    aside";
+    column-gap: map-get($spacers, 5);
+    padding-bottom: map-get($spacers, 7);
+  }
+}
+.ev-overview { grid-area: overview; }
+.ev-about    { grid-area: about; }
+.ev-aside    { grid-area: aside; }
+.ev-aside-sticky {
+  display: grid;
+  gap: 1.25rem;
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+  }
+}
+
+.ev-breadcrumb {
+  padding-block: map-get($spacers, 3);
+}
+// 主視覺：桌機 16:9、< 992px 4:3，右上與左下大切角
+.ev-hero-media {
+  --cut: #{$cut-lg};
+  aspect-ratio: 4 / 3;
+  margin-bottom: 1.5rem;
+  clip-path: $cut-polygon;
+
+  @include media-breakpoint-up(lg) {
+    aspect-ratio: 16 / 9;
+  }
+}
+.ev-title {
+  margin: 1.25rem 0 .5rem;
+  font-size: clamp(2.25rem, 1.6rem + 2.6vw, 3.5rem);
+  font-weight: 900;
+  line-height: 1.15;
+  text-shadow: $chroma-shadow;
+}
+.ev-subtitle {
+  margin: 0;
+  color: $body-secondary-color;
+  font-size: $font-size-lg;
+}
+
+// ---------- 活動介紹 ----------
+.ev-about {
+  h2 { margin-bottom: 1.25rem; }
+  h3 {
+    margin: 2.5rem 0 1rem;
+    font-size: 1.25rem;
+  }
+  > p {
+    max-width: 40em;
+    font-size: 1.0625rem;
+    line-height: 1.9;
+  }
+}
+// 圖文混排的寬幅圖（21:9）
+.ev-about-figure {
+  margin: 2rem 0 0;
+
+  .img-frame {
+    --cut: #{$cut-md};
+    aspect-ratio: 21 / 9;
+    clip-path: $cut-polygon;
+  }
+  figcaption {
+    margin-top: .5rem;
+    color: $body-secondary-color;
+    font-size: $small-font-size;
+  }
+}
+// 演出陣容：像傳單上的陣容表——大字、行內排列、霓虹粉斜線分隔
+.ev-lineup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .25rem 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: $font-family-display;
+  font-size: clamp(1.125rem, 1rem + .6vw, 1.5rem);
+  font-weight: 800;
+  line-height: 1.5;
+
+  li {
+    white-space: nowrap;
+  }
+  // 分隔斜線接在每個名字後面（最後一個除外），換行時斜線留在行尾，不會跑到下一行開頭
+  li:not(:last-child)::after {
+    content: "/";
+    margin-inline: .625rem;
+    color: $neon;
+    font-weight: 500;
+  }
+}
+// 時間流程：左側等寬時間（極光綠）＋直線節點
+.ev-timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 4.5rem 1fr;
+    gap: 1rem;
+    padding: .75rem 0 .75rem 1.5rem;
+    border-left: 1px solid $line-strong;
+
+    // 節點
+    &::before {
+      content: "";
+      position: absolute;
+      left: -.3125rem;
+      top: 1.25rem;
+      width: .5625rem;
+      height: .5625rem;
+      background-color: $aurora;
+      transform: rotate(45deg);
+    }
+  }
+  time {
+    color: $aurora;
+    font-family: $font-family-display;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// ---------- 票種與選位 ----------
+.ev-tickets-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .5rem 1.5rem;
+  margin-bottom: map-get($spacers, 4);
+
+  h2 { margin: 0; }
+  p {
+    display: flex;
+    align-items: center;
+    gap: .375rem;
+    margin: 0;
+    color: $body-secondary-color;
+  }
+}
+.ev-ticket-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+@include media-breakpoint-up(lg) {
+  .ev-selection {
+    position: sticky;
+    top: $sticky-top-offset;
+  }
+}
+// 座位圖卡內的「設計稿狀態示意」：比頁面底部的版本緊湊
+.ev-seat-demo {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+
+  .alert { margin: .75rem 0 0; }
+}
+
+// ---------- 場地與交通 ----------
+.ev-map {
+  --cut: #{$cut-md};
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  clip-path: $cut-polygon;
+}
+.ev-venue {
+  height: 100%;
+  overflow: hidden;
+
+  .img-frame {
+    aspect-ratio: 16 / 9;
+    margin: 1px 1px 0; // 留出 .cut-panel 的 1px 框線
+  }
+}
+.ev-venue-body {
+  padding: 1.5rem;
+
+  h3 { margin-bottom: .25rem; }
+  h4 {
+    margin: 1.25rem 0 .5rem;
+    font-family: $font-family-base;
+    font-size: .875rem;
+    font-weight: 700;
+    color: $aurora;
+    letter-spacing: $letter-spacing-body;
+  }
+  ul {
+    margin: 0;
+    padding-left: 1.125rem;
+    font-size: $font-size-sm;
+
+    li + li { margin-top: .25rem; }
+    li::marker { color: $neon; }
+  }
+  p { font-size: $font-size-sm; }
+  .btn { margin-top: 1.5rem; }
+}
+.ev-venue-address {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid $line;
+  color: $body-secondary-color;
+}
+
+// ---------- 主辦方 ----------
+.ev-org {
+  padding: 1.5rem;
+
+  @include media-breakpoint-up(lg) {
+    padding: 2.5rem;
+  }
+}
+// 圓形 Logo：「NC」字母組合，外圈是極光綠到霓虹粉的雙色環（CSS 畫，不是圖片）
+.ev-org-logo {
+  display: grid;
+  place-items: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  margin-bottom: 1.25rem;
+  border-radius: 50%;
+  background:
+    linear-gradient($blackout, $blackout) padding-box,
+    conic-gradient(from 200deg, $aurora, $neon, $aurora) border-box;
+  border: 3px solid transparent;
+  font-family: $font-family-display;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -.04em;
+}
+.ev-org-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1.5rem;
+}
+// 數據卡：數字放大，其餘照 Notion 原文
+.ev-stat {
+  height: 100%;
+  margin: 0;
+  padding: 1rem .75rem;
+  border: 1px solid $line-strong;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  text-align: center;
+  @include bevel($cut-sm);
+
+  b {
+    display: block;
+    margin-block: .125rem;
+    color: $strobe;
+    font-family: $font-family-display;
+    font-size: clamp(1.25rem, 1rem + 1vw, 1.875rem);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+  }
+}
+.ev-org-thumb {
+  --cut: #{$cut-sm};
+  aspect-ratio: 1;
+  clip-path: $cut-polygon;
+}
+
+// ---------- 購票須知（FAQ） ----------
+.ev-faq {
+  .accordion-button {
+    font-weight: 700;
+  }
+  // 強調題（退票規則）：霓虹粉左邊框＋圖示＋標籤，預設展開；答案與其他題同字級
+  .accordion-item.is-emphasis {
+    border-left: 3px solid $neon;
+
+    .accordion-button {
+      gap: .75rem;
+      background-color: $warning-bg-subtle;
+    }
+    .accordion-body { background-color: $warning-bg-subtle; }
+  }
+}
+.ev-faq-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .0625rem .5rem;
+  border: 1px solid $neon;
+  color: $neon;
+  font-size: .75rem;
+  white-space: nowrap;
+}
+
+// ---------- 底部設計稿狀態示意：縮小版購票卡 ----------
+.ev-demo-card {
+  height: 100%;
+
+  .buy-card-price { font-size: 1.375rem; }
+}

@@ -1,0 +1,707 @@
+// ============================================================
+// 全站基礎：字體、區塊節奏、按鈕、焦點、共用小工具
+// 以及本風格的「黑白狀態語法」共用類別：
+//   .tag（狀態標籤）、.remaining（剩餘票數）、.countdown（倒數）、.alert-*（提示框）、
+//   .hatch（斜線紋）、.barcode（條碼）、.qr（QR Code）、.demo-state（設計稿狀態示意）
+// ============================================================
+
+// 單一淺色主題：作業系統是深色模式時，原生的捲軸、日期選擇器也維持淺色
+:root {
+  color-scheme: light;
+  accent-color: $ink;
+  --focus-color: #{$ink};   // 焦點環的顏色；黑底區塊（.on-ink）改成白色
+  --focus-gap: #{$paper};   // 焦點環與元件之間的間隙色
+}
+
+body {
+  letter-spacing: $letter-spacing-body;
+  font-variant-numeric: lining-nums;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+// 標題：H1、H2、Display 用 900（Noto Sans TC Black），H3 以下 700
+h1, .h1, h2, .h2,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  font-weight: $font-weight-black;
+  letter-spacing: $letter-spacing-display;
+}
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  text-wrap: balance; // 標題多行時平均分配，避免最後一行只剩一兩個字
+}
+p, li, dd, label, .form-text {
+  text-wrap: pretty;  // 內文避免孤字
+}
+
+// sticky 頁首不遮住錨點目標（#tickets、#faq、#result…）
+html {
+  scroll-padding-top: $sticky-top-offset;
+}
+
+// 圖片：寫了 width／height 屬性（避免版面跳動），CSS 要把高度交還給比例，否則會被拉成屬性的高度
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+::selection {
+  background-color: $ink;
+  color: $paper;
+}
+
+// ---------- 黑底區塊 ----------
+// 頁尾、首頁本週熱門、已選票券卡等黑底區塊加 .on-ink：文字變白、焦點環變白、次要文字用霧灰
+.on-ink {
+  --focus-color: #{$paper};
+  --focus-gap: #{$ink};
+  --bs-secondary-color: #{$fog};
+  color: $paper;
+  background-color: $ink;
+
+  .text-secondary,
+  .text-body-secondary { color: $fog !important; } // 霧灰（8.3:1）；石墨灰在黑底上只有 3.1:1
+  a:not(.btn) { color: $paper; }
+}
+
+// ---------- 字體與數字 ----------
+// 英數用 Archivo，金額、倒數、票號、座位號一律等寬數字（規格 §0.2）
+.num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .01em;
+}
+// 價格：粗體＋等寬數字，不換行（「NT$ 1,500 起」整串在一起）
+.price {
+  font-weight: $font-weight-bold;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+// 大數字：應付總額、主辦方數據、日期方塊。Archivo 加寬＋最粗，像展牆上的作品編號
+// 字級由所在位置決定（例如 <p class="amount display-4">NT$ 5,974</p>）
+.amount {
+  font-stretch: $font-stretch-wide;
+  font-weight: $font-weight-black;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.01em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+// 次要說明文字
+.text-note {
+  font-size: $small-font-size;
+  color: var(--bs-secondary-color);
+  letter-spacing: $letter-spacing-label;
+}
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、標點與 <wbr> 處換行，「現代舞獨舞展」這類詞不會被拆開；整段放不下時才強制斷行
+// 用在活動名、標題、短說明；長段落不要用（會讓行尾參差）
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 區塊節奏 ----------
+// 區塊上下留白：手機 64px → 桌機 96px（全站一致）
+.section {
+  padding-block: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7);
+  }
+}
+.section-wall { background-color: $wall; }
+
+// 區塊標題：左邊 H2＋一句說明，右邊放連結或箭頭（≥ sm 底部對齊）
+// <div class="section-heading">
+//   <div><h2>今晚，想去哪裡？</h2><p>一句說明</p></div>
+//   <a class="btn btn-text" href="…">瀏覽全部活動</a>   ← 選用
+// </div>
+.section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: map-get($spacers, 3) map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 5);
+
+  h2, .h2 { margin-bottom: 0; }
+  p {
+    max-width: 34em;
+    margin: map-get($spacers, 2) 0 0;
+    color: var(--bs-secondary-color);
+  }
+}
+
+// ---------- 頁首區（活動列表、Guideline 共用）：麵包屑 → H1 → 一句說明 ----------
+.page-header {
+  padding-block: map-get($spacers, 4) map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 4) map-get($spacers, 6);
+  }
+
+  .breadcrumb { margin-bottom: map-get($spacers, 3); }
+  h1 { margin-bottom: 0; }
+}
+.page-lead {
+  max-width: 36em;
+  margin: map-get($spacers, 3) 0 0;
+  font-size: $lead-font-size;
+  color: var(--bs-secondary-color);
+}
+
+// ---------- 麵包屑：每一項都有 44px 觸控高度，目前頁粗體 ----------
+.breadcrumb {
+  align-items: center;
+}
+.breadcrumb-item {
+  display: flex; // 讓分隔符「/」與 44px 高的連結垂直置中
+  align-items: center;
+  white-space: nowrap;
+
+  &.active { font-weight: $font-weight-bold; }
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: $ink;
+  text-decoration: underline;
+  text-decoration-color: $concrete;
+  text-underline-offset: .3em;
+
+  &:hover { text-decoration-color: $ink; text-decoration-thickness: 2px; }
+}
+
+// ---------- 按鈕 ----------
+// 主要 .btn-primary：純黑底＋白字；次要 .btn-outline-dark：白底＋2px 黑框
+// hover 一律「反白」（黑白互換）——沒有彩色時，反白就是最清楚的回饋
+// 黑底區塊：主要 .btn-light（白底黑字）、次要 .btn-outline-light（白框白字）
+// 停用：斜線紋底＋水泥灰框＋石墨灰字（狀態語法「斜線紋＝不能用」），文字仍有 6.7:1
+.btn {
+  --bs-btn-focus-box-shadow: 0 0 0 2px var(--focus-gap), 0 0 0 5px var(--focus-color);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  letter-spacing: $letter-spacing-label;
+
+  // 停用：所有按鈕一致
+  &:disabled,
+  &.disabled {
+    --bs-btn-disabled-color: #{$graphite};
+    --bs-btn-disabled-bg: #{$paper};
+    --bs-btn-disabled-border-color: #{$concrete};
+    background-image: $hatch;
+  }
+}
+.btn-primary {
+  --bs-btn-hover-color: #{$ink};
+  --bs-btn-hover-bg: #{$paper};
+  --bs-btn-hover-border-color: #{$ink};
+  --bs-btn-active-color: #{$paper};
+  --bs-btn-active-bg: #{$graphite};
+  --bs-btn-active-border-color: #{$graphite};
+}
+.btn-outline-dark {
+  --bs-btn-color: #{$ink};
+  --bs-btn-bg: #{$paper};
+  --bs-btn-border-color: #{$ink};
+  --bs-btn-hover-color: #{$paper};
+  --bs-btn-hover-bg: #{$ink};
+  --bs-btn-hover-border-color: #{$ink};
+  --bs-btn-active-color: #{$paper};
+  --bs-btn-active-bg: #{$graphite};
+  --bs-btn-active-border-color: #{$graphite};
+}
+.btn-light {
+  --bs-btn-color: #{$ink};
+  --bs-btn-bg: #{$paper};
+  --bs-btn-border-color: #{$paper};
+  --bs-btn-hover-color: #{$paper};
+  --bs-btn-hover-bg: #{$ink};
+  --bs-btn-hover-border-color: #{$paper};
+  --bs-btn-active-color: #{$ink};
+  --bs-btn-active-bg: #{$fog};
+  --bs-btn-active-border-color: #{$fog};
+}
+.btn-outline-light {
+  --bs-btn-color: #{$paper};
+  --bs-btn-border-color: #{$paper};
+  --bs-btn-hover-color: #{$ink};
+  --bs-btn-hover-bg: #{$paper};
+  --bs-btn-hover-border-color: #{$paper};
+  --bs-btn-active-color: #{$ink};
+  --bs-btn-active-bg: #{$fog};
+  --bs-btn-active-border-color: #{$fog};
+}
+// 黑底上的停用按鈕：純黑底＋碳灰斜線＋霧灰字（8.3:1）
+.on-ink .btn:disabled,
+.on-ink .btn.disabled {
+  --bs-btn-disabled-color: #{$fog};
+  --bs-btn-disabled-bg: #{$ink};
+  --bs-btn-disabled-border-color: #{$carbon};
+  background-image: repeating-linear-gradient(-45deg, $carbon 0 1px, transparent 1px $hatch-gap);
+}
+
+// 文字按鈕：底線、無外框，高度 44px（觸控目標），視覺上仍是一行字
+.btn-text {
+  --bs-btn-padding-x: .25rem;
+  --bs-btn-padding-y: .25rem;
+  --bs-btn-border-width: 0;
+  --bs-btn-color: currentColor;
+  --bs-btn-hover-color: currentColor;
+  --bs-btn-active-color: currentColor;
+  --bs-btn-font-weight: #{$font-weight-bold};
+  min-height: 2.75rem;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .35em;
+
+  &:hover { text-decoration-thickness: 3px; }
+}
+
+// 付款中（loading）：按鈕停用＋spinner。不用斜線紋（它不是「不能用」，是「處理中」），改成石墨灰實心
+.btn.is-loading,
+.btn.is-loading:disabled {
+  --bs-btn-disabled-color: #{$paper};
+  --bs-btn-disabled-bg: #{$graphite};
+  --bs-btn-disabled-border-color: #{$graphite};
+  background-image: none;
+  cursor: progress;
+}
+
+// 圖示按鈕（頁首、熱門列箭頭）：44 × 44px
+.btn-icon {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.125rem;
+}
+
+// 內文裡沒有 class 的連結
+a:not([class]) {
+  text-decoration-thickness: 1px;
+  &:hover { text-decoration-thickness: 2px; }
+}
+
+// ---------- 鍵盤焦點：3px 純黑實線，外推 2px 露出白色間隙（黑底區塊自動換成白色） ----------
+:focus-visible {
+  outline: 3px solid var(--focus-color);
+  outline-offset: 2px;
+}
+.offcanvas:focus-visible,
+.modal:focus-visible,
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+// 按鈕、表單控制項由 box-shadow 畫焦點，不再疊一層 outline
+.btn:focus-visible,
+.btn-close:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible {
+  outline: none;
+}
+.form-check-input:focus:not(:focus-visible) { box-shadow: none; }
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: $zindex-fixed + 10;
+  padding: .75rem 1rem;
+  background: $ink;
+  color: $paper;
+  font-weight: $font-weight-bold;
+  &:focus { top: 1rem; }
+}
+
+// ---------- 表單 ----------
+.form-control,
+.form-select {
+  caret-color: $ink;
+}
+.form-control::placeholder { opacity: 1; }
+// 錯誤：2px 純黑框（與一般的 1px 水泥灰框分得開）＋右側驚嘆圖示＋訊息前加圖示
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-width: 2px;
+}
+.invalid-feedback {
+  display: none;
+  align-items: flex-start;
+  gap: .375rem;
+  font-weight: $font-weight-bold;
+
+  &::before {
+    content: map-get($bootstrap-icons-map, "exclamation-octagon-fill"); // 圖示字碼取自 Bootstrap Icons 的 Sass map
+    font-family: "bootstrap-icons";
+    font-weight: normal;
+    line-height: inherit;
+  }
+}
+.is-invalid ~ .invalid-feedback,
+.was-validated :invalid ~ .invalid-feedback {
+  display: flex;
+}
+// 勾選框：標籤垂直置中；觸控範圍至少 44px 高
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  min-height: 2.75rem;
+  margin-bottom: 0;
+  padding-left: 0;
+
+  .form-check-input {
+    flex-shrink: 0;
+    float: none;
+    margin: 0;
+  }
+  .form-check-label { line-height: $line-height-sm; }
+}
+
+// ---------- 黑白狀態語法：斜線紋 ----------
+// 加在任何元素上，表示「不能用」（售罄、不可選、逾時、失敗）
+.hatch {
+  background-image: $hatch;
+}
+
+// ---------- 狀態標籤（StatusTag） ----------
+// 三種用途（規格 §2.5）：
+//   類別   <span class="tag tag-fill">音樂演出</span>                       展牆灰底
+//   狀態詞 <span class="tag">熱賣中</span>                                  1px 黑框
+//   稀缺   <span class="tag tag-scarce"><i class="bi bi-fire"></i>剩 8%</span>  反白＋火焰圖示（即將完售，不只靠顏色）
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .1875rem .5rem;
+  border: 1px solid $ink;
+  background-color: $paper;
+  color: $ink;
+  font-size: .8125rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.4;
+  letter-spacing: $letter-spacing-label;
+  white-space: nowrap;
+
+  .bi { font-size: .875em; }
+}
+.tag-fill {
+  border-color: $wall;
+  background-color: $wall;
+}
+.tag-scarce {
+  border-color: $ink;
+  background-color: $ink;
+  color: $paper;
+}
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------- 剩餘票數（RemainingBar） ----------
+// 顏色＋文字＋進度條三者並用（規格 §2.11）：
+// <div class="remaining [is-scarce | is-soldout]">
+//   <p class="remaining-head"><span>剩餘 34%</span><span>熱賣中</span></p>
+//   <div class="progress" role="progressbar" aria-label="剩餘票數 34%" aria-valuenow="34" aria-valuemin="0" aria-valuemax="100">
+//     <div class="progress-bar" style="width: 34%"></div>
+//   </div>
+// </div>
+// 即將完售（≤ 25%）：軌道變斜線紋、條變粗、右側文字加火焰圖示並粗體
+// 已完售（0%）：只剩斜線紋軌道，文字「已完售」
+.remaining {
+  min-width: 0;
+
+  .progress { background-color: $wall; }
+}
+.remaining-head {
+  display: flex;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: .375rem;
+  font-size: .8125rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: $letter-spacing-label;
+
+  > :last-child { text-align: right; }
+}
+.remaining.is-scarce,
+.remaining.is-soldout {
+  .progress {
+    --bs-progress-height: .625rem;
+    background-color: $paper;
+    background-image: $hatch-dense;
+    box-shadow: inset 0 0 0 1px $ink;
+  }
+  .remaining-head { font-weight: $font-weight-bold; }
+}
+.on-ink .remaining {
+  .progress { background-color: $carbon; }
+  .progress-bar { background-color: $paper; }
+}
+.on-ink .remaining.is-scarce .progress,
+.on-ink .remaining.is-soldout .progress {
+  background-color: $ink;
+  background-image: repeating-linear-gradient(-45deg, $paper 0 1px, transparent 1px 4px);
+  box-shadow: inset 0 0 0 1px $paper;
+}
+
+// ---------- 倒數（Countdown） ----------
+// 只更新數字，不閃爍、不跳動、不放大；role="timer"，不加 aria-live（規格 §2.5）
+// <p class="countdown" role="timer"><i class="bi bi-clock"></i><span>距離票價調漲還有 <b class="num">05 時 12 分 48 秒</b></span></p>
+// 三種狀態：一般（1px 黑框）／警示 .is-warning（整塊反白＋驚嘆圖示）／逾時 .is-expired（斜線紋＋石墨灰字）
+.countdown {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  margin: 0;
+  padding: .625rem .875rem;
+  border: 1px solid $ink;
+  background-color: $paper;
+  color: $ink;
+  font-size: .9375rem;
+  line-height: $line-height-sm;
+
+  > .bi { flex-shrink: 0; line-height: inherit; }
+  b,
+  strong {
+    font-weight: $font-weight-black;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &.is-warning {
+    background-color: $ink;
+    color: $paper;
+  }
+  &.is-expired {
+    border-color: $concrete;
+    background-image: $hatch;
+    color: $graphite;
+
+    > span { background-color: $paper; } // 文字底下墊白，斜線紋不會干擾閱讀
+  }
+}
+
+// ---------- 提示框：同樣是黑白，靠手法區分 ----------
+// .alert-info     資訊：白底＋2px 黑框＋ⓘ
+// .alert-warning  警示：反白（黑底白字）＋驚嘆圖示（選位衝突、活動取消、已下架）
+// .alert-danger   錯誤：白底＋3px 粗框＋左側斜線紋條＋✕
+// .alert-success  成功：反白＋✓
+// 結構：<div class="alert alert-warning" role="alert"><i class="bi bi-exclamation-lg"></i><div>文字＋按鈕</div></div>
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  border-color: $ink;
+  background-color: $paper;
+  color: $ink;
+
+  > .bi {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: 1.125rem;
+    line-height: 1;
+  }
+  p:last-child { margin-bottom: 0; }
+}
+.alert-info > .bi {
+  border: 2px solid $ink;
+}
+.alert-warning,
+.alert-success {
+  background-color: $ink;
+  color: $paper;
+  --focus-color: #{$paper};
+  --focus-gap: #{$ink};
+
+  > .bi { background-color: $paper; color: $ink; }
+}
+.alert-danger {
+  border-width: $border-width-bold;
+  padding-left: calc(#{$alert-padding-x} + .75rem);
+  background-image: linear-gradient(to right, transparent .75rem, $paper .75rem), $hatch-dense;
+
+  > .bi { background-color: $ink; color: $paper; }
+}
+
+// ---------- 條碼（巨型條碼，本風格招牌） ----------
+// SVG 由 scripts/make-barcode.mjs 產生（Code 128，viewBox 寬＝模組數、高 1，preserveAspectRatio="none"）
+// 寬度跟著容器、高度由 --barcode-height 決定；顏色＝文字色（currentColor）
+.barcode {
+  display: block;
+  width: 100%;
+  height: var(--barcode-height, 4rem);
+  shape-rendering: crispEdges; // 細條不要反鋸齒成灰色
+}
+
+// ---------- QR Code ----------
+// 規格 §2.5：25 × 25 模組＋四周 4 模組留白，深色模組＋淺色底（黑底區塊裡也一樣，才掃得到）
+// <svg class="qr" viewBox="0 0 33 33" role="img" aria-label="入場 QR Code，票號 T-4471-01">…</svg>
+.qr {
+  display: block;
+  width: 100%;
+  height: auto;
+  background-color: $paper;
+  color: $ink;
+  shape-rendering: crispEdges;
+}
+
+// ---------- 方形圖示塊（價值主張、空狀態、結果面板） ----------
+// 黑色方塊＋白色圖示，是本風格「高反差幾何方塊」的最小單位
+// <span class="icon-block"><i class="bi bi-lightning-charge"></i></span>
+.icon-block {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 3.5rem;
+  height: 3.5rem;
+  background-color: $ink;
+  color: $paper;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.icon-block-outline {
+  border: $border-width-bold solid $ink;
+  background-color: $paper;
+  color: $ink;
+}
+
+// ---------- 浮層陰影：$enable-shadows 關閉時 Bootstrap 不會輸出，這裡手動套用 ----------
+.dropdown-menu { box-shadow: var(--bs-dropdown-box-shadow); }
+.modal-content { box-shadow: $box-shadow-lg; }
+
+// ---------- 手機滿版橫向捲動列 ----------
+// 576px 以下 container 沒有最大寬，讓橫向捲動列貼齊螢幕兩側，內容起點仍對齊版心
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+    scroll-padding-inline: $container-padding-x * .5;
+  }
+}
+.bleed-x { @include bleed-x; }
+
+// ---------- 容器：≥ lg 左右留白加大到 32px（規格 §2.1） ----------
+.container {
+  @include media-breakpoint-up(lg) {
+    --bs-gutter-x: 4rem;
+  }
+}
+
+// ---------- 底部固定列（活動細節購票列、結帳付款列）存在時，body 補高度，避免遮住頁尾 ----------
+@include media-breakpoint-down(lg) {
+  body:has(.mobile-bar) {
+    padding-bottom: $mobile-bar-height;
+  }
+}
+// 底部固定列共用外框：純黑底、白字，上緣 2px 白線與頁面分開
+.mobile-bar {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: $zindex-fixed;
+  min-height: $mobile-bar-height;
+  display: flex;
+  align-items: center;
+  border-top: 2px solid $paper;
+  box-shadow: 0 -8px 24px rgba($ink, .18);
+
+  > .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+}
+
+// ---------- 設計稿狀態示意（DemoState） ----------
+// 頁面底部示範「另一種狀態」：點狀框線＋黑色標籤「設計稿狀態示意」，一看就知道不是正式畫面
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag">設計稿狀態示意</p>
+//   <h2 id="…" class="demo-state-title">篩選後沒有活動時</h2>
+//   <p class="text-note">什麼情況下出現、畫面哪裡會改變</p>
+//   <div class="demo-state-stage">…示意畫面…</div>
+// </section>
+.demo-state {
+  margin-top: map-get($spacers, 6);
+  padding-top: map-get($spacers, 4);
+  border-top: 2px dotted $concrete;
+
+  > .text-note { margin-bottom: map-get($spacers, 3); }
+}
+.demo-state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: map-get($spacers, 3);
+  padding: .125rem .5rem;
+  background-color: $graphite;
+  color: $paper;
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+
+  &::before {
+    content: map-get($bootstrap-icons-map, "layers"); // 圖層＝示意
+    font-family: "bootstrap-icons";
+    font-weight: normal;
+  }
+}
+.demo-state-title {
+  margin-bottom: map-get($spacers, 1);
+  font-size: $h4-font-size;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0;
+}
+.demo-state-stage {
+  padding: map-get($spacers, 3);
+  border: 2px dotted $concrete;
+  background-color: $paper;
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 4);
+  }
+}
+// 一個示意區塊裡有多個並排畫面時，每個畫面的小標
+.demo-state-label {
+  margin-bottom: map-get($spacers, 2);
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+}
+
+// ---------- 空狀態：方形圖示塊 → 標題 → 說明 → 一個動作 ----------
+.empty-state {
+  display: grid;
+  justify-items: start;
+  gap: map-get($spacers, 3);
+  max-width: 28rem;
+
+  h3, p { margin-bottom: 0; }
+  p { color: $graphite; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

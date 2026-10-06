@@ -1,0 +1,758 @@
+// ============================================================
+// 全站基礎：字體、數字、區塊節奏、按鈕、焦點、共用小工具
+// 以及票務共用的小元件：狀態標籤、剩餘票數條、倒數、數量加減器、日期方塊、設計稿狀態示意
+// ============================================================
+
+// 單一淺色主題：瀏覽器原生的捲軸、日期選擇器也用淺色
+:root {
+  color-scheme: light;
+  accent-color: $ochre;
+}
+
+body {
+  letter-spacing: $letter-spacing-body;
+  font-variant-numeric: lining-nums; // EB Garamond 預設是舊式數字（高低不齊），全站改成齊線數字
+  text-rendering: optimizeLegibility;
+}
+
+// 頁面整體直向 flex，頁尾貼底（底部固定列的 padding 由各頁加在 body 上）
+.site-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  letter-spacing: $letter-spacing-heading;
+  text-wrap: balance; // 標題多行時平均分配，避免最後一行只剩一兩個字
+}
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty; // 內文避免孤字
+}
+
+// sticky 頁首不遮住焦點與錨點目標（#tickets、#result…）
+html {
+  scroll-padding-top: $sticky-top-offset;
+}
+
+::selection {
+  background-color: $mark-bg;
+  color: $ink;
+}
+
+// ---------- 數字：價格、倒數、票號、座位號 ----------
+// EB Garamond 的齊線＋等寬數字，倒數每秒變化時寬度不跳動
+// 用法：<span class="num">05</span>、<p class="price">NT$ 1,500 起</p>
+.num,
+.price {
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: $letter-spacing-numeral;
+}
+.price {
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+// 大金額：結帳應付總額、購票卡起價
+.price-lg {
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+// 次要說明文字與最小字級（13px，只用在圖說、附註）
+.text-note {
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+}
+.text-caption {
+  font-size: .8125rem;
+  line-height: 1.6;
+  color: $body-secondary-color;
+  letter-spacing: $letter-spacing-label;
+}
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、標點與 <wbr> 處換行，「現代舞獨舞展」這類詞不會被拆開；整段放不下時才強制斷行
+// 用在活動名、標題、短說明；長段落不要用（會讓行尾參差）
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 區塊節奏 ----------
+// 區塊上下留白：手機 48px → 桌機 88px；緊湊區塊 48px
+.section {
+  padding-block: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7);
+  }
+}
+.section-tight {
+  padding-block: map-get($spacers, 5);
+}
+.section-alt {
+  background-color: $khaki;
+}
+// 綠絨桌面：深色區塊（首頁本週熱門）。上面的文字用米白紙、強調用沙卡其
+.section-dark {
+  background-color: $bronze-night;
+  color: $parchment;
+
+  h2, h3, .h2, .h3 { color: $parchment; }
+  .text-note,
+  .section-heading p { color: $sand; }
+}
+
+// 區塊標題：上方一道雕版雙線（細＋細、中間留縫），像節目冊每一章的開頭
+// <div class="section-heading">
+//   <h2>區塊標題</h2>
+//   <p>一句說明（選用）</p>
+// </div>
+// 右側有連結或按鈕時加 .section-heading-split（≥ sm 左右分開、底部對齊）
+.section-heading {
+  margin-bottom: map-get($spacers, 4);
+  padding-top: map-get($spacers, 3);
+  border-top: 3px double $rule-strong;
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: map-get($spacers, 5);
+  }
+
+  h2,
+  .h2 {
+    margin-bottom: map-get($spacers, 2);
+  }
+  p {
+    margin-bottom: 0;
+    max-width: 38em;
+    color: $body-secondary-color;
+  }
+}
+.section-dark .section-heading {
+  border-top-color: rgba($sand, .5);
+}
+.section-heading-split {
+  @include media-breakpoint-up(sm) {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: map-get($spacers, 4);
+  }
+}
+
+// 雕版雙線分隔（卡片內、表單段落之間）
+.rule-double {
+  height: 0;
+  margin: 0;
+  border: 0;
+  border-top: 3px double $rule;
+  opacity: 1;
+}
+
+// ---------- 頁首區（活動列表、Guideline 共用） ----------
+// <header class="page-header">
+//   <nav aria-label="目前位置"><ol class="breadcrumb">…</ol></nav>
+//   <h1>頁面標題</h1>
+//   <p class="page-lead">一句說明（選用）</p>
+// </header>
+.page-header {
+  padding-block: map-get($spacers, 4) map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 5);
+  }
+
+  .breadcrumb {
+    margin-bottom: map-get($spacers, 2);
+  }
+  h1,
+  .h1 {
+    margin-bottom: map-get($spacers, 2);
+  }
+}
+.page-lead {
+  max-width: 38em;
+  margin-bottom: 0;
+  color: $body-secondary-color;
+}
+
+// ---------- 麵包屑：連結 44px 高、褪墨字；目前頁墨褐 ----------
+.breadcrumb {
+  align-items: center;
+}
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: $body-secondary-color;
+  text-decoration: none;
+
+  &:hover {
+    color: $ochre;
+    text-decoration: underline;
+  }
+}
+
+// ---------- 圖片框：固定比例、裁切填滿，內側一道雕版細框 ----------
+// <div class="img-frame ratio-16x9"><img …></div>
+// 不要同時設定 aspect-ratio 與 max-height（會把寬度卡住）
+.img-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: $border-radius-lg;
+  background-color: $khaki;
+
+  > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+// 內框：像裱框的襯紙線，用在主視覺與情境卡（小縮圖不用）
+.img-frame.is-framed::after {
+  content: "";
+  position: absolute;
+  inset: .625rem;
+  border: 1px solid rgba($vellum, .55);
+  border-radius: $border-radius-sm;
+  pointer-events: none;
+}
+.ratio-16x9 { aspect-ratio: 16 / 9; }
+.ratio-16x10 { aspect-ratio: 16 / 10; }
+.ratio-4x3 { aspect-ratio: 4 / 3; }
+.ratio-4x5 { aspect-ratio: 4 / 5; }
+.ratio-1x1 { aspect-ratio: 1; }
+.ratio-21x9 { aspect-ratio: 21 / 9; }
+
+// ---------- 按鈕 ----------
+// 主要：.btn-primary（赭紅底＋象牙紙字），內側一道象牙細線，像雕版印刷的雙線框；同一組動作只放一個
+// 次要：.btn-outline-secondary（墨褐細框）
+// 文字連結：.btn-text
+// 停用：卡其底＋褪墨字＋虛線框（不靠透明度，文字仍有 5:1）
+.btn {
+  letter-spacing: $letter-spacing-label;
+  --bs-btn-focus-box-shadow: #{$focus-ring-double};
+  --bs-btn-disabled-bg: #{$khaki};
+  --bs-btn-disabled-color: #{$ink-muted};
+  --bs-btn-disabled-border-color: #{$rule-strong};
+
+  &:disabled,
+  &.disabled {
+    border-style: dashed;
+  }
+}
+.btn-primary {
+  --bs-btn-hover-bg: #{$ochre-deep};
+  --bs-btn-hover-border-color: #{$ochre-deep};
+  --bs-btn-active-bg: #{$ochre-deep};
+  --bs-btn-active-border-color: #{$ochre-deep};
+  --bs-btn-focus-box-shadow: inset 0 0 0 3px #{$ochre}, inset 0 0 0 4px #{rgba($vellum, .5)}, #{$focus-ring-double};
+  box-shadow: inset 0 0 0 3px var(--bs-btn-bg), inset 0 0 0 4px rgba($vellum, .5);
+
+  &:hover { box-shadow: inset 0 0 0 3px $ochre-deep, inset 0 0 0 4px rgba($vellum, .5); }
+  &:disabled,
+  &.disabled { box-shadow: none; }
+}
+.btn-outline-secondary {
+  --bs-btn-color: #{$ink};
+  --bs-btn-border-color: #{$ink};
+  --bs-btn-bg: transparent;
+  --bs-btn-hover-color: #{$ink};
+  --bs-btn-hover-bg: #{$khaki};
+  --bs-btn-hover-border-color: #{$ink};
+  --bs-btn-active-color: #{$ink};
+  --bs-btn-active-bg: #{mix($khaki, $rule-strong, 60%)};
+  --bs-btn-active-border-color: #{$ink};
+}
+// 綠絨或照片上的次要按鈕：米白紙細框
+.btn-outline-paper {
+  --bs-btn-color: #{$parchment};
+  --bs-btn-border-color: #{$parchment};
+  --bs-btn-bg: transparent;
+  --bs-btn-hover-color: #{$ink};
+  --bs-btn-hover-bg: #{$parchment};
+  --bs-btn-hover-border-color: #{$parchment};
+  --bs-btn-active-color: #{$ink};
+  --bs-btn-active-bg: #{$khaki};
+  --bs-btn-active-border-color: #{$khaki};
+}
+.btn-text {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: .25rem;
+  --bs-btn-color: #{$ink};
+  --bs-btn-hover-color: #{$ochre};
+  --bs-btn-active-color: #{$ochre-deep};
+  --bs-btn-border-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem; // 觸控目標 44px，視覺上仍是一行文字連結
+  font-weight: $font-weight-normal;
+  text-decoration: underline;
+  text-decoration-color: $ochre;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .35em;
+
+  &:focus-visible {
+    box-shadow: none;
+    outline: 2px solid $ochre;
+    outline-offset: 4px;
+  }
+}
+// 圖示按鈕（44 × 44）：頁首、輪播控制、熱門列箭頭
+.btn-icon {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.125rem;
+}
+// 付款中（鎖定）：停用＋spinner＋文字，aria-busy 由外層 fieldset 標示
+.btn.is-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .625rem;
+  cursor: progress;
+
+  .spinner-border {
+    --bs-spinner-width: 1.125rem;
+    --bs-spinner-height: 1.125rem;
+    --bs-spinner-border-width: .15em;
+  }
+}
+
+// 核取方塊、radio：只有鍵盤操作時顯示焦點環
+.form-check-input:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+.form-check {
+  min-height: 1.75rem;
+}
+.form-check-label {
+  cursor: pointer;
+}
+
+// 內文裡沒有 class 的連結：赭紅底線
+a:not([class]) {
+  text-decoration-color: $ochre;
+  text-underline-offset: .3em;
+}
+
+.form-control,
+.form-select {
+  caret-color: $ochre;
+}
+// 錯誤狀態的說明文字前加圖示（不只靠紅色）
+.invalid-feedback::before {
+  content: "\F333"; // bi-exclamation-circle
+  margin-right: .25rem;
+  font-family: bootstrap-icons;
+  vertical-align: -.125em;
+}
+
+// ---------- 鍵盤焦點：赭紅 2px 實線，外推 2px ----------
+:focus-visible {
+  outline: 2px solid $ochre;
+  outline-offset: 2px;
+}
+.offcanvas:focus-visible,
+.modal:focus-visible {
+  outline: 0;
+}
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+.btn:focus-visible,
+.btn-close:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible {
+  outline: none;
+}
+// 深色區塊與照片上的焦點：沙卡其外圈
+.section-dark :focus-visible,
+.on-photo :focus-visible {
+  outline-color: $sand;
+}
+.section-dark .btn:focus-visible,
+.on-photo .btn:focus-visible {
+  box-shadow: 0 0 0 2px $bronze-night, 0 0 0 4px $sand;
+}
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: $zindex-fixed + 10;
+  padding: .5rem 1rem;
+  background: $ink;
+  color: $vellum;
+  &:focus { top: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+// 浮層陰影：$enable-shadows 關閉時 Bootstrap 不會輸出，這裡手動套用
+.dropdown-menu { box-shadow: $box-shadow; }
+.modal-content { box-shadow: $box-shadow-lg; }
+
+// ---------- 手機滿版橫向捲動列 ----------
+// < 576px 讓橫向捲動列貼齊螢幕兩側，第一項仍對齊版心（熱門列、Guideline 章節膠囊）
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+  }
+}
+.bleed-x {
+  @include bleed-x;
+}
+
+// ============================================================
+// 票務共用小元件
+// ============================================================
+
+// ---------- 狀態標籤 StatusTag ----------
+// 三種用途：
+//   .tag                類別、日期、地點（細框）
+//   .tag.is-status      狀態詞：熱賣中、即將開賣、含免費票種（青銅綠細框＋圓點）
+//   .tag.is-scarce      稀缺：即將完售、剩 8%（赭紅實心＋火焰圖示，和其他狀態分得出來，不只靠顏色）
+// <span class="tag is-scarce"><i class="bi bi-fire" aria-hidden="true"></i>即將完售</span>
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .3125rem;
+  padding: .1875rem .625rem;
+  border: 1px solid $rule-strong;
+  border-radius: $border-radius-pill;
+  background-color: $vellum;
+  color: $ink;
+  font-size: .8125rem;
+  line-height: 1.5;
+  letter-spacing: $letter-spacing-label;
+  white-space: nowrap;
+
+  .bi { font-size: .875em; }
+
+  &.is-status {
+    border-color: $verdigris;
+    color: $verdigris;
+
+    &::before {
+      content: "";
+      width: .375rem;
+      height: .375rem;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+  }
+  // 已售罄：虛線框＋褪墨字
+  &.is-muted {
+    border-style: dashed;
+    background-color: transparent;
+    color: $ink-muted;
+  }
+  // 尚未開賣：石板藍細框＋沙漏圖示
+  &.is-info {
+    border-color: $slate;
+    color: $slate;
+  }
+  &.is-scarce {
+    border: 1px solid $ochre;
+    background-color: $ochre;
+    color: $vellum;
+    font-weight: $font-weight-medium;
+    box-shadow: inset 0 0 0 1px $ochre, inset 0 0 0 2px rgba($vellum, .55); // 內側象牙細線，與主要按鈕同一個語彙
+  }
+}
+
+// ---------- 剩餘票數條 RemainingBar ----------
+// 顏色＋文字＋進度條三者並用；剩餘 ≤ 25% 加 .is-scarce（赭紅＋火焰圖示＋文字「即將完售」）
+// <div class="remain is-scarce">
+//   <div class="remain-head"><span>剩餘 8%</span><span class="remain-note"><i class="bi bi-fire"></i>即將完售</span></div>
+//   <div class="progress" role="progressbar" aria-label="剩餘票數 8%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100">
+//     <div class="progress-bar" style="width: 8%"></div>
+//   </div>
+// </div>
+.remain-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .25rem .75rem;
+  margin-bottom: .375rem;
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.remain-note {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+}
+.remain .progress-bar {
+  border-radius: inherit;
+}
+.remain.is-scarce {
+  .remain-head { color: $ochre-deep; font-weight: $font-weight-medium; }
+  .progress-bar { background-color: $ticket-scarce; }
+}
+.remain.is-soldout {
+  .remain-head { color: $ink-muted; }
+  .progress {
+    background-image: repeating-linear-gradient(135deg, transparent 0 4px, rgba($ink-muted, .35) 4px 5px); // 斜線紋：0% 也看得出「空了」
+  }
+}
+.section-dark .remain {
+  .remain-head { color: $sand; }
+  .progress { background-color: rgba($parchment, .2); }
+  .progress-bar { background-color: $sand; }
+  &.is-scarce .remain-head { color: $parchment; }
+  &.is-scarce .progress-bar { background-color: mix($ochre, $vellum, 55%); }
+}
+
+// ---------- 倒數 Countdown ----------
+// 時鐘圖示＋文字，數字等寬加粗；只更新數字，不閃爍、不跳動、不放大
+// 三種狀態：一般、.is-warn（琥珀，整列換色＋文字）、.is-expired（停用色＋刪除線數字）
+// <p class="countdown" role="timer"><i class="bi bi-clock"></i><span>距離票價調漲還有 <strong class="num">05</strong> 時 …</span></p>
+.countdown {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  margin-bottom: 0;
+  padding: .625rem .875rem;
+  border: 1px solid $rule;
+  border-radius: $border-radius;
+  background-color: $parchment;
+  color: $ink;
+  line-height: 1.55;
+
+  > .bi {
+    flex: none;
+    margin-top: .125rem;
+    color: $ochre;
+  }
+  strong,
+  .num {
+    font-weight: $font-weight-medium;
+    font-variant-numeric: lining-nums tabular-nums;
+    font-size: 1.125em;
+  }
+
+  // 數字整組不換行（「05 時 12 分 48 秒」不會被拆成兩行）
+  .countdown-digits { white-space: nowrap; }
+
+  &.is-warn {
+    border-color: $warning-border-subtle;
+    background-color: $warning-bg-subtle;
+    color: $amber;
+    > .bi { color: $amber; }
+  }
+  // 開賣時間（尚未開賣）：石板藍
+  &.is-info {
+    border-color: $info-border-subtle;
+    background-color: $info-bg-subtle;
+    color: $slate;
+    > .bi { color: $slate; }
+  }
+  &.is-expired {
+    border-style: dashed;
+    border-color: $rule-strong;
+    background-color: $khaki;
+    color: $ink-muted;
+    > .bi { color: $ink-muted; }
+    .num { text-decoration: line-through; }
+  }
+}
+
+// ---------- 數量加減器 QuantityStepper ----------
+// 「−」｜數字｜「＋」，每顆 44 × 44；0 時「−」停用，達上限「＋」停用
+.qty {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid $control;
+  border-radius: $border-radius;
+  background-color: $vellum;
+
+  .btn {
+    --bs-btn-padding-x: 0;
+    --bs-btn-padding-y: 0;
+    --bs-btn-border-width: 0;
+    --bs-btn-color: #{$ink};
+    --bs-btn-hover-color: #{$ochre};
+    --bs-btn-hover-bg: #{$khaki};
+    --bs-btn-active-bg: #{$khaki};
+    --bs-btn-disabled-bg: transparent;
+    --bs-btn-disabled-color: #{$rule-strong};
+    --bs-btn-focus-box-shadow: inset 0 0 0 2px #{$ochre};
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0;
+    font-size: 1.125rem;
+  }
+  output {
+    display: grid;
+    place-items: center;
+    min-width: 2.5rem;
+    border-inline: 1px solid $rule;
+    font-size: 1.125rem;
+    font-weight: $font-weight-medium;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+}
+
+// ---------- 日期方塊 DateChip ----------
+// 像節目冊上的日曆頁：上「10月」小字、下「18」大字（EB Garamond）
+.date-chip {
+  display: inline-grid;
+  justify-items: center;
+  min-width: 3.25rem;
+  padding: .25rem .5rem .375rem;
+  border-radius: $border-radius-sm;
+  background-color: $vellum;
+  color: $ink;
+  line-height: 1.1;
+  box-shadow: inset 0 0 0 1px $vellum, inset 0 0 0 2px $rule-strong; // 內側一道細框
+
+  .date-chip-month {
+    font-size: .75rem;
+    color: $ochre-deep;
+    letter-spacing: $letter-spacing-label;
+  }
+  .date-chip-day {
+    font-size: 1.625rem;
+    font-weight: $font-weight-medium;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+}
+
+// ---------- 圓形圖示章（價值主張、空狀態、結果） ----------
+// 細線雙圈，像節目冊上的徽章
+.seal {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  color: $ochre;
+  font-size: 1.375rem;
+  box-shadow: inset 0 0 0 1px currentColor, inset 0 0 0 4px $parchment, inset 0 0 0 5px rgba($ochre, .45);
+
+  &.is-success { color: $verdigris; box-shadow: inset 0 0 0 1px currentColor, inset 0 0 0 4px $vellum, inset 0 0 0 5px rgba($verdigris, .45); }
+  &.is-danger { color: $carmine; box-shadow: inset 0 0 0 1px currentColor, inset 0 0 0 4px $vellum, inset 0 0 0 5px rgba($carmine, .45); }
+  &.is-muted { color: $ink-muted; box-shadow: inset 0 0 0 1px currentColor, inset 0 0 0 4px $vellum, inset 0 0 0 5px rgba($ink-muted, .4); }
+  &.is-lg { width: 4.5rem; height: 4.5rem; font-size: 1.875rem; }
+}
+
+// ---------- 提示框：左邊一道粗線＋圖示，不只靠底色 ----------
+.alert {
+  display: flex;
+  gap: .625rem;
+  border-left-width: 4px;
+
+  > .bi {
+    flex: none;
+    margin-top: .1875rem;
+  }
+  p:last-child { margin-bottom: 0; }
+}
+
+// ---------- 空狀態 ----------
+// 圖示章＋標題＋一句說明＋一個動作，置中
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: .75rem;
+  padding: map-get($spacers, 5) map-get($spacers, 3);
+  text-align: center;
+
+  h3,
+  .h3 { margin-bottom: 0; }
+  p {
+    max-width: 26em;
+    margin-bottom: map-get($spacers, 2);
+    color: $body-secondary-color;
+  }
+}
+
+// ---------- 設計稿狀態示意 DemoState ----------
+// 頁面底部示範「另一種狀態」的畫面：以虛線和正式內容分開，標籤寫明「設計稿狀態示意」，避免被當成正式內容
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag">設計稿狀態示意</p>
+//   <h2 id="…" class="demo-state-title">保留時間剩 2 分鐘時</h2>
+//   <p class="text-note">什麼情況下出現（選用）</p>
+//   <div class="demo-state-stage">…示意畫面…</div>
+// </section>
+.demo-state {
+  margin-top: map-get($spacers, 5);
+  padding-top: map-get($spacers, 4);
+  border-top: 1px dashed $rule-strong;
+
+  > .text-note {
+    margin-bottom: map-get($spacers, 3);
+  }
+}
+.demo-state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: map-get($spacers, 2);
+  padding: .125rem .625rem;
+  border: 1px dashed $ink-muted;
+  border-radius: $border-radius-sm;
+  color: $ink-muted;
+  font-size: .8125rem;
+  letter-spacing: $letter-spacing-label;
+
+  &::before {
+    content: "\F4CA"; // bi-pencil-square：表示這是設計稿的註記
+    font-family: bootstrap-icons;
+  }
+}
+.demo-state-title {
+  margin-bottom: map-get($spacers, 1);
+  font-size: $h4-font-size;
+}
+.demo-state-stage {
+  padding: map-get($spacers, 3);
+  border: 1px dashed $rule-strong;
+  border-radius: $border-radius-lg;
+  background-color: rgba($vellum, .5);
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 4);
+  }
+}
+// 一個 DemoState 裡並排多個小狀態時，每個狀態的小標
+.demo-state-label {
+  margin-bottom: .5rem;
+  font-size: $small-font-size;
+  font-weight: $font-weight-medium;
+  color: $ink-muted;
+}

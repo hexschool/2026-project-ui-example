@@ -1,0 +1,273 @@
+// ============================================================
+// 票務的小元件：狀態標籤、剩餘票數進度條、倒數、日期方塊、數量加減器、篩選膠囊
+// 規則：狀態一律「顏色＋文字＋形狀／圖示」並用，不能只靠顏色
+// ============================================================
+
+// ---------- StatusTag 狀態標籤 ----------
+// <span class="tag">音樂演出</span>                         類別：細框
+// <span class="tag tag-hot">熱賣中</span>                   狀態詞：極光綠框字
+// <span class="tag tag-free">含免費票種</span>              狀態詞：紫外青框字
+// <span class="tag tag-scarce"><i class="bi bi-fire"></i>即將完售</span>  稀缺：霓虹粉實心＋火焰（全站最醒目的標籤）
+// <span class="tag tag-soon"><i class="bi bi-clock"></i>即將開賣</span>    即將開賣：虛線框＋時鐘
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .3125rem;
+  min-height: 1.875rem;
+  padding: .1875rem .625rem;
+  border: 1px solid $control;
+  background-color: transparent;
+  color: $strobe;
+  font-size: .8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: $letter-spacing-label;
+  white-space: nowrap;
+  @include bevel($cut-sm);
+
+  .bi { font-size: .875em; }
+}
+.tag-hot {
+  border-color: $aurora;
+  color: $aurora;
+}
+.tag-free {
+  border-color: $uv;
+  color: $uv;
+}
+.tag-scarce {
+  border-color: $neon;
+  background-color: $neon;
+  color: $blackout; // 6.4:1
+  font-weight: 700;
+}
+.tag-soon {
+  border-style: dashed;
+  color: $haze;
+}
+// 標籤列：可換行
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------- RemainingBar 剩餘票數進度條 ----------
+// 規則：顏色＋文字＋進度條三者並用。剩餘 ≤ 25% 加 .is-scarce（粉色、加粗、火焰圖示、附註「即將完售」）
+// <div class="remain is-scarce">
+//   <p class="remain-meta"><span class="remain-value">剩餘 8%</span><span class="remain-note"><i class="bi bi-fire" aria-hidden="true"></i>限時｜今晚結束調漲</span></p>
+//   <div class="progress" role="progressbar" aria-label="剩餘票數 8%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100">
+//     <div class="progress-bar" style="width: 8%"></div>
+//   </div>
+// </div>
+.remain-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .25rem .75rem;
+  margin-bottom: .375rem;
+  font-size: $small-font-size;
+}
+.remain-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.remain-note {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  color: $body-secondary-color;
+}
+.remain .progress {
+  // 軌道上的刻度：每 10% 一格，像音量表（純裝飾，數值看文字與長度）
+  background-image: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), $blackout calc(10% - 1px) 10%);
+}
+.remain.is-scarce {
+  .remain-value,
+  .remain-note { color: $neon; }
+  .progress { --bs-progress-height: .5rem; }
+  .progress-bar { background-color: $neon; }
+}
+// 已完售（0%）：斜線紋軌道＋「已完售」
+.remain.is-sold-out {
+  .remain-value { color: $dim; }
+  .progress { @include hatch($line-strong, 6px); }
+}
+
+// ---------- Countdown 倒數 ----------
+// 只更新數字，不閃爍、不跳動、不放大。role="timer"，不加 aria-live
+// <p class="countdown" role="timer"><i class="bi bi-stopwatch" aria-hidden="true"></i><span>距離票價調漲還有 <b class="countdown-num">05</b> 時…</span></p>
+// 三種狀態：一般（極光綠圖示）、.is-warn（剩 2 分鐘：整塊霓虹粉框＋警示圖示）、.is-expired（逾時：灰、時鐘停）
+.countdown {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  margin: 0;
+  line-height: 1.6;
+
+  > .bi {
+    flex: 0 0 auto;
+    color: $aurora;
+    font-size: 1.125rem;
+    line-height: 1.4;
+  }
+}
+.countdown-num {
+  font-family: $font-family-display;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  color: $strobe;
+}
+.countdown.is-warn > .bi,
+.countdown.is-warn .countdown-num { color: $neon; }
+.countdown.is-expired {
+  color: $body-secondary-color;
+  > .bi { color: $dim; }
+  .countdown-num { color: $dim; text-decoration: line-through; }
+}
+// 框起來的倒數（購票卡頂端、鎖位、結帳步驟列）
+.countdown-box {
+  padding: .75rem 1rem;
+  border: 1px solid $line-strong;
+  background-color: $blackout;
+  @include bevel($cut-sm);
+
+  &.is-warn {
+    border: 2px solid $neon;
+    background-color: $warning-bg-subtle;
+  }
+  &.is-expired {
+    border-style: dashed;
+    background-color: transparent;
+  }
+}
+
+// ---------- DateChip 日期方塊（熱門卡主視覺左上） ----------
+// <p class="date-chip"><span class="date-chip-month">10月</span><span class="date-chip-day">18</span></p>
+.date-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 3.5rem;
+  margin: 0;
+  padding: .375rem .5rem .5rem;
+  background-color: $blackout;
+  border-left: 3px solid $aurora;
+  line-height: 1.1;
+  text-align: center;
+}
+.date-chip-month {
+  color: $haze;
+  font-size: .75rem;
+  font-weight: 500;
+}
+.date-chip-day {
+  font-family: $font-family-display;
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- QuantityStepper 數量加減器 ----------
+// 0 時「−」停用；達上限（剩餘張數或每筆 4 張）時「＋」停用。觸控目標 44 × 44
+// <div class="qty" data-qty data-max="4">
+//   <button class="qty-btn" type="button" aria-label="減少預售全票數量" data-qty-step="-1"><i class="bi bi-dash-lg"></i></button>
+//   <output class="qty-value" aria-live="polite">2</output>
+//   <button class="qty-btn" type="button" aria-label="增加預售全票數量" data-qty-step="1"><i class="bi bi-plus-lg"></i></button>
+// </div>
+.qty {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid $control;
+  background-color: $blackout;
+  @include bevel($cut-sm);
+}
+.qty-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: $strobe;
+  font-size: 1.125rem;
+
+  &:hover:not(:disabled) {
+    background-color: $floor;
+    color: $aurora;
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px $aurora;
+  }
+  &:disabled {
+    color: $line-strong;
+    cursor: not-allowed;
+  }
+}
+.qty-value {
+  display: grid;
+  place-items: center;
+  min-width: 2.75rem;
+  border-inline: 1px solid $line;
+  font-family: $font-family-display;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- FilterGroup 篩選膠囊 ----------
+// 未選：細框；hover：極光綠框；已選：極光綠實心＋全黑字＋勾勾（不只靠顏色）
+// <button class="chip" type="button" aria-pressed="true">全部</button>
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  padding: .375rem .875rem;
+  border: 1px solid $control;
+  background-color: transparent;
+  color: $strobe;
+  font-size: .875rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-decoration: none;
+  white-space: nowrap;
+  @include bevel($cut-sm);
+
+  &:hover {
+    border-color: $aurora;
+    color: $aurora;
+  }
+  &:focus-visible {
+    outline-offset: 2px;
+  }
+  &[aria-pressed="true"] {
+    border-color: $aurora;
+    background-color: $aurora;
+    color: $blackout;
+    font-weight: 700;
+
+    &::before {
+      content: "\F633"; // bi-check-lg 的字碼：已選加勾勾
+      font-family: bootstrap-icons;
+      font-weight: 400;
+      font-size: .875em;
+    }
+  }
+}
+.chip-count {
+  color: inherit;
+  opacity: .75;
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+}
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}

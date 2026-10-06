@@ -1,0 +1,313 @@
+// ============================================================
+// 活動卡三種：SceneCard 情境卡（首頁）、FeaturedCard 熱門卡（首頁）、EventCard 列表卡（活動列表）
+// 共同點：圖片都切角（右上＋左下），卡片沒有圓角也沒有陰影
+// ============================================================
+
+// ---------- SceneCard 情境卡 ----------
+// 4:5 圖片，底部漸層壓字：分類名 → 情境標題 → 場次與票價
+// 桌機（≥ lg、可 hover 的裝置）場次與票價 hover／focus 才浮現；觸控裝置與 < lg 一律顯示
+// 整張卡是一個連結；切角加在裡面的 .scene-card-media，焦點外框畫在 <a> 上才不會被切掉
+.scene-card {
+  display: block;
+  color: $strobe;
+  text-decoration: none;
+
+  &:hover { color: $strobe; }
+}
+.scene-card-media {
+  --cut: #{$cut-md};
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background-color: $floor;
+  clip-path: $cut-polygon;
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .6s ease;
+  }
+  // 底部漸層：確保白字在任何照片上都 ≥ 4.5:1
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 30% 0 0;
+    background: linear-gradient(180deg, rgba($blackout, 0) 0%, rgba($blackout, .8) 40%, rgba($blackout, .96) 100%);
+  }
+}
+.scene-card-body {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  padding: map-get($spacers, 4);
+
+  @include media-breakpoint-down(sm) {
+    padding: map-get($spacers, 3);
+  }
+}
+.scene-card-category {
+  margin-bottom: .25rem;
+  color: $aurora;
+  font-size: $small-font-size;
+  font-weight: 700;
+  letter-spacing: $letter-spacing-label;
+}
+.scene-card-title {
+  margin-bottom: 0;
+  font-size: 1.375rem;
+  line-height: 1.35;
+
+  @include media-breakpoint-down(sm) {
+    font-size: 1.0625rem; // 手機兩欄：卡片只有約 165px 寬
+  }
+}
+.scene-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem .75rem;
+  margin: .625rem 0 0;
+  color: $strobe;
+  font-size: $small-font-size;
+
+  > span + span {
+    padding-left: .75rem;
+    border-left: 1px solid rgba($strobe, .4);
+  }
+  // 手機兩欄：場次與票價上下排
+  @include media-breakpoint-down(sm) {
+    flex-direction: column;
+    gap: 0;
+
+    > span + span { padding-left: 0; border-left: 0; }
+  }
+}
+// 桌機 hover 浮現：預設把場次與票價收起來（高度 0、透明），hover 或鍵盤焦點時展開
+@media (hover: hover) and (min-width: map-get($grid-breakpoints, lg)) {
+  .scene-card-meta {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    overflow: hidden;
+    transition: max-height .3s ease, opacity .3s ease, margin-top .3s ease;
+  }
+  .scene-card:hover,
+  .scene-card:focus-visible {
+    .scene-card-meta {
+      max-height: 3rem;
+      opacity: 1;
+      margin-top: .625rem;
+    }
+    .scene-card-media > img { transform: scale(1.04); }
+  }
+}
+
+// ---------- FeaturedCard 熱門卡 ----------
+// 16:10 主視覺（左上日期方塊、右上稀缺標籤）→ 名稱 → 時間與地點 → 剩餘進度條 → 票價＋按鈕
+// 整張卡用 .cut 切角；名稱是 stretched-link，按鈕疊在上面另外可點
+.feat-card {
+  --cut: #{$cut-md};
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: $rack;
+  clip-path: $cut-polygon;
+  transition: background-color .2s ease;
+
+  &:hover { background-color: $floor; }
+}
+.feat-card-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background-color: $floor;
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .date-chip {
+    position: absolute;
+    top: .75rem;
+    left: .75rem;
+  }
+  .tag-scarce {
+    position: absolute;
+    top: .75rem;
+    right: 1.25rem; // 避開右上切角
+  }
+}
+.feat-card-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: .75rem;
+  padding: 1.25rem 1.25rem 1.5rem;
+}
+.feat-card-title {
+  margin: 0;
+  font-size: 1.1875rem;
+  line-height: 1.4;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  a:hover { color: $aurora; }
+}
+.feat-card-meta {
+  margin: 0;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+}
+.feat-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  margin-top: auto;
+  padding-top: .5rem;
+
+  .price { margin: 0; font-size: 1rem; }
+  .feat-card-free { margin: 0; font-size: .875rem; font-weight: 700; }
+  .btn {
+    position: relative; // 疊在 stretched-link 上面，自己可以點
+    z-index: 2;
+  }
+}
+
+// ---------- EventCard 活動列表卡 ----------
+// 橫式：≥ md 圖左（4 欄）文右（8 欄）；< md 圖在上
+// 卡片是 .cut-panel（斜邊也有框線），hover 時框線變亮
+.event-card {
+  padding: 1rem;
+
+  &:hover { --cut-line: #{$control}; }
+
+  @include media-breakpoint-up(md) {
+    padding: 1.25rem;
+  }
+}
+.event-card-media {
+  --cut: #{$cut-md};
+  aspect-ratio: 4 / 3;
+  background-color: $floor;
+  clip-path: $cut-polygon;
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+// 內容欄：≥ 768px 用格線把票價放在右上（跨標籤列與名稱兩列）；< 768px 照 HTML 順序，票價在名稱下方
+.event-card-body {
+  > .tag-list { margin-bottom: .75rem; }
+
+  @include media-breakpoint-up(md) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 1.5rem;
+    align-content: start;
+
+    > * { grid-column: 1 / -1; }
+    > .tag-list { grid-column: 1; grid-row: 1; }
+    > .event-card-title { grid-column: 1; grid-row: 2; }
+    > .event-card-price { grid-column: 2; grid-row: 1 / span 2; }
+  }
+}
+.event-card-title {
+  margin: 0 0 .5rem;
+  font-size: 1.5rem;
+  line-height: 1.35;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  a:hover { color: $aurora; }
+}
+.event-card-price {
+  margin: 0 0 .75rem;
+
+  @include media-breakpoint-up(md) {
+    margin: 0;
+    text-align: right;
+  }
+}
+.event-card-price-label {
+  display: block;
+  color: $body-secondary-color;
+  font-size: .75rem;
+}
+.event-card-price .price {
+  font-size: 1.25rem;
+}
+// 主辦、時間、地點：三行，各有圖示
+.event-card-facts {
+  margin: 0 0 .75rem;
+  padding: 0;
+  list-style: none;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+
+  li {
+    display: flex;
+    gap: .5rem;
+  }
+  .bi {
+    flex: 0 0 auto;
+    color: $haze;
+  }
+}
+.event-card-intro {
+  margin-bottom: .75rem;
+  font-size: $font-size-sm;
+}
+// 票種列：Notion 原文，已售罄的票種加刪除線（不隱藏）
+.event-card-tickets {
+  margin-bottom: 1rem;
+  font-size: $font-size-sm;
+  color: $body-secondary-color;
+
+  s {
+    color: $dim;
+    text-decoration-color: $neon;
+    text-decoration-thickness: 2px;
+  }
+}
+.event-card-label {
+  margin-right: .5rem;
+  color: $strobe;
+  font-weight: 700;
+}
+// 底列：進度條撐滿＋追蹤＋主按鈕；< md 進度條滿寬，按鈕在下一列
+.event-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: .75rem;
+  padding-top: 1rem;
+  border-top: 1px solid $line;
+
+  .remain {
+    flex: 1 1 14rem;
+    min-width: 0;
+  }
+  @include media-breakpoint-down(md) {
+    .remain { flex-basis: 100%; }
+    .btn-primary { flex-grow: 1; }
+  }
+}
+// 追蹤：♡ ↔ 已追蹤（js/main.js 第 4 項切換）
+.btn-follow[aria-pressed="true"] {
+  --bs-btn-color: #{$neon};
+  --bs-btn-border-color: #{$neon};
+
+  .bi::before { content: "\F415"; } // bi-heart-fill 的字碼
+}
