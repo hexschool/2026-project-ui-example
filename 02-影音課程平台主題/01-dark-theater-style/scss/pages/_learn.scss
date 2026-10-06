@@ -1,0 +1,427 @@
+// ============================================================
+// 課程播放／學習頁 learn.html（class 前綴 learn-）
+// 放映區比一般版心寬：最大 1680px，左右內距與 .container 相同
+// ============================================================
+.learn-stage {
+  width: 100%;
+  max-width: $theater-max-width;
+  margin-inline: auto;
+  padding-inline: $container-padding-x * .5;
+
+  @include media-breakpoint-up(xl) {
+    padding-inline: map-get($spacers, 5);
+  }
+}
+
+// ---------- 頂列：麵包屑＋回到課程介紹 ----------
+.learn-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  padding-block: map-get($spacers, 2);
+
+  .breadcrumb {
+    margin: 0;
+    min-height: 2.75rem;
+  }
+  // 純文字的「我的課程」與連結同樣是銀幕灰
+  .breadcrumb-item:not(.active) {
+    color: $body-secondary-color;
+  }
+}
+.learn-back {
+  flex-shrink: 0;
+}
+// 576px 以下：麵包屑一列放不下時橫向捲動（第一層「從零開始的手捏陶」本身就連回課程介紹），
+// 「回到課程介紹」縮成 44px 的圖示按鈕
+@include media-breakpoint-down(sm) {
+  .learn-top {
+    flex-wrap: nowrap;
+
+    nav {
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      // 右緣淡出，提示還可以往右捲
+      mask-image: linear-gradient(to right, $screen 85%, transparent);
+    }
+    .breadcrumb {
+      flex-wrap: nowrap;
+      font-size: $small-font-size;
+    }
+  }
+  .learn-back {
+    --bs-btn-padding-x: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    display: inline-grid;
+    place-items: center;
+
+    .bi { margin: 0; }
+  }
+  .learn-back-label {
+    @include visually-hidden;
+  }
+}
+
+// ---------- 播放器：768px 以下貼齊螢幕兩側、沒有圓角 ----------
+.learn-player {
+  @include media-breakpoint-down(md) {
+    margin-inline: $container-padding-x * -.5;
+
+    .player {
+      --player-radius: 0;
+    }
+    .player-toast {
+      margin-inline: $container-padding-x * .5;
+    }
+  }
+}
+
+// ---------- 單元標題 ----------
+.learn-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .25rem 1rem;
+  margin-top: map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 3);
+}
+.learn-title-text {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.45;
+
+  @include media-breakpoint-up(md) {
+    font-size: 1.875rem;
+  }
+}
+.learn-title-time {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+}
+
+// ---------- 992px 以下：章節抽屜的開啟按鈕 ----------
+.learn-drawer-toggle {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  width: 100%;
+  min-height: 3rem;
+  margin-bottom: map-get($spacers, 3);
+  padding: .5rem 1rem;
+  border: 1px solid $line-strong;
+  border-radius: $border-radius;
+  background-color: $booth;
+  color: $white;
+  text-align: left;
+
+  .bi-list-ul { color: $glow; }
+  .bi-chevron-up { color: $silver; font-size: .875rem; }
+  .num { color: $glow; }
+  &:hover { background-color: $aisle; }
+}
+.learn-drawer-toggle-label {
+  flex-shrink: 0;
+}
+.learn-drawer-toggle-progress {
+  flex-grow: 1;
+  height: 3px;
+  border-radius: $border-radius-pill;
+  background-color: $aisle;
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    background-color: $glow;
+  }
+}
+
+// ---------- 操作列：上一單元／標記完成並繼續／下一單元 ----------
+.learn-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 4);
+  padding-block: map-get($spacers, 3);
+  border-block: 1px solid $line;
+
+  // 992px 以下：貼在畫面底部，捲動時一直在手邊
+  @include media-breakpoint-down(lg) {
+    position: sticky;
+    bottom: 0;
+    z-index: $zindex-sticky - 1;
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+    border-bottom: 0;
+    background-color: rgba($booth, .94);
+    backdrop-filter: blur(10px);
+  }
+}
+.learn-actions-step {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 2.75rem;
+  color: $mist;
+  font-size: $font-size-sm;
+  text-decoration: none;
+
+  .bi {
+    display: inline-grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid $line-strong;
+    border-radius: 50%;
+    color: $white;
+    font-size: 1.125rem;
+    transition: border-color .2s ease, box-shadow $glow-transition, color .2s ease;
+  }
+  &:hover {
+    color: $white;
+
+    .bi {
+      border-color: $glow;
+      color: $glow;
+      box-shadow: $glow-halo-sm;
+    }
+  }
+  &.is-next {
+    justify-content: flex-end;
+    text-align: right;
+  }
+}
+.learn-actions-label {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+// 「上一單元：」「下一單元：」小字排在單元名稱上方
+.learn-actions-hint {
+  display: block;
+  color: $body-secondary-color;
+  font-size: .75rem;
+  letter-spacing: $letter-spacing-label;
+}
+// 576px 以下：上一／下一只顯示圖示（aria-label 有完整文字）
+@include media-breakpoint-down(sm) {
+  .learn-actions-label {
+    @include visually-hidden;
+  }
+  .learn-actions-done {
+    --bs-btn-padding-x: 1.25rem;
+  }
+}
+
+// ---------- 分頁 ----------
+.learn-tabs {
+  .nav-tabs {
+    margin-bottom: map-get($spacers, 4);
+  }
+}
+.learn-notes {
+  max-width: 40em;
+  margin: 0;
+  color: $white;
+  font-size: $font-size-lg;
+  line-height: 1.9;
+}
+.learn-qa {
+  margin-bottom: map-get($spacers, 5);
+
+  textarea {
+    resize: vertical;
+  }
+}
+.learn-qa-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: map-get($spacers, 3);
+}
+.learn-files {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid $line;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem 1rem;
+    padding-block: map-get($spacers, 3);
+    border-bottom: 1px solid $line;
+  }
+}
+.learn-files-icon {
+  color: $glow;
+  font-size: 1.375rem;
+}
+.learn-files-name {
+  flex-grow: 1;
+  color: $white;
+  word-break: break-all;
+}
+.learn-files-size {
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+}
+
+// ---------- 側欄 ----------
+// 992px 以上：sticky，太高時側欄內部捲動；以下：底部抽屜（高度 85%）
+.learn-sidebar {
+  @include media-breakpoint-down(lg) {
+    --bs-offcanvas-height: 85vh;
+    border-radius: $border-radius-xl $border-radius-xl 0 0;
+  }
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+    max-height: calc(100vh - #{$sticky-top-offset} - 1.5rem);
+    overflow-y: auto;
+    border-radius: $border-radius-lg;
+    scrollbar-width: thin;
+    scrollbar-color: $line-strong transparent;
+  }
+  // Bootstrap 的 .offcanvas-lg 在 992px 以上會把 body 設成 flex 橫排，這裡改回直排
+  .offcanvas-body {
+    flex-direction: column;
+  }
+}
+.learn-sidebar-panel {
+  width: 100%;
+
+  @include media-breakpoint-up(lg) {
+    border: 1px solid $line;
+    border-radius: $border-radius-lg;
+    background-color: $booth;
+  }
+}
+.learn-sidebar-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: $font-weight-medium;
+  letter-spacing: $letter-spacing-label;
+}
+.learn-progress {
+  padding: map-get($spacers, 3) 0 map-get($spacers, 4);
+  border-bottom: 1px solid $line;
+
+  @include media-breakpoint-up(lg) {
+    padding: map-get($spacers, 4) map-get($spacers, 3);
+  }
+  .learn-sidebar-title {
+    margin-bottom: .875rem;
+  }
+  .progress {
+    margin-bottom: .75rem;
+  }
+  .progress-bar {
+    box-shadow: $glow-halo-sm;
+  }
+}
+.learn-progress-text {
+  margin: 0;
+  color: $white;
+  font-size: $font-size-sm;
+
+  &.is-sub {
+    margin-top: .125rem;
+    color: $body-secondary-color;
+  }
+}
+.learn-chapters-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .25rem 0;
+  border-bottom: 1px solid $line;
+
+  @include media-breakpoint-up(lg) {
+    padding-inline: map-get($spacers, 3);
+  }
+  .btn-text {
+    margin-left: auto;
+    font-size: $font-size-sm;
+  }
+}
+// 抽屜裡：章節列貼齊抽屜兩側
+.learn-chapters {
+  @include media-breakpoint-down(lg) {
+    margin-inline: calc(var(--bs-offcanvas-padding-x) * -1);
+  }
+}
+
+// ---------- 狀態示意 ----------
+// 完成一章時：鼓勵提示
+.learn-demo-panel {
+  max-width: 26rem;
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $booth;
+}
+.chapter-toggle.is-static {
+  cursor: default;
+
+  &::after { content: none; }
+  &:hover { background-color: transparent; }
+}
+.learn-cheer {
+  display: flex;
+  gap: .75rem;
+  margin: 0 map-get($spacers, 3) map-get($spacers, 3);
+  padding: .875rem 1rem;
+  border: 1px solid $success-border-subtle;
+  border-radius: $border-radius;
+  background-color: $success-bg-subtle;
+
+  .bi {
+    color: $mint;
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+  p {
+    margin: 0;
+    color: $white;
+    font-size: $font-size-sm;
+  }
+}
+// 全課完成時：取代操作列的完課畫面
+.learn-complete {
+  text-align: center;
+
+  .progress {
+    max-width: 20rem;
+    margin: 0 auto .5rem;
+  }
+  .progress-bar {
+    box-shadow: $glow-halo-sm;
+  }
+}
+.learn-complete-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: map-get($spacers, 3);
+  border: 1px solid $glow-deep;
+  border-radius: 50%;
+  color: $glow;
+  font-size: 1.75rem;
+  box-shadow: $glow-halo-lg;
+}
+.learn-complete-text {
+  margin-bottom: map-get($spacers, 3);
+  color: $white;
+  font-size: $font-size-lg;
+}

@@ -1,0 +1,233 @@
+// ============================================================
+// 章節清單：本風格的招牌之一「章節名稱使用典雅宋體」
+// 1. .curriculum：課程詳情的 Accordion（像書的目錄：章名 ········ 4 單元 ‧ 32 分）
+// 2. .chapters：學習頁側欄（迷你圓環＋章名＋完成數 1／6）
+// 兩者共用單元列 .unit（單元編號、名稱、狀態、片長）
+// 章名寫法：<span class="chapter-no">第 1 章</span>　<span class="chapter-name">…</span>
+//          兩個 span 之間是 Notion 原文的全形空白，不要刪
+// ============================================================
+
+// ---------- 章名（共用） ----------
+.chapter-title {
+  font-family: $font-family-serif;
+  font-weight: $font-weight-semibold;
+  letter-spacing: .05em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.chapter-no {
+  color: $bamboo-deep;
+  white-space: nowrap;
+}
+
+// ---------- 1. 課程詳情：目錄式 Accordion ----------
+.curriculum {
+  border-top: 2px solid $ink; // 目錄上方一條粗線，下方每章一條細線（文武線的意思）
+
+  .accordion-item {
+    border-inline: 0;
+  }
+  .accordion-button {
+    gap: .75rem;
+    align-items: baseline;
+    min-height: 3.75rem;
+    font-size: 1.0625rem;
+    line-height: 1.55;
+
+    // Bootstrap 的箭頭：改成跟著第一行文字
+    &::after {
+      align-self: center;
+      margin-left: 0;
+    }
+    &:not(.collapsed) {
+      box-shadow: none;
+    }
+    &:focus-visible {
+      z-index: 3;
+    }
+  }
+  .chapter-meta {
+    flex: 0 0 auto;
+    font-family: $font-family-base; // 章名用明體，數字資訊回到黑體
+    font-size: $font-size-sm;
+    color: $ink-muted;
+    white-space: nowrap;
+  }
+  .accordion-body {
+    padding-bottom: map-get($spacers, 3);
+  }
+
+  // 手機：章名一行、單元數與時長移到下一行，不畫點線
+  @include media-breakpoint-down(sm) {
+    .accordion-button {
+      flex-wrap: wrap;
+      row-gap: .125rem;
+      padding-right: 2rem;
+      position: relative;
+
+      &::after {
+        position: absolute;
+        right: 0;
+        top: 1.25rem;
+      }
+    }
+    .chapter-title { flex: 1 0 100%; }
+    .toc-row-fill { display: none; }
+  }
+}
+
+// ---------- 單元列（共用） ----------
+.unit-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.unit {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr) auto auto;
+  align-items: center;
+  column-gap: .75rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: .5rem .75rem .5rem .5rem;
+  border: 0;
+  border-radius: $border-radius;
+  background: transparent;
+  color: $ink;
+  font-size: .9375rem;
+  line-height: 1.55;
+  text-align: left;
+  text-decoration: none;
+
+  &:hover {
+    background-color: $almond-light;
+    color: $ink;
+  }
+  &:focus-visible {
+    outline-offset: -2px;
+  }
+}
+.unit-no {
+  color: $ink-muted;
+  font-size: $small-font-size;
+}
+.unit-name {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.unit-time {
+  min-width: 2.75rem;
+  color: $ink-muted;
+  font-size: $small-font-size;
+  text-align: right;
+}
+.unit-state {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  color: $ink-muted;
+}
+// 鎖定：鎖頭圖示＋淡墨字
+.unit.is-locked {
+  color: $ink-muted;
+  cursor: pointer;
+
+  .unit-state { font-size: 1rem; }
+}
+// 播放中（課程詳情的試看播放器正在播 1-2）：杏仁黃底＋左側竹青線
+.unit.is-playing,
+.unit[aria-current="true"] {
+  background-color: $almond-light;
+  box-shadow: inset 2px 0 0 $bamboo;
+  font-weight: $font-weight-medium;
+}
+// 已完成（已購買版）：勾勾＋「已完成」；手機只留勾勾，文字改成螢幕閱讀器才讀得到，讓單元名稱有足夠寬度
+.unit.is-done .unit-state { color: $bamboo; }
+@include media-breakpoint-down(sm) {
+  .unit-state-text { @include visually-hidden; }
+}
+
+// ---------- 2. 學習頁側欄：章節＋迷你圓環 ----------
+// <div class="chapters">
+//   <section class="chapter">
+//     <h3 class="chapter-head">
+//       <button class="chapter-toggle" data-bs-toggle="collapse" …>
+//         <svg class="ring-mini">…</svg>
+//         <span class="visually-hidden">已完成</span>
+//         <span class="chapter-title">…</span>
+//         <span class="chapter-count num">4／4</span>
+//       </button>
+//     </h3>
+//     <div class="collapse" id="…"><ol class="unit-list">…</ol></div>
+//   </section>
+// </div>
+.chapters {
+  border-top: 1px solid $line;
+}
+.chapter {
+  border-bottom: 1px solid $line;
+}
+.chapter-head {
+  margin: 0;
+  font-size: inherit;
+  padding: 0;
+
+  &::before { display: none; }
+}
+.chapter-toggle {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  column-gap: .75rem;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: .625rem .25rem;
+  border: 0;
+  background: transparent;
+  color: $ink;
+  font-size: .9375rem;
+  line-height: 1.5;
+  text-align: left;
+
+  // 收合箭頭
+  &::after {
+    content: "\F282"; // bi-chevron-down
+    font-family: "bootstrap-icons";
+    font-size: .75rem;
+    color: $ink-muted;
+    transition: transform .2s ease;
+  }
+  &:not(.collapsed)::after {
+    transform: rotate(180deg);
+  }
+  &:hover .chapter-name { color: $bamboo-deep; }
+  &:focus-visible { outline-offset: -2px; }
+}
+.chapter-count {
+  font-size: $small-font-size;
+  color: $ink-muted;
+  white-space: nowrap;
+}
+// 目前章節：章名竹青
+.chapter.is-current .chapter-name { color: $bamboo-deep; }
+
+// 側欄的單元列：前面是狀態圖示（✓ ▶ ○），比課程詳情緊湊
+.chapters .unit-list {
+  padding: 0 0 .75rem;
+}
+.chapters .unit {
+  grid-template-columns: 1.375rem 2.25rem minmax(0, 1fr) auto;
+  column-gap: .5rem;
+  padding: .375rem .5rem .375rem .25rem;
+  font-size: .875rem;
+}
+.unit-icon {
+  display: inline-grid;
+  place-items: center;
+  font-size: .9375rem;
+  color: $line-strong; // ○ 未開始：深界線的空心圓（旁邊有 visually-hidden 文字）
+}
+.unit.is-done .unit-icon { color: $bamboo; }
+.unit.is-playing .unit-icon,
+.unit[aria-current="true"] .unit-icon { color: $bamboo; }
+.unit.is-todo .unit-icon { color: $control; } // 未開始的空心圓用表單框線（非文字 3.3:1）

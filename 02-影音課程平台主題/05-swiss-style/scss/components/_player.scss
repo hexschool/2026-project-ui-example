@@ -1,0 +1,349 @@
+// ============================================================
+// 播放器（課程詳情試看、學習頁、Guideline）
+// 設計稿沒有真的影片：<img> 當畫面，播放鈕、控制列、進度條都是 HTML／CSS。
+// 頁面是白的，播放器本身是放映黑：畫面在上、控制列接在畫面下方（不蓋住影片），像一塊黑色的方形模組。
+//
+// <div class="player is-paused">            ← 狀態：is-paused（未播放）／is-playing（播放中）／is-loading／is-error
+//   <div class="player-screen ratio ratio-16x9">
+//     <img class="player-frame" …>
+//     <p class="player-caption">…</p>       ← 左上的覆蓋文字（課程詳情）
+//     <button class="player-bigplay" …>      ← 中央大播放鈕（未播放時）
+//   </div>
+//   <div class="player-bar">
+//     <div class="player-progress" role="slider" …>…</div>
+//     <div class="player-controls">…</div>
+//   </div>
+// </div>
+// ============================================================
+.player {
+  position: relative;
+  background-color: $player-bg;
+  color: $player-color;
+
+  // 深色畫面上的焦點環：瑞士紅外圈＋放映黑間隙
+  --player-focus: 0 0 0 2px #{$player-bg}, 0 0 0 4px #{$swiss-red};
+}
+
+.player-screen {
+  overflow: hidden;
+  background-color: $player-bg;
+}
+.player-frame {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+// 覆蓋文字：左上墨黑方塊＋白字（不加漸層，背景照片再亮也讀得到）
+.player-caption {
+  position: absolute;
+  top: map-get($spacers, 3);
+  left: map-get($spacers, 3);
+  right: auto;
+  bottom: auto;
+  width: auto;
+  height: auto;
+  max-width: calc(100% - 2rem);
+  margin: 0;
+  padding: .375rem .75rem;
+  background-color: $player-bg;
+  color: $player-color;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  line-height: 1.5;
+
+  .bi {
+    margin-right: .25rem;
+    color: $paper;
+  }
+  .num {
+    white-space: nowrap;
+  }
+
+  @include media-breakpoint-down(sm) {
+    top: .5rem;
+    left: .5rem;
+    max-width: calc(100% - 1rem);
+    font-size: .75rem;
+  }
+}
+
+// 中央大播放鈕：瑞士紅正方形＋白色三角形（80px；手機 64px）
+.player-bigplay {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 5rem;
+  height: 5rem;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background-color: $swiss-red;
+  color: $paper;
+  font-size: 2.5rem;
+  line-height: 1;
+  transition: background-color .15s ease;
+
+  &:hover {
+    background-color: $swiss-red-deep;
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--player-focus);
+  }
+
+  @include media-breakpoint-down(sm) {
+    width: 4rem;
+    height: 4rem;
+    font-size: 2rem;
+  }
+}
+.player.is-playing .player-bigplay {
+  display: none;
+}
+
+// ---------- 控制列 ----------
+.player-bar {
+  padding: 0 map-get($spacers, 2) map-get($spacers, 1);
+}
+
+// 進度條：軌道（白 28%）→ 已緩衝（白 55%）→ 已播放（瑞士紅）→ 已觀看位置（白色細刻度）→ 播放頭（白色方塊）
+// 外層 16px 高是滑鼠可點的範圍，裡面的軌道 4px
+.player-progress {
+  --played: 0%;
+  --buffered: 0%;
+  position: relative;
+  height: 1.25rem;
+  margin-inline: map-get($spacers, 2);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--player-focus);
+  }
+}
+.player-progress-track,
+.player-progress-buffer,
+.player-progress-played {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: .25rem;
+  transform: translateY(-50%);
+}
+.player-progress-track {
+  right: 0;
+  background-color: $player-track;
+}
+.player-progress-buffer {
+  width: var(--buffered);
+  background-color: $player-buffer;
+}
+.player-progress-played {
+  width: var(--played);
+  background-color: $player-played;
+}
+// 播放頭：白色正方形
+.player-progress-head {
+  position: absolute;
+  top: 50%;
+  left: var(--played);
+  width: .75rem;
+  height: .75rem;
+  transform: translate(-50%, -50%);
+  background-color: $paper;
+}
+// 已觀看位置：白色直線刻度＋上方小標籤（hover／focus 進度條時顯示）
+.player-progress-mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--mark);
+  width: 2px;
+  transform: translateX(-50%);
+  background-color: $paper;
+}
+.player-progress-label {
+  position: absolute;
+  bottom: calc(100% + .375rem);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: .25rem .5rem;
+  background-color: $paper;
+  color: $ink;
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .15s ease;
+  pointer-events: none;
+}
+.player-progress:hover .player-progress-label,
+.player-progress:focus-visible .player-progress-label,
+.player-progress.is-label-shown .player-progress-label {
+  opacity: 1;
+}
+
+.player-controls {
+  display: flex;
+  align-items: center;
+  gap: map-get($spacers, 1);
+  min-height: 2.75rem;
+}
+// 控制鈕：44 × 44px 白色圖示，hover 變瑞士紅底
+.player-btn {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  padding: 0 .5rem;
+  border: 0;
+  background: transparent;
+  color: $player-color;
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: background-color .15s ease;
+
+  &:hover,
+  &[aria-expanded="true"] {
+    background-color: $swiss-red;
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--player-focus);
+  }
+  // 文字按鈕（播放速度 1x）
+  &.is-text {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    font-variant-numeric: tabular-nums;
+  }
+  &.dropdown-toggle::after {
+    display: none;
+  }
+}
+.player-time {
+  margin: 0 map-get($spacers, 2);
+  font-size: $font-size-sm;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  .player-time-total {
+    color: $player-muted;
+  }
+}
+.player-spacer {
+  flex: 1 1 auto;
+}
+// 音量滑桿：白色細軌道（576px 以下隱藏，只留音量鈕）
+.player-volume {
+  width: 5rem;
+  height: 2.75rem;
+  margin: 0 map-get($spacers, 2) 0 0;
+  background: transparent;
+  accent-color: $paper;
+
+  @include media-breakpoint-down(sm) {
+    display: none;
+  }
+}
+// 576px 以下隱藏播放速度文字（規格：只留播放、時間、進度條、字幕、全螢幕）
+.player-speed {
+  @include media-breakpoint-down(sm) {
+    display: none;
+  }
+}
+.player .dropdown-menu {
+  --bs-dropdown-font-size: #{$font-size-sm};
+}
+
+// ---------- 狀態：載入中、載入失敗（Guideline、學習頁狀態示意） ----------
+.player-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: map-get($spacers, 3);
+  padding: map-get($spacers, 4);
+  background-color: $player-bg;
+  color: $player-color;
+
+  p {
+    max-width: 24em;
+    margin: 0;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+  }
+  > .bi {
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 5);
+  }
+}
+.player.is-loading .player-state {
+  align-items: center;
+  justify-content: center;
+  background-color: rgba($player-bg, .7);
+
+  p {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+  }
+}
+// 錯誤圖示用瑞士紅（非文字，對放映黑 4.3:1）；訊息本身是白字
+.player.is-error .player-state > .bi {
+  color: $swiss-red;
+}
+
+// ---------- 續看提示 Toast：播放器畫面左上，白底墨黑框 ----------
+.player-toast {
+  position: absolute;
+  top: map-get($spacers, 3);
+  left: map-get($spacers, 3);
+  z-index: 2;
+  width: auto;
+  max-width: calc(100% - 2rem);
+  border-width: 0;
+  background-color: $paper;
+  color: $ink;
+  font-size: $font-size-sm;
+
+  @include media-breakpoint-down(sm) {
+    position: static;
+    max-width: none;
+    border-bottom: $rule-thin solid $ink;
+  }
+}
+.player-toast-body {
+  display: flex;
+  align-items: center;
+  gap: .5rem .75rem;
+  padding: .375rem .375rem .375rem .875rem;
+
+  p {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+  }
+  .btn-text {
+    flex: 0 0 auto;
+  }
+  .btn-text {
+    --bs-btn-font-size: #{$font-size-sm};
+  }
+  .btn-close {
+    flex: 0 0 auto;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    margin-left: auto;
+    background-size: .75rem;
+  }
+}

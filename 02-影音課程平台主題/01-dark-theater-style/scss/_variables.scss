@@ -1,0 +1,493 @@
+// ============================================================
+// Craftory｜01 極致暗黑劇院 — Bootstrap 5 變數覆寫（design token）
+// 規則：只在這裡改 Bootstrap 變數；元件與頁面樣式一律引用變數，不寫死色碼
+//
+// 這是「單一深色主題」：不使用 data-bs-theme，直接把 Bootstrap 原本給淺色用的變數
+// （$body-bg、$input-bg、$dropdown-bg…）設成深色系，整套元件編譯出來就是深色。
+// 對比度皆以 WCAG 公式計算，括號內未註明時是對「深空黑」頁面底色 $space 的比值
+// ============================================================
+
+// ---------- 1. 色彩：深空黑、微光冷藍、純白 ----------
+// 基礎色票（設計 Guideline 的「色彩」章節即以此為準）
+// 原則：靜止時只有黑與灰；hover、focus、播放中、目前單元才出現微光冷藍（「只有你看著的地方會亮」）
+
+// 面：由深到淺三層，都帶一點藍，不用中性的 #111；播放器另外用純黑
+$space:           #06080C; // 深空黑：頁面底色（畫面的 95%）
+$booth:           #0C1016; // 放映室：浮起的面（頁首、頁尾、卡片、輸入框、下拉選單、對話框）
+$aisle:           #141A23; // 走道：區塊底色（.section-alt）、hover 底、進度條軌道
+$screen:          #000;    // 銀幕黑：播放器（Notion：深色風格下播放器用純黑降低干擾）
+
+// 線：裝飾線不承載資訊；表單控制項的邊框要達非文字 3:1
+$line:            #1E2631; // 髮絲線：預設分隔線、卡片框（1.3:1，裝飾用）
+$line-strong:     #2C3644; // 深線：較明顯的分隔、虛線框、停用框線（1.6:1，裝飾用）
+$control:         #5A6A7E; // 表單框線：輸入框、核取方塊的邊框（3.6:1；對放映室 3.5:1、對走道 3.2:1）
+
+// 文字：純白給標題與關鍵數字，內文用霧白，說明用銀幕灰
+$white:           #FFFFFF; // 純白：標題、價格、片長、目前項目（20.0:1）
+$mist:            #D6DCE4; // 霧白：內文（14.5:1；對走道 12.7:1）
+$silver:          #AAB5C3; // 銀幕灰：次要文字、說明、控制列靜止時的圖示（9.7:1；對純黑 10.1:1）
+$dim:             #7E8A9A; // 暗場灰：placeholder、最弱的說明（5.7:1；對放映室 5.4:1、對走道 5.0:1）
+
+// 冷藍：只在「被看著」的時候出現（主要按鈕、焦點、播放中、進度、柔光）
+$glow:            #7CC8FF; // 微光冷藍：主要按鈕底、焦點環、播放中、已播放進度、目前頁（11.0:1；上面放深空黑字 11.0:1）
+$glow-soft:       #B5E0FF; // 冷藍淡：主要按鈕 hover、柔光的亮部（14.4:1）
+$glow-deep:       #3F86C4; // 冷藍深：裝飾線、已觀看標記的底、圖示底圈（5.2:1；只當圖形，不放小字）
+$glow-veil:       mix($glow, $booth, 12%); // 冷藍紗：選取中的選項底、目前單元列底（放映室混一成二冷藍 ≈ #192632；純白字 15.4:1、冷藍字 8.5:1）
+
+// 狀態色：降低彩度的冷調，在深色底上都達 AA，可直接當文字
+$mint:            #74DDB9; // 薄荷：成功、已完成（12.2:1）
+$amber:           #F0C36A; // 琥珀：提醒、草稿（12.1:1）
+$coral:           #FF8E8E; // 珊瑚：錯誤、載入失敗（9.1:1）
+
+$primary:   $glow;
+$secondary: $silver;
+$success:   $mint;
+$info:      $glow;
+$warning:   $amber;
+$danger:    $coral;
+$light:     $white;  // .btn-light、.bg-light：純白（少用，例如播放器上的白色控制）
+$dark:      $space;  // .bg-dark、.btn-dark：深空黑
+
+$theme-colors: (
+  "primary":   $primary,
+  "secondary": $secondary,
+  "success":   $success,
+  "info":      $info,
+  "warning":   $warning,
+  "danger":    $danger,
+  "light":     $light,
+  "dark":      $dark,
+);
+
+// 按鈕、標籤上的文字色：Bootstrap 的 color-contrast() 依序試「淺色 → 深色」，取第一個達 4.5:1 的。
+// 冷藍上放純白只有 1.8:1，所以會選到深空黑（11.0:1）
+$color-contrast-light: $white;
+$color-contrast-dark:  $space;
+$min-contrast-ratio:   4.5;
+
+// 只有一套深色主題，不輸出 [data-bs-theme="dark"] 那一份變數
+$enable-dark-mode: false;
+
+// ---------- 全站底色與文字（Bootstrap 的 --bs-body-* 等 CSS 變數由這裡產生） ----------
+$body-bg:               $space;
+$body-color:            $mist;
+$body-secondary-color:  $silver;
+$body-secondary-bg:     $aisle;
+$body-tertiary-color:   $dim;
+$body-tertiary-bg:      $aisle;
+$body-emphasis-color:   $white;
+$border-color:          $line;
+$border-color-translucent: rgba($white, .1);
+$headings-color:        $white;
+
+// 連結：純白＋底線，hover 換成冷藍
+$link-color:            $white;
+$link-hover-color:      $glow;
+$link-decoration:       underline;
+$link-underline-offset: .3em;
+
+// 各狀態色的「文字、淡底、淡框」三件組（alert、.text-*-emphasis、.bg-*-subtle 共用）
+// 淡底＝放映室混入一成二狀態色；淡框＝混入四成；文字＝狀態色再提亮
+$primary-text-emphasis:   $glow-soft;
+$secondary-text-emphasis: $white;
+$success-text-emphasis:   mix($mint, $white, 70%);
+$info-text-emphasis:      $glow-soft;
+$warning-text-emphasis:   mix($amber, $white, 70%);
+$danger-text-emphasis:    mix($coral, $white, 70%);
+$light-text-emphasis:     $white;
+$dark-text-emphasis:      $white;
+
+$primary-bg-subtle:       $glow-veil;
+$secondary-bg-subtle:     $aisle;
+$success-bg-subtle:       mix($mint, $booth, 12%);
+$info-bg-subtle:          $glow-veil;
+$warning-bg-subtle:       mix($amber, $booth, 12%);
+$danger-bg-subtle:        mix($coral, $booth, 12%);
+$light-bg-subtle:         $aisle;
+$dark-bg-subtle:          $space;
+
+$primary-border-subtle:   mix($glow, $booth, 40%);
+$secondary-border-subtle: $line-strong;
+$success-border-subtle:   mix($mint, $booth, 40%);
+$info-border-subtle:      mix($glow, $booth, 40%);
+$warning-border-subtle:   mix($amber, $booth, 40%);
+$danger-border-subtle:    mix($coral, $booth, 40%);
+$light-border-subtle:     $line;
+$dark-border-subtle:      $line;
+
+// 元件的「選中」：冷藍底＋深空黑字（下拉選單、分頁、核取方塊共用）
+$component-active-bg:    $glow;
+$component-active-color: $space;
+
+// 焦點環：冷藍 2px 實線＋深空黑間隙（11.0:1，深色底與純黑播放器上都看得見）
+// 一般元素用 outline＋2px 位移（間隙就是底色）；按鈕、核取方塊用下面這組雙層 box-shadow
+$focus-ring-width:   2px;
+$focus-ring-opacity: 1;
+$focus-ring-blur:    0;
+$focus-ring-color:   $glow;
+$focus-ring-double:  0 0 0 2px $space, 0 0 0 4px $glow; // 自訂：內圈深空黑間隙、外圈冷藍
+$focus-ring-box-shadow: $focus-ring-double;
+
+$code-color: $glow-soft;
+$mark-bg:    mix($glow, $space, 30%);
+$mark-color: $white;
+$kbd-bg:     $white;
+$kbd-color:  $space;
+
+$hr-color:   $line;
+$hr-opacity: 1;
+
+// ---------- 柔光（本風格的招牌）：滑鼠懸停、鍵盤焦點、播放中時才出現 ----------
+// 都是「冷藍、低透明度、大範圍模糊」的光暈；靜止的畫面上不出現
+$glow-halo-sm: 0 0 .75rem rgba($glow, .45);                         // 小光暈：進度條、播放頭、圖示按鈕
+$glow-halo:    0 0 0 1px rgba($glow, .5), 0 0 2rem rgba($glow, .22); // 卡片亮燈：一圈冷藍細框＋外擴柔光
+$glow-halo-lg: 0 0 2.5rem rgba($glow, .35);                         // 大播放鈕、主要按鈕 hover
+$glow-rise:    radial-gradient(120% 100% at 50% 100%, rgba($glow, .26) 0%, rgba($glow, .08) 45%, rgba($glow, 0) 75%); // 控制列底部浮起的冷光
+$glow-transition: .35s ease; // 亮起／熄滅的速度（prefers-reduced-motion 時關閉）
+
+// 卡片封面的「熄燈／亮燈」：靜止時略暗，hover／focus 時亮起
+$media-dim:   .78;
+$media-lit:   1;
+
+// ---------- 2. 字體與字級 ----------
+// Jost：Futura 系的幾何無襯線，經典電影片頭字的感覺，負責品牌字與數字（價格、片長、時間碼、評分、百分比）
+// Noto Sans TC：中文標題與內文；大標用 300 細字＋寬字距，像片頭字卡
+$font-family-display:    "Jost", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; // 自訂：.font-display、品牌字、數字
+$font-family-sans-serif: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+$font-family-base:       $font-family-sans-serif;
+$headings-font-family:   $font-family-sans-serif;
+$display-font-family:    $font-family-sans-serif;
+
+$font-size-base:   1rem;     // 16px
+$font-size-sm:     .875rem;  // 14px
+$font-size-lg:     1.125rem; // 18px
+$small-font-size:  .8125rem; // 13px
+
+// 只載入 300／400／500 三個字重：半粗與粗體一律收斂到 500
+$font-weight-light:    300;
+$font-weight-normal:   400;
+$font-weight-medium:   500;
+$font-weight-semibold: 500;
+$font-weight-bold:     500;
+$font-weight-bolder:   500;
+
+$line-height-base: 1.8; // 中文內文需要較寬鬆的行高
+$line-height-sm:   1.5;
+$line-height-lg:   2;
+
+// 字級階層：細字大標＋寬字距；小標用 500
+$h1-font-size: 2.25rem;   // 36px
+$h2-font-size: 1.75rem;   // 28px
+$h3-font-size: 1.375rem;  // 22px
+$h4-font-size: 1.125rem;  // 18px
+$h5-font-size: 1rem;      // 16px
+$h6-font-size: .875rem;   // 14px
+
+$headings-font-weight:   400;
+$headings-line-height:   1.45;
+$headings-margin-bottom: .75rem;
+
+$display-font-sizes: (
+  1: 4.5rem,
+  2: 4rem,
+  3: 3.5rem,
+  4: 3rem,
+  5: 2.5rem,
+  6: 2.25rem,
+);
+$display-font-weight: 300;
+$display-line-height: 1.3;
+
+$lead-font-size:   1.125rem;
+$lead-font-weight: 300;
+
+// 自訂：字距（非 Bootstrap 變數，於 _base.scss 使用）
+$letter-spacing-body:    .02em;
+$letter-spacing-heading: .08em; // 細字大標的片頭字卡感
+$letter-spacing-label:   .06em; // 小字、標籤、按鈕
+$letter-spacing-brand:   .12em; // 品牌字 Craftory（Jost）
+
+// ---------- 3. 間距：擴充 6–8 階，用於區塊留白 ----------
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * .25,  // 4px
+  2: $spacer * .5,   // 8px
+  3: $spacer,        // 16px
+  4: $spacer * 1.5,  // 24px
+  5: $spacer * 3,    // 48px
+  6: $spacer * 4,    // 64px
+  7: $spacer * 6,    // 96px
+  8: $spacer * 8,    // 128px
+);
+
+$grid-gutter-width: 2rem;
+$container-padding-x: 2.5rem; // 左右各 20px（Bootstrap 取一半），需 ≥ gutter 才不會讓 .row 溢出
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  xxl: 1280px,
+);
+// 學習頁的放映區比一般版心寬（.learn-stage），頁首、頁尾仍用 .container
+$theater-max-width: 1680px;
+// RWD 斷點沿用 Bootstrap 預設：sm 576 / md 768 / lg 992 / xl 1200 / xxl 1400
+
+// ---------- 4. 圓角與陰影 ----------
+// 銀幕與卡片 12px、輸入框 8px、按鈕與標籤是膠囊；深色底上陰影看不出來，浮層改用細框＋柔光分層
+$border-width:       1px;
+$border-radius-sm:   .375rem; // 6px：標籤以外的小元件（時長標籤、鍵盤焦點的內框）
+$border-radius:      .5rem;   // 8px：輸入框、下拉選單、提示框
+$border-radius-lg:   .75rem;  // 12px：卡片、播放器、對話框
+$border-radius-xl:   1rem;    // 16px：首頁「正在播放」小卡、底部 CTA
+$border-radius-xxl:  1.5rem;
+$border-radius-pill: 50rem;   // 按鈕、標籤、頭像
+
+$enable-shadows:   false;
+// 只用在浮層（下拉選單、對話框、抽屜）：深色底上的陰影要很深才看得出來
+$box-shadow-sm:    0 1px 2px rgba(#000, .5);
+$box-shadow:       0 16px 40px rgba(#000, .6);
+$box-shadow-lg:    0 28px 72px rgba(#000, .7);
+$box-shadow-inset: inset 0 1px 2px rgba(#000, .4);
+
+$enable-negative-margins: true;
+
+// ---------- 5. 元件 ----------
+// 按鈕：主要＝冷藍底＋深空黑字（11.0:1），hover 冷藍淡＋柔光；次要＝純白細框（_base.scss）
+$btn-padding-y:        .6875rem; // 高約 48px
+$btn-padding-x:        1.75rem;
+$btn-font-size:        .9375rem;
+$btn-padding-y-sm:     .5rem;    // 高約 44px，符合觸控目標
+$btn-padding-x-sm:     1.125rem;
+$btn-font-size-sm:     .875rem;
+$btn-padding-y-lg:     .875rem;
+$btn-padding-x-lg:     2.25rem;
+$btn-font-size-lg:     1rem;
+$btn-font-weight:      500;
+$btn-border-radius:    $border-radius-pill;
+$btn-border-radius-sm: $border-radius-pill;
+$btn-border-radius-lg: $border-radius-pill;
+$btn-disabled-opacity: .4;
+$btn-focus-width:      $focus-ring-width;
+$btn-link-disabled-color: $dim;
+
+// 表單：放映室底、表單框線（3.5:1）、placeholder 用暗場灰（對放映室 5.4:1）
+$input-bg:                    $booth;
+$input-color:                 $white;
+$input-border-color:          $control;
+$input-placeholder-color:     $dim;
+$input-plaintext-color:       $white;
+$input-padding-y:             .6875rem;
+$input-padding-x:             1rem;
+$input-font-size:             1rem;
+$input-border-radius:         $border-radius;
+$input-focus-bg:              $booth;
+$input-focus-color:           $white;
+$input-focus-border-color:    $glow;
+$input-focus-box-shadow:      0 0 0 1px $glow, 0 0 1rem rgba($glow, .25); // 與 1px 邊框合成 2px 冷藍＋柔光
+$input-disabled-bg:           transparent;  // 停用：沒有底色，框線變暗，看起來「退回頁面」
+$input-disabled-color:        $dim;
+$input-disabled-border-color: $line-strong;
+$input-group-addon-bg:        $aisle;
+$input-group-addon-color:     $silver;
+$input-group-addon-border-color: $control;
+$form-label-font-size:        .875rem;
+$form-label-font-weight:      500;
+$form-label-color:            $white;
+$form-label-margin-bottom:    .5rem;
+$form-text-color:             $silver;
+
+// 下拉選單箭頭：銀幕灰（SVG 內的顏色，要用實色）
+$form-select-indicator-color: $silver;
+$form-select-focus-box-shadow: $input-focus-box-shadow;
+
+// 核取方塊、radio：放映室底＋表單框線；選中為冷藍底＋深空黑勾勾／圓點
+$form-check-input-width:                1.125em;
+$form-check-input-bg:                   $booth;
+$form-check-input-border:               1px solid $control;
+$form-check-input-border-radius:        .25em;
+$form-check-input-checked-color:        $space;
+$form-check-input-checked-bg-color:     $glow;
+$form-check-input-checked-border-color: $glow;
+$form-check-input-focus-border:         $glow;
+$form-check-input-focus-box-shadow:     $focus-ring-double;
+$form-check-input-active-filter:        brightness(110%);
+
+$form-switch-color:         $silver;
+$form-switch-focus-color:   $glow;
+$form-switch-checked-color: $space;
+
+$form-range-track-bg:        $aisle;
+$form-range-thumb-bg:        $glow;
+$form-range-thumb-active-bg: $glow-soft;
+
+$form-feedback-valid-color:   $mint;
+$form-feedback-invalid-color: $coral;
+
+// 關閉鈕 X：純白（Bootstrap 預設是黑色，在深色底上看不到）
+$btn-close-color:         $white;
+$btn-close-opacity:       .8;
+$btn-close-hover-opacity: 1;
+$btn-close-focus-shadow:  $focus-ring-double;
+
+// 卡片
+$card-bg:            $booth;
+$card-color:         $mist;
+$card-border-color:  $line;
+$card-border-radius: $border-radius-lg;
+$card-cap-bg:        transparent;
+$card-spacer-y:      1.25rem;
+$card-spacer-x:      1.25rem;
+
+// 頁首高度：sticky 購買卡、學習頁側欄、錨點捲動的位移都以此為準
+$site-header-height: 4.3125rem; // 實測 69px：$navbar-padding-y 上下各 .75rem＋圖示按鈕 44px＋底線 1px
+$sticky-top-offset:  $site-header-height + 1.5rem;
+
+// 導覽列
+$navbar-padding-y:             .75rem;
+$navbar-nav-link-padding-x:    .875rem;
+$navbar-light-color:           $silver;
+$navbar-light-hover-color:     $white;
+$navbar-light-active-color:    $white;
+$navbar-light-brand-color:     $white;
+$navbar-light-brand-hover-color: $white;
+$navbar-light-toggler-border-color: transparent;
+$navbar-toggler-border-radius: $border-radius-pill;
+$nav-link-font-size:           .9375rem;
+$nav-link-color:               $silver;
+$nav-link-hover-color:         $white;
+$nav-link-disabled-color:      $dim;
+$nav-tabs-border-color:        $line;
+$nav-tabs-link-active-color:   $white;
+$nav-tabs-link-active-bg:      transparent;
+$nav-tabs-link-hover-border-color: transparent;
+$nav-tabs-link-active-border-color: transparent;
+$nav-pills-link-active-bg:     $glow;
+$nav-pills-link-active-color:  $space;
+
+// 下拉選單
+$dropdown-bg:                 $booth;
+$dropdown-color:              $mist;
+$dropdown-border-color:       $line-strong;
+$dropdown-border-radius:      $border-radius;
+$dropdown-divider-bg:         $line;
+$dropdown-box-shadow:         $box-shadow;
+$dropdown-link-color:         $mist;
+$dropdown-link-hover-color:   $white;
+$dropdown-link-hover-bg:      $aisle;
+$dropdown-link-active-color:  $space;
+$dropdown-link-active-bg:     $glow;
+$dropdown-link-disabled-color: $dim;
+$dropdown-header-color:       $dim;
+$dropdown-item-padding-y:     .625rem;
+
+// 對話框、側邊抽屜
+$modal-content-bg:            $booth;
+$modal-content-color:         $mist;
+$modal-content-border-color:  $line-strong;
+$modal-content-border-radius: $border-radius-lg;
+$modal-header-border-color:   $line;
+$modal-footer-border-color:   $line;
+$modal-backdrop-bg:           #000;
+$modal-backdrop-opacity:      .78;
+$offcanvas-bg-color:          $booth;
+$offcanvas-color:             $mist;
+$offcanvas-border-color:      $line-strong;
+$offcanvas-backdrop-bg:       #000;
+$offcanvas-backdrop-opacity:  .7;
+
+// 列表群組
+$list-group-color:              $mist;
+$list-group-bg:                 $booth;
+$list-group-border-color:       $line;
+$list-group-hover-bg:           $aisle;
+$list-group-active-color:       $space;
+$list-group-active-bg:          $glow;
+$list-group-active-border-color: $glow;
+$list-group-action-color:       $silver;
+$list-group-action-hover-color: $white;
+
+// Accordion：透明底，展開時不加底色，只把箭頭換成冷藍
+$accordion-color:               $mist;
+$accordion-bg:                  transparent;
+$accordion-border-color:        $line;
+$accordion-border-radius:       $border-radius-lg;
+$accordion-inner-border-radius: subtract($border-radius-lg, $border-width);
+$accordion-button-color:        $white;
+$accordion-button-padding-y:    1.125rem;
+$accordion-button-padding-x:    1.25rem;
+$accordion-body-padding-x:      1.25rem;
+$accordion-button-active-bg:    transparent;
+$accordion-button-active-color: $white;
+$accordion-icon-color:          $silver;
+$accordion-icon-active-color:   $glow;
+$accordion-button-focus-box-shadow: inset 0 0 0 2px $glow;
+
+// 標籤
+$badge-color:         $space; // 主題色都是淺色（冷藍、薄荷…），字用深空黑
+$badge-font-size:     .75rem;
+$badge-font-weight:   500;
+$badge-border-radius: $border-radius-pill;
+$badge-padding-y:     .375em;
+$badge-padding-x:     .75em;
+
+// 麵包屑：連結銀幕灰、分隔線深線（裝飾）、目前頁純白
+$breadcrumb-divider:        quote("／");
+$breadcrumb-font-size:      .875rem;
+$breadcrumb-item-padding-x: .5rem;
+$breadcrumb-divider-color:  $dim;
+$breadcrumb-active-color:   $white;
+
+// 分頁
+$pagination-color:                $mist;
+$pagination-bg:                   transparent;
+$pagination-border-width:         0;
+$pagination-border-radius:        $border-radius-pill;
+$pagination-hover-color:          $white;
+$pagination-hover-bg:             $aisle;
+$pagination-focus-color:          $white;
+$pagination-focus-bg:             $aisle;
+$pagination-focus-box-shadow:     $focus-ring-double;
+$pagination-active-color:         $space;
+$pagination-active-bg:            $glow;
+$pagination-disabled-color:       $dim;
+$pagination-disabled-bg:          transparent;
+$pagination-padding-y:            .625rem;
+$pagination-padding-x:            1rem;
+
+// 提示框、toast
+$tooltip-bg:                 $white;
+$tooltip-color:              $space;
+$tooltip-opacity:            1;
+$tooltip-font-size:          .8125rem;
+$tooltip-border-radius:      $border-radius-sm;
+$toast-background-color:     rgba($booth, .92);
+$toast-color:                $mist;
+$toast-border-color:         $line-strong;
+$toast-border-radius:        $border-radius;
+$toast-max-width:            26rem;
+$toast-font-size:            .875rem;
+
+// 表格
+$table-color:          $mist;
+$table-bg:             transparent;
+$table-border-color:   $line;
+$table-striped-bg:     rgba($white, .03);
+$table-hover-bg:       rgba($white, .05);
+$table-cell-padding-y: .75rem;
+$table-cell-padding-x: 1rem;
+
+// 提示
+$alert-border-radius: $border-radius;
+$alert-padding-y:     1rem;
+$alert-padding-x:     1.25rem;
+
+// 進度條：走道軌道＋冷藍（學習進度、評價分佈、播放器以外的進度）
+$progress-height:    .375rem;
+$progress-bg:        $aisle;
+$progress-bar-bg:    $glow;
+$progress-bar-color: $space;
+$progress-border-radius: $border-radius-pill;
+
+$figure-caption-color:   $silver;

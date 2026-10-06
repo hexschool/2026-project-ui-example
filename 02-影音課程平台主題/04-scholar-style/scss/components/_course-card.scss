@@ -1,0 +1,198 @@
+// ============================================================
+// 課程卡（首頁熱門課程、課程列表、Guideline）
+// 封面 16:9＋右下時長 → 分類與難度 → 課程名稱（明體，最多 2 行）→ 講師（文字頭像）
+// → 星等＋學習人數 → 價格＋「免費試看」（次要按鈕，貼齊卡片底部）
+// 整張卡可點（課程名稱的 .stretched-link），「免費試看」按鈕疊在上面另外可點
+//
+// <article class="course-card">
+//   <div class="course-card-media">
+//     <img src="images/course-pottery.jpg" alt="…" loading="lazy">
+//     <span class="course-card-duration num"><i class="bi bi-clock"></i>4&nbsp;小時&nbsp;20&nbsp;分</span>
+//   </div>
+//   <div class="course-card-body">
+//     <ul class="course-card-tags">…</ul>
+//     <h3 class="course-card-title"><a class="stretched-link" href="course.html">…</a></h3>
+//     <p class="course-card-teacher">…</p>
+//     <p class="course-card-meta">…</p>
+//     <div class="course-card-foot">…</div>
+//   </div>
+// </article>
+// ============================================================
+.course-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $sheet;
+  transition: border-color .2s ease, box-shadow .2s ease;
+
+  &:hover {
+    border-color: $line-strong;
+    box-shadow: $box-shadow-sm;
+  }
+  // 整張卡的焦點：stretched-link 聚焦時，外框換成深竹
+  &:has(.stretched-link:focus-visible) {
+    outline: 2px solid $bamboo-deep;
+    outline-offset: 2px;
+  }
+  .stretched-link:focus-visible {
+    outline: none;
+  }
+}
+
+.course-card-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: $border-radius $border-radius 0 0;
+  background-color: $almond-light;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .6s ease;
+  }
+}
+.course-card:hover .course-card-media img {
+  transform: scale(1.04);
+}
+// 時長：右下角的深墨小標籤
+.course-card-duration {
+  position: absolute;
+  right: .625rem;
+  bottom: .625rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .3125rem;
+  padding: .1875rem .5rem;
+  border-radius: $border-radius-sm;
+  background-color: rgba($ink, .82);
+  color: $paper;
+  font-size: .75rem;
+  line-height: 1.4;
+}
+
+.course-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  padding: map-get($spacers, 3) map-get($spacers, 3) map-get($spacers, 3) + .25rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.25rem;
+  }
+}
+.course-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .375rem;
+  margin: 0 0 .625rem;
+  padding: 0;
+  list-style: none;
+}
+.course-card-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin-bottom: .75rem;
+  font-size: 1.125rem;
+  line-height: 1.55;
+  letter-spacing: .04em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+
+  a {
+    color: $ink;
+    text-decoration: none;
+  }
+}
+.course-card:hover .course-card-title a {
+  color: $bamboo-deep;
+}
+.course-card-desc {
+  margin-bottom: map-get($spacers, 3);
+  font-size: $font-size-sm;
+  line-height: 1.75;
+  color: $ink-muted;
+}
+.course-card-teacher-note {
+  margin-left: .5rem;
+  color: $ink-muted;
+  font-weight: $font-weight-normal;
+}
+.course-card-teacher {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .375rem;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+.course-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem 1rem;
+  margin-bottom: map-get($spacers, 3);
+  font-size: $small-font-size;
+  color: $ink-muted;
+
+  .rating { color: $ink; font-weight: $font-weight-medium; }
+}
+// 最下一列：價格（左）＋免費試看（右），margin-top: auto 讓它貼齊卡片底部
+.course-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: auto;
+  padding-top: map-get($spacers, 3);
+  border-top: 1px dotted $line-strong;
+
+  .price {
+    margin: 0;
+    font-size: 1.125rem;
+  }
+}
+// 按鈕疊在 stretched-link 上方才點得到
+.course-card-trial {
+  position: relative;
+  z-index: 2;
+}
+
+// ---------- 橫向捲動列（首頁熱門課程 < 992px） ----------
+// Notion：「橫向滑動的課程卡片列表」。手機卡寬 80%、平板 45%，捲動停在卡片起點
+.course-scroller {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 80%;
+  gap: map-get($spacers, 3);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: $container-padding-x * .5;
+  padding-bottom: map-get($spacers, 3);
+  margin: 0;
+  list-style: none;
+  @include bleed-x;
+
+  > li {
+    scroll-snap-align: start;
+  }
+
+  @include media-breakpoint-up(sm) {
+    grid-auto-columns: 45%;
+    padding-inline: 0;
+  }
+  @include media-breakpoint-up(lg) {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: $grid-gutter-width;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+}

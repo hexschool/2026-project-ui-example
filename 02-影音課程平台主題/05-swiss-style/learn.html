@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>3-2 從土球到碗｜Craftory 手感工藝線上學院</title>
+  <meta name="description" content="從零開始的手捏陶 第 3 章 手捏成形：3-2 從土球到碗：拇指下壓的角度。設計稿 05｜瑞士國際排版。">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta name="color-scheme" content="light">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Inter Tight（英數、價格、時間、大數字）＋ Noto Sans TC（中文；900 只給首頁主標與底部 CTA） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾、登入對話框在每一頁都完整寫一份；改的時候先改這份範本，
+      再同步到 5 個 .html，最後執行 npm run check 確認都一致。
+    - 頁首：桌機是「品牌字｜主導覽｜……｜搜尋｜我的課程｜登入／註冊」；
+      992px 以下是「品牌字｜登入／註冊｜選單按鈕」，選單內是主導覽、搜尋、我的課程。
+    - 每頁只需要調整一處「目前頁面」標示：目前頁的 <a class="nav-link"> 加 active 與 aria-current="page"
+      - index.html → 首頁；courses.html → 探索課程；learn.html → 我的課程
+      - course.html（課程詳情）→ 探索課程只加 active，不加 aria-current
+      - guideline.html 不標示
+    - 登入對話框（#authModal）：頁首「登入／註冊」與課程詳情「立即購買，開始上課」共用。
+      觸發按鈕加 data-auth-intent="purchase" 時，js/main.js 會顯示未登入提示並把按鈕改成「登入並開始上課」。
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="navbar navbar-expand-lg" aria-label="主要導覽">
+        <div class="container">
+          <a class="navbar-brand site-brand" href="index.html" aria-label="Craftory 手感工藝線上學院 首頁">
+            <span class="site-brand-mark" aria-hidden="true"></span>
+            <span class="site-brand-name">Craftory</span>
+          </a>
+
+          <!-- 992px 以下：登入／註冊＋選單按鈕（桌機另一顆登入按鈕在選單最後，讓 Tab 順序與畫面一致） -->
+          <div class="site-header-quick d-flex d-lg-none align-items-center gap-2">
+            <button class="btn btn-dark btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#authModal">登入／註冊</button>
+            <button class="navbar-toggler site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="courses.html">探索課程</a></li>
+            </ul>
+            <div class="site-header-actions">
+              <form class="site-search" role="search" action="courses.html">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control" type="search" name="q" placeholder="搜尋課程、工藝或講師" aria-label="搜尋課程">
+              </form>
+              <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link active" aria-current="page" href="learn.html">我的課程</a></li>
+              </ul>
+              <button class="btn btn-dark btn-sm d-none d-lg-inline-flex" type="button" data-bs-toggle="modal" data-bs-target="#authModal">登入／註冊</button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!--
+        課程播放／學習頁（從零開始的手捏陶 3-2）
+        - 992px 以上：左 8 欄＝播放器 → 單元標題 → 操作列 → 分頁；右 4 欄＝學習進度＋章節側欄（sticky，內部可捲動）
+        - 992px 以下：單欄；側欄變成底部抽屜（.offcanvas-lg.offcanvas-bottom，同一份 HTML），由「課程章節 50%」按鈕開啟；
+          操作列貼齊畫面底部（sticky），576px 以下上一／下一單元只留箭頭
+        - 進度依 CONTENT.md §9.5：已完成 14／28（第 1、2 章、3-1、5-1、5-2、6-1、6-2），目前 3-2、看到 07:18
+      -->
+      <div class="container">
+        <header class="page-header learn-header">
+          <nav aria-label="目前位置">
+            <ol class="breadcrumb">
+              <!-- 本次沒有「我的課程」頁：純文字，不加連結 -->
+              <li class="breadcrumb-item"><span class="breadcrumb-text">我的課程</span></li>
+              <li class="breadcrumb-item"><a href="course.html">從零開始的手捏陶</a></li>
+              <li class="breadcrumb-item active" aria-current="page">第 3 章 ‧ 手捏成形</li>
+            </ol>
+          </nav>
+          <a class="btn btn-text" href="course.html"><i class="bi bi-arrow-left" aria-hidden="true"></i>回到課程介紹</a>
+        </header>
+
+        <div class="row gx-5">
+          <div class="col-lg-8">
+            <!-- ========== 區塊一：播放器（播放中） ========== -->
+            <div class="player is-playing">
+              <div class="player-screen ratio ratio-16x9">
+                <img class="player-frame" src="images/player-learn.jpg" width="1920" height="1080"
+                  alt="影片畫面：工作桌上一顆陶土球，職人的拇指斜斜往下壓、開出碗的雛形，另一隻手扶著土球外側">
+              </div>
+              <div class="player-bar">
+                <!-- 已播放 64%（07:18／11:24）；「上次看到 07:18」標記在同一個位置 -->
+                <div class="player-progress is-label-shown" role="slider" tabindex="0" aria-label="影片進度" aria-valuemin="0" aria-valuemax="684" aria-valuenow="438" aria-valuetext="07:18 / 11:24" style="--played: 64%; --buffered: 80%; --mark: 64%">
+                  <span class="player-progress-track"></span>
+                  <span class="player-progress-buffer"></span>
+                  <span class="player-progress-played"></span>
+                  <span class="player-progress-mark"><span class="player-progress-label">上次看到 07:18</span></span>
+                  <span class="player-progress-head"></span>
+                </div>
+                <div class="player-controls">
+                  <button class="player-btn" type="button" aria-label="暫停"><i class="bi bi-pause-fill" aria-hidden="true"></i></button>
+                  <p class="player-time mb-0"><span>07:18</span> / <span class="player-time-total">11:24</span></p>
+                  <span class="player-spacer"></span>
+                  <button class="player-btn" type="button" aria-label="靜音"><i class="bi bi-volume-up" aria-hidden="true"></i></button>
+                  <input class="player-volume" type="range" min="0" max="100" value="80" aria-label="音量">
+                  <div class="dropup player-speed">
+                    <button class="player-btn is-text dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="播放速度，目前 1x">1x</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                      <li><button class="dropdown-item" type="button">0.75x</button></li>
+                      <li><button class="dropdown-item active" type="button" aria-current="true">1x</button></li>
+                      <li><button class="dropdown-item" type="button">1.25x</button></li>
+                      <li><button class="dropdown-item" type="button">1.5x</button></li>
+                      <li><button class="dropdown-item" type="button">2x</button></li>
+                    </ul>
+                  </div>
+                  <div class="dropup">
+                    <button class="player-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="字幕"><i class="bi bi-badge-cc-fill" aria-hidden="true"></i></button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                      <li><button class="dropdown-item active" type="button" aria-current="true">中文（繁體）</button></li>
+                      <li><button class="dropdown-item" type="button">關閉</button></li>
+                    </ul>
+                  </div>
+                  <button class="player-btn" type="button" aria-label="全螢幕"><i class="bi bi-fullscreen" aria-hidden="true"></i></button>
+                </div>
+              </div>
+              <!-- 續看提示：預設顯示（.toast.show），可關閉。576px 以上疊在畫面左上，以下排在播放器下方 -->
+              <div class="toast show player-toast" role="status" aria-live="polite" aria-atomic="true">
+                <div class="player-toast-body">
+                  <i class="bi bi-clock-history" aria-hidden="true"></i>
+                  <p>已為你跳到上次觀看的 07:18，</p>
+                  <button class="btn btn-text" type="button">從頭播放</button>
+                  <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="關閉"></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 單元標題＋片長 -->
+            <div class="learn-unit-head">
+              <h1 class="learn-title text-phrase">3-2 從土球到碗：<wbr>拇指下壓的角度</h1>
+              <p class="learn-duration"><i class="bi bi-clock" aria-hidden="true"></i><span class="visually-hidden">片長</span><span class="num">11:24</span></p>
+            </div>
+
+            <!-- ========== 區塊四：操作列（放在分頁之前；992px 以下貼齊畫面底部） ========== -->
+            <nav class="learn-actions" aria-label="單元切換">
+              <a class="learn-step is-prev" href="learn.html" aria-label="上一單元：3-1 土球該多大">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                <span class="learn-step-text">上一單元：3-1 土球該多大</span>
+              </a>
+              <a class="btn btn-primary" href="learn.html"><i class="bi bi-check-lg" aria-hidden="true"></i>標記完成並繼續</a>
+              <a class="learn-step is-next" href="learn.html" aria-label="下一單元：3-3 修整碗口的三種手勢">
+                <span class="learn-step-text">下一單元：3-3 修整碗口的三種手勢</span>
+                <i class="bi bi-arrow-right" aria-hidden="true"></i>
+              </a>
+            </nav>
+
+            <!-- 992px 以下：開啟章節抽屜 -->
+            <button class="btn btn-outline-dark w-100 d-lg-none learn-drawer-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#learnSidebar" aria-controls="learnSidebar">
+              <i class="bi bi-list-ol" aria-hidden="true"></i>課程章節<span class="num">50%</span>
+            </button>
+
+            <!-- ========== 區塊三：分頁 ========== -->
+            <div class="learn-tabs">
+              <div class="nav nav-underline" id="learnTabs" role="tablist">
+                <button class="nav-link active" id="tabNotes" data-bs-toggle="tab" data-bs-target="#paneNotes" type="button" role="tab" aria-controls="paneNotes" aria-selected="true">單元重點</button>
+                <button class="nav-link" id="tabQa" data-bs-toggle="tab" data-bs-target="#paneQa" type="button" role="tab" aria-controls="paneQa" aria-selected="false" tabindex="-1">課程問答</button>
+                <button class="nav-link" id="tabFiles" data-bs-toggle="tab" data-bs-target="#paneFiles" type="button" role="tab" aria-controls="paneFiles" aria-selected="false" tabindex="-1">附件下載</button>
+              </div>
+            </div>
+            <div class="tab-content learn-panes">
+              <div class="tab-pane fade show active" id="paneNotes" role="tabpanel" aria-labelledby="tabNotes" tabindex="0">
+                <p class="learn-notes">本段重點是拇指下壓時維持約 45 度，底部厚度保留 0.8cm。壓太快會讓底部變薄，入窯容易裂。</p>
+              </div>
+              <div class="tab-pane fade" id="paneQa" role="tabpanel" aria-labelledby="tabQa" tabindex="0">
+                <!-- 設計稿沒有後端：送出後回到本頁，不會新增問題 -->
+                <form class="learn-qa-form" action="learn.html">
+                  <label class="visually-hidden" for="qaInput">提出問題</label>
+                  <textarea class="form-control" id="qaInput" name="question" rows="4" placeholder="對這個單元有問題嗎？講師會在 72 小時內回覆"></textarea>
+                  <button class="btn btn-outline-dark" type="submit">送出問題</button>
+                </form>
+                <div class="empty-state learn-qa-empty">
+                  <i class="bi bi-chat-square" aria-hidden="true"></i>
+                  <p>這個單元還沒有人提問，當第一個吧。</p>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="paneFiles" role="tabpanel" aria-labelledby="tabFiles" tabindex="0">
+                <ul class="file-list">
+                  <li>
+                    <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
+                    <span class="file-name">新手工具採購清單.pdf</span>
+                    <span class="file-size num">0.4 MB</span>
+                    <button class="btn btn-outline-dark btn-sm" type="button" aria-label="下載 新手工具採購清單.pdf"><i class="bi bi-download" aria-hidden="true"></i>下載</button>
+                  </li>
+                  <li>
+                    <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
+                    <span class="file-name">釉色對照表.pdf</span>
+                    <span class="file-size num">2.1 MB</span>
+                    <button class="btn btn-outline-dark btn-sm" type="button" aria-label="下載 釉色對照表.pdf"><i class="bi bi-download" aria-hidden="true"></i>下載</button>
+                  </li>
+                  <li>
+                    <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
+                    <span class="file-name">代燒窯場聯絡名單.pdf</span>
+                    <span class="file-size num">0.3 MB</span>
+                    <button class="btn btn-outline-dark btn-sm" type="button" aria-label="下載 代燒窯場聯絡名單.pdf"><i class="bi bi-download" aria-hidden="true"></i>下載</button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 區塊二：學習進度與章節側欄（992px 以下是底部抽屜） ========== -->
+          <div class="col-lg-4">
+            <aside class="offcanvas-lg offcanvas-bottom learn-sidebar" id="learnSidebar" tabindex="-1" aria-labelledby="learnSidebarTitle">
+              <div class="offcanvas-header">
+                <h2 class="offcanvas-title" id="learnSidebarTitle">課程章節</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#learnSidebar" aria-label="關閉"></button>
+              </div>
+              <div class="offcanvas-body">
+                <div class="learn-sidebar-inner">
+                  <section class="learn-progress" aria-labelledby="learnProgressTitle">
+                    <h2 class="learn-sidebar-title" id="learnProgressTitle">你的學習進度</h2>
+                    <p class="learn-progress-figure numeral" aria-hidden="true">50<span>%</span></p>
+                    <div class="progress" role="progressbar" aria-label="課程完成度" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">
+                      <div class="progress-bar" style="width: 50%"></div>
+                    </div>
+                    <p class="learn-progress-text"><span>已完成 14／28 單元 ‧ 50%</span><span>預估還需 2 小時 10 分</span></p>
+                  </section>
+                  <div class="learn-chapters-head">
+                    <h2 class="learn-sidebar-title d-none d-lg-block">課程章節</h2>
+                    <button class="btn btn-text btn-sm" type="button" data-collapse-all="#learnChapters">全部收合</button>
+                  </div>
+                  <div class="curriculum is-compact" id="learnChapters">
+                    <div class="curriculum-chapter is-done">
+                      <h3 class="curriculum-chapter-heading">
+                        <button class="curriculum-chapter-btn collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#learnChaptersCh1" aria-expanded="false" aria-controls="learnChaptersCh1">
+                          <span class="curriculum-chapter-no">第 1 章　</span><span class="curriculum-chapter-name">開始之前：認識材料與工具</span>
+                          <span class="curriculum-chapter-meta"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成，已完成</span><span class="num">4／4</span></span>
+                          <span class="curriculum-toggle" aria-hidden="true"></span>
+                        </button>
+                      </h3>
+                      <div id="learnChaptersCh1" class="collapse">
+                        <ol class="curriculum-units" aria-label="第 1 章的單元">
+                          <li class="curriculum-unit is-done">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">1-1</span>
+                              <span class="curriculum-unit-name">課程介紹：這堂課的四小時怎麼安排</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                              <span class="curriculum-unit-time">05:10</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-done">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">1-2</span>
+                              <span class="curriculum-unit-name">認識陶土：你該買哪一種土</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                              <span class="curriculum-unit-time">08:42</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-done">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">1-3</span>
+                              <span class="curriculum-unit-name">新手工具清單與替代方案</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                              <span class="curriculum-unit-time">09:30</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-done">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">1-4</span>
+                              <span class="curriculum-unit-name">把餐桌變成工作檯：場地與清潔準備</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                              <span class="curriculum-unit-time">08:18</span>
+                            </a>
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                    <div class="curriculum-chapter is-done">
+                      <h3 class="curriculum-chapter-heading">
+                        <button class="curriculum-chapter-btn collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#learnChaptersCh2" aria-expanded="false" aria-controls="learnChaptersCh2">
+                          <span class="curriculum-chapter-no">第 2 章　</span><span class="curriculum-chapter-name">揉土與排氣</span>
+                          <span class="curriculum-chapter-meta"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成，已完成</span><span class="num">5／5</span></span>
+                          <span class="curriculum-toggle" aria-hidden="true"></span>
+                        </button>
+                      </h3>
+                      <div id="learnChaptersCh2" class="collapse">
+                        <ol class="curriculum-units" aria-label="第 2 章的單元">
+                          <li class="curriculum-unit is-done">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">2-1</span>
+                              <span class="curriculum-unit-name">開土與分量：一只碗要多少土</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                              <span class="curriculum-unit-time">07:12</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-done">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">2-2</span>
+                              <span class="curriculum-unit-name">菊花揉：把空氣推出來</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                              <span class="curriculum-unit-time">09:48</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-done">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">2-3</span>
+                              <span class="curriculum-unit-name">羊頭揉：新手更好上手的揉法</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                              <span class="curriculum-unit-time">08:36</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-done">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">2-4</span>
+                              <span class="curriculum-unit-name">怎麼確認排氣完成：切面檢查</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                              <span class="curriculum-unit-time">07:20</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-done">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">2-5</span>
+                              <span class="curriculum-unit-name">常見失敗：揉太久、太乾怎麼救</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                              <span class="curriculum-unit-time">08:04</span>
+                            </a>
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                    <div class="curriculum-chapter is-current">
+                      <h3 class="curriculum-chapter-heading">
+                        <button class="curriculum-chapter-btn" type="button" data-bs-toggle="collapse" data-bs-target="#learnChaptersCh3" aria-expanded="true" aria-controls="learnChaptersCh3">
+                          <span class="curriculum-chapter-no">第 3 章　</span><span class="curriculum-chapter-name">手捏成形：從土球到碗</span>
+                          <span class="curriculum-chapter-meta"><i class="bi bi-play-fill" aria-hidden="true"></i><span class="visually-hidden">目前章節，已完成</span><span class="num">1／6</span></span>
+                          <span class="curriculum-toggle" aria-hidden="true"></span>
+                        </button>
+                      </h3>
+                      <div id="learnChaptersCh3" class="collapse show">
+                        <ol class="curriculum-units" aria-label="第 3 章的單元">
+                          <li class="curriculum-unit is-done">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">3-1</span>
+                              <span class="curriculum-unit-name">土球該多大</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                              <span class="curriculum-unit-time">08:06</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-current">
+                            <a class="curriculum-unit-link" href="learn.html" aria-current="true">
+                              <span class="curriculum-unit-no">3-2</span>
+                              <span class="curriculum-unit-name">從土球到碗：拇指下壓的角度</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-play-fill" aria-hidden="true"></i><span class="visually-hidden">播放中</span></span>
+                              <span class="curriculum-unit-time">11:24</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-todo">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">3-3</span>
+                              <span class="curriculum-unit-name">修整碗口的三種手勢</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span>
+                              <span class="curriculum-unit-time">09:52</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-todo">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">3-4</span>
+                              <span class="curriculum-unit-name">讓碗壁厚薄一致的捏法</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span>
+                              <span class="curriculum-unit-time">10:18</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-todo">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">3-5</span>
+                              <span class="curriculum-unit-name">失敗示範：碗壁裂開時怎麼救</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span>
+                              <span class="curriculum-unit-time">09:40</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-todo">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">3-6</span>
+                              <span class="curriculum-unit-name">陰乾：放多久、怎麼蓋</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span>
+                              <span class="curriculum-unit-time">08:40</span>
+                            </a>
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                    <div class="curriculum-chapter is-todo">
+                      <h3 class="curriculum-chapter-heading">
+                        <button class="curriculum-chapter-btn collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#learnChaptersCh4" aria-expanded="false" aria-controls="learnChaptersCh4">
+                          <span class="curriculum-chapter-no">第 4 章　</span><span class="curriculum-chapter-name">修坯：讓厚薄一致</span>
+                          <span class="curriculum-chapter-meta"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始，已完成</span><span class="num">0／5</span></span>
+                          <span class="curriculum-toggle" aria-hidden="true"></span>
+                        </button>
+                      </h3>
+                      <div id="learnChaptersCh4" class="collapse">
+                        <ol class="curriculum-units" aria-label="第 4 章的單元">
+                          <li class="curriculum-unit is-todo">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">4-1</span>
+                              <span class="curriculum-unit-name">什麼是半乾：修坯的最佳時機</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span>
+                              <span class="curriculum-unit-time">08:24</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-todo">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">4-2</span>
+                              <span class="curriculum-unit-name">修坯刀的握法與角度</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span>
+                              <span class="curriculum-unit-time">10:12</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-todo">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">4-3</span>
+                              <span class="curriculum-unit-name">修出碗底的圈足</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span>
+                              <span class="curriculum-unit-time">10:36</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-todo">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">4-4</span>
+                              <span class="curriculum-unit-name">失敗示範：修穿了怎麼辦</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span>
+                              <span class="curriculum-unit-time">08:48</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-todo">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">4-5</span>
+                              <span class="curriculum-unit-name">收邊與表面整理</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span>
+                              <span class="curriculum-unit-time">09:00</span>
+                            </a>
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                    <div class="curriculum-chapter is-partial">
+                      <h3 class="curriculum-chapter-heading">
+                        <button class="curriculum-chapter-btn collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#learnChaptersCh5" aria-expanded="false" aria-controls="learnChaptersCh5">
+                          <span class="curriculum-chapter-no">第 5 章　</span><span class="curriculum-chapter-name">上釉與色彩選擇</span>
+                          <span class="curriculum-chapter-meta"><i class="bi bi-circle-half" aria-hidden="true"></i><span class="visually-hidden">部分完成，已完成</span><span class="num">2／4</span></span>
+                          <span class="curriculum-toggle" aria-hidden="true"></span>
+                        </button>
+                      </h3>
+                      <div id="learnChaptersCh5" class="collapse">
+                        <ol class="curriculum-units" aria-label="第 5 章的單元">
+                          <li class="curriculum-unit is-done">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">5-1</span>
+                              <span class="curriculum-unit-name">認識釉藥：亮釉、霧釉與食器安全</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                              <span class="curriculum-unit-time">09:30</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-done">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">5-2</span>
+                              <span class="curriculum-unit-name">怎麼挑一個不會失敗的顏色</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                              <span class="curriculum-unit-time">08:54</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-todo">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">5-3</span>
+                              <span class="curriculum-unit-name">浸釉與淋釉示範</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span>
+                              <span class="curriculum-unit-time">11:06</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-todo">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">5-4</span>
+                              <span class="curriculum-unit-name">擦底與上釉前檢查</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span>
+                              <span class="curriculum-unit-time">09:30</span>
+                            </a>
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                    <div class="curriculum-chapter is-partial">
+                      <h3 class="curriculum-chapter-heading">
+                        <button class="curriculum-chapter-btn collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#learnChaptersCh6" aria-expanded="false" aria-controls="learnChaptersCh6">
+                          <span class="curriculum-chapter-no">第 6 章　</span><span class="curriculum-chapter-name">送窯、驗收與保養</span>
+                          <span class="curriculum-chapter-meta"><i class="bi bi-circle-half" aria-hidden="true"></i><span class="visually-hidden">部分完成，已完成</span><span class="num">2／4</span></span>
+                          <span class="curriculum-toggle" aria-hidden="true"></span>
+                        </button>
+                      </h3>
+                      <div id="learnChaptersCh6" class="collapse">
+                        <ol class="curriculum-units" aria-label="第 6 章的單元">
+                          <li class="curriculum-unit is-done">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">6-1</span>
+                              <span class="curriculum-unit-name">如何找到可代燒的窯場</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                              <span class="curriculum-unit-time">11:20</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-done">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">6-2</span>
+                              <span class="curriculum-unit-name">送窯前的包裝與溝通</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                              <span class="curriculum-unit-time">09:40</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-todo">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">6-3</span>
+                              <span class="curriculum-unit-name">出窯驗收：看裂、看釉、看底</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span>
+                              <span class="curriculum-unit-time">10:30</span>
+                            </a>
+                          </li>
+                          <li class="curriculum-unit is-todo">
+                            <a class="curriculum-unit-link" href="learn.html">
+                              <span class="curriculum-unit-no">6-4</span>
+                              <span class="curriculum-unit-name">日常使用與保養：微波爐與洗碗機</span>
+                              <span class="curriculum-unit-state"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span>
+                              <span class="curriculum-unit-time">11:30</span>
+                            </a>
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <!-- ========== 設計稿狀態示意 ========== -->
+        <section class="demo-state" aria-labelledby="demoStateTitle">
+          <p class="demo-state-tag" id="demoStateTitle">設計稿狀態示意</p>
+
+          <div class="demo-state-item">
+            <h2 class="demo-state-title">完成一章時</h2>
+            <p class="text-note">看完一章的最後一個單元並按「標記完成並繼續」後，在播放器左上方（同續看提示的位置）出現鼓勵訊息，側欄的章節同時改成已完成。</p>
+            <div class="demo-state-stage">
+              <div class="toast show learn-cheer" role="status" aria-live="polite">
+                <div class="player-toast-body">
+                  <i class="bi bi-check-lg" aria-hidden="true"></i>
+                  <p>第 2 章完成了，土已經揉好，接下來進入最有趣的成形。</p>
+                  <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="關閉"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="demo-state-item">
+            <h2 class="demo-state-title">全課完成時</h2>
+            <p class="text-note">28 個單元都完成後，操作列換成完課畫面，學習進度變成 100%。</p>
+            <div class="demo-state-stage">
+              <div class="row gy-4 align-items-end">
+                <div class="col-lg-8">
+                  <div class="learn-complete">
+                    <i class="bi bi-stars" aria-hidden="true"></i>
+                    <p class="learn-complete-text text-phrase">你完成了整門課，<wbr>把你的第一只碗<wbr>拍下來吧</p>
+                    <a class="btn btn-primary btn-lg" href="learn.html"><i class="bi bi-camera" aria-hidden="true"></i>上傳我的作品</a>
+                  </div>
+                </div>
+                <div class="col-lg-4">
+                  <div class="learn-progress">
+                    <p class="learn-sidebar-title">你的學習進度</p>
+                    <p class="learn-progress-figure numeral" aria-hidden="true">100<span>%</span></p>
+                    <div class="progress" role="progressbar" aria-label="課程完成度" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                      <div class="progress-bar" style="width: 100%"></div>
+                    </div>
+                    <p class="learn-progress-text"><span>已完成 28／28 單元 ‧ 100%</span></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="demo-state-item">
+            <h2 class="demo-state-title">影片載入失敗時</h2>
+            <p class="text-note">播放器的畫面換成錯誤訊息與「重新載入」按鈕。</p>
+            <div class="demo-state-stage">
+              <div class="row">
+                <div class="col-lg-8">
+                  <div class="player is-error">
+                    <div class="player-screen ratio ratio-16x9">
+                      <div class="player-state" role="alert">
+                        <i class="bi bi-exclamation-octagon-fill" aria-hidden="true"></i>
+                        <p>影片暫時無法播放，請檢查網路後重新整理。</p>
+                        <button class="btn btn-outline-light" type="button"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i>重新載入</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="demo-state-item">
+            <h2 class="demo-state-title">還沒有任何課程時</h2>
+            <p class="text-note">從頁首「我的課程」進來、但還沒有購買任何課程時，整頁只顯示這個空狀態。</p>
+            <div class="demo-state-stage">
+              <div class="empty-state">
+                <i class="bi bi-collection-play" aria-hidden="true"></i>
+                <p>你還沒有進行中的課程，先從一支免費試看開始。</p>
+                <a class="btn btn-primary" href="courses.html">探索課程</a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container grid-guides-dark">
+        <div class="row gy-5">
+          <div class="col-lg-4">
+            <a class="site-brand" href="index.html" aria-label="Craftory 手感工藝線上學院 首頁">
+              <span class="site-brand-mark" aria-hidden="true"></span>
+              <span class="site-brand-name">Craftory</span>
+            </a>
+            <p class="site-footer-name">Craftory 手感工藝線上學院</p>
+            <p class="site-footer-lead">專為「想養成第二專長、但一直沒開始」的上班族打造的工藝影音學院</p>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2 offset-lg-2">
+            <h2 class="site-footer-title">探索課程</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="courses.html">陶藝</a></li>
+              <li><a href="courses.html">皮革</a></li>
+              <li><a href="courses.html">木工</a></li>
+              <li><a href="courses.html">織品染繡</a></li>
+              <li><a href="courses.html">金工銀飾</a></li>
+              <li><a href="courses.html">蠟燭香氛</a></li>
+              <li><a href="courses.html">紙藝絹印</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">學習保障</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="index.html#guarantee">7 天不滿意退費</a></li>
+              <li><a href="index.html#guarantee">一次購買永久觀看</a></li>
+              <li><a href="index.html#guarantee">卡關有人回答</a></li>
+            </ul>
+          </div>
+          <!-- 關於我們、成為講師、聯絡我們尚未設計頁面：不帶 href 的佔位連結 -->
+          <div class="col-md-4 col-lg-2">
+            <h2 class="site-footer-title">關於 Craftory</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a>關於我們</a></li>
+              <li><a>成為講師</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 Craftory 手感工藝線上學院｜<wbr>本站為課程設計稿範例，課程、講師與評價皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!--
+    登入對話框：設計稿沒有後端，送出就前往學習頁（視為登入成功）。
+    串接後端時：把 form 的 action 換成登入 API，成功後再導向原本要去的頁面。
+  -->
+  <div class="modal fade auth-modal" id="authModal" tabindex="-1" aria-labelledby="authModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="authModalTitle">登入 Craftory</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body">
+          <!-- 從「立即購買，開始上課」開啟時才顯示（js/main.js 第 1 項） -->
+          <p class="auth-notice" data-auth-notice hidden>
+            <i class="bi bi-lock-fill" aria-hidden="true"></i>
+            <span>登入後就能開始上課，馬上註冊只要 30 秒。</span>
+          </p>
+          <form class="auth-form" action="learn.html">
+            <div class="mb-3">
+              <label class="form-label" for="authEmail">電子郵件</label>
+              <input class="form-control" id="authEmail" type="email" name="email" placeholder="mail@example.com" autocomplete="email">
+            </div>
+            <div class="mb-1">
+              <label class="form-label" for="authPassword">密碼</label>
+              <input class="form-control" id="authPassword" type="password" name="password" placeholder="至少 8 碼" autocomplete="current-password">
+            </div>
+            <div class="d-flex justify-content-end mb-3">
+              <a class="btn btn-text btn-sm">忘記密碼？</a>
+            </div>
+            <button class="btn btn-primary w-100" type="submit" data-auth-submit>登入</button>
+          </form>
+          <p class="auth-switch">還沒有帳號？<a class="btn btn-text">立即註冊</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

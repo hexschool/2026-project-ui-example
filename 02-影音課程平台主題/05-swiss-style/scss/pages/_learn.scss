@@ -1,0 +1,275 @@
+// ============================================================
+// 課程播放／學習頁（learn.html）
+// 頁面維持純白；播放器本身是放映黑。左 8 欄播放與分頁、右 4 欄學習進度與章節（992px 以下是底部抽屜）
+// ============================================================
+
+// 頂列：麵包屑（左）＋回到課程介紹（右）
+.learn-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: map-get($spacers, 5);
+  }
+}
+// 麵包屑裡的純文字項目（沒有「我的課程」頁）：與連結同色、同高
+.breadcrumb-text {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: $body-secondary-color;
+}
+
+// ---------- 單元標題＋片長 ----------
+.learn-unit-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: map-get($spacers, 2) map-get($spacers, 4);
+  padding-block: map-get($spacers, 4);
+}
+.learn-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: $font-weight-black;
+  line-height: 1.25;
+
+  @include media-breakpoint-up(md) { font-size: 2.25rem; }
+}
+.learn-duration {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  color: $body-secondary-color;
+  font-weight: $font-weight-medium;
+}
+
+// ---------- 操作列：← 上一單元｜標記完成並繼續｜下一單元 → ----------
+// 三欄 grid（1fr auto 1fr）讓主要按鈕永遠在正中央；上緣 2px、下緣 1px 墨黑線
+.learn-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: map-get($spacers, 3);
+  padding-block: map-get($spacers, 3);
+  border-top: $rule-heavy solid $rule;
+  border-bottom: $rule-thin solid $rule;
+  background-color: $paper;
+
+  // 992px 以下貼齊畫面底部，看完一支隨時可以按下一支
+  @include media-breakpoint-down(lg) {
+    position: sticky;
+    bottom: 0;
+    z-index: $zindex-sticky - 1;
+  }
+}
+.learn-step {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 2.75rem;
+  color: $ink;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  text-decoration: none;
+
+  &:hover {
+    color: $ink;
+    text-decoration: underline;
+    text-underline-offset: .3em;
+  }
+  .bi {
+    flex: 0 0 auto;
+    font-size: 1.25rem;
+  }
+  &.is-prev {
+    justify-self: start;
+  }
+  &.is-next {
+    justify-self: end;
+    text-align: right;
+  }
+
+  // 576px 以下只留箭頭（完整文字在 aria-label）
+  @include media-breakpoint-down(sm) {
+    justify-content: center;
+    min-width: 2.75rem;
+    border: 1px solid $ink;
+
+    .learn-step-text {
+      @include visually-hidden;
+    }
+  }
+}
+.learn-drawer-btn {
+  margin-top: map-get($spacers, 3);
+
+  .num {
+    margin-left: auto;
+  }
+}
+
+// ---------- 分頁 ----------
+.learn-tabs {
+  margin-top: map-get($spacers, 6);
+}
+.learn-panes {
+  padding-top: map-get($spacers, 4);
+}
+.learn-notes {
+  max-width: 36em;
+  font-size: $font-size-lg;
+  line-height: 1.8;
+}
+.learn-qa-form {
+  display: grid;
+  gap: map-get($spacers, 2);
+  justify-items: start;
+
+  textarea {
+    resize: vertical;
+  }
+}
+.learn-qa-empty {
+  margin-top: map-get($spacers, 5);
+}
+// 附件：PDF 圖示｜檔名｜大小｜下載，四欄對齊
+.file-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: $rule-thin solid $ink;
+
+  li {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: map-get($spacers, 3);
+    padding-block: .625rem;
+    border-bottom: $rule-thin solid $hairline;
+  }
+  .bi-file-earmark-pdf {
+    font-size: 1.25rem;
+  }
+  .file-name {
+    font-weight: $font-weight-medium;
+    overflow-wrap: anywhere;
+  }
+  .file-size {
+    color: $body-secondary-color;
+    font-size: $font-size-sm;
+  }
+}
+
+// ---------- 側欄：學習進度＋章節 ----------
+// 992px 以上：sticky，比視窗高時側欄內部捲動
+@include media-breakpoint-up(lg) {
+  .learn-sidebar {
+    position: sticky;
+    top: $sticky-top-offset;
+    max-height: calc(100vh - #{$sticky-top-offset} - 1.5rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+}
+// 992px 以下：底部抽屜，高度 85% 視窗
+@include media-breakpoint-down(lg) {
+  .learn-sidebar {
+    --bs-offcanvas-height: 85vh;
+    border-top: $rule-heavy solid $ink;
+
+    .offcanvas-header {
+      border-bottom: $rule-thin solid $hairline;
+    }
+    .offcanvas-title {
+      font-size: $h3-font-size;
+      font-weight: $font-weight-bold;
+    }
+  }
+}
+.learn-sidebar-inner {
+  flex: 1 1 auto; // 992px 以上 .offcanvas-body 是 flex，內容要撐滿側欄寬
+}
+.learn-sidebar-title {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+}
+.learn-progress {
+  padding-top: map-get($spacers, 2);
+  border-top: $rule-heavy solid $rule;
+
+  .progress {
+    height: .5rem;
+  }
+}
+// 大數字 50%（裝飾，aria-hidden；文字版在下方）
+.learn-progress-figure {
+  margin: map-get($spacers, 2) 0 map-get($spacers, 3);
+  font-size: 4.5rem;
+
+  span {
+    font-size: .5em;
+    vertical-align: .75em;
+    margin-left: .05em;
+  }
+}
+.learn-progress-text {
+  display: flex;
+  flex-direction: column;
+  margin: map-get($spacers, 2) 0 0;
+  font-size: $font-size-sm;
+  font-variant-numeric: tabular-nums;
+
+  span:first-child {
+    font-weight: $font-weight-bold;
+  }
+  span + span {
+    color: $body-secondary-color;
+  }
+}
+.learn-chapters-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: map-get($spacers, 5);
+
+  @include media-breakpoint-down(lg) {
+    justify-content: flex-end;
+    margin-top: map-get($spacers, 3);
+  }
+}
+
+// ---------- 狀態示意 ----------
+// 鼓勵文案：與續看提示同一個樣子（白底、墨黑框、粗體）
+.learn-cheer {
+  width: auto;
+  max-width: 34rem;
+  border: $rule-thin solid $ink;
+  font-weight: $font-weight-bold;
+}
+// 全課完成：取代操作列的位置，上緣 2px 墨黑線
+.learn-complete {
+  padding-top: map-get($spacers, 4);
+  border-top: $rule-heavy solid $rule;
+
+  > .bi {
+    display: block;
+    font-size: 2.5rem;
+    line-height: 1;
+    margin-bottom: map-get($spacers, 3);
+  }
+}
+.learn-complete-text {
+  max-width: 18em;
+  margin-bottom: map-get($spacers, 4);
+  font-size: 1.75rem;
+  font-weight: $font-weight-black;
+  line-height: 1.3;
+}

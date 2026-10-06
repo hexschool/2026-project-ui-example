@@ -1,0 +1,743 @@
+// ============================================================
+// 全站基礎：字體、數字、結構線、區塊節奏、焦點、共用小工具
+// 以及本風格的共用類別：.grid-guides（可見的 12 欄網格）、.numeral（大數字）、.tag（標籤）
+// ============================================================
+
+// 單一淺色主題：作業系統切到深色模式時，原生捲軸、下拉清單也維持淺色
+:root {
+  color-scheme: light;
+  accent-color: $ink;
+}
+
+body {
+  letter-spacing: $letter-spacing-body;
+  font-feature-settings: "ss01" 0; // Inter Tight 預設字形
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+// 標題：同一組無襯線，靠字級拉開層級；多行時平均分配，避免最後一行只剩一兩個字
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  letter-spacing: $letter-spacing-heading;
+  text-wrap: balance;
+}
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  text-wrap: balance;
+}
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty; // 內文避免孤字
+}
+
+// sticky 頁首不遮住焦點與錨點目標（值同 $sticky-top-offset）
+html {
+  scroll-padding-top: $sticky-top-offset;
+}
+
+::selection {
+  background-color: $ink;
+  color: $paper;
+}
+
+// ---------- 數字 ----------
+// 價格、時間、單元編號、人數：Inter Tight 的等寬數字，直排時上下對齊
+.num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.price {
+  font-variant-numeric: tabular-nums;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+// 大數字：評價 4.9、學習進度 50%、購買卡的售價。字級由所在位置決定
+// <p class="numeral display-2">4.9</p>
+.numeral {
+  font-family: $font-family-sans-serif;
+  font-weight: $font-weight-bold;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: $letter-spacing-tight;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+// 次要說明文字
+.text-note {
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+}
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、標點與 <wbr> 處換行，「手捏陶」「日用食器」這類詞不會被拆開；整段放不下時才強制斷行
+// 用在課程名稱、短標題；長段落不要用（會讓行尾參差）
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: wrap; // 斷點已經由 <wbr> 決定，不再平均分配（balance 會把「｜」擠到下一行開頭）
+}
+
+// ---------- 頁面主體 ----------
+// 主體與頁尾之間的 96px 由 main 的下內距提供（首頁最後是紅色 CTA 色帶，main 加 .pb-0 讓色帶直接接頁尾）
+#main {
+  padding-bottom: map-get($spacers, 8);
+}
+
+// ---------- 區塊節奏 ----------
+// 區塊上下留白：手機 64px → 桌機 96px
+.section {
+  padding-block: map-get($spacers, 7);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 8);
+  }
+}
+
+// 區塊標題列：上緣一條 2px 墨黑結構線，標題與說明依網格排（左標題、右說明或連結）
+// <header class="section-head">
+//   <div class="row">
+//     <div class="col-lg-5"><h2>…</h2></div>
+//     <div class="col-lg-5"><p>…</p></div>
+//     <div class="col-lg-2 section-head-aside"><a class="btn-text">…</a></div>
+//   </div>
+// </header>
+.section-head {
+  padding-top: map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 6);
+  border-top: $rule-heavy solid $rule;
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: map-get($spacers, 7);
+  }
+
+  h2,
+  .h2 {
+    margin-bottom: 0;
+  }
+  p {
+    margin-bottom: 0;
+    color: $body-secondary-color;
+    max-width: 32em;
+  }
+}
+// 區塊標題列的說明：與標題的第一行對齊（字級較小，往下推到同一條基線附近）
+.section-head-lead {
+  @include media-breakpoint-up(lg) {
+    padding-top: .75rem;
+  }
+}
+// 區塊標題列右側的連結：桌機靠右、與標題底部對齊；手機改到標題下方
+.section-head-aside {
+  display: flex;
+  align-items: flex-end;
+  white-space: nowrap;
+
+  @include media-breakpoint-up(lg) {
+    justify-content: flex-end;
+  }
+}
+
+// 單純的結構線（不在區塊標題列時）
+.rule-heavy {
+  border: 0;
+  border-top: $rule-heavy solid $rule;
+  margin: 0;
+  opacity: 1;
+}
+.rule-thin {
+  border: 0;
+  border-top: $rule-thin solid $hairline;
+  margin: 0;
+  opacity: 1;
+}
+
+// ---------- 可見的網格（本風格招牌之一） ----------
+// 在 .container 上加 .grid-guides，就會在背景畫出 12 欄的欄線：每一欄內容的左緣一條、最右欄的右緣一條，
+// 文字的起點剛好壓在線上。只在 768px 以上顯示（手機欄寬太窄，線會變成雜訊）。
+// 原理：row 的寬＝容器內容寬＋一個欄間距，每欄寬＝(內容寬＋欄間距) ÷ 12，
+//       所以欄線的間距是 (100% + 欄間距) / 12，從內容區的左緣開始重複。
+// <div class="container grid-guides">…</div>       （深色底用 .grid-guides-dark）
+@mixin grid-guides($color: $grid-line) {
+  position: relative;
+  isolation: isolate; // 讓欄線（z-index: -1）留在內容後面，但不會沉到區塊底色下面
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 calc(var(--bs-gutter-x) * .5);
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      linear-gradient(90deg, $color 0 1px, transparent 1px),
+      linear-gradient(90deg, transparent calc(100% - 1px), $color 0);
+    background-size: calc((100% + #{$grid-gutter-width}) / #{$grid-columns}) 100%, 100% 100%;
+    background-repeat: repeat-x, no-repeat;
+
+    @include media-breakpoint-down(md) {
+      display: none;
+    }
+  }
+}
+.grid-guides {
+  @include grid-guides;
+}
+.grid-guides-dark {
+  @include grid-guides($grid-line-dark);
+}
+
+// ---------- 圖片框：固定比例、裁切填滿 ----------
+.img-frame {
+  position: relative;
+  overflow: hidden;
+  background-color: $fog; // 圖片載入前的底色
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+// ---------- 按鈕 ----------
+// 主要：.btn-primary（瑞士紅底＋白字），一個區塊只放一個
+// 次要：.btn-outline-dark（墨黑細框；hover 反白成墨黑底）
+// 深色：.btn-dark（墨黑底＋白字）只用在頁首「登入／註冊」與深色畫面上的反白按鈕
+// 文字連結：.btn-text
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  letter-spacing: $letter-spacing-body;
+  --bs-btn-focus-box-shadow: #{$focus-ring-double};
+
+  > .bi {
+    font-size: 1.125em;
+    line-height: 1;
+  }
+}
+.btn-primary {
+  --bs-btn-hover-bg: #{$swiss-red-deep};
+  --bs-btn-hover-border-color: #{$swiss-red-deep};
+  --bs-btn-active-bg: #{$swiss-red-deep};
+  --bs-btn-active-border-color: #{$swiss-red-deep};
+  // 停用：不疊透明度，改成霧面底＋中灰字，一看就知道按不了
+  --bs-btn-disabled-bg: #{$fog};
+  --bs-btn-disabled-border-color: #{$fog};
+  --bs-btn-disabled-color: #{$graphite};
+}
+.btn-outline-dark {
+  --bs-btn-color: #{$ink};
+  --bs-btn-border-color: #{$ink};
+  --bs-btn-hover-color: #{$paper};
+  --bs-btn-hover-bg: #{$ink};
+  --bs-btn-active-color: #{$paper};
+  --bs-btn-active-bg: #{$ink};
+  --bs-btn-disabled-color: #{$graphite};
+  --bs-btn-disabled-border-color: #{$hairline};
+}
+.btn-dark {
+  --bs-btn-bg: #{$ink};
+  --bs-btn-border-color: #{$ink};
+  --bs-btn-hover-bg: #{$paper};
+  --bs-btn-hover-color: #{$ink};
+  --bs-btn-hover-border-color: #{$ink};
+  --bs-btn-active-bg: #{$paper};
+  --bs-btn-active-color: #{$ink};
+  --bs-btn-active-border-color: #{$ink};
+}
+// 深色畫面（播放器、頁尾、「正在播放」方塊）上的按鈕：白框白字，hover 反白
+.btn-outline-light {
+  --bs-btn-color: #{$paper};
+  --bs-btn-border-color: #{$paper};
+  --bs-btn-hover-color: #{$ink};
+  --bs-btn-hover-bg: #{$paper};
+  --bs-btn-hover-border-color: #{$paper};
+  --bs-btn-active-color: #{$ink};
+  --bs-btn-active-bg: #{$paper};
+  --bs-btn-focus-box-shadow: 0 0 0 2px #{$screen}, 0 0 0 4px #{$swiss-red};
+}
+// 紅色帶（首頁底部 CTA）上的按鈕：白底墨黑字，hover 反白成墨黑底
+.btn-paper {
+  --bs-btn-bg: #{$paper};
+  --bs-btn-color: #{$ink};
+  --bs-btn-border-color: #{$paper};
+  --bs-btn-hover-bg: #{$ink};
+  --bs-btn-hover-color: #{$paper};
+  --bs-btn-hover-border-color: #{$ink};
+  --bs-btn-active-bg: #{$ink};
+  --bs-btn-active-color: #{$paper};
+  --bs-btn-active-border-color: #{$ink};
+  --bs-btn-focus-box-shadow: 0 0 0 2px #{$swiss-red}, 0 0 0 4px #{$paper};
+}
+// 文字連結型按鈕：墨黑字＋1px 底線，hover 換瑞士紅；內建 44px 觸控高度，不要再加 py-*
+.btn-text {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: .25rem;
+  --bs-btn-font-weight: #{$font-weight-bold};
+  --bs-btn-color: #{$ink};
+  --bs-btn-hover-color: #{$swiss-red};
+  --bs-btn-active-color: #{$swiss-red};
+  --bs-btn-border-width: 0;
+  --bs-btn-disabled-color: #{$ash};
+  min-height: 2.75rem;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .35em;
+  vertical-align: baseline;
+
+  // 沒有左右內距，box-shadow 焦點環會貼著字；改用有間距的外框
+  &:focus-visible {
+    box-shadow: none;
+    outline: 2px solid $swiss-red;
+    outline-offset: 2px;
+  }
+}
+
+// 核取方塊、radio：只有鍵盤操作時顯示焦點環
+.form-check-input:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+
+// 內文裡沒有 class 的連結
+a:not([class]) {
+  text-underline-offset: .3em;
+  text-decoration-thickness: 1px;
+}
+
+// 表單：錯誤時框線變瑞士紅、加粗，錯誤文字前面加警示圖示（不只靠顏色）
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: $swiss-red;
+  box-shadow: inset 0 0 0 1px $swiss-red;
+  background-image: none;
+  padding-right: $input-padding-x;
+}
+.invalid-feedback {
+  font-weight: $font-weight-medium;
+
+  &::before {
+    content: "\F33A"; // bi-exclamation-octagon-fill
+    font-family: "bootstrap-icons";
+    margin-right: .375rem;
+    vertical-align: -.125em;
+  }
+}
+.form-control::placeholder {
+  letter-spacing: $letter-spacing-body;
+}
+
+// ---------- 標籤 ----------
+// 方框小字：難度、分類、時長、已完課、學習進度、試看、講師課程狀態
+// .tag             墨黑細框＋墨黑字（難度、已完課、學習進度）
+// .tag.is-plain    無框，只有字（分類）
+// .tag.is-solid    墨黑底＋白字（課程封面上的時長、已上架）
+// .tag.is-red      瑞士紅底＋白字（「正在播放」，全站只有這一種紅色標籤）
+// .tag.is-dashed   虛線框（講師課程草稿）
+// .tag.is-muted    石墨灰框字（已下架、鎖定）
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .1875rem .4375rem;
+  border: 1px solid $ink;
+  color: $ink;
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.4;
+  letter-spacing: .04em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+
+  > .bi {
+    font-size: .875rem;
+    line-height: 1;
+  }
+
+  &.is-plain  { padding-inline: 0; border-color: transparent; }
+  &.is-solid  { background-color: $ink; border-color: $ink; color: $paper; }
+  &.is-red    { background-color: $swiss-red; border-color: $swiss-red; color: $paper; }
+  &.is-dashed { border-style: dashed; }
+  &.is-muted  { border-color: $graphite; color: $graphite; }
+}
+
+// ---------- 文字頭像：講師的姓（圓形） ----------
+// <span class="avatar-text" aria-hidden="true">林</span>
+.avatar-text {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: $border-radius-pill;
+  background-color: $ink;
+  color: $paper;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+// ---------- 星等 ----------
+// <span class="stars" role="img" aria-label="5 顆星"><i class="bi bi-star-fill"></i>…</span>
+.stars {
+  display: inline-flex;
+  gap: .125rem;
+  color: $ink;
+  font-size: .875rem;
+  line-height: 1;
+}
+
+// ---------- 圖示清單（購買包含、學習保障） ----------
+.icon-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    display: flex;
+    gap: .75rem;
+    padding-block: .625rem;
+    border-top: $rule-thin solid $hairline;
+
+    &:first-child { border-top: 0; }
+  }
+  .bi {
+    flex: 0 0 auto;
+    font-size: 1.125rem;
+    line-height: 1.5556; // 與 16px 內文的 28px 行高對齊（28 ÷ 18）
+  }
+}
+
+// ---------- 長條（評價分佈、Guideline 示範）：墨黑長條＋霧面軌道 ----------
+.bar {
+  position: relative;
+  height: .5rem;
+  background-color: $fog;
+
+  > span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background-color: $ink;
+  }
+}
+
+// ---------- 底線式分頁籤（學習頁、Guideline） ----------
+// 目前分頁：墨黑粗體＋3px 墨黑底線；其他分頁石墨灰
+.nav-underline {
+  --bs-nav-underline-gap: 2rem;
+  --bs-nav-underline-border-width: 3px;
+  --bs-nav-underline-link-active-color: #{$ink};
+  --bs-nav-link-font-weight: #{$font-weight-medium};
+  border-bottom: $rule-thin solid $ink;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  .nav-link {
+    min-width: 2.75rem;
+    padding-block: .75rem;
+    margin-bottom: -1px; // 底線壓在 1px 墨黑線上
+    color: $graphite;
+    white-space: nowrap;
+
+    &:hover {
+      color: $ink;
+      border-bottom-color: $hairline;
+    }
+  }
+  .nav-link.active {
+    font-weight: $font-weight-bold;
+    border-bottom-color: $ink;
+  }
+  // 捲動容器會裁掉外擴的焦點環，改畫在內側
+  .nav-link:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px $swiss-red;
+  }
+  .nav-link:not(.active):focus:not(:focus-visible) {
+    border-bottom-color: transparent;
+  }
+
+  @include media-breakpoint-down(md) {
+    --bs-nav-underline-gap: 1.5rem;
+  }
+}
+
+// ---------- 切換鈕（最有幫助／最新） ----------
+// btn-check＋btn-group：選中是墨黑底白字
+.btn-group-toggle {
+  .btn {
+    --bs-btn-padding-y: .5625rem;
+    --bs-btn-padding-x: 1rem;
+    --bs-btn-font-size: #{$font-size-sm};
+    --bs-btn-font-weight: #{$font-weight-medium};
+  }
+  .btn-check:checked + .btn {
+    font-weight: $font-weight-bold;
+  }
+}
+
+// ---------- 麵包屑：連結石墨灰，目前頁墨黑；項目不從中間斷行 ----------
+.breadcrumb {
+  align-items: center;
+}
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+
+  &.active {
+    white-space: normal;
+  }
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem; // 觸控目標 44px
+  color: $body-secondary-color;
+  text-decoration: none;
+
+  &:hover {
+    color: $ink;
+    text-decoration: underline;
+  }
+}
+
+// ---------- 浮層：不用陰影，用墨黑框線和頁面分開 ----------
+.dropdown-menu {
+  --bs-dropdown-link-active-bg: #{$ink};
+}
+.dropdown-item {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.modal-title {
+  font-size: $h3-font-size;
+  font-weight: $font-weight-bold;
+}
+
+// ---------- 鍵盤焦點 ----------
+// 一律是瑞士紅 2px 實線，外推 2px 露出底色當間隙
+:focus-visible {
+  outline: 2px solid $swiss-red;
+  outline-offset: 2px;
+}
+.offcanvas:focus-visible,
+.offcanvas-lg:focus-visible,
+.modal:focus-visible,
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+.btn:focus-visible,
+.btn-close:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible,
+.accordion-button:focus-visible,
+.page-link:focus-visible {
+  outline: none;
+}
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: $zindex-fixed + 10;
+  padding: .5rem 1rem;
+  background: $ink;
+  color: $paper;
+  font-weight: $font-weight-bold;
+
+  &:focus {
+    top: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
+
+// ---------- 內頁頁首（課程列表、課程詳情、學習頁） ----------
+// 麵包屑 →（標題）→ 說明，間距固定
+// <header class="page-header">
+//   <nav aria-label="目前位置"><ol class="breadcrumb">…</ol></nav>
+//   <h1>探索課程</h1>
+//   <p class="page-lead">…</p>
+// </header>
+.page-header {
+  padding-top: map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 4);
+    margin-bottom: map-get($spacers, 6);
+  }
+
+  .breadcrumb {
+    margin-bottom: 0;
+  }
+}
+.page-lead {
+  max-width: 30em;
+  margin-bottom: 0;
+  color: $body-secondary-color;
+  font-size: $font-size-lg;
+}
+
+// ---------- 手機滿版橫向捲動列 ----------
+// 手機（< 576px）時讓橫向捲動列貼齊螢幕兩側，內容起點仍對齊版心
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+    scroll-padding-inline: $container-padding-x * .5;
+  }
+}
+.bleed-x {
+  @include bleed-x;
+}
+
+// ---------- 設計稿狀態示意（課程列表、課程詳情、學習頁） ----------
+// 頁面底部示範「另一種狀態」的畫面：以虛線和正式內容分開，標籤寫明「設計稿狀態示意」
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag">設計稿狀態示意</p>
+//   <div class="demo-state-item">
+//     <h2 id="…" class="demo-state-title">篩選沒有結果時</h2>
+//     <p class="text-note">什麼情況下出現</p>
+//     <div class="demo-state-stage">…示意畫面…</div>
+//   </div>
+// </section>
+.demo-state {
+  margin-top: map-get($spacers, 8);
+  padding-top: map-get($spacers, 4);
+  border-top: 2px dashed $ink;
+}
+.demo-state-tag {
+  display: inline-block;
+  margin-bottom: map-get($spacers, 4);
+  padding: .125rem .5rem;
+  border: 1px dashed $ink;
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: .04em;
+}
+.demo-state-item + .demo-state-item {
+  margin-top: map-get($spacers, 7);
+}
+.demo-state-title {
+  margin-bottom: map-get($spacers, 1);
+  font-size: $h3-font-size;
+}
+.demo-state-item > .text-note {
+  margin-bottom: map-get($spacers, 3);
+}
+// 示範畫面的外框：虛線＋霧面，表示這是示意
+.demo-state-stage {
+  padding: map-get($spacers, 4);
+  border: 1px dashed $graphite;
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 5);
+  }
+}
+
+// ---------- 空狀態 ----------
+// 圖示 → 一句說明 → 一個動作；靠左、不加框、不加底色，起點與原本的列表相同
+// <div class="empty-state">
+//   <i class="bi bi-…" aria-hidden="true"></i>
+//   <p>…</p>
+//   <a class="btn btn-primary" href="…">…</a>
+// </div>
+.empty-state {
+  padding-block: map-get($spacers, 6);
+  border-top: $rule-heavy solid $rule;
+
+  > .bi {
+    display: block;
+    margin-bottom: map-get($spacers, 3);
+    font-size: 2rem;
+    line-height: 1;
+  }
+  > p {
+    max-width: 26em;
+    margin-bottom: map-get($spacers, 4);
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+  }
+}
+
+// ---------- 全頁網格覆蓋（Guideline 的「顯示網格」切換鈕，js/main.js 第 5 項） ----------
+// 在 <html> 加上 .show-grid：畫面最上層出現 12 欄的半透明紅色欄位，用來檢查對齊
+.grid-overlay {
+  display: none;
+}
+.show-grid .grid-overlay {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: $zindex-fixed + 20;
+  pointer-events: none;
+
+  .container,
+  .row {
+    height: 100%;
+  }
+  .col {
+    height: 100%;
+
+    &::before {
+      content: "";
+      display: block;
+      height: 100%;
+      background-color: rgba($swiss-red, .08);
+      border-inline: 1px solid rgba($swiss-red, .35);
+    }
+  }
+}
+
+// ---------- 登入對話框（每頁共用，templates/page.html） ----------
+// 購買情境的提示列：墨黑 2px 左線＋鎖頭圖示，文字粗體（不用紅，紅色留給「登入並開始上課」按鈕）
+.auth-notice {
+  display: flex;
+  gap: .625rem;
+  margin-bottom: map-get($spacers, 4);
+  padding: .75rem 1rem;
+  border-left: 4px solid $ink;
+  background-color: $fog;
+  font-weight: $font-weight-bold;
+
+  &[hidden] {
+    display: none;
+  }
+  .bi {
+    line-height: inherit;
+  }
+}
+.auth-switch {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: map-get($spacers, 3) 0 0;
+  padding-top: map-get($spacers, 3);
+  border-top: $rule-thin solid $hairline;
+  font-size: $font-size-sm;
+}

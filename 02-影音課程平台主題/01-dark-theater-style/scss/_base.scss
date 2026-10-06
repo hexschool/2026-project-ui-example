@@ -1,0 +1,680 @@
+// ============================================================
+// 全站基礎：字體、字距、區塊節奏、焦點、共用小工具
+// 以及本風格的共用類別：.lit（亮燈 hover）、.avatar-text（文字頭像）、.stars（星等）
+// ============================================================
+
+// 單一深色主題：讓瀏覽器原生的捲軸、日期選擇器、下拉選單清單也用深色
+:root {
+  color-scheme: dark;
+  accent-color: $glow;
+}
+
+body {
+  letter-spacing: $letter-spacing-body;
+  -webkit-font-smoothing: antialiased; // 深色底上的淺色字，不加會顯得太粗
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+// 標題：Noto Sans TC。h1、h2 與 display 用 300 細字＋寬字距（片頭字卡），h3 以下用 500 才撐得住小字級
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  letter-spacing: $letter-spacing-heading;
+  text-wrap: balance; // 標題多行時平均分配，避免最後一行只剩一兩個字
+}
+h1, .h1, h2, .h2 {
+  font-weight: $font-weight-light;
+}
+h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
+  font-weight: $font-weight-medium;
+  letter-spacing: $letter-spacing-label;
+}
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty; // 內文避免孤字
+}
+
+// sticky 頁首不遮住焦點與錨點目標（值同 $sticky-top-offset）
+html {
+  scroll-padding-top: $sticky-top-offset;
+}
+
+// 反白選取：冷藍三成混入深空黑（純白字 9.6:1）
+::selection {
+  background-color: $mark-bg;
+  color: $white;
+}
+
+// ---------- 字體與數字 ----------
+// Jost：品牌字、價格、片長、時間碼、評分、百分比
+.font-display {
+  font-family: $font-family-display;
+  letter-spacing: .04em;
+}
+// 數字：一律等寬（tabular-nums），上下對齊、時間碼跳動時不會左右晃
+// .num：一般數字（單元編號、人數、日期）；.price：價格（純白、500）；.timecode：片長與播放時間
+.num,
+.price,
+.timecode {
+  font-family: $font-family-display;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: .03em;
+}
+.price {
+  font-weight: $font-weight-medium;
+  color: $white;
+  white-space: nowrap;
+}
+.timecode {
+  white-space: nowrap;
+}
+
+// 次要說明文字
+.text-note {
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+  letter-spacing: $letter-spacing-label;
+}
+
+// ---------- 區塊節奏 ----------
+// 區塊上下留白：手機 64px → 桌機 96px → 1200 以上 112px
+.section {
+  padding-block: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7);
+  }
+  @include media-breakpoint-up(xl) {
+    padding-block: map-get($spacers, 7) + 1rem;
+  }
+}
+// 相鄰的兩個區塊之間用髮絲線分隔
+.section + .section {
+  border-top: 1px solid $line;
+}
+.section-alt {
+  background-color: $booth;
+}
+
+// 區塊標題：標題＋一句說明，靠左對齊；右側可放一個「看更多」連結（.section-heading-link）
+// 576px 以上左右排、底部對齊；以下上下排，連結移到內容下方（各頁用 .d-sm-none 另放一份）
+.section-heading {
+  margin-bottom: map-get($spacers, 5);
+
+  @include media-breakpoint-up(sm) {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: map-get($spacers, 4);
+  }
+
+  h2,
+  .h2 {
+    margin-bottom: map-get($spacers, 2);
+  }
+  p {
+    margin-bottom: 0;
+    color: $body-secondary-color;
+    max-width: 36em;
+  }
+}
+.section-heading-link {
+  flex-shrink: 0;
+}
+
+// 髮絲分隔線
+.rule {
+  border: 0;
+  border-top: 1px solid $line;
+  opacity: 1;
+  margin: 0;
+}
+
+// ---------- 圖片框：固定比例、裁切填滿 ----------
+// 底色用放映室，圖片載入前不會閃白
+.img-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.img-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: $border-radius-lg;
+  background-color: $booth;
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+// ---------- 亮燈：本風格的 hover／focus 共通語言 ----------
+// 靜止時畫面略暗（熄燈），滑鼠移上或鍵盤聚焦時亮起，外圈浮出冷藍柔光。
+// 用法：在可點的卡片外層加 .lit，裡面要變亮的圖片加 .lit-media
+// <article class="course-card lit"> <div class="lit-media"><img …></div> … </article>
+// 觸控裝置沒有 hover：圖片直接是亮的，不必等手指按住
+.lit {
+  transition: box-shadow $glow-transition, border-color $glow-transition;
+}
+.lit-media img {
+  filter: brightness($media-dim);
+  transition: filter $glow-transition, transform .8s ease;
+}
+.lit:hover,
+.lit:focus-within,
+.lit.is-lit { // .is-lit：固定成亮燈狀態（Guideline 示範用）
+  border-color: rgba($glow, .5);
+  box-shadow: $glow-halo;
+
+  .lit-media img {
+    filter: brightness($media-lit);
+  }
+}
+@media (hover: none) {
+  .lit-media img {
+    filter: brightness($media-lit);
+  }
+}
+
+// ---------- 按鈕 ----------
+// 主要：.btn-primary（冷藍底＋深空黑字），同一組動作只放一個；hover 冷藍淡＋柔光
+// 次要：.btn-outline-light（透明底＋純白細框），hover 反白
+// 冷藍細框：.btn-outline-primary，用在「免費試看」這種想讓人先按的低門檻動作
+// 文字連結：.btn-text
+.btn {
+  letter-spacing: $letter-spacing-label;
+  transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow $glow-transition;
+  // 焦點：深空黑間隙＋冷藍外圈，所有按鈕一致
+  --bs-btn-focus-box-shadow: #{$focus-ring-double};
+
+  .bi {
+    margin-inline-end: .375rem;
+  }
+}
+.btn-primary {
+  --bs-btn-hover-bg: #{$glow-soft};
+  --bs-btn-hover-border-color: #{$glow-soft};
+  --bs-btn-active-bg: #{$glow-soft};
+  --bs-btn-active-border-color: #{$glow-soft};
+
+  &:hover {
+    box-shadow: $glow-halo-lg;
+  }
+  &:focus-visible {
+    box-shadow: $focus-ring-double, $glow-halo-lg;
+  }
+}
+.btn-outline-primary {
+  --bs-btn-hover-color: #{$space};
+  --bs-btn-active-color: #{$space};
+  --bs-btn-active-bg: #{$glow-soft};
+  --bs-btn-active-border-color: #{$glow-soft};
+  // 停用：冷藍深框字、不再疊透明度
+  --bs-btn-disabled-color: #{$dim};
+  --bs-btn-disabled-border-color: #{$line-strong};
+  --bs-btn-disabled-opacity: 1;
+
+  &:hover {
+    box-shadow: $glow-halo-sm;
+  }
+}
+.btn-outline-light {
+  --bs-btn-color: #{$white};
+  --bs-btn-border-color: #{rgba($white, .6)}; // 框線 60% 純白（對深空黑 7.3:1），比字淡一階
+  --bs-btn-hover-color: #{$space};
+  --bs-btn-hover-bg: #{$white};
+  --bs-btn-hover-border-color: #{$white};
+  --bs-btn-active-color: #{$space};
+  --bs-btn-active-bg: #{$mist};
+  --bs-btn-active-border-color: #{$mist};
+  --bs-btn-disabled-color: #{$dim};
+  --bs-btn-disabled-border-color: #{$line-strong};
+  // 停用色已經調暗，不再疊 Bootstrap 的 .4 透明度
+  --bs-btn-disabled-opacity: 1;
+}
+// 文字連結型按鈕：底線（冷藍深）、無外框
+.btn-text {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: .25rem;
+  --bs-btn-font-weight: #{$font-weight-normal};
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem; // 觸控目標 44px，視覺上仍是一行文字連結
+  --bs-btn-color: #{$white};
+  --bs-btn-hover-color: #{$glow};
+  --bs-btn-active-color: #{$glow};
+  --bs-btn-border-width: 0;
+  text-decoration: underline;
+  text-decoration-color: $glow-deep;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .4em;
+  vertical-align: baseline;
+
+  &:hover { text-decoration-color: currentColor; }
+  // 沒有左右內距，box-shadow 焦點環會貼著字；改用有間距的外框
+  &:focus-visible {
+    box-shadow: none;
+    outline: 2px solid $glow;
+    outline-offset: 4px;
+    border-radius: $border-radius-sm;
+  }
+  // 沒有 href 的佔位連結（忘記密碼、立即註冊）：游標維持箭頭
+  &:not([href]):not(button) {
+    cursor: default;
+  }
+}
+
+// 核取方塊、radio：只有鍵盤操作時顯示焦點環，滑鼠或手指點完不留光暈
+.form-check-input:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+// 核取方塊、radio 的點擊範圍：整列 44px 高
+.form-check {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  padding-left: 0;
+  margin-bottom: 0;
+
+  .form-check-input {
+    float: none;
+    flex-shrink: 0;
+    margin: 0;
+  }
+  .form-check-label {
+    flex-grow: 1;
+    padding-block: .5rem;
+    cursor: pointer;
+  }
+}
+
+// 內文裡沒有 class 的連結：冷藍深底線，hover 換成文字色
+a:not([class]) {
+  text-decoration-color: $glow-deep;
+  text-underline-offset: .35em;
+
+  &:hover { text-decoration-color: currentColor; }
+}
+// 頁尾等處沒有 href 的佔位連結：不顯示底線與手指游標
+a:not([href]) {
+  cursor: default;
+}
+
+// ---------- 表單微調 ----------
+.form-control,
+.form-select {
+  caret-color: $glow;
+}
+// 瀏覽器自動填入時不要變成淺藍底
+.form-control:-webkit-autofill {
+  -webkit-text-fill-color: $white;
+  box-shadow: inset 0 0 0 100px $booth;
+}
+.form-control:-webkit-autofill:focus {
+  box-shadow: inset 0 0 0 100px $booth, $input-focus-box-shadow;
+}
+
+// ---------- 分頁籤：底線式（學習頁、Guideline 共用） ----------
+// 目前分頁：純白字＋冷藍 2px 底線（帶一點柔光）；其他分頁銀幕灰
+.nav-tabs {
+  --bs-nav-tabs-border-width: 1px;
+  --bs-nav-tabs-border-radius: 0;
+  gap: map-get($spacers, 4);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  .nav-link {
+    position: relative;
+    min-width: 2.75rem;
+    margin-bottom: 0;
+    padding: .875rem 0;
+    border: 0;
+    color: $body-secondary-color;
+    letter-spacing: $letter-spacing-label;
+    white-space: nowrap;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 2px;
+      border-radius: $border-radius-pill;
+      background-color: transparent;
+      transition: background-color .2s ease, box-shadow $glow-transition;
+    }
+    &:hover {
+      color: $white;
+      &::after { background-color: $line-strong; }
+    }
+    // 捲動容器會裁掉外擴的焦點環，改畫在內側
+    &:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 2px $glow;
+      border-radius: $border-radius-sm;
+    }
+  }
+  .nav-link.active {
+    color: $white;
+    background-color: transparent;
+
+    &::after {
+      background-color: $glow;
+      box-shadow: $glow-halo-sm;
+    }
+  }
+}
+
+// ---------- 麵包屑：連結用銀幕灰、無底線，目前頁用純白；單一項目不從中間斷行 ----------
+.breadcrumb {
+  align-items: center;
+  letter-spacing: $letter-spacing-label;
+}
+.breadcrumb-item {
+  display: flex; // 讓分隔符（::before）與 44px 高的連結垂直置中
+  align-items: center;
+  white-space: nowrap;
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem; // 觸控目標 44px
+  color: $body-secondary-color;
+  text-decoration: none;
+
+  &:hover {
+    color: $glow;
+    text-decoration: underline;
+  }
+}
+
+// 浮層陰影：$enable-shadows 關閉時 Bootstrap 不會輸出，這裡手動套用
+.dropdown-menu {
+  box-shadow: var(--bs-dropdown-box-shadow);
+}
+.modal-content {
+  box-shadow: $box-shadow-lg;
+}
+
+// ---------- 鍵盤焦點 ----------
+// 一律是冷藍 2px 實線，外推 2px 露出底色當間隙（11.0:1）
+:focus-visible {
+  outline: 2px solid $glow;
+  outline-offset: 2px;
+}
+// offcanvas、modal 開啟時焦點會落在容器本身，不需要外框
+.offcanvas:focus-visible,
+.modal:focus-visible,
+.toast:focus-visible {
+  outline: 0;
+}
+// 程式移動焦點的目標（main、錨點區塊）不畫外框
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+// 按鈕、表單控制項由 Bootstrap 的 box-shadow 畫焦點，不再疊一層 outline
+.btn:focus-visible,
+.btn-close:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible {
+  outline: none;
+}
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: $zindex-fixed + 10;
+  padding: .5rem 1rem;
+  border-radius: $border-radius-pill;
+  background: $glow;
+  color: $space;
+  &:focus { top: 1rem; }
+}
+
+// 減少動態：關掉亮燈與控制列的轉場，只保留狀態切換
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+// ---------- 頁首區塊節奏（課程列表、課程詳情、學習頁、Guideline 共用） ----------
+// 用法：
+// <header class="page-header">
+//   <nav aria-label="目前位置"><ol class="breadcrumb">…</ol></nav>
+//   <h1>頁面標題</h1>
+//   <p class="page-lead">一句說明</p>
+// </header>
+// 課程詳情與學習頁的標題在播放器下方，只放麵包屑（加 .is-compact）
+.page-header {
+  padding-top: map-get($spacers, 3);          // 手機 16px（麵包屑本身有 44px 高）
+  margin-bottom: map-get($spacers, 5);        // 到第一個內容區塊 48px
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 4);        // 桌機 24px
+    margin-bottom: map-get($spacers, 5) + 1rem; // 桌機 64px
+  }
+
+  > nav {
+    margin-bottom: map-get($spacers, 3);
+  }
+  .breadcrumb {
+    margin-bottom: 0;
+  }
+  h1,
+  .h1 {
+    margin-bottom: map-get($spacers, 2);
+  }
+
+  &.is-compact {
+    margin-bottom: map-get($spacers, 3);
+
+    > nav { margin-bottom: 0; }
+  }
+}
+.page-lead {
+  max-width: 36em;
+  margin-bottom: 0;
+  color: $body-secondary-color;
+}
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、標點與 <wbr> 處換行，課程名稱的「｜」前後不會被拆開；整段放不下時才強制斷行
+// 用在課程名稱、短標題；長段落不要用（會讓行尾參差）
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  // 斷點已經用 <wbr> 標好，不需要 balance；balance 會為了平均行長把「｜」拆到下一行開頭
+  text-wrap: pretty;
+}
+
+// ---------- 手機滿版橫向捲動列 ----------
+// 手機（< 576px）時 container 沒有最大寬，讓橫向捲動列貼齊螢幕兩側，內容起點仍對齊版心
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+  }
+}
+.bleed-x {
+  @include bleed-x;
+}
+
+// ---------- 文字頭像：講師的姓，放在圓形裡（課程卡、評價卡） ----------
+// <span class="avatar-text" aria-hidden="true">林</span>林子謙
+.avatar-text {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid $line-strong;
+  border-radius: 50%;
+  background-color: $aisle;
+  color: $white;
+  font-size: .875rem;
+  font-weight: $font-weight-medium;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+// ---------- 星等 ----------
+// 圖示是裝飾，數字與 aria-label 才是資訊：<span class="stars" role="img" aria-label="5 顆星">…</span>
+.stars {
+  display: inline-flex;
+  gap: .125rem;
+  color: $glow;
+  font-size: .875rem;
+  line-height: 1;
+}
+// 數字評分：「★ 4.9」
+.rating {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  white-space: nowrap;
+
+  .bi {
+    color: $glow;
+  }
+}
+
+// ---------- 設計稿狀態示意（課程列表、課程詳情、學習頁共用） ----------
+// 頁面底部示範「另一種狀態」的畫面：以虛線和正式內容分開，標籤寫明「設計稿狀態示意」，避免被當成正式內容
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag">設計稿狀態示意</p>
+//   <h2 id="…" class="demo-state-heading">這一頁的其他狀態</h2>
+//   <div class="demo-state-item">
+//     <h3 class="demo-state-title">篩選沒有結果時</h3>
+//     <p class="text-note">什麼情況下出現、畫面哪裡會改變</p>
+//     <div class="demo-state-stage">…示意畫面…</div>
+//   </div>
+// </section>
+.demo-state {
+  margin-top: map-get($spacers, 6);
+  padding-top: map-get($spacers, 4);
+  border-top: 1px dashed $line-strong;
+}
+.demo-state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: map-get($spacers, 3);
+  padding: .125rem .75rem;
+  border: 1px dashed $control;
+  border-radius: $border-radius-pill;
+  color: $body-secondary-color;
+  font-size: .75rem;
+  letter-spacing: $letter-spacing-label;
+}
+.demo-state-heading {
+  margin-bottom: map-get($spacers, 4);
+  font-size: $h3-font-size;
+}
+.demo-state-item + .demo-state-item {
+  margin-top: map-get($spacers, 5);
+}
+.demo-state-title {
+  margin-bottom: map-get($spacers, 1);
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  letter-spacing: $letter-spacing-body;
+  color: $white;
+}
+.demo-state-item > .text-note {
+  margin-bottom: map-get($spacers, 3);
+}
+// 狀態示意裡的「示範畫面」外框：虛線表示這是示意，不是正式版面的一部分
+.demo-state-stage {
+  padding: map-get($spacers, 4);
+  border: 1px dashed $line-strong;
+  border-radius: $border-radius-lg;
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 4) + .5rem;
+  }
+}
+
+// ---------- 空狀態（課程列表、學習頁、Guideline 共用） ----------
+// 圖示 → 一句說明 → 一個動作；靠左、不加框
+// <div class="empty-state">
+//   <i class="bi bi-collection-play empty-state-icon" aria-hidden="true"></i>
+//   <p>你還沒有進行中的課程，先從一支免費試看開始。</p>
+//   <a class="btn btn-primary" href="courses.html">探索課程</a>
+// </div>
+.empty-state {
+  > p {
+    max-width: 30em;
+    margin-bottom: map-get($spacers, 4);
+    color: $white;
+  }
+}
+.empty-state-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: map-get($spacers, 3);
+  border: 1px solid $line-strong;
+  border-radius: 50%;
+  color: $silver;
+  font-size: 1.5rem;
+}
+
+// ---------- 資訊列：拆開排的多項資訊（課程資訊標籤列、評價署名） ----------
+// <ul class="meta-list"><li>入門</li><li>6 章 28 單元</li></ul>：項目之間用細直線分隔
+.meta-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: $body-secondary-color;
+
+  > li {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    white-space: nowrap;
+  }
+  // 768px 以上：項目之間一條細直線；以下改用間距，換行時行首不會出現孤零零的分隔線
+  @include media-breakpoint-up(md) {
+    > li + li::before {
+      content: "";
+      width: 1px;
+      height: .875em;
+      margin-inline: .875rem;
+      background-color: $line-strong;
+    }
+  }
+  @include media-breakpoint-down(md) {
+    column-gap: 1.25rem;
+  }
+}
+
+// ---------- 992px 以上的 .offcanvas-lg（課程列表篩選、學習頁側欄）----------
+// 992px 以上它就是一般側欄，不需要抽屜的轉場；拿掉轉場，視窗寬度跨過 992px（或整頁截圖）時內容才不會短暫消失
+@include media-breakpoint-up(lg) {
+  .offcanvas-lg {
+    transition: none;
+  }
+}

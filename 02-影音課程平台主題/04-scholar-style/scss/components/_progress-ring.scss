@@ -1,0 +1,162 @@
+// ============================================================
+// 本風格招牌：細緻的進度圓環（Notion：「進度圓環細緻」）
+// 規則：圓環只表示「學習完成度」（整門課、章節）；影片播放時間一律用細線進度條（_player.scss）
+//
+// 原理：SVG <circle> 加上 pathLength，就能用「份數」畫弧線，不必計算圓周長
+//   - pathLength="100"：stroke-dasharray: 50 100 ＝ 畫一半（50%）
+//   - pathLength="28"：一格＝一個單元，28 個單元就是 28 格刻度
+// 圓形路徑預設從 3 點鐘方向開始，整個 SVG 轉 -90 度，讓進度從 12 點鐘開始順時針走
+// ============================================================
+
+// ---------- 進度羅盤（學習頁側欄、Guideline）----------
+// <div class="progress-ring" style="--value: 50" role="progressbar" aria-valuenow="50" …>
+//   <svg viewBox="0 0 120 120" aria-hidden="true">
+//     <circle class="progress-ring-ticks" cx="60" cy="60" r="56" pathLength="28"/>                       ← 28 格單元刻度
+//     <circle class="progress-ring-ticks is-done" … stroke-dasharray="…"/>                                ← 已完成的單元
+//     <circle class="progress-ring-ticks is-current" … stroke-dasharray="0 10 .12 17.88"/>                ← 目前單元（第 11 格）
+//     <circle class="progress-ring-track" cx="60" cy="60" r="47"/>                                       ← 1px 軌道
+//     <circle class="progress-ring-bar" cx="60" cy="60" r="47" pathLength="100"/>                         ← 2px 完成弧線
+//   </svg>
+//   <p class="progress-ring-value"><span class="num">50</span>%</p>
+// </div>
+.progress-ring {
+  --value: 0;
+  position: relative;
+  flex: 0 0 auto;
+  width: 7.5rem;
+  height: 7.5rem;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    overflow: visible;
+  }
+  circle {
+    fill: none;
+  }
+}
+.progress-ring-track {
+  stroke: $ring-track-color;
+  stroke-width: $ring-track-width;
+}
+.progress-ring-bar {
+  stroke: $ring-bar-color;
+  stroke-width: $ring-bar-width;
+  stroke-linecap: round;
+  stroke-dasharray: var(--value) 100;
+  transition: stroke-dasharray .6s ease;
+}
+// 單元刻度：每格 1 單位，刻度寬 .12 格（約 1.5px）、徑向長 6px；dashoffset 讓刻度落在每格中間
+.progress-ring-ticks {
+  stroke: $ring-tick-color;
+  stroke-width: 6;
+  stroke-dasharray: .12 .88;
+  stroke-dashoffset: -.44;
+
+  &.is-done { stroke: $ring-tick-done; }
+  &.is-current {
+    stroke: $ring-tick-current;
+    stroke-width: 10; // 目前單元的刻度較長，往內外各多 2px
+  }
+}
+.progress-ring-value {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  margin: 0;
+  font-family: $font-family-serif;
+  font-size: 1rem;
+  font-weight: $font-weight-semibold;
+  color: $ink-muted;
+
+  .num {
+    font-size: 1.875rem;
+    line-height: 1;
+    color: $ink;
+  }
+  // 「50」與「%」放在同一行
+  > span {
+    display: inline-flex;
+    align-items: baseline;
+    gap: .125rem;
+  }
+}
+
+// 圓環＋文字的組合（學習頁側欄「你的學習進度」）
+.progress-ring-group {
+  display: flex;
+  align-items: center;
+  gap: map-get($spacers, 4);
+}
+.progress-ring-text {
+  margin: 0;
+  font-size: $font-size-sm;
+  line-height: 1.7;
+  color: $ink-muted;
+
+  strong {
+    display: block;
+    font-weight: $font-weight-medium;
+    color: $ink;
+  }
+}
+
+// ---------- 迷你圓環（章節列、手機抽屜按鈕、評價的學習進度）----------
+// <svg class="ring-mini" viewBox="0 0 24 24" style="--value: 17" aria-hidden="true">
+//   <circle class="ring-mini-track" cx="12" cy="12" r="10"/>
+//   <circle class="ring-mini-bar" cx="12" cy="12" r="10" pathLength="100"/>
+//   <path class="ring-mini-check" d="M7.5 12.5l3 3 6-6.5"/>   ← 已完成時加
+//   <path class="ring-mini-play" d="M10 8.5v7l5.5-3.5z"/>     ← 目前章節時加
+// </svg>
+// 圓環本身不能代替文字：旁邊一定要有「4／4」這類數字，或 visually-hidden 的狀態文字
+.ring-mini {
+  --value: 0;
+  display: block;
+  flex: 0 0 auto;
+  width: 1.375rem;
+  height: 1.375rem;
+  overflow: visible;
+
+  circle {
+    fill: none;
+    transform: rotate(-90deg);
+    transform-origin: center;
+  }
+}
+.ring-mini-track {
+  stroke: $ring-track-color;
+  stroke-width: 1.5;
+}
+.ring-mini-bar {
+  stroke: $ring-bar-color;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: var(--value) 100;
+}
+// 未開始（--value: 0）加 .is-empty：不畫弧線，避免圓頭線帽留下一個點
+.ring-mini.is-empty .ring-mini-bar {
+  display: none;
+}
+.ring-mini-check {
+  fill: none;
+  stroke: $bamboo;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ring-mini-play {
+  fill: $bamboo;
+}
+
+// 載入時圓環從 0 畫到目前的值（只做一次，prefers-reduced-motion 時關閉）
+@media (prefers-reduced-motion: no-preference) {
+  .progress-ring-bar {
+    animation: ring-draw 1.2s cubic-bezier(.3, .7, .2, 1) both;
+  }
+}
+@keyframes ring-draw {
+  from { stroke-dasharray: 0 100; }
+}

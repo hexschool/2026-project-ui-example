@@ -1,0 +1,322 @@
+// ============================================================
+// 首頁 index.html
+// ============================================================
+
+// ---------- 區塊一：全螢幕主視覺 ----------
+// 高度：992px 以上＝一個視窗扣掉頁首（至少 560px）；以下 480～560px
+// 大圖滿版到螢幕兩側；左側與底部壓暗（文字可讀），四角暗角像放映廳
+.home-hero {
+  --hero-h: clamp(30rem, 72svh, 35rem);
+  position: relative;
+  isolation: isolate;
+
+  @include media-breakpoint-up(lg) {
+    --hero-h: max(35rem, calc(100svh - #{$site-header-height}));
+    min-height: var(--hero-h);
+  }
+}
+.home-hero-media {
+  position: absolute;
+  inset: 0 0 auto;
+  height: var(--hero-h);
+  z-index: -1;
+  background-color: $screen;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 72% 40%; // 手與碗在右上；窄螢幕時往右裁，保留主體
+    display: block;
+  }
+  // 壓暗：左側（標題）、底部（接到頁面底色）、四角暗角
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to top, $space 0%, rgba($space, .6) 22%, rgba($space, 0) 50%),
+      linear-gradient(to right, rgba($space, .85) 0%, rgba($space, .4) 45%, rgba($space, 0) 70%),
+      radial-gradient(120% 90% at 60% 40%, rgba($space, 0) 55%, rgba($space, .6) 100%);
+  }
+
+  @include media-breakpoint-down(lg) {
+    // 手機：主體在右上，往上壓暗多一點，讓置底的標題有乾淨的背景
+    &::after {
+      background:
+        linear-gradient(to top, $space 0%, rgba($space, .85) 35%, rgba($space, .2) 70%, rgba($space, 0) 100%),
+        radial-gradient(120% 90% at 60% 30%, rgba($space, 0) 55%, rgba($space, .5) 100%);
+    }
+  }
+}
+.home-hero-inner {
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    align-items: end;
+    gap: map-get($spacers, 5);
+    min-height: var(--hero-h);
+    padding-block: map-get($spacers, 6);
+  }
+}
+.home-hero-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: var(--hero-h);
+  padding-bottom: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    min-height: 0;
+    padding-bottom: 0;
+  }
+}
+// 主標：細字大標＋寬字距，像片頭字卡
+.home-hero-title {
+  max-width: 13em;
+  margin-bottom: map-get($spacers, 3);
+  font-size: 1.875rem; // 手機：「把想學很久的那件事，」10 個字要放得進一行（390px 寬）
+  font-weight: $font-weight-light;
+  line-height: 1.4;
+  letter-spacing: .06em;
+
+  @include media-breakpoint-up(sm) {
+    letter-spacing: .1em;
+  }
+
+  @include media-breakpoint-up(md) {
+    font-size: 3rem;
+  }
+  @include media-breakpoint-up(xl) {
+    font-size: 3.75rem;
+  }
+}
+.home-hero-lead {
+  max-width: 30em;
+  margin-bottom: map-get($spacers, 4);
+  color: $mist;
+  font-size: 1rem;
+  letter-spacing: .06em;
+
+  @include media-breakpoint-up(md) {
+    margin-bottom: map-get($spacers, 5);
+    font-size: $font-size-lg;
+  }
+}
+.home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem 1rem;
+
+  @include media-breakpoint-down(sm) {
+    .btn {
+      flex: 1 1 100%;
+    }
+  }
+}
+// 正在播放小卡：992px 以上壓在大圖右下角；以下排在大圖下方
+.home-hero .now-playing {
+  @include media-breakpoint-up(lg) {
+    justify-self: end;
+  }
+  @include media-breakpoint-down(lg) {
+    max-width: none;
+    margin-top: map-get($spacers, 2);
+    background-color: $booth;
+  }
+}
+
+// ---------- 區塊二：學得完的理由 ----------
+.home-why-title {
+  margin-bottom: map-get($spacers, 5);
+}
+// 4 欄之間用直的髮絲線分隔（992px 以上）
+.home-why-list {
+  > li {
+    p {
+      margin: 0;
+      color: $body-secondary-color;
+      max-width: 20em;
+    }
+  }
+  @include media-breakpoint-up(lg) {
+    > li + li {
+      border-left: 1px solid $line;
+    }
+    > li {
+      padding-inline: map-get($spacers, 4);
+    }
+    > li:first-child {
+      padding-left: calc(var(--bs-gutter-x) * .5);
+    }
+  }
+}
+.home-why-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: map-get($spacers, 3);
+  border: 1px solid $glow-deep;
+  border-radius: 50%;
+  color: $glow;
+  font-size: 1.25rem;
+}
+.home-why-name {
+  margin-bottom: .5rem;
+  font-size: $h4-font-size;
+}
+
+// ---------- 區塊四：熱門課程（橫向捲動列） ----------
+// < 576px 卡寬 80%、576–991px 45%：最後一張可以完整捲進畫面；992px 以上 4 欄
+.course-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 80%;
+  gap: map-get($spacers, 3);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: $container-padding-x * .5;
+  padding-bottom: map-get($spacers, 3); // 捲軸不貼著卡片
+  scrollbar-width: thin;
+  scrollbar-color: $line-strong transparent;
+
+  > li {
+    scroll-snap-align: start;
+  }
+
+  @include media-breakpoint-up(sm) {
+    grid-auto-columns: 45%;
+    gap: map-get($spacers, 4);
+  }
+  @include media-breakpoint-up(lg) {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    overflow: visible;
+    padding-bottom: 0;
+  }
+}
+
+// ---------- 區塊五：學員作品牆＋學習保障 ----------
+// 作品牆：照片像一格停格畫面，下方是引言與帳號
+.ugc-card {
+  margin: 0;
+
+  figcaption {
+    padding-top: map-get($spacers, 3);
+  }
+  // 576px 以下：照片縮到左側，兩則作品不會各佔一整個螢幕高
+  @include media-breakpoint-down(sm) {
+    display: grid;
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    gap: map-get($spacers, 3);
+    align-items: start;
+
+    figcaption {
+      padding-top: 0;
+    }
+    .ugc-card-quote p {
+      font-size: .9375rem;
+    }
+  }
+}
+.ugc-card-media {
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: $border-radius-lg;
+  background-color: $booth;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+.ugc-card-quote {
+  margin: 0 0 .5rem;
+
+  p {
+    margin: 0;
+    color: $white;
+    font-size: 1.0625rem;
+    line-height: 1.75;
+  }
+}
+.ugc-card-handle {
+  margin: 0;
+  color: $glow;
+  font-family: $font-family-display;
+  font-size: $font-size-sm;
+  letter-spacing: .04em;
+}
+
+// 學習保障：三列，圖示＋標題＋說明，列之間髮絲線
+.guarantee-list {
+  border-top: 1px solid $line;
+
+  > li {
+    display: flex;
+    gap: map-get($spacers, 3);
+    padding-block: map-get($spacers, 4);
+    border-bottom: 1px solid $line;
+  }
+  p {
+    margin: 0;
+    color: $body-secondary-color;
+  }
+}
+.guarantee-icon {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid $glow-deep;
+  border-radius: 50%;
+  color: $glow;
+  font-size: 1.25rem;
+}
+.guarantee-title {
+  margin-bottom: .25rem;
+  font-size: $h4-font-size;
+}
+
+// ---------- 底部 CTA：放映機的光從上方打下來 ----------
+.home-cta {
+  position: relative;
+  padding-block: map-get($spacers, 7);
+  overflow: hidden;
+  border-top: 1px solid $line;
+  text-align: center;
+
+  // 光束：上窄下寬的冷藍光錐（全站只有這裡用整片光暈）
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(60% 85% at 50% 0%, rgba($glow, .16) 0%, rgba($glow, .05) 45%, rgba($glow, 0) 75%);
+    pointer-events: none;
+  }
+  .container {
+    position: relative;
+  }
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 8);
+  }
+}
+.home-cta-title {
+  margin-bottom: map-get($spacers, 4);
+  font-size: $h2-font-size;
+  letter-spacing: .1em;
+
+  @include media-breakpoint-up(md) {
+    margin-bottom: map-get($spacers, 5);
+    font-size: 2.5rem;
+  }
+}
+// CTA 是首頁最後一個區塊，下面直接接頁尾：拿掉頁尾上方的額外間距
+main:has(> .home-cta:last-child) + .site-footer {
+  margin-top: 0;
+}

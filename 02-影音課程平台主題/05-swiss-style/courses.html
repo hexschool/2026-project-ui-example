@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>探索課程｜Craftory 手感工藝線上學院</title>
+  <meta name="description" content="依工藝分類、難度與價格篩選 Craftory 的工藝影音課程，每門課都含免費試看章節。設計稿 05｜瑞士國際排版。">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta name="color-scheme" content="light">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Inter Tight（英數、價格、時間、大數字）＋ Noto Sans TC（中文；900 只給首頁主標與底部 CTA） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾、登入對話框在每一頁都完整寫一份；改的時候先改這份範本，
+      再同步到 5 個 .html，最後執行 npm run check 確認都一致。
+    - 頁首：桌機是「品牌字｜主導覽｜……｜搜尋｜我的課程｜登入／註冊」；
+      992px 以下是「品牌字｜登入／註冊｜選單按鈕」，選單內是主導覽、搜尋、我的課程。
+    - 每頁只需要調整一處「目前頁面」標示：目前頁的 <a class="nav-link"> 加 active 與 aria-current="page"
+      - index.html → 首頁；courses.html → 探索課程；learn.html → 我的課程
+      - course.html（課程詳情）→ 探索課程只加 active，不加 aria-current
+      - guideline.html 不標示
+    - 登入對話框（#authModal）：頁首「登入／註冊」與課程詳情「立即購買，開始上課」共用。
+      觸發按鈕加 data-auth-intent="purchase" 時，js/main.js 會顯示未登入提示並把按鈕改成「登入並開始上課」。
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="navbar navbar-expand-lg" aria-label="主要導覽">
+        <div class="container">
+          <a class="navbar-brand site-brand" href="index.html" aria-label="Craftory 手感工藝線上學院 首頁">
+            <span class="site-brand-mark" aria-hidden="true"></span>
+            <span class="site-brand-name">Craftory</span>
+          </a>
+
+          <!-- 992px 以下：登入／註冊＋選單按鈕（桌機另一顆登入按鈕在選單最後，讓 Tab 順序與畫面一致） -->
+          <div class="site-header-quick d-flex d-lg-none align-items-center gap-2">
+            <button class="btn btn-dark btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#authModal">登入／註冊</button>
+            <button class="navbar-toggler site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link active" aria-current="page" href="courses.html">探索課程</a></li>
+            </ul>
+            <div class="site-header-actions">
+              <form class="site-search" role="search" action="courses.html">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control" type="search" name="q" placeholder="搜尋課程、工藝或講師" aria-label="搜尋課程">
+              </form>
+              <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" href="learn.html">我的課程</a></li>
+              </ul>
+              <button class="btn btn-dark btn-sm d-none d-lg-inline-flex" type="button" data-bs-toggle="modal" data-bs-target="#authModal">登入／註冊</button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!--
+        課程列表：頁首（背景畫出 12 欄欄線）→ 左 3 欄篩選＋右 9 欄課程（2 欄課程卡＋分頁）→ 設計稿狀態示意
+        設計稿沒有後端：篩選、排序只會改變選項的選中狀態，課程卡不會跟著變（共 52 門，這裡是第 1 頁的 8 門）
+      -->
+      <div class="container grid-guides">
+        <header class="page-header courses-header">
+          <nav aria-label="目前位置">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+              <li class="breadcrumb-item active" aria-current="page">探索課程</li>
+            </ol>
+          </nav>
+          <div class="row align-items-end gy-3">
+            <div class="col-lg-6">
+              <h1 class="courses-title">探索課程</h1>
+            </div>
+            <div class="col-lg-5 offset-lg-1">
+              <p class="page-lead">都含免費試看章節，先看前三支，再決定要不要動手。</p>
+            </div>
+          </div>
+        </header>
+      </div>
+
+      <div class="container">
+        <div class="row gx-5">
+          <!-- 篩選：992px 以上是左側欄；以下是從左側滑出的抽屜（.offcanvas-lg，同一份 HTML） -->
+          <div class="col-lg-3">
+            <div class="offcanvas-lg offcanvas-start filter-panel" tabindex="-1" id="filterPanel" aria-labelledby="filterPanelTitle">
+              <div class="offcanvas-header">
+                <h2 class="offcanvas-title" id="filterPanelTitle">篩選</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#filterPanel" aria-label="關閉"></button>
+              </div>
+              <div class="offcanvas-body">
+                <form class="filter-form" id="courseFilter" action="courses.html" aria-label="篩選課程">
+                  <fieldset class="filter-group">
+                    <legend>工藝分類</legend>
+                    <div class="filter-option">
+                      <input class="form-check-input" type="radio" name="craft" id="craftAll" value="all" checked>
+                      <label for="craftAll">全部 <span class="num">52</span></label>
+                    </div>
+                    <div class="filter-option">
+                      <input class="form-check-input" type="radio" name="craft" id="craftPottery" value="pottery">
+                      <label for="craftPottery">陶藝 <span class="num">12</span></label>
+                    </div>
+                    <div class="filter-option">
+                      <input class="form-check-input" type="radio" name="craft" id="craftLeather" value="leather">
+                      <label for="craftLeather">皮革 <span class="num">8</span></label>
+                    </div>
+                    <div class="filter-option">
+                      <input class="form-check-input" type="radio" name="craft" id="craftWoodwork" value="woodwork">
+                      <label for="craftWoodwork">木工 <span class="num">9</span></label>
+                    </div>
+                    <div class="filter-option">
+                      <input class="form-check-input" type="radio" name="craft" id="craftTextile" value="textile">
+                      <label for="craftTextile">織品染繡 <span class="num">6</span></label>
+                    </div>
+                    <div class="filter-option">
+                      <input class="form-check-input" type="radio" name="craft" id="craftMetal" value="metal">
+                      <label for="craftMetal">金工銀飾 <span class="num">6</span></label>
+                    </div>
+                    <div class="filter-option">
+                      <input class="form-check-input" type="radio" name="craft" id="craftCandle" value="candle">
+                      <label for="craftCandle">蠟燭香氛 <span class="num">4</span></label>
+                    </div>
+                    <div class="filter-option">
+                      <input class="form-check-input" type="radio" name="craft" id="craftPaper" value="paper">
+                      <label for="craftPaper">紙藝絹印 <span class="num">7</span></label>
+                    </div>
+                  </fieldset>
+
+                  <fieldset class="filter-group">
+                    <legend>難度</legend>
+                    <div class="filter-option">
+                      <input class="form-check-input" type="checkbox" name="level" id="levelBasic" value="basic">
+                      <label for="levelBasic">入門</label>
+                    </div>
+                    <div class="filter-option">
+                      <input class="form-check-input" type="checkbox" name="level" id="levelAdvanced" value="advanced">
+                      <label for="levelAdvanced">進階</label>
+                    </div>
+                  </fieldset>
+
+                  <fieldset class="filter-group">
+                    <legend>價格</legend>
+                    <div class="filter-option">
+                      <input class="form-check-input" type="checkbox" name="price" id="priceLow" value="low">
+                      <label for="priceLow">NT$ 2,000 以下</label>
+                    </div>
+                    <div class="filter-option">
+                      <input class="form-check-input" type="checkbox" name="price" id="priceMid" value="mid">
+                      <label for="priceMid">NT$ 2,000–3,000</label>
+                    </div>
+                    <div class="filter-option">
+                      <input class="form-check-input" type="checkbox" name="price" id="priceHigh" value="high">
+                      <label for="priceHigh">NT$ 3,000 以上</label>
+                    </div>
+                  </fieldset>
+
+                  <button class="btn btn-text" type="reset">清除篩選</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- 課程：工具列 → 2 欄課程卡 → 分頁 -->
+          <div class="col-lg-9">
+            <div class="courses-toolbar">
+              <button class="btn btn-outline-dark btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#filterPanel" aria-controls="filterPanel">
+                <i class="bi bi-sliders2" aria-hidden="true"></i>篩選
+              </button>
+              <p class="courses-count" role="status">共 <span class="num">52</span> 門課程</p>
+              <div class="courses-sort">
+                <label class="form-label" for="sort">排序</label>
+                <select class="form-select" id="sort" name="sort" form="courseFilter">
+                  <option value="newest" selected>最新上架</option>
+                  <option value="popular">最多人學</option>
+                  <option value="rating">評價最高</option>
+                  <option value="price">價格由低到高</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row row-cols-1 row-cols-sm-2 gx-4 gy-6" role="list">
+              <div class="col" role="listitem">
+                <article class="course-card">
+                  <div class="course-card-media">
+                    <img src="images/course-pottery.jpg" width="1600" height="900" loading="lazy" alt="鋪著帆布的餐桌上，雙手正在捏一只小陶碗，旁邊有三只陰乾中的小碗、海綿與修坯刀">
+                    <span class="tag is-solid course-card-duration"><span class="visually-hidden">課程總長</span>4&nbsp;小時 20&nbsp;分</span>
+                  </div>
+                  <div class="course-card-body">
+                    <p class="course-card-tags"><span class="tag is-plain">陶藝</span><span class="tag">入門</span></p>
+                    <h2 class="course-card-title text-phrase"><a class="stretched-link" href="course.html">從零開始的手捏陶｜<wbr>做出第一只日用食器</a></h2>
+                    <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">林</span>林子謙</p>
+                    <p class="course-card-stats">
+                      <span class="course-card-rating"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">評價</span>4.9</span>
+                      <span>1,845 人正在學</span>
+                    </p>
+                    <div class="course-card-foot">
+                      <p class="price">NT$ 2,480</p>
+                      <a class="btn btn-outline-dark btn-sm course-card-trial" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                    </div>
+                  </div>
+                </article>
+              </div>
+              <div class="col" role="listitem">
+                <article class="course-card">
+                  <div class="course-card-media">
+                    <img src="images/course-leather.jpg" width="1600" height="900" loading="lazy" alt="雙手拿著兩根針做馬鞍縫，皮料夾在木製縫皮夾上，桌上放著菱斬、皮革刀與裁好的皮片">
+                    <span class="tag is-solid course-card-duration"><span class="visually-hidden">課程總長</span>3&nbsp;小時 05&nbsp;分</span>
+                  </div>
+                  <div class="course-card-body">
+                    <p class="course-card-tags"><span class="tag is-plain">皮革</span><span class="tag">入門</span></p>
+                    <h2 class="course-card-title text-phrase"><a class="stretched-link" href="course.html">植鞣皮革入門｜<wbr>縫一只用十年的卡夾</a></h2>
+                    <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">吳</span>吳沛慈</p>
+                    <p class="course-card-stats">
+                      <span class="course-card-rating"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">評價</span>4.8</span>
+                      <span>1,326 人正在學</span>
+                    </p>
+                    <div class="course-card-foot">
+                      <p class="price">NT$ 1,980</p>
+                      <a class="btn btn-outline-dark btn-sm course-card-trial" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                    </div>
+                  </div>
+                </article>
+              </div>
+              <div class="col" role="listitem">
+                <article class="course-card">
+                  <div class="course-card-media">
+                    <img src="images/course-woodwork.jpg" width="1600" height="900" loading="lazy" alt="雙手推著手刨刨一塊實木板，刨花捲起，工作檯上有鑿刀與一支鑿好榫孔的小几桌腳">
+                    <span class="tag is-solid course-card-duration"><span class="visually-hidden">課程總長</span>5&nbsp;小時 40&nbsp;分</span>
+                  </div>
+                  <div class="course-card-body">
+                    <p class="course-card-tags"><span class="tag is-plain">木工</span><span class="tag">進階</span></p>
+                    <h2 class="course-card-title text-phrase"><a class="stretched-link" href="course.html">原木手工具小傢俱｜<wbr>打造床邊小几</a></h2>
+                    <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">陳</span>陳敬堯</p>
+                    <p class="course-card-stats">
+                      <span class="course-card-rating"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">評價</span>4.9</span>
+                      <span>862 人正在學</span>
+                    </p>
+                    <div class="course-card-foot">
+                      <p class="price">NT$ 3,280</p>
+                      <a class="btn btn-outline-dark btn-sm course-card-trial" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                    </div>
+                  </div>
+                </article>
+              </div>
+              <div class="col" role="listitem">
+                <article class="course-card">
+                  <div class="course-card-media">
+                    <img src="images/course-plant-dye.jpg" width="1600" height="900" loading="lazy" alt="戴著手套的雙手把剛染好的棉 T 從染鍋裡拉起，桌上擺著洋蔥皮、茜草根、藍靛葉與一只刺繡繃框">
+                    <span class="tag is-solid course-card-duration"><span class="visually-hidden">課程總長</span>3&nbsp;小時 50&nbsp;分</span>
+                  </div>
+                  <div class="course-card-body">
+                    <p class="course-card-tags"><span class="tag is-plain">織品染繡</span><span class="tag">入門</span></p>
+                    <h2 class="course-card-title text-phrase"><a class="stretched-link" href="course.html">草木染與刺繡｜<wbr>把一整個季節穿在身上</a></h2>
+                    <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">黃</span>黃柏安</p>
+                    <p class="course-card-stats">
+                      <span class="course-card-rating"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">評價</span>4.7</span>
+                      <span>634 人正在學</span>
+                    </p>
+                    <div class="course-card-foot">
+                      <p class="price">NT$ 2,280</p>
+                      <a class="btn btn-outline-dark btn-sm course-card-trial" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                    </div>
+                  </div>
+                </article>
+              </div>
+              <div class="col" role="listitem">
+                <article class="course-card">
+                  <div class="course-card-media">
+                    <img src="images/course-silver.jpg" width="1600" height="900" loading="lazy" alt="一手握著戒圍棒、一手拿小鐵鎚敲擊套在棒上的銀戒，桌上有小噴槍、一圈銀線與銼刀">
+                    <span class="tag is-solid course-card-duration"><span class="visually-hidden">課程總長</span>2&nbsp;小時 50&nbsp;分</span>
+                  </div>
+                  <div class="course-card-body">
+                    <p class="course-card-tags"><span class="tag is-plain">金工銀飾</span><span class="tag">入門</span></p>
+                    <h2 class="course-card-title text-phrase"><a class="stretched-link" href="course.html">銀飾鍛敲入門｜<wbr>從一條銀線到一只戒指</a></h2>
+                    <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">蘇</span>蘇語彤</p>
+                    <p class="course-card-stats">
+                      <span class="course-card-rating"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">評價</span>4.8</span>
+                      <span>1,107 人正在學</span>
+                    </p>
+                    <div class="course-card-foot">
+                      <p class="price">NT$ 2,180</p>
+                      <a class="btn btn-outline-dark btn-sm course-card-trial" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                    </div>
+                  </div>
+                </article>
+              </div>
+              <div class="col" role="listitem">
+                <article class="course-card">
+                  <div class="course-card-media">
+                    <img src="images/course-candle.jpg" width="1600" height="900" loading="lazy" alt="一手拿著鋼杯把融化的蠟倒進玻璃罐，旁邊放著精油滴管瓶、量杯與一碗大豆蠟片">
+                    <span class="tag is-solid course-card-duration"><span class="visually-hidden">課程總長</span>2&nbsp;小時 15&nbsp;分</span>
+                  </div>
+                  <div class="course-card-body">
+                    <p class="course-card-tags"><span class="tag is-plain">蠟燭香氛</span><span class="tag">入門</span></p>
+                    <h2 class="course-card-title text-phrase"><a class="stretched-link" href="course.html">香氛蠟燭調香｜<wbr>做出屬於家的味道</a></h2>
+                    <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">鄭</span>鄭亦寧</p>
+                    <p class="course-card-stats">
+                      <span class="course-card-rating"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">評價</span>4.8</span>
+                      <span>571 人正在學</span>
+                    </p>
+                    <div class="course-card-foot">
+                      <p class="price">NT$ 1,680</p>
+                      <a class="btn btn-outline-dark btn-sm course-card-trial" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                    </div>
+                  </div>
+                </article>
+              </div>
+              <div class="col" role="listitem">
+                <article class="course-card">
+                  <div class="course-card-media">
+                    <img src="images/course-rattan.jpg" width="1600" height="900" loading="lazy" alt="俯視畫面：雙手正在編藤籃的底部，旁邊一盆水裡泡著藤條">
+                    <span class="tag is-solid course-card-duration"><span class="visually-hidden">課程總長</span>2&nbsp;小時 00&nbsp;分</span>
+                  </div>
+                  <div class="course-card-body">
+                    <p class="course-card-tags"><span class="tag is-plain">紙藝絹印</span><span class="tag">入門</span></p>
+                    <h2 class="course-card-title text-phrase"><a class="stretched-link" href="course.html">藤編收納｜<wbr>一個下午的療癒練習</a></h2>
+                    <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">李</span>李映蓉</p>
+                    <p class="course-card-stats">
+                      <span class="course-card-rating"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">評價</span>4.9</span>
+                      <span>489 人正在學</span>
+                    </p>
+                    <div class="course-card-foot">
+                      <p class="price">NT$ 1,480</p>
+                      <a class="btn btn-outline-dark btn-sm course-card-trial" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                    </div>
+                  </div>
+                </article>
+              </div>
+              <div class="col" role="listitem">
+                <article class="course-card">
+                  <div class="course-card-media">
+                    <img src="images/course-zine.jpg" width="1600" height="900" loading="lazy" alt="雙手握著刮刀把油墨刮過網版，印出圓點與直條紋的圖案，旁邊有一疊騎馬釘裝訂的小誌">
+                    <span class="tag is-solid course-card-duration"><span class="visually-hidden">課程總長</span>4&nbsp;小時 05&nbsp;分</span>
+                  </div>
+                  <div class="course-card-body">
+                    <p class="course-card-tags"><span class="tag is-plain">紙藝絹印</span><span class="tag">進階</span></p>
+                    <h2 class="course-card-title text-phrase"><a class="stretched-link" href="course.html">絹印與手作小誌｜<wbr>印出自己的第一本 ZINE</a></h2>
+                    <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">周</span>周彥廷</p>
+                    <p class="course-card-stats">
+                      <span class="course-card-rating"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">評價</span>4.6</span>
+                      <span>318 人正在學</span>
+                    </p>
+                    <div class="course-card-foot">
+                      <p class="price">NT$ 2,880</p>
+                      <a class="btn btn-outline-dark btn-sm course-card-trial" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </div>
+
+            <nav class="courses-pagination" aria-label="課程分頁">
+              <ul class="pagination">
+                <li class="page-item disabled"><span class="page-link"><i class="bi bi-arrow-left" aria-hidden="true"></i><span class="page-link-text">上一頁</span></span></li>
+                <li class="page-item active"><a class="page-link" href="courses.html" aria-current="page">1</a></li>
+                <li class="page-item"><a class="page-link" href="courses.html">2</a></li>
+                <li class="page-item"><a class="page-link" href="courses.html">3</a></li>
+                <li class="page-item disabled"><span class="page-link" aria-hidden="true">…</span></li>
+                <li class="page-item"><a class="page-link" href="courses.html">7</a></li>
+                <li class="page-item"><a class="page-link" href="courses.html"><span class="page-link-text">下一頁</span><i class="bi bi-arrow-right" aria-hidden="true"></i></a></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+
+        <!-- ========== 設計稿狀態示意 ========== -->
+        <section class="demo-state" aria-labelledby="demoEmpty">
+          <p class="demo-state-tag">設計稿狀態示意</p>
+          <div class="demo-state-item">
+            <h2 id="demoEmpty" class="demo-state-title">篩選沒有結果時</h2>
+            <p class="text-note">例如同時選了工藝分類「蠟燭香氛」、難度「進階」、價格「NT$ 3,000 以上」：已選條件排成可移除的標籤，課程網格換成空狀態。</p>
+            <div class="demo-state-stage">
+              <div class="courses-toolbar">
+                <p class="courses-count">共 <span class="num">0</span> 門課程</p>
+              </div>
+              <ul class="filter-chips" aria-label="已選條件">
+                <li><button class="filter-chip" type="button" aria-label="移除條件：蠟燭香氛">蠟燭香氛<i class="bi bi-x-lg" aria-hidden="true"></i></button></li>
+                <li><button class="filter-chip" type="button" aria-label="移除條件：進階">進階<i class="bi bi-x-lg" aria-hidden="true"></i></button></li>
+                <li><button class="filter-chip" type="button" aria-label="移除條件：NT$ 3,000 以上">NT$ 3,000 以上<i class="bi bi-x-lg" aria-hidden="true"></i></button></li>
+              </ul>
+              <div class="empty-state">
+                <i class="bi bi-funnel" aria-hidden="true"></i>
+                <p>這個條件下目前沒有課程，試著放寬難度或價格範圍。</p>
+                <button class="btn btn-outline-dark" type="button">清除篩選</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container grid-guides-dark">
+        <div class="row gy-5">
+          <div class="col-lg-4">
+            <a class="site-brand" href="index.html" aria-label="Craftory 手感工藝線上學院 首頁">
+              <span class="site-brand-mark" aria-hidden="true"></span>
+              <span class="site-brand-name">Craftory</span>
+            </a>
+            <p class="site-footer-name">Craftory 手感工藝線上學院</p>
+            <p class="site-footer-lead">專為「想養成第二專長、但一直沒開始」的上班族打造的工藝影音學院</p>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2 offset-lg-2">
+            <h2 class="site-footer-title">探索課程</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="courses.html">陶藝</a></li>
+              <li><a href="courses.html">皮革</a></li>
+              <li><a href="courses.html">木工</a></li>
+              <li><a href="courses.html">織品染繡</a></li>
+              <li><a href="courses.html">金工銀飾</a></li>
+              <li><a href="courses.html">蠟燭香氛</a></li>
+              <li><a href="courses.html">紙藝絹印</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">學習保障</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="index.html#guarantee">7 天不滿意退費</a></li>
+              <li><a href="index.html#guarantee">一次購買永久觀看</a></li>
+              <li><a href="index.html#guarantee">卡關有人回答</a></li>
+            </ul>
+          </div>
+          <!-- 關於我們、成為講師、聯絡我們尚未設計頁面：不帶 href 的佔位連結 -->
+          <div class="col-md-4 col-lg-2">
+            <h2 class="site-footer-title">關於 Craftory</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a>關於我們</a></li>
+              <li><a>成為講師</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 Craftory 手感工藝線上學院｜<wbr>本站為課程設計稿範例，課程、講師與評價皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!--
+    登入對話框：設計稿沒有後端，送出就前往學習頁（視為登入成功）。
+    串接後端時：把 form 的 action 換成登入 API，成功後再導向原本要去的頁面。
+  -->
+  <div class="modal fade auth-modal" id="authModal" tabindex="-1" aria-labelledby="authModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="authModalTitle">登入 Craftory</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body">
+          <!-- 從「立即購買，開始上課」開啟時才顯示（js/main.js 第 1 項） -->
+          <p class="auth-notice" data-auth-notice hidden>
+            <i class="bi bi-lock-fill" aria-hidden="true"></i>
+            <span>登入後就能開始上課，馬上註冊只要 30 秒。</span>
+          </p>
+          <form class="auth-form" action="learn.html">
+            <div class="mb-3">
+              <label class="form-label" for="authEmail">電子郵件</label>
+              <input class="form-control" id="authEmail" type="email" name="email" placeholder="mail@example.com" autocomplete="email">
+            </div>
+            <div class="mb-1">
+              <label class="form-label" for="authPassword">密碼</label>
+              <input class="form-control" id="authPassword" type="password" name="password" placeholder="至少 8 碼" autocomplete="current-password">
+            </div>
+            <div class="d-flex justify-content-end mb-3">
+              <a class="btn btn-text btn-sm">忘記密碼？</a>
+            </div>
+            <button class="btn btn-primary w-100" type="submit" data-auth-submit>登入</button>
+          </form>
+          <p class="auth-switch">還沒有帳號？<a class="btn btn-text">立即註冊</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

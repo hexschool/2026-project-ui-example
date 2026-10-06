@@ -1,0 +1,493 @@
+// ============================================================
+// 首頁 index.html（class 前綴 home-，另有 .now-playing、.craft-card、.ugc、.guarantee-list 只用在首頁）
+// ============================================================
+
+// ---------- 區塊一：Hero ----------
+// 滿版大圖＋宣紙色的文字保護漸層。≥ 992px 主標題直排（writing-mode: vertical-rl），像書的扉頁
+.home-hero {
+  position: relative;
+}
+.home-hero-stage {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 33rem; // 手機約 528px（規格：< lg 480～560px）
+
+  // 文字保護漸層：手機由上往下、桌機由左往右，從宣紙色淡出到透明
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, rgba($paper, .92) 0%, rgba($paper, .78) 42%, rgba($paper, 0) 72%);
+  }
+
+  @include media-breakpoint-up(lg) {
+    min-height: max(36rem, calc(100svh - #{$site-header-height})); // 一個視窗扣掉頁首
+
+    &::before {
+      background: linear-gradient(90deg, rgba($paper, .92) 0%, rgba($paper, .8) 36%, rgba($paper, 0) 62%);
+    }
+  }
+}
+.home-hero-img {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 78% 60%; // 手機裁切時保留右側的雙手與陶碗
+}
+.home-hero-inner {
+  display: flex;
+  padding-block: map-get($spacers, 5) map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    align-items: center;
+    padding-block: map-get($spacers, 6);
+  }
+}
+.home-hero-title {
+  margin-bottom: map-get($spacers, 3);
+  font-size: 2rem;
+  line-height: 1.45;
+  letter-spacing: .08em;
+  word-break: keep-all;
+
+  @include media-breakpoint-up(sm) {
+    font-size: 2.5rem;
+  }
+}
+.home-hero-lead {
+  max-width: 22em;
+  margin-bottom: map-get($spacers, 4);
+  font-size: 1.0625rem;
+  line-height: 1.9;
+  color: $ink;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+// 次要按鈕放在照片上：加一層幾乎不透明的素箋底，竹青框字在深色桌面上也清楚
+.home-hero-secondary {
+  --bs-btn-bg: #{rgba($sheet, .9)};
+}
+
+// ≥ 992px：直排主標＋右側橫排副標與按鈕（底部對齊）
+@include media-breakpoint-up(lg) {
+  .home-hero-copy {
+    display: flex;
+    align-items: flex-end;
+    gap: map-get($spacers, 5);
+  }
+  .home-hero-title {
+    writing-mode: vertical-rl;
+    margin: 0;
+    // 依視窗高度縮放：1080 高約 68px、900 高約 60px，最小 44px
+    font-size: clamp(2.75rem, 6.6svh, 4.25rem);
+    line-height: 1.6;
+    letter-spacing: .14em;
+    text-wrap: nowrap;
+  }
+  .home-hero-side {
+    max-width: 26rem;
+    padding-bottom: .375rem;
+    border-top: 1px solid $ink; // 副標上方一條墨線，和直排標題的底端對齊成一個角
+    padding-top: map-get($spacers, 3);
+  }
+  .home-hero-lead {
+    font-size: 1.125rem;
+  }
+}
+
+// 正在播放小卡
+.home-now-wrap {
+  margin-top: -3rem; // 手機：小卡的上緣壓進大圖一點點，與大圖連成一組（文字不在圖上）
+  position: relative;
+  z-index: 1;
+
+  @include media-breakpoint-up(lg) {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: map-get($spacers, 5);
+    margin-top: 0;
+    display: flex;
+    justify-content: flex-end;
+    pointer-events: none; // 外框不擋住大圖；小卡本身可以點
+  }
+}
+.now-playing {
+  padding: map-get($spacers, 3);
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $sheet;
+  box-shadow: $box-shadow;
+
+  @include media-breakpoint-up(sm) {
+    max-width: 24rem;
+  }
+  @include media-breakpoint-up(lg) {
+    width: 22rem;
+    pointer-events: auto;
+  }
+
+  .progress {
+    margin-block: map-get($spacers, 3) .5rem;
+  }
+}
+.now-playing-label {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .75rem;
+  color: $bamboo-deep;
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+}
+// 三根跳動的小直條：表示「正在播放」（prefers-reduced-motion 時停住）
+.now-playing-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: .75rem;
+
+  span {
+    width: 2px;
+    height: 100%;
+    background-color: $bamboo;
+    animation: now-bars 1.1s ease-in-out infinite;
+    transform-origin: bottom;
+  }
+  span:nth-child(2) { animation-delay: -.35s; }
+  span:nth-child(3) { animation-delay: -.7s; }
+}
+@keyframes now-bars {
+  0%, 100% { transform: scaleY(.35); }
+  50% { transform: scaleY(1); }
+}
+.now-playing-body {
+  display: flex;
+  gap: .75rem;
+  align-items: flex-start;
+}
+.now-playing-thumb {
+  position: relative;
+  flex: 0 0 6rem;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: $border-radius-sm;
+  background-color: $night;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: .85;
+  }
+  .bi {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: $paper;
+    font-size: 1.25rem;
+  }
+}
+.now-playing-course {
+  margin-bottom: .125rem;
+  font-family: $font-family-serif;
+  font-size: .9375rem;
+  font-weight: $font-weight-semibold;
+  line-height: 1.5;
+}
+.now-playing-unit {
+  margin: 0;
+  font-size: $small-font-size;
+  line-height: 1.5;
+  color: $ink-muted;
+}
+.now-playing-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: $small-font-size;
+  color: $ink-muted;
+}
+
+// ---------- 區塊二：學得完的理由（界欄分隔的 4 欄） ----------
+.home-why-list {
+  > li {
+    @include media-breakpoint-up(lg) {
+      padding-inline: map-get($spacers, 4);
+    }
+  }
+  // 手機單欄：圖示在左、文字在右，縮短整區的高度
+  @include media-breakpoint-down(sm) {
+    > li {
+      display: grid;
+      grid-template-columns: 3rem minmax(0, 1fr);
+      column-gap: map-get($spacers, 3);
+    }
+    .home-why-icon { grid-row: span 2; margin-bottom: 0; }
+  }
+  p {
+    margin-bottom: 0;
+    color: $ink-muted;
+  }
+}
+.home-why-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: map-get($spacers, 3);
+  border: 1px solid $line-strong;
+  border-radius: 50%;
+  color: $bamboo;
+  font-size: 1.25rem;
+}
+.home-why-title {
+  margin-bottom: .5rem;
+  font-size: 1.25rem;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 區塊三：工藝情境卡 ----------
+// 4:5 圖片＋底部深墨漸層，疊作品名稱與工藝；≥ 992px hover／focus 才浮現課程數與最短完課時間
+.craft-card {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: $border-radius-sm;
+  background-color: $almond-light;
+  color: $paper;
+  text-decoration: none;
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .8s ease;
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba($ink, .88) 0%, rgba($ink, .55) 34%, rgba($ink, 0) 62%);
+  }
+  &:hover { color: $paper; }
+  &:hover img,
+  &:focus-visible img { transform: scale(1.04); }
+}
+.craft-card-body {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: .125rem;
+  padding: .875rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.25rem;
+  }
+}
+.craft-card-title {
+  font-family: $font-family-serif;
+  font-size: 1rem;
+  font-weight: $font-weight-semibold;
+  line-height: 1.5;
+  letter-spacing: .04em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+
+  @include media-breakpoint-up(md) {
+    font-size: 1.25rem;
+  }
+}
+.craft-card-craft {
+  font-size: $small-font-size;
+  color: $paper-muted;
+}
+.craft-card-more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 .75rem;
+  margin-top: .375rem;
+  padding-top: .375rem;
+  border-top: 1px solid rgba($paper, .3);
+  font-size: .75rem;
+  color: $almond;
+
+  @include media-breakpoint-up(md) {
+    font-size: $small-font-size;
+  }
+}
+// 576px 以下（2 欄、卡片很窄）：文字移到圖片下方，不疊在照片上
+@include media-breakpoint-down(sm) {
+  .craft-card {
+    aspect-ratio: auto;
+    overflow: visible;
+    background: none;
+    color: $ink;
+
+    img {
+      position: static;
+      aspect-ratio: 4 / 5;
+      height: auto;
+      border-radius: $border-radius-sm;
+    }
+    &::after { display: none; }
+    &:hover { color: $ink; }
+  }
+  .craft-card-body {
+    position: static;
+    padding: .625rem 0 0;
+  }
+  .craft-card-craft { color: $ink-muted; }
+  .craft-card-more {
+    border-top-color: $line;
+    color: $bamboo-deep;
+  }
+}
+
+// ≥ 992px：資訊平常收起，hover／鍵盤聚焦時浮現
+@include media-breakpoint-up(lg) {
+  .craft-card-more {
+    max-height: 0;
+    margin-top: 0;
+    padding-top: 0;
+    border-top-color: transparent;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height .3s ease, opacity .3s ease, margin-top .3s ease, padding-top .3s ease;
+  }
+  .craft-card:hover .craft-card-more,
+  .craft-card:focus-visible .craft-card-more {
+    max-height: 4rem;
+    margin-top: .5rem;
+    padding-top: .5rem;
+    border-top-color: rgba($paper, .3);
+    opacity: 1;
+  }
+}
+
+// ---------- 區塊五：學員作品牆＋學習保障 ----------
+.ugc {
+  height: 100%;
+  margin: 0;
+  padding: .75rem .75rem 1.25rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $sheet;
+
+  figcaption {
+    padding: map-get($spacers, 3) .25rem 0;
+  }
+}
+.ugc-photo {
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: $border-radius-sm;
+  background-color: $almond-light;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+// 署名：前面一小段細線
+.ugc-handle {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: .75rem 0 0;
+  font-size: $small-font-size;
+  color: $ink-muted;
+
+  &::before {
+    content: "";
+    width: 1.25rem;
+    border-top: 1px solid $line-strong;
+  }
+}
+.guarantee-list {
+  border-top: 2px solid $ink;
+
+  li {
+    display: flex;
+    gap: map-get($spacers, 3);
+    padding-block: map-get($spacers, 4);
+    border-bottom: 1px solid $line;
+  }
+  p {
+    margin: 0;
+    color: $ink-muted;
+  }
+}
+.guarantee-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background-color: $bamboo-mist;
+  color: $bamboo-deep;
+  font-size: 1.125rem;
+}
+.guarantee-title {
+  margin-bottom: .25rem;
+  font-size: 1.125rem;
+}
+
+// ---------- 底部 CTA：深竹色帶 ----------
+.home-cta {
+  padding-block: map-get($spacers, 6);
+  background-color: $bamboo-deep;
+  color: $paper;
+  text-align: center;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7);
+  }
+}
+.home-cta-title {
+  margin-bottom: map-get($spacers, 4);
+  color: $paper; // 宣紙對深竹 7.6:1
+  font-size: 1.875rem;
+
+  @include media-breakpoint-up(md) {
+    font-size: 2.5rem;
+  }
+}
+// 深竹上的主要按鈕：杏仁底＋深墨字（深墨對杏仁 10.4:1；杏仁對深竹 5.6:1）
+.home-cta-btn {
+  --bs-btn-color: #{$ink};
+  --bs-btn-bg: #{$almond};
+  --bs-btn-border-color: #{$almond};
+  --bs-btn-hover-color: #{$ink};
+  --bs-btn-hover-bg: #{$almond-light};
+  --bs-btn-hover-border-color: #{$almond-light};
+  --bs-btn-active-color: #{$ink};
+  --bs-btn-active-bg: #{$almond-light};
+  --bs-btn-active-border-color: #{$almond-light};
+  --bs-btn-focus-box-shadow: 0 0 0 2px #{$bamboo-deep}, 0 0 0 4px #{$almond};
+}
+// 首頁最後是深竹色帶，頁尾直接接在下面（不留宣紙空隙）
+main:has(> .home-cta:last-child) + .site-footer {
+  margin-top: 0;
+}

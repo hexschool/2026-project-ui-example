@@ -1,0 +1,355 @@
+// ============================================================
+// 首頁（index.html）
+// ============================================================
+
+// ---------- 1. Hero ----------
+// 桌機：全螢幕黑白大圖（扣掉頁首），左下白色標題方塊、右下墨黑「正在播放」方塊貼齊圖片底邊。
+//       白色方塊向左延伸到螢幕邊緣（::before），文字仍從版心第 1 欄的欄線開始，像海報上的文字欄位切進照片。
+// 992px 以下：圖片在上（高 320～480px），白色方塊往上壓住圖片下緣 80px，「正在播放」方塊移到下方。
+.home-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; // 白色方塊向左延伸的部分不會造成水平捲軸
+
+  @include media-breakpoint-up(lg) {
+    justify-content: flex-end;
+    min-height: max(37.5rem, calc(100svh - #{$site-header-height}));
+  }
+}
+.home-hero-img {
+  display: block;
+  width: 100%;
+  height: clamp(20rem, 100vw, 30rem);
+  object-fit: cover;
+  object-position: 70% 40%; // 手與碗在畫面右側偏上，手機裁切時保留主體
+
+  @include media-breakpoint-up(lg) {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    object-position: 60% 40%;
+  }
+}
+.home-hero-inner {
+  position: relative; // 疊在大圖上
+}
+.home-hero-text {
+  position: relative;
+  margin-top: -5rem;
+  margin-right: map-get($spacers, 6);
+  padding: map-get($spacers, 5) map-get($spacers, 4) 0 0;
+  background-color: $paper;
+
+  // 向左延伸到螢幕邊緣：寬度給 50vw 就一定夠（容器左邊的空白最多是半個螢幕）
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 100%;
+    width: 50vw;
+    background-color: $paper;
+  }
+
+  @include media-breakpoint-up(lg) {
+    margin: 0;
+    padding: map-get($spacers, 6) map-get($spacers, 6) 0 0;
+  }
+}
+// 首頁主標：Noto Sans TC 900，全站最大的字。依白色方塊的寬度設定字級，讓「那件事，」「變成手上的作品。」不被拆開
+.home-hero-title {
+  margin-bottom: map-get($spacers, 4);
+  font-size: 2rem;
+  font-weight: $font-weight-black;
+  line-height: 1.15;
+  letter-spacing: -.02em;
+  text-wrap: wrap; // 斷行由 <wbr> 決定，不平均分配
+
+  // 字級跟著白色方塊的寬度走：桌機剛好讓「把想學很久的那件事，」排成一行
+  @include media-breakpoint-up(sm) { font-size: 3rem; }
+  @include media-breakpoint-up(lg) { font-size: 3.375rem; }  // 方塊 8 欄 ≈ 555px
+  @include media-breakpoint-up(xl) { font-size: 3.5rem; }    // 方塊 7 欄 ≈ 580px
+  @include media-breakpoint-up(xxl) { font-size: 4.25rem; }  // 方塊 7 欄 ≈ 685px
+}
+.home-hero-lead {
+  max-width: 26em;
+  margin-bottom: map-get($spacers, 5);
+  font-size: $font-size-lg;
+  line-height: 1.7;
+
+  @include media-breakpoint-up(lg) {
+    font-size: 1.25rem;
+  }
+}
+.home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 2);
+
+  // 手機：兩顆按鈕各占一整行，左右對齊方塊
+  @include media-breakpoint-down(sm) {
+    .btn { width: 100%; }
+  }
+}
+.home-hero-aside {
+  margin-top: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    margin-top: 0;
+  }
+}
+
+// 「正在播放」方塊：放映黑底、白字，瑞士紅只在標籤與進度條
+.now-playing {
+  padding: map-get($spacers, 4);
+  background-color: $screen;
+  color: $paper;
+
+  p {
+    margin: 0;
+  }
+  .btn {
+    margin-top: map-get($spacers, 3);
+  }
+}
+.now-playing-label {
+  margin-bottom: map-get($spacers, 3) !important;
+}
+.now-playing-main {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: map-get($spacers, 3);
+  align-items: start;
+}
+.now-playing-thumb {
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+.now-playing-course {
+  font-weight: $font-weight-bold;
+  line-height: 1.45;
+}
+.now-playing-unit {
+  margin-top: map-get($spacers, 1) !important;
+  color: $screen-muted;
+  font-size: $font-size-sm;
+}
+.now-playing-progress {
+  display: flex;
+  align-items: center;
+  gap: map-get($spacers, 3);
+  margin-top: map-get($spacers, 3);
+
+  .progress {
+    flex: 1 1 auto;
+    height: .25rem;
+    background-color: $player-track;
+  }
+  .num {
+    font-size: $font-size-sm;
+  }
+}
+
+// ---------- 2. 學得完的理由 ----------
+// 4 欄各自從欄線起排：圖示 → 小標 → 說明
+.why-item {
+  .bi {
+    display: block;
+    margin-bottom: map-get($spacers, 4);
+    font-size: 2rem;
+    line-height: 1;
+  }
+  h3 {
+    margin-bottom: map-get($spacers, 2);
+  }
+  p {
+    margin-bottom: 0;
+    padding-right: map-get($spacers, 3);
+    color: $body-secondary-color;
+  }
+}
+
+// ---------- 3. 工藝情境卡 ----------
+// 圖片在上、作品名稱在下（文字不壓在照片上）。
+// 課程數與最短完課時間是墨黑色帶：992px 以上 hover／focus 時從圖片底部升起；992px 以下（觸控）直接顯示
+.craft-card {
+  display: block;
+  color: $ink;
+  text-decoration: none;
+
+  p {
+    margin: 0;
+  }
+  &:hover {
+    color: $ink;
+  }
+  &:hover .craft-card-name,
+  &:focus-visible .craft-card-name {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .25em;
+  }
+}
+.craft-card-media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background-color: $fog;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+.craft-card-info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: .625rem .75rem;
+  background-color: $ink;
+  color: $paper;
+  font-size: .8125rem;
+  line-height: 1.5;
+  transition: transform .25s ease;
+
+  @include media-breakpoint-up(lg) {
+    padding: map-get($spacers, 3);
+    font-size: $font-size-sm;
+    transform: translateY(100%);
+  }
+}
+.craft-card-count {
+  font-weight: $font-weight-bold;
+
+  .numeral {
+    font-size: 1.5rem;
+    letter-spacing: 0;
+
+    @include media-breakpoint-up(lg) {
+      font-size: 2.5rem;
+    }
+  }
+}
+@include media-breakpoint-up(lg) {
+  .craft-card:hover .craft-card-info,
+  .craft-card:focus-visible .craft-card-info {
+    transform: translateY(0);
+  }
+}
+.craft-card-name {
+  margin-top: map-get($spacers, 3) !important;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.45;
+
+  @include media-breakpoint-up(lg) {
+    font-size: $h3-font-size;
+  }
+}
+.craft-card-craft {
+  margin-top: map-get($spacers, 1) !important;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+}
+
+// ---------- 5. 學員作品牆＋學習保障 ----------
+.home-subhead {
+  margin-bottom: map-get($spacers, 4);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+}
+.ugc {
+  margin: 0;
+}
+.ugc-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  margin-bottom: map-get($spacers, 3);
+}
+.ugc-quote {
+  margin: 0 0 map-get($spacers, 2);
+
+  p {
+    margin: 0;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-medium;
+    line-height: 1.6;
+  }
+}
+.ugc-name {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+}
+
+.guarantee-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-bottom: $rule-thin solid $hairline;
+
+  li {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: map-get($spacers, 3);
+    padding-block: map-get($spacers, 4);
+    border-top: $rule-thin solid $hairline;
+
+    &:first-child {
+      padding-top: 0;
+      border-top: 0;
+    }
+  }
+  .bi {
+    font-size: 1.75rem;
+    line-height: 1;
+  }
+  h4 {
+    margin-bottom: map-get($spacers, 1);
+    font-size: $h3-font-size;
+  }
+  p {
+    margin: 0;
+    color: $body-secondary-color;
+  }
+}
+
+// ---------- 6. 底部 CTA：整片瑞士紅（白字 4.88:1） ----------
+.home-cta {
+  padding-block: map-get($spacers, 8);
+  background-color: $swiss-red;
+  color: $paper;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 9);
+  }
+  // 紅底上的焦點環：白色外圈
+  :focus-visible {
+    outline-color: $paper;
+  }
+}
+.home-cta-title {
+  margin: 0;
+  color: $paper;
+  font-size: 2.75rem;
+  font-weight: $font-weight-black;
+  line-height: 1.12;
+  letter-spacing: -.02em;
+
+  @include media-breakpoint-up(md) { font-size: 4rem; }
+  @include media-breakpoint-up(xl) { font-size: 5.5rem; }
+}

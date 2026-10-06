@@ -1,0 +1,483 @@
+// ============================================================
+// 播放器 .player ── 本風格的招牌「柔光控制列」
+// Notion：95% 暗底專注介面，播放控制器僅在滑鼠懸停時發出柔光，降低視覺干擾
+//
+// 三種亮度（不會完全隱藏，截圖、鍵盤與觸控使用者都看得到控制列）：
+//   靜止      控制列圖示銀幕灰（對純黑 10:1）、進度條 3px、沒有光
+//   亮起      .player:hover、.player:focus-within：圖示純白、底部浮起冷藍柔光、進度條 5px 發光、播放頭出現、
+//             「上次看到」標籤浮現
+//   觸控裝置  @media (hover: none) 沒有 hover，直接維持亮起狀態
+//   Guideline 示範用 .is-lit 固定成亮起狀態
+//
+// 畫面用 <img>（設計稿沒有真的影片），播放鈕、控制列都是 HTML／CSS
+// <div class="player is-paused" id="trial">                    ← is-paused：未播放（中央大播放鈕）／is-playing：播放中
+//   <div class="player-screen ratio ratio-16x9">
+//     <div class="player-stage">
+//       <img class="player-frame" src="images/player-trial.jpg" alt="…">
+//       <p class="player-caption">…</p>                          ← 選用：覆蓋文字
+//       <button class="player-bigplay" type="button" aria-label="播放">…</button>
+//       <div class="player-controls">
+//         <div class="player-progress" role="slider" …>…</div>
+//         <div class="player-bar">播放／暫停、時間、音量、速度、字幕、全螢幕</div>
+//       </div>
+//     </div>
+//   </div>
+//   <div class="toast show player-toast">…</div>               ← 選用：續看提示（768px 以上壓在畫面左上，以下排在播放器下方）
+// </div>
+// 下拉選單（速度、字幕）會往上展開，所以 .player-stage 不用 overflow: hidden（會把選單裁掉），圓角改由圖片與控制列各自處理
+// ============================================================
+.player {
+  position: relative;
+  --player-radius: #{$border-radius-lg};
+  // 以播放器自己的寬度決定控制列要放幾顆按鈕（手機、Guideline 的半欄播放器都適用）
+  container: player / inline-size;
+}
+
+.player-screen {
+  border-radius: var(--player-radius);
+  background-color: $screen;
+}
+.player-stage {
+  border-radius: inherit;
+}
+.player-frame {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: inherit;
+}
+
+// ---------- 覆蓋文字（課程詳情：▶ 免費試看｜第 1 章 ‧ …） ----------
+.player-caption {
+  position: absolute;
+  top: map-get($spacers, 3);
+  left: map-get($spacers, 3);
+  max-width: calc(100% - #{map-get($spacers, 3) * 2});
+  margin: 0;
+  padding: .375rem .875rem;
+  border-radius: $border-radius-pill;
+  background-color: rgba($screen, .62);
+  backdrop-filter: blur(6px);
+  color: $white;
+  font-size: $small-font-size;
+  line-height: 1.5;
+  letter-spacing: $letter-spacing-label;
+
+  .bi {
+    margin-right: .25rem;
+    color: $glow;
+  }
+
+  @include media-breakpoint-down(sm) {
+    top: map-get($spacers, 2);
+    left: map-get($spacers, 2);
+    max-width: calc(100% - #{map-get($spacers, 2) * 2});
+    padding: .25rem .625rem;
+    border-radius: $border-radius;
+    font-size: .75rem;
+  }
+}
+
+// ---------- 中央大播放鈕（未播放） ----------
+.player-bigplay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  padding: 0 0 0 .25rem; // 三角形視覺置中
+  border: 1px solid rgba($white, .7);
+  border-radius: 50%;
+  background-color: rgba($screen, .5);
+  backdrop-filter: blur(6px);
+  color: $white;
+  font-size: 2.25rem;
+  transform: translate(-50%, -60%);
+  transition: background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow $glow-transition;
+
+  &:hover {
+    border-color: $glow;
+    background-color: $glow;
+    color: $space;
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: $focus-ring-double, $glow-halo-lg;
+  }
+
+  @include media-breakpoint-down(sm) {
+    width: 3.75rem;
+    height: 3.75rem;
+    font-size: 1.875rem;
+  }
+}
+.player.is-playing .player-bigplay {
+  display: none;
+}
+
+// ---------- 控制列 ----------
+.player-controls {
+  position: absolute;
+  inset: auto 0 0;
+  padding: map-get($spacers, 5) map-get($spacers, 3) map-get($spacers, 1);
+  border-radius: 0 0 var(--player-radius) var(--player-radius);
+  // 底部一層漸暗，讓控制列在亮的畫面上也讀得到（不論是否亮起都在）
+  background: linear-gradient(to top, rgba($screen, .82) 0%, rgba($screen, .45) 55%, rgba($screen, 0) 100%);
+
+  // 柔光：亮起時從底部浮起的冷藍光暈
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: $glow-rise;
+    opacity: 0;
+    transition: opacity $glow-transition;
+    pointer-events: none;
+  }
+  > * {
+    position: relative; // 疊在柔光之上
+  }
+
+  @include media-breakpoint-down(sm) {
+    padding: map-get($spacers, 4) map-get($spacers, 2) 0;
+  }
+}
+
+// 進度條：可點範圍 20px 高，畫出來的軌道 3px（亮起時 5px）
+.player-progress {
+  --track-h: 3px;
+  --played: 0%;
+  --buffered: 0%;
+  position: relative;
+  height: 1.25rem;
+  margin-inline: .5rem;
+  cursor: pointer;
+
+  &::before { // 軌道
+    content: "";
+    position: absolute;
+    inset: 50% 0 auto;
+    height: var(--track-h);
+    border-radius: $border-radius-pill;
+    background-color: rgba($white, .22);
+    transform: translateY(-50%);
+    transition: height $glow-transition;
+  }
+  &:focus-visible {
+    outline-offset: 0;
+    border-radius: $border-radius-sm;
+  }
+}
+.player-progress-buffered,
+.player-progress-played {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: var(--track-h);
+  border-radius: $border-radius-pill;
+  transform: translateY(-50%);
+  transition: height $glow-transition, box-shadow $glow-transition;
+}
+.player-progress-buffered {
+  width: var(--buffered);
+  background-color: rgba($white, .4); // 緩衝
+}
+.player-progress-played {
+  width: var(--played);
+  background-color: $glow; // 已播放
+}
+// 播放頭：亮起時才出現
+.player-progress-head {
+  position: absolute;
+  top: 50%;
+  left: var(--played);
+  width: .875rem;
+  height: .875rem;
+  margin: -.4375rem 0 0 -.4375rem;
+  border-radius: 50%;
+  background-color: $white;
+  box-shadow: 0 0 0 3px rgba($glow, .35), $glow-halo-sm;
+  transform: scale(0);
+  transition: transform $glow-transition;
+}
+// 已觀看位置（上次看到 07:18）：軌道上方的小三角，靜止時也看得到；亮起時浮現文字標籤
+.player-progress-mark {
+  --at: 0%;
+  position: absolute;
+  left: var(--at);
+  bottom: calc(50% + 5px);
+  width: 0;
+  height: 0;
+  margin-left: -.3125rem;
+  border-inline: .3125rem solid transparent;
+  border-top: .375rem solid $glow-soft;
+}
+.player-progress-tip {
+  position: absolute;
+  bottom: calc(100% + .625rem);
+  left: 50%;
+  padding: .25rem .5rem;
+  border-radius: $border-radius-sm;
+  background-color: $white;
+  color: $space;
+  font-size: .75rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  letter-spacing: .04em;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity $glow-transition;
+  pointer-events: none;
+}
+
+.player-bar {
+  display: flex;
+  align-items: center;
+  gap: .125rem;
+}
+// 控制按鈕：44px 圓形觸控範圍，圖示 20px
+.player-btn {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  padding: 0 .5rem;
+  border: 0;
+  border-radius: $border-radius-pill;
+  background: transparent;
+  color: $silver;
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: color $glow-transition, background-color .2s ease, text-shadow $glow-transition;
+
+  &:hover,
+  &[aria-expanded="true"] {
+    background-color: rgba($white, .1);
+    color: $glow-soft;
+    text-shadow: 0 0 .75rem rgba($glow, .8);
+  }
+  &:focus-visible {
+    outline: 2px solid $glow;
+    outline-offset: -2px;
+  }
+}
+// 文字型控制鈕（播放速度 1x）
+.player-btn-text {
+  font-family: $font-family-display;
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+  letter-spacing: .04em;
+}
+.player-time {
+  margin: 0 .5rem 0 .25rem;
+  color: $silver;
+  font-size: .875rem;
+  transition: color $glow-transition;
+}
+.player-time-sep {
+  margin-inline: .375rem;
+  opacity: .6;
+}
+.player-spacer {
+  flex-grow: 1;
+}
+// 音量：按鈕＋滑桿
+.player-volume {
+  display: flex;
+  align-items: center;
+}
+.player-volume-track {
+  --level: 70%;
+  position: relative;
+  width: 4.5rem;
+  height: 1.25rem;
+  margin-right: .5rem;
+  cursor: pointer;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    height: 3px;
+    border-radius: $border-radius-pill;
+    transform: translateY(-50%);
+  }
+  &::before {
+    right: 0;
+    background-color: rgba($white, .22);
+  }
+  &::after {
+    width: var(--level);
+    background-color: currentColor;
+  }
+  &:focus-visible {
+    outline-offset: 0;
+    border-radius: $border-radius-sm;
+  }
+}
+.player-volume {
+  color: $silver;
+  transition: color $glow-transition;
+}
+// 播放器裡的下拉選單（速度、字幕）：往上展開，靠右對齊
+.player .dropdown-menu {
+  --bs-dropdown-min-width: 9rem;
+  --bs-dropdown-font-size: .875rem;
+}
+
+// 播放器寬度不到 480px（手機，或放在窄欄裡）：只留播放、時間、進度條、字幕、全螢幕（規格 §3.03）
+@container player (max-width: 30rem) {
+  .player-volume,
+  .player-speed {
+    display: none;
+  }
+  .player-time {
+    font-size: .8125rem;
+  }
+}
+
+// ---------- 亮起狀態 ----------
+@mixin player-lit {
+  .player-controls::before {
+    opacity: 1;
+  }
+  .player-btn,
+  .player-time,
+  .player-volume {
+    color: $white;
+  }
+  .player-progress {
+    --track-h: 5px;
+  }
+  .player-progress-played {
+    box-shadow: $glow-halo-sm;
+  }
+  .player-progress-head {
+    transform: scale(1);
+  }
+  .player-progress-tip {
+    opacity: 1;
+  }
+  .player-bigplay {
+    border-color: $glow;
+    box-shadow: $glow-halo-lg;
+  }
+}
+.player:hover,
+.player:focus-within,
+.player.is-lit {
+  @include player-lit;
+}
+@media (hover: none) {
+  .player {
+    @include player-lit;
+  }
+}
+
+// ---------- 續看提示 Toast ----------
+// 768px 以上壓在畫面左上（避開控制列）；以下排在播放器正下方，不遮住小畫面
+.player-toast {
+  --bs-toast-max-width: 100%;
+  width: auto;
+  margin-top: map-get($spacers, 3);
+  backdrop-filter: blur(8px);
+
+  @include media-breakpoint-up(md) {
+    --bs-toast-max-width: #{$toast-max-width};
+    position: absolute;
+    top: map-get($spacers, 3);
+    left: map-get($spacers, 3);
+    margin-top: 0;
+  }
+}
+.player-toast-body {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .375rem .375rem .375rem 1rem;
+  color: $white;
+
+  > .bi {
+    color: $glow;
+    font-size: 1.125rem;
+  }
+  .btn-close {
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    background-size: .75rem;
+  }
+}
+// 訊息＋「從頭播放」：放不下時按鈕換到下一行，關閉鈕維持在右側
+.player-toast-msg {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: .75rem;
+  flex-grow: 1;
+  margin: 0;
+
+  .btn-text {
+    min-height: 2.25rem;
+    font-size: $font-size-sm;
+  }
+}
+
+// ---------- 其他狀態：載入中、載入失敗（Guideline、學習頁狀態示意） ----------
+// <div class="player is-error"> … <div class="player-message" role="alert">…</div> …
+.player-message {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: map-get($spacers, 3);
+  padding: map-get($spacers, 4);
+  border-radius: inherit;
+  background-color: $screen;
+  color: $white;
+  text-align: center;
+
+  p {
+    max-width: 24em;
+    margin: 0;
+  }
+  > .bi {
+    font-size: 2rem;
+    line-height: 1;
+  }
+  @include media-breakpoint-down(sm) {
+    gap: map-get($spacers, 2);
+    padding: map-get($spacers, 3);
+    font-size: $font-size-sm;
+
+    > .bi { font-size: 1.5rem; }
+  }
+}
+.player.is-error .player-message > .bi {
+  color: $coral;
+}
+// 載入中：畫面壓暗、中央轉圈；控制列停用
+.player.is-loading {
+  .player-frame {
+    filter: brightness(.35);
+  }
+  .player-message {
+    background-color: transparent;
+  }
+  .spinner-border {
+    --bs-spinner-width: 3rem;
+    --bs-spinner-height: 3rem;
+    --bs-spinner-border-width: 2px;
+    color: $glow;
+    filter: drop-shadow(0 0 .5rem rgba($glow, .6));
+  }
+}

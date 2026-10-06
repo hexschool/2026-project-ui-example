@@ -1,0 +1,161 @@
+// ============================================================
+// 課程卡（首頁熱門課程、課程列表、Guideline）
+// 封面 16:9＋右下時長 → 分類與難度 → 課程名稱 → 講師文字頭像 → 星等＋學習人數 → 價格＋「免費試看」
+// 整張卡由標題的 .stretched-link 連到 course.html；「免費試看」按鈕拉高 z-index，另外連到 course.html#trial
+// 靜止時封面略暗；hover／focus 時亮燈（共用 .lit），外圈浮出冷藍柔光
+//
+// <article class="course-card lit">
+//   <div class="course-card-media lit-media"><img …><span class="chip chip-duration">4 小時 20 分</span></div>
+//   <div class="course-card-body">
+//     <ul class="course-card-tags">…</ul>
+//     <h3 class="course-card-title text-phrase"><a class="stretched-link" href="course.html">…</a></h3>
+//     <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">林</span>林子謙</p>
+//     <p class="course-card-stats">…</p>
+//     <div class="course-card-foot"><p class="price">NT$ 2,480</p><a class="btn btn-sm btn-outline-primary course-card-trial" …>免費試看</a></div>
+//   </div>
+// </article>
+// ============================================================
+.course-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%; // 同一列的卡片等高，價格列貼齊底部
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $booth;
+  overflow: hidden;
+}
+
+.course-card-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background-color: $aisle;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .chip-duration {
+    position: absolute;
+    right: .625rem;
+    bottom: .625rem;
+  }
+}
+// hover 時封面中央浮現播放圖示（裝飾，不可點；真正的動作是標題連結與「免費試看」）
+.course-card-media::after {
+  content: "\F4F4"; // bi-play-fill
+  font-family: "bootstrap-icons";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  padding-left: .1875rem; // 三角形視覺置中
+  border: 1px solid rgba($white, .7);
+  border-radius: 50%;
+  background-color: rgba($screen, .45);
+  color: $white;
+  font-size: 1.5rem;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.9);
+  transition: opacity $glow-transition, transform $glow-transition;
+  pointer-events: none;
+}
+.course-card:hover .course-card-media::after,
+.course-card:focus-within .course-card-media::after,
+.course-card.is-lit .course-card-media::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.course-card-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: map-get($spacers, 3) + .25rem map-get($spacers, 3) + .25rem map-get($spacers, 3);
+}
+
+.course-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .375rem;
+  margin: 0 0 .75rem;
+  padding: 0;
+  list-style: none;
+}
+
+// 課程名稱：最多 2 行，在「｜」後換行（HTML 用 <wbr>）
+.course-card-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: .875rem;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.55;
+  letter-spacing: .04em;
+
+  a {
+    color: $white;
+    text-decoration: none;
+  }
+  // 整張卡可點：焦點畫在整張卡上（stretched-link 的 ::after）
+  a:focus-visible {
+    outline: none;
+
+    &::after {
+      border-radius: $border-radius-lg;
+      outline: 2px solid $glow;
+      outline-offset: -2px;
+    }
+  }
+}
+
+.course-card-teacher {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  margin-bottom: .5rem;
+  color: $mist;
+  font-size: $font-size-sm;
+}
+
+.course-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem 1rem;
+  margin-bottom: map-get($spacers, 3);
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+
+  .rating {
+    color: $white;
+  }
+}
+
+// 價格＋免費試看：貼齊卡片底部，上方一條髮絲線
+.course-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: auto;
+  padding-top: .875rem;
+  border-top: 1px solid $line;
+
+  .price {
+    margin: 0;
+    font-size: 1.1875rem;
+  }
+}
+// 「免費試看」按鈕：疊在 stretched-link 之上才點得到
+.course-card-trial {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}

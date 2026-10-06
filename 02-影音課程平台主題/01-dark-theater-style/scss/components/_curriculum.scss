@@ -1,0 +1,279 @@
+// ============================================================
+// 章節清單：課程詳情的 Accordion（未購買版／已購買版）與學習頁側欄共用同一種「單元列」
+//
+// 單元列 .unit：狀態圖示 → 單元編號 → 單元名稱 → 狀態標籤與片長
+//   .is-trial    試看（▶＋「試看」標籤，可點播，連到 #trial）
+//   .is-playing  播放中（冷藍紗底＋左側冷藍光條＋「播放中」標籤，aria-current="true"）
+//   .is-locked   鎖定（鎖頭；<button> 開啟鎖定提示對話框）
+//   .is-done     已完成（薄荷勾勾）
+//   .is-todo     未開始（空心圓）
+// 狀態不只靠顏色：每一列都有圖示，圖示旁有 .visually-hidden 的狀態文字
+// <li>
+//   <a class="unit is-trial" href="#trial">
+//     <span class="unit-icon"><i class="bi bi-play-fill" aria-hidden="true"></i></span>
+//     <span class="unit-name"><span class="visually-hidden">試看：</span><span class="unit-no num">1-1</span>課程介紹：這堂課的四小時怎麼安排</span>
+//     <span class="unit-meta"><span class="chip chip-trial">…試看</span><span class="unit-time timecode">05:10</span></span>
+//   </a>
+// </li>
+// ============================================================
+.unit-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.unit {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+  align-items: start;
+  gap: .25rem .75rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: .75rem 1.25rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: $mist;
+  text-align: left;
+  text-decoration: none;
+  font-size: .9375rem;
+  line-height: 1.6;
+  transition: background-color .2s ease, color .2s ease;
+
+  &:hover {
+    background-color: $aisle;
+    color: $white;
+  }
+  &:focus-visible {
+    outline: 2px solid $glow;
+    outline-offset: -2px;
+  }
+}
+.unit-icon {
+  display: grid;
+  place-items: center;
+  height: 1.6em; // 與第一行文字垂直置中
+  color: $silver;
+  font-size: 1rem;
+}
+.unit-name {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.unit-no {
+  display: inline-block;
+  min-width: 2.25rem;
+  margin-right: .375rem;
+  color: $body-secondary-color;
+  font-size: .875rem;
+}
+.unit-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: .375rem .625rem;
+  min-height: 1.6em;
+}
+.unit-time {
+  color: $body-secondary-color;
+  font-size: .875rem;
+}
+
+// 試看：▶ 純白
+.unit.is-trial .unit-icon {
+  color: $white;
+}
+// 播放中：冷藍紗底＋左側冷藍光條，標題純白
+.unit.is-playing {
+  position: relative;
+  background-color: $glow-veil;
+  color: $white;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: .5rem auto .5rem 0;
+    width: 3px;
+    border-radius: $border-radius-pill;
+    background-color: $glow;
+    box-shadow: $glow-halo-sm;
+  }
+  .unit-icon,
+  .unit-no {
+    color: $glow;
+  }
+}
+// 鎖定：鎖頭、文字降一階
+.unit.is-locked {
+  color: $silver;
+  cursor: pointer;
+
+  .unit-icon {
+    color: $dim;
+  }
+  &:hover .unit-icon {
+    color: $silver;
+  }
+}
+// 已完成：薄荷勾勾
+.unit.is-done .unit-icon {
+  color: $mint;
+}
+// 未開始：空心圓
+.unit.is-todo .unit-icon {
+  color: $dim;
+  font-size: .875rem;
+}
+
+// 576px 以下：狀態標籤與片長排到名稱下方，名稱可以用滿整列
+@include media-breakpoint-down(sm) {
+  .unit {
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    padding-inline: 1rem;
+  }
+  .unit-meta {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+  .unit-no {
+    min-width: 0;
+    margin-right: .5rem;
+  }
+}
+
+// ---------- 課程詳情：Accordion ----------
+// 章節標題列：「第 N 章　章名」＋「N 單元 ‧ M 分」
+.curriculum {
+  .accordion-item {
+    background-color: $booth;
+  }
+  .accordion-button {
+    gap: .25rem 1rem;
+    flex-wrap: wrap;
+    min-height: 3.75rem;
+    padding-right: 3.5rem; // 給右側箭頭
+    background-color: transparent;
+    font-size: 1rem;
+    font-weight: $font-weight-medium;
+    letter-spacing: .04em;
+
+    // 箭頭固定在右側，不跟著文字換行
+    &::after {
+      position: absolute;
+      right: 1.25rem;
+      top: 50%;
+      margin-top: calc(var(--bs-accordion-btn-icon-width) * -.5);
+    }
+    &:not(.collapsed) {
+      box-shadow: inset 0 -1px 0 $line;
+    }
+  }
+  .accordion-body {
+    padding: map-get($spacers, 2) 0;
+  }
+}
+.curriculum-chapter {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.curriculum-chapter-meta {
+  margin-left: auto;
+  color: $body-secondary-color;
+  font-size: .875rem;
+  font-weight: $font-weight-normal;
+  white-space: nowrap;
+
+  @include media-breakpoint-down(sm) {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+}
+
+// ---------- 學習頁側欄：可多章同時展開的章節清單 ----------
+// <section class="chapter">
+//   <h3 class="chapter-heading">
+//     <button class="chapter-toggle" data-bs-toggle="collapse" …>
+//       <span class="chapter-state is-current">…圖示＋visually-hidden 狀態</span>
+//       <span class="chapter-name">第 3 章　手捏成形：從土球到碗</span>
+//       <span class="chapter-count num">1／6</span>
+//     </button>
+//   </h3>
+//   <div class="collapse show" id="…"><ol class="unit-list">…</ol></div>
+// </section>
+.chapter + .chapter {
+  border-top: 1px solid $line;
+}
+.chapter-heading {
+  margin: 0;
+  font-size: $font-size-base;
+}
+.chapter-toggle {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) auto 1rem;
+  align-items: start;
+  gap: .75rem;
+  width: 100%;
+  min-height: 3.25rem;
+  padding: .875rem 1rem;
+  border: 0;
+  background: transparent;
+  color: $white;
+  text-align: left;
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.6;
+  letter-spacing: .04em;
+
+  // 右側箭頭：展開時轉向
+  &::after {
+    content: "\F282"; // bi-chevron-down
+    font-family: "bootstrap-icons";
+    height: 1.6em;
+    display: grid;
+    place-items: center;
+    color: $silver;
+    font-size: .8125rem;
+    font-weight: $font-weight-normal;
+    transition: transform .2s ease;
+  }
+  &:not(.collapsed)::after {
+    transform: rotate(180deg);
+    color: $glow;
+  }
+  &:hover {
+    background-color: $aisle;
+  }
+  &:focus-visible {
+    outline: 2px solid $glow;
+    outline-offset: -2px;
+  }
+}
+.chapter-name {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.chapter-count {
+  color: $body-secondary-color;
+  font-size: .875rem;
+  font-weight: $font-weight-normal;
+}
+// 章節狀態圖示：已完成（薄荷實心勾）、目前章節（冷藍實心播放）、部分完成（半圓）、未開始（空心圓）
+.chapter-state {
+  display: grid;
+  place-items: center;
+  height: 1.6em;
+  font-size: 1rem;
+
+  &.is-done    { color: $mint; }
+  &.is-current { color: $glow; filter: drop-shadow(0 0 .375rem rgba($glow, .6)); }
+  &.is-partial { color: $glow-soft; }
+  &.is-todo    { color: $dim; }
+}
+.chapter .unit-list {
+  padding-bottom: .5rem;
+}
+.chapter .unit {
+  padding-left: 1rem;
+  font-size: .875rem;
+}

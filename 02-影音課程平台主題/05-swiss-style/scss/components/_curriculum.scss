@@ -1,0 +1,304 @@
+// ============================================================
+// 章節清單／播放清單（本風格的招牌）
+// Notion：「播放清單去除多餘裝飾，以純粹的排版字級架構層級」
+//
+// 規則：
+// - 不用卡片底色、陰影、圓角，也不用整列反白；只有兩種線：章節開頭 2px 墨黑、單元之間 1px 細線灰
+// - 層級只靠字級與字重：章名 20px 粗體 → 單元名 16px 一般 → 編號、片長、單元數 14px 等寬數字
+// - 每一列都對齊同一組欄線：編號｜名稱｜狀態｜片長，數字欄靠右對齊、上下對齊
+// - 狀態用「圖示＋文字（可視覺隱藏）」：試看＝細框標籤、鎖定＝鎖頭、
+//   播放中＝瑞士紅 ▶＋紅色粗體（全清單唯一的紅）、已完成＝墨黑 ✓、未開始＝石墨灰 ○
+// - 展開收合用「＋／－」，不用箭頭
+//
+// 兩種版本共用同一組單元列：
+// .curriculum             課程詳情（Bootstrap Accordion，未購買：試看／播放中／鎖定；已購買：已完成／可播放）
+// .curriculum.is-compact  學習頁側欄（可多章同時展開；已完成／播放中／未開始）
+// ============================================================
+.curriculum {
+  --curriculum-no-width: 4rem;   // 編號欄（「第 1 章」「1-1」）
+  --curriculum-time-width: 3.5rem; // 片長欄（「08:42」）
+  --curriculum-state-width: 4.5rem; // 狀態欄（「試看」標籤、鎖頭、✓）
+  border-bottom: $rule-heavy solid $rule;
+}
+
+// ---------- 章節列 ----------
+// 寫成 .curriculum .curriculum-chapter：要蓋過 Bootstrap 的 .accordion-item:not(:first-of-type) { border-top: 0 }
+.curriculum .curriculum-chapter {
+  border-top: $rule-heavy solid $rule;
+}
+// 學習頁側欄的章節標題是 <h3>，只當語意用，字級由按鈕決定
+.curriculum-chapter-heading {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+.curriculum-chapter-btn {
+  display: grid;
+  grid-template-columns: var(--curriculum-no-width) minmax(0, 1fr) auto 1.5rem;
+  align-items: baseline;
+  column-gap: map-get($spacers, 3);
+  width: 100%;
+  padding: map-get($spacers, 4) 0;
+  border: 0;
+  background: transparent;
+  color: $ink;
+  text-align: left;
+
+  // Bootstrap accordion 的箭頭關掉，改用 .curriculum-toggle 的＋／－
+  &::after {
+    display: none;
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px $swiss-red;
+  }
+  &:hover .curriculum-chapter-name {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .25em;
+  }
+}
+// 覆蓋 Bootstrap accordion 的預設外觀（底色、內距、焦點陰影）
+.accordion-button.curriculum-chapter-btn {
+  padding-inline: 0;
+  background: transparent;
+  box-shadow: none;
+
+  &:not(.collapsed) {
+    color: $ink;
+    background: transparent;
+    box-shadow: none;
+  }
+  &:focus-visible {
+    box-shadow: inset 0 0 0 2px $swiss-red;
+  }
+}
+.curriculum-chapter-no {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.curriculum-chapter-name {
+  font-size: $h3-font-size;
+  font-weight: $font-weight-bold;
+  line-height: 1.4;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.curriculum-chapter-meta {
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+}
+// ＋／－：兩條 2px 墨黑線組成，收合時是＋、展開時是－
+.curriculum-toggle {
+  position: relative;
+  align-self: center;
+  justify-self: end;
+  width: .875rem;
+  height: .875rem;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    background-color: $ink;
+    transition: transform .2s ease;
+  }
+  &::before { left: 0; right: 0; top: 50%; height: 2px; transform: translateY(-50%); }
+  &::after  { top: 0; bottom: 0; left: 50%; width: 2px; transform: translateX(-50%); }
+}
+[aria-expanded="true"] > .curriculum-toggle::after {
+  transform: translateX(-50%) scaleY(0);
+}
+
+// ---------- 單元列 ----------
+.curriculum-units {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 map-get($spacers, 3);
+}
+.curriculum-unit {
+  border-top: $rule-thin solid $hairline;
+}
+.curriculum-unit-link {
+  display: grid;
+  grid-template-columns: var(--curriculum-no-width) minmax(0, 1fr) var(--curriculum-state-width) var(--curriculum-time-width);
+  align-items: baseline;
+  column-gap: map-get($spacers, 3);
+  width: 100%;
+  min-height: 3rem;
+  padding: .75rem 0;
+  border: 0;
+  background: transparent;
+  color: $ink;
+  text-align: left;
+  text-decoration: none;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px $swiss-red;
+  }
+}
+a.curriculum-unit-link:hover,
+button.curriculum-unit-link:hover {
+  color: $ink;
+
+  .curriculum-unit-name {
+    text-decoration: underline;
+    text-underline-offset: .3em;
+  }
+}
+.curriculum-unit-no {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  font-variant-numeric: tabular-nums;
+}
+.curriculum-unit-name {
+  line-height: 1.6;
+}
+.curriculum-unit-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .25rem;
+  font-size: .8125rem;
+  font-weight: $font-weight-bold;
+  white-space: nowrap;
+
+  > .bi {
+    font-size: 1rem;
+    line-height: 1;
+  }
+}
+.curriculum-unit-time {
+  font-size: $font-size-sm;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: $body-secondary-color;
+}
+
+// 試看：可點播（連到 #trial），狀態是細框「試看」標籤
+// 鎖定：石墨灰鎖頭，名稱維持墨黑（看得清楚要買什麼）
+.curriculum-unit.is-locked .curriculum-unit-state {
+  color: $graphite;
+}
+// 播放中：瑞士紅＋粗體——清單裡唯一的顏色
+.curriculum-unit.is-current {
+  .curriculum-unit-no,
+  .curriculum-unit-name,
+  .curriculum-unit-state,
+  .curriculum-unit-time {
+    color: $swiss-red;
+    font-weight: $font-weight-bold;
+  }
+}
+// 已完成：墨黑 ✓；未開始：石墨灰 ○（名稱維持墨黑，狀態欄的符號區分）
+.curriculum-unit.is-done .curriculum-unit-state {
+  color: $ink;
+}
+.curriculum-unit.is-todo .curriculum-unit-state {
+  color: $graphite;
+}
+
+// ---------- 學習頁側欄版（.is-compact）：欄寬縮小，章名改成兩層（第 N 章／章名） ----------
+.curriculum.is-compact {
+  --curriculum-no-width: 2.25rem;
+  --curriculum-time-width: 3rem;
+  --curriculum-state-width: 1.25rem;
+
+  .curriculum-chapter-btn {
+    grid-template-columns: minmax(0, 1fr) auto 1rem;
+    grid-template-areas:
+      "no meta toggle"
+      "name meta toggle";
+    align-items: center;
+    row-gap: .125rem;
+    padding-block: map-get($spacers, 3);
+  }
+  .curriculum-chapter-no {
+    grid-area: no;
+    font-size: .75rem;
+    color: $body-secondary-color;
+  }
+  .curriculum-chapter-name {
+    grid-area: name;
+    font-size: $font-size-base;
+  }
+  .curriculum-chapter-meta {
+    grid-area: meta;
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    color: $ink;
+    font-weight: $font-weight-medium;
+
+    .bi {
+      font-size: 1rem;
+      line-height: 1;
+    }
+  }
+  .curriculum-toggle {
+    grid-area: toggle;
+    width: .75rem;
+    height: .75rem;
+  }
+  .curriculum-unit-link {
+    column-gap: map-get($spacers, 2);
+    padding-block: .625rem;
+    min-height: 2.75rem;
+    font-size: $font-size-sm;
+  }
+  .curriculum-unit-no,
+  .curriculum-unit-time {
+    font-size: .8125rem;
+  }
+  .curriculum-units {
+    padding-bottom: map-get($spacers, 2);
+  }
+}
+// 目前章節：章名加瑞士紅的 ▶（章節列唯一的紅）
+.curriculum-chapter.is-current .curriculum-chapter-meta .bi {
+  color: $swiss-red;
+}
+.curriculum-chapter.is-todo .curriculum-chapter-meta {
+  color: $graphite;
+}
+
+// ---------- 768px 以下（課程詳情版）：名稱要有足夠寬度 ----------
+// 章節列：「第 N 章」與單元數在第一行，章名獨占第二行
+// 單元列：狀態（試看、播放中、鎖頭、已完成）移到單元名稱下方
+@include media-breakpoint-down(md) {
+  .curriculum:not(.is-compact) {
+    --curriculum-no-width: 2.5rem;
+
+    .curriculum-chapter-btn {
+      grid-template-columns: minmax(0, 1fr) auto 1rem;
+      grid-template-areas:
+        "no meta toggle"
+        "name name toggle";
+      row-gap: .25rem;
+      padding-block: map-get($spacers, 3);
+    }
+    .curriculum-chapter-no { grid-area: no; }
+    .curriculum-chapter-name { grid-area: name; font-size: 1.125rem; }
+    .curriculum-chapter-meta { grid-area: meta; }
+    .curriculum-toggle { grid-area: toggle; }
+
+    .curriculum-unit-link {
+      grid-template-columns: var(--curriculum-no-width) minmax(0, 1fr) auto;
+      grid-template-areas:
+        "no name time"
+        "no state time";
+      row-gap: .25rem;
+    }
+    .curriculum-unit-no { grid-area: no; }
+    .curriculum-unit-name { grid-area: name; }
+    .curriculum-unit-state { grid-area: state; justify-content: flex-start; }
+    .curriculum-unit-time { grid-area: time; }
+  }
+}
