@@ -1,0 +1,443 @@
+// ============================================================
+// 首頁（index.html）
+// 「夜間展間」：Hero 的拱門圖框＋展示牌是首頁唯一的招牌元素，
+// 其餘區塊保持安靜：大留白、古銅髮絲線分隔、金色只留給主要動作與目前選取。
+// ============================================================
+
+// 區塊標題與一句說明、商品名稱、情境卡標題：在模板加上共用的 .text-phrase，只在標點、空格與零寬空白處換行
+// （「日暮亞麻｜雙人沙發床」與「(底座隱藏收納)」各自成段）；手機的區塊標題把分隔符「｜」換成換行
+// 一兩行的短說明（四大堅持、承諾、見證引言）也加 .text-phrase＋<wbr>，避免「適／應」「沙／發」這類詞被拆開
+
+// ---------- 區塊一：Hero ----------
+// 手機：標題 → 說明 → 按鈕 → 拱門圖 → 展示牌，由上而下一欄
+// md 以上：12 欄格線，左 7 欄（lg 起 6 欄）放文字，右 5 欄放拱門圖；lg 起中間空一欄當呼吸
+.home-hero {
+  padding-block: map-get($spacers, 4) map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 5) map-get($spacers, 7);
+  }
+}
+
+.home-hero-grid {
+  display: grid;
+  row-gap: map-get($spacers, 5);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: $grid-gutter-width;
+    align-items: center; // 文字區塊與拱門圖垂直置中對齊
+  }
+}
+
+.home-hero-text {
+  @include media-breakpoint-up(md) { grid-column: 1 / span 7; }
+  @include media-breakpoint-up(lg) { grid-column: 1 / span 6; }
+}
+
+// 襯線大字橫排：每一行不斷行，字級跟著欄寬放大（最長一行 8 個字＋字距，剛好收在文字欄內）
+.home-hero-title {
+  margin-bottom: map-get($spacers, 4);
+  font-size: min(2.125rem, 9.5vw); // 320px 的小螢幕也放得下一行 8 個字
+  line-height: 1.4;
+
+  span { white-space: nowrap; }
+
+  @include media-breakpoint-up(sm) { font-size: 2.5rem; }
+  @include media-breakpoint-up(lg) {
+    margin-bottom: map-get($spacers, 5);
+    font-size: 3rem;
+  }
+  @include media-breakpoint-up(xl) { font-size: 3.75rem; }
+  @include media-breakpoint-up(xxl) { font-size: 4.25rem; }
+}
+
+.home-hero-lead {
+  max-width: 30em;
+  margin-bottom: map-get($spacers, 5);
+  line-height: 2;
+  color: $body-secondary-color;
+
+  @include media-breakpoint-up(lg) { font-size: $font-size-lg; }
+}
+
+// 拱門圖＋展示牌
+// 手機滿版寬；sm 時拱門太高，縮成 3/4 寬靠右；md 起放在右側 5 欄
+.home-hero-figure {
+  margin: 0;
+
+  @include media-breakpoint-only(sm) {
+    width: 75%;
+    margin-left: auto;
+  }
+  @include media-breakpoint-up(md) { grid-column: 8 / span 5; }
+}
+// 4:5 的拱門裁切 3:2 的照片：取中間段，正好是沙發、落地燈與牆上的畫
+.home-hero-arch > img {
+  object-position: 50% 50%;
+}
+.home-hero-placard {
+  margin-top: map-get($spacers, 4);
+}
+
+// ---------- 區塊二：四大堅持（燻木底上的四塊展示牌） ----------
+.home-value {
+  height: 100%;
+  padding-block: map-get($spacers, 4);
+  border-top: 1px solid $line-strong; // 燻木底上，古銅線太淡，改用深古銅
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 4) 0;
+  }
+}
+// 手機單欄：最後一項補上底線收尾（sm 起兩欄以上，只留上方的線）
+@include media-breakpoint-down(sm) {
+  .home-values > li:last-child .home-value { border-bottom: 1px solid $line-strong; }
+}
+// 線條圖示：香檳金（燻木底上 8.1:1），和標題一樣是「被光照到」的重點
+.home-value-icon {
+  flex: 0 0 auto;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: $champagne;
+}
+
+// ---------- 區塊三：空間靈感 ----------
+// Popper 以 transform 移動小卡，但小卡原始位置仍會撐寬頁面；只裁切水平方向
+.home-rooms {
+  overflow-x: clip;
+}
+
+// 情境卡（分頁按鈕）：縮圖＋【情境名】＋標題
+// 手機：橫向捲動列（貼齊螢幕兩側）；sm–md：3 欄直式卡；lg 以上：3 欄橫式卡
+.home-room-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: map-get($spacers, 3);
+  margin: 0;
+  padding: 0;
+
+  @include bleed-x;
+  @include media-breakpoint-down(sm) {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: min(18rem, 80%); // 露出下一張的一部分，提示可以橫向滑動
+    overflow-x: auto;
+    padding-block: .25rem; // 焦點環（外擴 4px）不被捲動容器裁掉
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: $container-padding-x * .5;
+    scrollbar-width: none;
+
+    > li { scroll-snap-align: start; }
+  }
+}
+.home-room-tab {
+  display: flex;
+  align-items: center;
+  gap: map-get($spacers, 3);
+  width: 100%;
+  height: 100%;
+  padding: .75rem;
+  border: 1px solid $line;
+  background-color: transparent;
+  color: $body-secondary-color;
+  text-align: start;
+  transition: border-color .2s ease, background-color .2s ease, color .2s ease, box-shadow .2s ease;
+
+  &:hover {
+    border-color: $control;
+    color: $ivory;
+  }
+  // 目前選取：古金框＋胡桃墨底，上緣再加一道 2px 香檳金（不只靠顏色，粗細也不同）
+  &.active {
+    border-color: $champagne-deep;
+    background-color: $walnut;
+    box-shadow: inset 0 2px 0 $champagne;
+    color: $ivory;
+
+    .home-room-label { color: $champagne; }
+  }
+
+  @include media-breakpoint-between(sm, lg) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .75rem;
+  }
+}
+.home-room-thumb {
+  display: block;
+  flex: 0 0 auto;
+  width: 4.5rem;
+  aspect-ratio: 1 / 1;
+
+  > img { transition: filter .3s ease; }
+
+  @include media-breakpoint-between(sm, lg) {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+  }
+  @include media-breakpoint-up(lg) {
+    width: 6rem;
+    aspect-ratio: 4 / 3;
+  }
+  @include media-breakpoint-up(xl) { width: 7rem; }
+}
+// 滑過時像把燈調亮一點（與商品卡相同，不放大）
+.home-room-tab:hover .home-room-thumb > img { filter: brightness(1.15); }
+
+.home-room-label {
+  margin-left: -.5em; // 抵銷全形括號「【」左側的空白，讓文字對齊左緣
+  margin-bottom: map-get($spacers, 1);
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+  letter-spacing: $letter-spacing-label;
+  transition: color .2s ease;
+}
+.home-room-name {
+  font-size: .9375rem;
+  line-height: $line-height-sm;
+  text-wrap: balance; // 卡片標題兩行時平均分配
+}
+
+// 熱點以圖片寬高的百分比定位，所以圖框固定 3:2（與原圖相同，不裁切）
+.home-room-stage {
+  position: relative;
+}
+.home-room-frame {
+  aspect-ratio: 3 / 2;
+}
+
+// 熱點：44px 點擊範圍，視覺上是一顆小圓點
+// 不用 transform 置中，避免建立堆疊環境讓彈出小卡被其他圓點蓋住
+.home-spot {
+  position: absolute;
+  margin: -1.375rem 0 0 -1.375rem;
+}
+.home-spot-btn {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+
+  // 焦點環畫在照片上：香檳金外圈＋曜石黑內圈，亮處暗處都看得見
+  &:focus-visible {
+    outline: 2px solid $champagne;
+    outline-offset: -2px;
+    box-shadow: inset 0 0 0 4px $obsidian;
+  }
+}
+// 圓點：半透明曜石黑底＋淺香檳細框與中心點，外圍一圈淡淡的金色光暈，像展間裡的指示燈
+.home-spot-dot {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid $champagne-light;
+  border-radius: 50%;
+  background-color: rgba($obsidian, .6);
+  box-shadow: 0 0 0 .375rem rgba($champagne, .22);
+  transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease;
+
+  &::after {
+    content: "";
+    width: .375rem;
+    height: .375rem;
+    border-radius: 50%;
+    background-color: $champagne-light;
+  }
+}
+.home-spot-btn:hover .home-spot-dot {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 .375rem rgba($champagne, .35);
+}
+// 展開中：實心香檳金＋曜石黑中心點
+.home-spot-btn[aria-expanded="true"] .home-spot-dot {
+  border-color: $champagne;
+  background-color: $champagne;
+
+  &::after { background-color: $obsidian; }
+}
+
+// 浮在照片上的小卡（胡桃墨底與陰影沿用全域 .dropdown-menu）
+// 上緣換成古金細線，像展品旁的展示牌
+.home-spot-card {
+  --bs-dropdown-padding-x: 1rem;
+  --bs-dropdown-padding-y: 1rem;
+  width: 18rem;
+  max-width: calc(100vw - #{$container-padding-x}); // 320px 螢幕也留出左右 20px
+  border-top-color: $champagne-deep;
+}
+.home-spot-name {
+  font-family: $font-family-serif; // 品名一律用襯線（展示牌語彙，同商品卡）
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
+}
+
+// 小縮圖（熱點小卡、情境商品清單共用）
+.home-thumb {
+  flex: 0 0 auto;
+  width: 4rem;
+  aspect-ratio: 1 / 1;
+}
+
+// 情境商品清單：名稱 → 尺寸 → 價格，由上而下一欄排列，尺寸不會被價格欄擠成兩行
+// 整列可點（stretched-link），滑過時品名換成香檳金並出現底線
+.home-room-item {
+  padding-block: map-get($spacers, 3);
+
+  .dim { display: flex; }
+  &:hover .home-room-link {
+    color: $champagne;
+    text-decoration: underline;
+  }
+}
+.home-room-link {
+  display: block;
+  margin-bottom: map-get($spacers, 1);
+  font-family: $font-family-serif; // 品名一律用襯線（展示牌語彙，同商品卡）
+  font-size: .9375rem;
+  line-height: $line-height-sm;
+  text-decoration: none;
+}
+
+// 售完（清單與熱點小卡）：縮圖調暗、價格改霧白，與商品卡的 .is-sold-out 一致
+.home-room-item.is-sold-out,
+.home-spot-card.is-sold-out {
+  .home-thumb img { filter: brightness(.4) saturate(.6); }
+  .price { color: $body-secondary-color; }
+}
+
+// ---------- 區塊四：人氣嚴選（手機／平板橫向滑動、桌機四欄） ----------
+.home-featured-section {
+  overflow-x: clip; // 桌面瀏覽器的 100vw 含捲軸寬度，這裡裁掉多出的幾 px
+}
+.home-featured {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: map-get($spacers, 5);
+  padding: 0;
+
+  // 第一張卡片對齊版心左緣，列表往右延伸到螢幕邊緣，露出下一張的一部分
+  @include media-breakpoint-down(lg) {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 40%;
+    gap: map-get($spacers, 4);
+    overflow-x: auto;
+    padding-bottom: map-get($spacers, 3);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: $line-strong transparent;
+
+    > li { scroll-snap-align: start; }
+  }
+  // 手機：左右都貼齊螢幕邊緣，捲動停點仍對齊版心
+  @include bleed-x;
+  @include media-breakpoint-down(sm) {
+    grid-auto-columns: 75%;
+    scroll-padding-inline: $container-padding-x * .5;
+  }
+}
+@each $bp in (sm, md) {
+  @include media-breakpoint-only($bp) {
+    .home-featured {
+      margin-right: calc((#{map-get($container-max-widths, $bp)} - 100vw) / 2 - #{$container-padding-x * .5});
+    }
+  }
+}
+
+// ---------- 區塊五：室友見證＆無憂承諾 ----------
+.home-ugc-media {
+  aspect-ratio: 4 / 3;
+
+  @include media-breakpoint-up(sm) { aspect-ratio: 1 / 1; }
+}
+// 玄關照片的主角（洞洞板）在畫面上緣：手機裁成 4:3 時靠上裁切，板子頂端與掛鉤才不會被切掉
+.home-ugc-media-top > img {
+  object-position: 50% 10%;
+}
+// 使用者原話：襯線字，像展示牌上的引言
+.home-ugc-quote {
+  margin: map-get($spacers, 4) 0 map-get($spacers, 3);
+  font-family: $font-family-serif;
+  font-size: $font-size-lg;
+  line-height: 1.9;
+  letter-spacing: $letter-spacing-heading;
+}
+// 句中的商品連結：品名放不下時整段換到下一行；上下內距把觸控範圍補到約 44px，負邊距抵銷，不影響行距
+.home-ugc-product {
+  display: inline-block;
+  padding-block: .8125rem;
+  margin-block: -.8125rem;
+  color: $ivory;
+  text-decoration-color: $champagne-deep;
+
+  &:hover {
+    color: $champagne;
+    text-decoration-color: currentColor;
+  }
+}
+// 承諾清單的上下內距隨欄寬放大，讓右欄底線與左欄見證的底部大致對齊
+.home-promise {
+  padding-block: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: $spacer * 2;
+  }
+  @include media-breakpoint-up(xl) {
+    padding-block: map-get($spacers, 5);
+  }
+}
+
+// ---------- 底部 CTA ----------
+// 手機：照片在上、文字在下；md 以上：照片滿版鋪底，文字放在照片左半的深色灰泥牆上（暖白字 10:1 以上）
+.home-cta {
+  position: relative;
+  overflow: hidden;
+}
+.home-cta-bg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  object-position: 75% 50%;
+}
+.home-cta-inner {
+  padding-top: map-get($spacers, 5); // 手機：下方直接接頁尾的留白
+}
+.home-cta-title {
+  margin-bottom: map-get($spacers, 3);
+  font-size: $h2-font-size;
+  line-height: 1.6;
+
+  @include media-breakpoint-up(lg) { font-size: $h1-font-size; }
+}
+
+@include media-breakpoint-up(md) {
+  // 高度用 min-height＋vw 決定，寬度永遠是 100%：
+  // 不要用 aspect-ratio＋max-height，寬度是 auto 時 max-height 會反推成寬度上限，1920 時區塊就不滿版
+  .home-cta {
+    display: flex;
+    align-items: center;
+    min-height: clamp(30rem, 50vw, 52rem); // 768 → 480px、1440 → 720px、1920 → 832px
+  }
+  .home-cta-bg {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    aspect-ratio: auto;
+    object-position: 50% 50%;
+  }
+  .home-cta-inner {
+    position: relative;
+    padding-block: map-get($spacers, 6);
+  }
+  // 滿版照片直接接頁尾，不留一條曜石黑空隙
+  #main:has(.home-cta) + .site-footer {
+    margin-top: 0;
+  }
+}

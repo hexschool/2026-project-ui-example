@@ -1,0 +1,458 @@
+// ============================================================
+// 商品詳情（product.html）
+// 版型：展品區（lg 左 7 欄圖庫 sticky／右 5 欄展示牌）→ 燻木底的分頁籤區塊 → 你可能也會喜歡 → 設計稿狀態示意
+// 概念：商品像夜間展間裡被一盞暖光照亮的展品；右側資訊欄是展品旁的展示牌
+//       （古金細線 → 分類 → 襯線品名 → Bodoni Moda 大金額）
+// 特色元素：依實際比例縮放的「尺寸圖」（正面＋側面線稿＋尺寸線）
+// ============================================================
+
+// 頁首：沿用 .page-header 的上方留白與麵包屑間距，麵包屑下方直接接圖庫與商品名
+.pd-head {
+  margin-bottom: 0;
+
+  // 手機：麵包屑維持一行，過長的品名以刪節號收尾（完整品名就在下方 h1）
+  @include media-breakpoint-down(md) {
+    .breadcrumb {
+      flex-wrap: nowrap;
+    }
+    .breadcrumb-item {
+      flex-shrink: 0; // 單一項目不斷行由共用 .breadcrumb-item 負責，這裡只讓前面幾項不被壓縮
+    }
+    .breadcrumb-item.active {
+      flex-shrink: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+// ---------- 圖庫 ----------
+// md 以上：圖庫比資訊欄短，隨捲動停留在畫面上
+.pd-gallery {
+  @include media-breakpoint-up(md) {
+    position: sticky;
+    top: $sticky-top-offset;
+  }
+  // lg：縮圖改排在主圖左側，像展間牆上的一排小框；只有一張圖（沒有縮圖列）時主圖直接靠齊版心
+  @include media-breakpoint-up(lg) {
+    &:has(.pd-thumbs) {
+      display: grid;
+      grid-template-columns: 4.5rem 1fr;
+      gap: map-get($spacers, 3);
+      align-items: start;
+    }
+  }
+}
+.pd-gallery-main {
+  position: relative;
+
+  // 手機：主圖貼齊螢幕兩側，讓展品照有最大的畫面
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+  }
+  @include media-breakpoint-up(lg) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+.pd-gallery-frame {
+  aspect-ratio: 1 / 1;
+}
+
+// 左右切換：直角小方塊，半透明曜石黑底＋暖白箭頭，滑過時箭頭與框線換成香檳金
+.pd-gallery-arrow {
+  top: 50%;
+  bottom: auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-inline: map-get($spacers, 3);
+  transform: translateY(-50%);
+  border: 1px solid $line-strong;
+  background-color: rgba($obsidian, .72);
+  color: $ivory;
+  font-size: 1rem;
+  opacity: 1;
+  transition: color .2s ease, border-color .2s ease, background-color .2s ease;
+
+  &:hover,
+  &:focus-visible {
+    color: $champagne;
+    border-color: $champagne-deep;
+    background-color: rgba($obsidian, .9);
+    opacity: 1;
+  }
+  // Bootstrap 對 carousel 控制鈕設了 outline: 0，這裡補回與 .btn 相同的焦點環
+  &:focus-visible {
+    box-shadow: $focus-ring-double;
+  }
+}
+
+// 縮圖列：沿用 carousel-indicators 讓 Bootstrap 自動切換 active
+// 未選取的縮圖調暗（像燈還沒打到），目前這張全亮並加一圈香檳金細框
+// lg 以下：4 格平分整列寬度，左右兩端與下方的商品資訊對齊版心
+// （Bootstrap 的 carousel-indicators 預設置中，固定寬度的縮圖會在兩側各空出一截）
+.pd-thumbs.carousel-indicators {
+  position: static;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .75rem;
+  margin: map-get($spacers, 3) 0 0;
+  padding: 0;
+
+  [data-bs-target] {
+    box-sizing: border-box;
+    width: auto;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    text-indent: 0;
+    background-color: $walnut;
+    border: 1px solid $line;
+    opacity: .5;
+    transition: opacity .2s ease, border-color .2s ease;
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    &:hover { opacity: .85; }
+    // opacity 會連焦點環一起調淡：鍵盤停在未選取的縮圖時先全亮，香檳金焦點環才是完整的 9.8:1
+    &:focus-visible { opacity: 1; }
+  }
+  .active {
+    border-color: $champagne;
+    opacity: 1;
+  }
+
+  @include media-breakpoint-up(lg) {
+    grid-column: 1;
+    grid-row: 1;
+    grid-template-columns: 1fr;
+    margin: 0;
+  }
+}
+
+// ---------- 商品資訊＝展示牌 ----------
+// 上緣一條古金細線（同 .placard），與左側主圖的上緣對齊
+.pd-info {
+  padding-top: map-get($spacers, 4);
+  border-top: 1px solid $champagne-deep;
+}
+.pd-category {
+  margin-bottom: map-get($spacers, 2);
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+  letter-spacing: $letter-spacing-label;
+}
+// 長品名：模板加上共用的 .text-phrase，只在空白、括號前換行（例如「NestBox 自由拼裝收納方塊／(三入組)」）
+// 品名不用標題預設的 balance，改用 pretty：第一行盡量排滿，只避免最後一行剩孤字
+.pd-title {
+  @include font-size($h1-font-size);
+  margin-bottom: map-get($spacers, 3);
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+// 售價：Bodoni Moda 襯線數字（字體與光學尺寸由共用的 .amount 設定，這裡決定字級）
+.pd-price {
+  @include font-size(2.25rem);
+  margin-bottom: map-get($spacers, 2);
+  line-height: 1.3;
+  color: $ivory;
+}
+// 幣別：縮小、霧白，讓數字成為主角
+.pd-price-unit {
+  font-size: .5em;
+  letter-spacing: $letter-spacing-label;
+  color: $body-secondary-color;
+}
+// 庫存提示：圖示＋一行文字
+// 圖示用右邊距隔開，不用 flex 的 gap：文字裡有 <span class="num"> 時，flex 會把「剩」「5」「件」拆成三個項目，各插一段間距
+.pd-stock {
+  margin-bottom: map-get($spacers, 4);
+  font-size: $font-size-sm;
+
+  .bi { margin-right: .5rem; }
+
+  &.is-in  { color: $jade; }               // 有庫存：翡翠
+  &.is-low { color: $copper; }             // 剩不多：銅橘（提醒）
+  &.is-out { color: $body-secondary-color; } // 已售完：霧白
+}
+
+// 摘要：上方一條古銅髮絲線，與價格分開
+.pd-intro {
+  margin-bottom: map-get($spacers, 4);
+  padding-top: map-get($spacers, 4);
+  border-top: 1px solid $line;
+}
+.pd-summary {
+  display: -webkit-box;
+  margin-bottom: map-get($spacers, 1);
+  overflow: hidden;
+  color: $body-secondary-color;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+// ---------- 購買（數量列、貨到通知的排版用 utilities） ----------
+.pd-buy {
+  margin-bottom: map-get($spacers, 5);
+
+  .qty input:disabled { color: $ivory-faint; }
+
+}
+
+// ---------- 尺寸圖 ----------
+// 每組線稿的 --w / --d / --h 由模板帶入（單位 cm）；--u 為「1 cm 等於多長」：
+// 最高的一組不超過 8rem、最長的「正面＋側面」不超過容器可用寬度，兩者取小
+// 面板的底色（胡桃墨）、框線、內距用 Bootstrap 的 .card .card-body（$card-* 變數），這裡只讓線稿以面板寬度計算
+.pd-dim {
+  margin-bottom: map-get($spacers, 5);
+  container-type: inline-size;
+}
+// 多種模式（沙發床）時 --h-max／--span-max 取各模式的最大值，兩組線稿比例一致、可以直接比較
+.pd-dim-sets {
+  display: flex;
+  flex-direction: column;
+  gap: map-get($spacers, 4);
+  padding-bottom: map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 4);
+  border-bottom: 1px solid $line;
+}
+.pd-dim-mode {
+  margin-bottom: map-get($spacers, 2);
+  font-size: $font-size-sm;
+  color: $body-secondary-color;
+  letter-spacing: $letter-spacing-label;
+}
+.pd-dim-drawing {
+  --u: min(8rem / var(--h-max), (100cqi - 7.5rem) / var(--span-max));
+  display: flex;
+  align-items: flex-start;
+  gap: map-get($spacers, 3) 2rem;
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+}
+.pd-dim-h {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  height: calc(var(--h) * var(--u));
+  margin-right: -1rem; // 與正面線稿靠近一些
+  color: $ivory;
+  white-space: nowrap;
+}
+// 高度尺寸線：與寬、深的尺寸線（共用 .dim-line）同為表單框線色，深色底上 3:1 以上
+.pd-dim-vline {
+  position: relative;
+  width: .5rem;
+  height: 100%;
+  border-block: 1px solid $control;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 50%;
+    border-left: 1px solid $control;
+  }
+}
+.pd-dim-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .375rem;
+
+  // 尺寸線與線稿等寬（極薄的 D2 也照實呈現）
+  .dim-line {
+    min-width: 2px;
+    &.is-w { width: calc(var(--w) * var(--u)); }
+    &.is-d { width: calc(var(--d) * var(--u)); }
+  }
+}
+// 線稿：暖白 1px 外框＋金紗底，像展間裡被燈打亮的量體
+.pd-dim-box {
+  min-width: 2px;
+  height: calc(var(--h) * var(--u));
+  border: 1px solid $ivory;
+  background-color: $champagne-veil;
+
+  &.is-front { width: calc(var(--w) * var(--u)); }
+  &.is-side  { width: calc(var(--d) * var(--u)); }
+}
+.pd-dim-value {
+  color: $ivory;
+  white-space: nowrap;
+}
+.pd-dim-name {
+  font-size: .75rem;
+  white-space: nowrap;
+}
+.pd-dim-caption {
+  margin: 0;
+}
+// 圖說標題：襯線，像展示牌上的標題
+.pd-dim-title {
+  margin-bottom: map-get($spacers, 1);
+  font-family: $font-family-serif;
+  font-optical-sizing: auto;
+  font-size: $h5-font-size;
+  font-weight: $font-weight-medium;
+  letter-spacing: $letter-spacing-heading;
+  color: $ivory;
+}
+.pd-dim-size {
+  margin-bottom: map-get($spacers, 1);
+  font-size: $font-size-sm;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- 服務說明 ----------
+.pd-services {
+  margin-bottom: 0;
+  border-top: 1px solid $line;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: map-get($spacers, 3);
+    padding-block: map-get($spacers, 3);
+    border-bottom: 1px solid $line;
+    font-size: $font-size-sm;
+  }
+  .bi {
+    flex-shrink: 0;
+    font-size: 1.25rem;
+    line-height: 1.4;
+    color: $champagne;
+  }
+}
+
+// ---------- 分頁籤區塊（燻木底；上方留白由 .section 提供，評價數用共用的 .tab-count） ----------
+// 商品介紹：較大的細字，像展覽的導覽文字
+.pd-story {
+  max-width: 34em;
+  margin-bottom: map-get($spacers, 5);
+  font-size: $font-size-lg;
+  font-weight: $font-weight-light;
+  line-height: $line-height-lg;
+}
+.pd-scene-frame {
+  aspect-ratio: 3 / 2;
+}
+
+// 組裝步驟：真實順序，保留編號（Bodoni Moda 香檳金數字）
+// 步驟說明在模板加 .text-phrase：短句只在標點處換行，「軟布」這類詞不會被拆開
+.pd-steps {
+  margin-bottom: map-get($spacers, 4);
+  border-top: 1px solid $line;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: map-get($spacers, 3);
+    padding-block: map-get($spacers, 3);
+    border-bottom: 1px solid $line;
+    font-size: $font-size-sm;
+  }
+}
+// 與付款結果的流程編號相同：固定光學尺寸 18、字級放大一階
+// Bodoni Moda 的「1」旗角很短，20px 時幾乎和「l」一樣；24px 起才看得出是數字
+.pd-steps-no {
+  flex-shrink: 0;
+  width: 1.75rem;
+  font-family: $font-family-serif;
+  font-optical-sizing: none;
+  font-variation-settings: "opsz" 18;
+  font-size: 1.5rem;
+  line-height: 1;
+  font-weight: $font-weight-medium;
+  font-variant-numeric: lining-nums;
+  color: $champagne;
+}
+
+// 規格表：模板在 <table> 加 .text-phrase，規格值（多半是短句）只在空白與標點處換行
+.pd-spec {
+  --bs-table-bg: transparent;
+  border-top: 1px solid $line;
+
+  th {
+    width: 7.5rem;
+    padding-left: 0;
+    font-weight: $font-weight-normal;
+    color: $body-secondary-color;
+    white-space: nowrap;
+
+    // 手機讓出寬度給尺寸（最長的「W150 × D190 × H40 cm」要能一行放下）
+    @include media-breakpoint-down(sm) { width: 5.5rem; }
+  }
+  td { padding-right: 0; }
+
+  @include media-breakpoint-up(md) {
+    th { width: 10rem; }
+  }
+}
+
+// 評價：平均分數用 Bodoni Moda 大字（字體由 .amount 設定）
+// 與售價相同，固定光學尺寸 18：大字級預設的細線會讓「4」的斜筆幾乎消失
+.pd-rating-score {
+  @include font-size(map-get($display-font-sizes, 4));
+  line-height: 1.1;
+  font-optical-sizing: none;
+  font-variation-settings: "opsz" 18;
+}
+.pd-rating-max {
+  margin-left: .25rem;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  font-weight: $font-weight-normal;
+  color: $body-secondary-color;
+}
+// 星等：香檳金（對燻木 8:1 以上），旁邊一律附上數字分數
+.pd-stars {
+  color: $champagne;
+  letter-spacing: .125rem;
+}
+.pd-review-name {
+  margin-bottom: 0;
+  font-weight: $font-weight-medium;
+}
+.pd-review-score {
+  display: flex;
+  align-items: center;
+  gap: map-get($spacers, 2);
+  margin-bottom: map-get($spacers, 2);
+  font-size: $font-size-sm;
+}
+.pd-rating-fit {
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $line;
+  font-size: $font-size-sm;
+
+  .bi { color: $champagne; }
+}
+.pd-reviews {
+  border-top: 1px solid $line;
+
+  li {
+    padding-block: map-get($spacers, 4);
+    border-bottom: 1px solid $line;
+  }
+}
+
+// ---------- 你可能也會喜歡 ----------
+// 用 .section（上下留白、與上一個區塊之間的古銅線）＋共用商品卡，這裡不需要另外寫樣式
+
+// ---------- 設計稿狀態示意 ----------
+// 上方「你可能也會喜歡」的 .section 已留下 96–128px 的下方留白，虛線上方不再多加間距
+.pd-demo .demo-state {
+  margin-top: 0;
+
+  // 本頁的示意分成三種狀態（h3）：總說明與三欄之間多留一段，看得出 h2 → h3 的層級
+  > .text-note {
+    margin-bottom: map-get($spacers, 5);
+  }
+}

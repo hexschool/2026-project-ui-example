@@ -1,0 +1,492 @@
+// ============================================================
+// 我的訂單（orders.html）— 01 輕奢高定風
+// lg 以上：左 3 欄會員中心（固定）＋右 9 欄訂單；lg 以下：訂單、狀態示意在前，會員中心排在最後
+//
+// 概念：每筆訂單像一張「寄存單」——不做卡片外框，只用古銅髮絲線分隔、以留白分層
+// - 品名用襯線字（同商品卡的展示牌）、訂單金額用 Bodoni Moda 襯線數字（.amount）
+// - 配送進度像一排燈：走過的路是古金實線、目前這一站亮著暖光、還沒到的是深古銅虛線
+// - 已取消的訂單把展品照調暗（像熄了燈），金額改霧白
+// - 訂單明細展開成一塊胡桃墨的面（浮起一層），不用金色
+// 頁首節奏見 _base.scss 的 .page-header；「篩選後沒有訂單」示意用共用的 .demo-state、.empty-state
+// ============================================================
+
+// ---------- 會員中心 ----------
+.orders-aside {
+  // lg 以下：接在訂單與狀態示意之後，以留白分開；平板不拉成整排
+  max-width: 24rem;
+  margin-top: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+    max-width: none;
+    margin-top: 0;
+  }
+}
+
+// 會員名牌：古金細線＋襯線姓名＋小字信箱（同 .placard 的展示牌語彙）
+.orders-member {
+  padding-top: map-get($spacers, 3);
+  padding-bottom: map-get($spacers, 4);
+  border-top: 1px solid $champagne-deep;
+}
+.orders-member-name {
+  margin-bottom: .125rem;
+  font-family: $font-family-serif;
+  font-optical-sizing: auto;
+  font-size: $h4-font-size;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-sm;
+  letter-spacing: $letter-spacing-heading;
+  color: $ivory;
+}
+
+// 會員中心選單：髮絲線分隔的文字選單；目前頁＝金紗底＋左側一道香檳金細線
+.orders-menu {
+  --bs-list-group-bg: transparent;
+  --bs-list-group-color: #{$ivory-muted};
+  --bs-list-group-border-color: #{$line};
+  --bs-list-group-item-padding-x: #{map-get($spacers, 3)};
+  --bs-list-group-item-padding-y: .875rem;
+  --bs-list-group-action-color: #{$ivory-muted};
+  --bs-list-group-action-hover-color: #{$ivory};
+  --bs-list-group-action-hover-bg: #{$smoke};
+  --bs-list-group-action-active-color: #{$ivory};
+  --bs-list-group-action-active-bg: #{$smoke};
+  --bs-list-group-active-color: #{$ivory};
+  --bs-list-group-active-bg: #{$champagne-veil};
+  --bs-list-group-active-border-color: #{$line};
+  border-top: 1px solid $line;
+  border-bottom: 1px solid $line;
+
+  .list-group-item {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    font-size: $font-size-sm;
+    letter-spacing: $letter-spacing-label;
+  }
+  .list-group-item.active {
+    box-shadow: inset 1px 0 0 $champagne;
+
+    .bi { color: $champagne; }
+  }
+}
+// 登出：和選單隔開一段留白的文字按鈕（.btn .btn-text，44px 觸控高度由共用樣式提供）
+// 這裡只改成次要色、小一級字，圖示間距與上方選單相同
+.orders-logout {
+  --bs-btn-color: #{$ivory-muted};
+  --bs-btn-font-size: #{$font-size-sm};
+  gap: .75rem;
+}
+
+// ---------- 狀態篩選（手機可左右滑動，貼齊螢幕兩側） ----------
+.orders-filter {
+  @include bleed-x;
+
+  // 手機：左右兩側的留白處淡出，被切到的分頁看起來是「還可以滑」，而不是排版錯位
+  // 淡出寬度＝bleed-x 補回的內距，捲到最左或最右時，第一個與最後一個分頁都完整顯示
+  // （遮罩只看透明度，#000 代表「完全顯示」，不是顏色）
+  @include media-breakpoint-down(sm) {
+    $fade: $container-padding-x * .5;
+    mask-image: linear-gradient(to right, transparent, #000 $fade, #000 calc(100% - #{$fade}), transparent);
+  }
+}
+// 狀態示意的虛線框裡：不貼齊螢幕兩側、不淡出，篩選列留在框內
+.demo-state-stage .orders-filter {
+  margin-inline: 0;
+  padding-inline: 0;
+  mask-image: none;
+}
+
+// ---------- 訂單清單：一列一筆，髮絲線分隔 ----------
+.orders-list {
+  margin: 0;
+  border-bottom: 1px solid $line;
+}
+.orders-row {
+  padding-block: 2.5rem;                     // 40px
+
+  @include media-breakpoint-up(md) {
+    padding-block: map-get($spacers, 5);     // 48px
+  }
+
+  // 列與列之間的髮絲線：狀態篩選會把其他列設成 hidden，所以只看「顯示中」的列
+  &:not([hidden]) ~ &:not([hidden]) {
+    border-top: 1px solid $line;
+  }
+}
+
+// 列首：訂單編號＋下單日期（左）、狀態標籤（右）
+.orders-row-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 4);
+}
+// 訂單編號：Bodoni 的連字號太細、數字是展示字形，這裡改用無襯線等寬數字，方便核對
+.orders-no {
+  margin-bottom: .125rem;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-sm;
+  letter-spacing: .06em;
+}
+
+// 品項＋件數金額：手機上下排，md 起左右排
+.orders-row-body {
+  display: flex;
+  flex-direction: column;
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: map-get($spacers, 5);
+  }
+}
+.orders-items {
+  display: grid;
+  gap: map-get($spacers, 3);
+  margin: 0;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: map-get($spacers, 3);
+
+    @include media-breakpoint-up(md) {
+      gap: 1.25rem;
+    }
+  }
+}
+// 展品照縮圖：滑過整列時像把燈調亮一點（同商品卡）
+.orders-thumb {
+  flex: 0 0 4rem;
+  width: 4rem;
+  height: 4rem;
+
+  @include media-breakpoint-up(md) {
+    flex-basis: 4.5rem;
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+
+  img { transition: filter .3s ease; }
+}
+.orders-items li:hover .orders-thumb img {
+  filter: brightness(1.12);
+}
+// 品名：襯線字，像展品旁的說明牌
+.orders-item-name {
+  font-family: $font-family-serif;
+  font-optical-sizing: auto;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-sm;
+  letter-spacing: .04em;
+  color: $ivory;
+  text-decoration: none;
+
+  &:hover {
+    color: $champagne;
+  }
+}
+
+// 件數與金額：手機左右排開（髮絲線上方），md 起靠右堆疊、和最後一個品項底部對齊
+.orders-sum {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $line;
+
+  @include media-breakpoint-up(md) {
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .25rem;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  p { margin-bottom: 0; }
+  .amount {
+    font-size: $h4-font-size;               // 20px
+
+    @include media-breakpoint-up(md) {
+      font-size: $h3-font-size;             // 24px
+    }
+  }
+}
+
+// ---------- 已取消：展品照熄燈、品名與金額退成霧白 ----------
+.orders-row.is-cancel {
+  .orders-thumb img { filter: brightness(.45) saturate(.6); }
+  .orders-items li:hover .orders-thumb img { filter: brightness(.55) saturate(.6); }
+  .orders-item-name { color: $ivory-muted; }
+  .orders-item-name:hover { color: $champagne; }
+  .orders-sum .amount,
+  .orders-detail-sum .is-total dd { color: $ivory-muted; } // 列上與明細裡的金額一致
+}
+
+// ---------- 大型家具配送進度（出貨中）：已付款 → 備貨中 → 出貨中 → 已完成 ----------
+// 不只靠顏色分辨：已完成＝實心點＋實線、目前＝亮點＋光暈＋粗字、未到＝空心點＋虛線
+.orders-track-wrap {
+  margin-top: map-get($spacers, 4);
+  padding-top: map-get($spacers, 4);
+  border-top: 1px solid $line;
+
+  @include media-breakpoint-up(md) {
+    margin-top: map-get($spacers, 5) - 1rem; // 32px
+  }
+}
+.orders-track {
+  display: grid;
+  // 前三格平分，最後一格依文字寬度並靠右收尾，讓進度線畫滿整列
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  margin-bottom: map-get($spacers, 3);
+
+  li {
+    position: relative;
+    padding-top: 1.75rem;
+    padding-right: .5rem;
+    color: $ivory-faint;
+    font-size: $small-font-size;
+    line-height: 1.6;
+    letter-spacing: $letter-spacing-label;
+
+    // 節點（未到：空心）
+    &::before {
+      content: "";
+      position: absolute;
+      top: .25rem;
+      left: 0;
+      z-index: 1;
+      width: .5625rem;
+      height: .5625rem;
+      border: 1px solid $line-strong;
+      border-radius: 50%;
+      background-color: $obsidian;
+    }
+    // 節點之間的線（未到：虛線）
+    &::after {
+      content: "";
+      position: absolute;
+      top: .5rem;
+      left: .5625rem;
+      right: 0;
+      border-top: 1px dashed $line-strong;
+    }
+
+    // 最後一步：節點在右端、文字靠右；線從格子左緣畫到節點
+    &:last-child {
+      padding-right: 0;
+      text-align: right;
+
+      &::before { left: auto; right: 0; }
+      &::after { left: 0; right: .5625rem; }
+    }
+
+    // 走過的站：古金實心點＋實線
+    &.is-done {
+      color: $ivory-muted;
+
+      &::before { border-color: $champagne-deep; background-color: $champagne-deep; }
+      &::after { border-top-style: solid; border-top-color: $champagne-deep; }
+    }
+    // 目前這一站：香檳金亮點＋一圈暖光
+    &.is-current {
+      color: $ivory;
+      font-weight: $font-weight-medium;
+
+      &::before {
+        border-color: $champagne;
+        background-color: $champagne;
+        box-shadow: 0 0 0 .25rem rgba($champagne, .16), 0 0 .875rem .125rem rgba($champagne, .45);
+      }
+    }
+  }
+}
+.orders-track-date {
+  display: block;
+  font-weight: $font-weight-normal;
+}
+// 司機來電提醒：電話圖示用古金點一下
+.orders-track-note .bi {
+  color: $champagne-deep;
+}
+
+// ---------- 列尾：配送資訊＋動作 ----------
+.orders-row-foot {
+  display: flex;
+  flex-direction: column;
+  gap: map-get($spacers, 2);
+  margin-top: map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: map-get($spacers, 4);
+  }
+}
+.orders-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem map-get($spacers, 4);
+  margin: 0;
+  font-size: $font-size-sm;
+
+  dt {
+    display: inline;
+    margin-right: .5rem;
+    color: $ivory-muted;
+    font-weight: $font-weight-normal;
+    letter-spacing: $letter-spacing-label;
+  }
+  dd {
+    display: inline;
+    margin: 0;
+  }
+  // 待付款的付款期限：用提醒色，但不加底色、不加驚嘆號
+  .is-due dd { color: $copper; }
+}
+.orders-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 2) map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+  }
+}
+// 「訂單明細」展開鈕（44px 觸控高度由共用 .btn-text 提供）：箭頭隨展開狀態翻轉
+.orders-toggle {
+  gap: .375rem;
+
+  .bi {
+    display: inline-block; // 不套用文字底線
+    font-size: .75rem;
+    transition: transform .2s ease;
+  }
+  &[aria-expanded="true"] .bi {
+    transform: rotate(180deg);
+  }
+}
+
+// ---------- 訂單明細（展開）：胡桃墨的面，比頁面浮起一層 ----------
+.orders-detail {
+  margin-top: map-get($spacers, 3);
+  padding: map-get($spacers, 4);
+  border: 1px solid $line;
+  background-color: $walnut;
+  font-size: $font-size-sm;
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 5) - 1rem;  // 32px
+  }
+
+  p { margin-bottom: 0; }
+}
+// 明細裡的小標：襯線、暖白，下方一條髮絲線（像展示牌上的欄位名）
+.orders-detail-title {
+  margin-bottom: map-get($spacers, 2);
+  padding-bottom: map-get($spacers, 2);
+  border-bottom: 1px solid $line;
+  font-size: $h6-font-size;
+  line-height: $line-height-sm;
+  color: $ivory;
+}
+.orders-detail-lines {
+  margin-bottom: map-get($spacers, 3);
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: map-get($spacers, 3);
+    padding-block: .375rem;
+  }
+  li > .num { flex-shrink: 0; }
+}
+.orders-detail-sum {
+  margin: 0;
+  padding-top: map-get($spacers, 2);
+  border-top: 1px solid $line;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-block: .25rem;
+  }
+  dt {
+    color: $ivory-muted;
+    font-weight: $font-weight-normal;
+  }
+  dd { margin: 0; }
+
+  // 訂單金額：Bodoni Moda 襯線數字
+  .is-total {
+    margin-top: map-get($spacers, 2);
+    padding-top: map-get($spacers, 3);
+    border-top: 1px solid $line;
+
+    dt { color: $ivory; }
+    dd { font-size: $h4-font-size; }
+  }
+}
+// 右欄三段（收件資訊、付款方式、狀態歷程）之間以留白分開
+.orders-detail-info > .orders-detail-title:not(:first-child) {
+  margin-top: map-get($spacers, 4);
+}
+// ATM 繳費資訊：像一張繳費單——深古銅細框裡，標籤在上、號碼在下（不折行，方便抄寫）
+.orders-atm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 2) map-get($spacers, 5);
+  margin: map-get($spacers, 3) 0;
+  padding: .75rem 1rem;
+  border: 1px solid $line-strong;
+  background-color: $obsidian;
+
+  dt {
+    color: $ivory-muted;
+    font-size: $small-font-size;
+    font-weight: $font-weight-normal;
+    letter-spacing: $letter-spacing-label;
+  }
+  dd {
+    margin: 0;
+    font-size: $font-size-lg;
+    letter-spacing: .08em;
+    white-space: nowrap;
+  }
+}
+// 付款期限提醒：圖示懸掛在左，換行時文字對齊；文字加 .text-phrase，只在逗號處換行（不會拆開「自動取消」）
+.orders-due {
+  display: flex;
+  gap: .5rem;
+  color: $copper;
+
+  .bi { line-height: inherit; }
+}
+.orders-history {
+  margin: 0;
+
+  li {
+    display: flex;
+    gap: map-get($spacers, 3);
+    padding-block: .125rem;
+  }
+  .num {
+    flex: 0 0 auto;
+    color: $ivory-muted;
+  }
+}

@@ -1,0 +1,504 @@
+// ============================================================
+// NestCraft｜01 輕奢高定風 — Bootstrap 5 變數覆寫（design token）
+// 規則：只在這裡改 Bootstrap 變數；元件與頁面樣式一律引用變數，不寫死色碼
+//
+// 這是「單一深色主題」：不使用 data-bs-theme，直接把 Bootstrap 原本給淺色用的變數
+// （$body-bg、$input-bg、$dropdown-bg…）設成深色系，整套元件編譯出來就是深色。
+// 對比度皆以 WCAG 公式計算，括號內是對「曜石黑」頁面底色 $obsidian 的比值
+// ============================================================
+
+// ---------- 1. 色彩：曜石黑、香檳金、暖白 ----------
+// 基礎色票（設計 Guideline 的「色彩」章節即以此為準）
+
+// 面：由深到淺三層，都帶一點暖褐，不用中性的 #111
+$obsidian:        #16130F; // 曜石黑：頁面底色
+$walnut:          #201B15; // 胡桃墨：浮起的面（卡片、輸入框、下拉選單、頁首、頁尾、訂單摘要）
+$smoke:           #2A241D; // 燻木：區塊底色（.section-alt）、hover 底
+
+// 線：裝飾線不承載資訊；表單控制項的邊框要達非文字 3:1
+$line:            #3D352B; // 古銅線：預設髮絲線、分隔線（1.5:1，裝飾用）
+$line-strong:     #5A4E3F; // 深古銅：較明顯的分隔、虛線框、停用框線（2.3:1，裝飾用）
+$control:         #7A6C58; // 表單框線：輸入框、核取方塊、數量鍵的邊框（3.6:1；對胡桃墨 3.4:1、對燻木 3.0:1）
+
+// 文字：暖白三階
+$ivory:           #F1EADC; // 暖白：主文字、標題（15.5:1；對燻木 12.8:1）
+$ivory-muted:     #B9AE99; // 霧白：次要文字、說明（8.4:1；對燻木 7.0:1）
+$ivory-faint:     #948A78; // 淡霧白：placeholder、最弱的說明（5.4:1；對胡桃墨 5.0:1、對燻木 4.5:1）
+
+// 金：只用在少數重點（主要按鈕、目前頁、焦點環、金屬卡片、燙金框）
+$champagne:       #D3B98B; // 香檳金：強調文字、連結 hover、主要按鈕底、焦點環（9.8:1；上面放曜石黑字 9.8:1）
+$champagne-light: #E6D3AE; // 淺香檳：主要按鈕 hover、金屬高光（12.6:1）
+$champagne-deep:  #A88C5C; // 古金：裝飾線、金屬暗部、燙金框暗部（5.8:1；對燻木 4.8:1，小字不要放在燻木上）
+$champagne-veil:  mix($champagne, $walnut, 10%); // 金紗：選取中的選項底（胡桃墨混一成香檳金 ≈ #322B21；暖白字 11.7:1）
+
+// 狀態色：降低彩度的寶石色，在深色底上都達 AA，可直接當文字
+$jade:            #9CC3A4; // 翡翠：成功（9.5:1）
+$garnet:          #E8998C; // 石榴：錯誤、刪除（8.3:1）
+$copper:          #DFA274; // 銅橘：提醒，例如待付款期限（8.4:1）
+$steel:           #A3B8CC; // 鋼藍：資訊（9.1:1）
+
+// 金屬卡片（.order-summary.is-metal）上的文字：底色在古金～淺香檳之間
+$metal-ink:       $obsidian; // 金屬上的主文字（對香檳金 9.8:1、對古金 5.8:1）
+$metal-ink-muted: #433726;   // 金屬上的次要文字（對香檳金 6.1:1、對淺香檳 7.9:1；不放在古金暗部）
+
+$primary:   $champagne;
+$secondary: $ivory-muted;
+$success:   $jade;
+$info:      $steel;
+$warning:   $copper;
+$danger:    $garnet;
+$light:     $smoke;    // 深色主題裡「亮一階的面」：.bg-light、.table-light 是燻木
+$dark:      $obsidian; // 最深的面：.bg-dark、.btn-dark 是曜石黑
+
+$theme-colors: (
+  "primary":   $primary,
+  "secondary": $secondary,
+  "success":   $success,
+  "info":      $info,
+  "warning":   $warning,
+  "danger":    $danger,
+  "light":     $light,
+  "dark":      $dark,
+);
+
+// 按鈕、標籤上的文字色：Bootstrap 的 color-contrast() 依序試「淺色 → 深色」，取第一個達 4.5:1 的。
+// 香檳金上放暖白只有 1.6:1，所以會選到曜石黑（9.8:1）；燻木、曜石黑上則選暖白
+$color-contrast-light: $ivory;
+$color-contrast-dark:  $obsidian;
+$min-contrast-ratio:   4.5;
+
+// 只有一套深色主題，不輸出 [data-bs-theme="dark"] 那一份變數
+$enable-dark-mode: false;
+
+// ---------- 全站底色與文字（Bootstrap 的 --bs-body-* 等 CSS 變數由這裡產生） ----------
+$body-bg:               $obsidian;
+$body-color:            $ivory;
+$body-secondary-color:  $ivory-muted;
+$body-secondary-bg:     $smoke;
+$body-tertiary-color:   $ivory-faint;
+$body-tertiary-bg:      $smoke;
+$body-emphasis-color:   $ivory;
+$border-color:          $line;
+$border-color-translucent: rgba($ivory, .12);
+$headings-color:        $ivory;
+
+// 連結：暖白＋底線，hover 換成香檳金
+$link-color:            $ivory;
+$link-hover-color:      $champagne;
+$link-decoration:       underline;
+$link-underline-offset: .3em;
+
+// 各狀態色的「文字、淡底、淡框」三件組（alert、list-group 狀態列、.text-*-emphasis、.bg-*-subtle 共用）
+// 淡底＝胡桃墨混入一成二狀態色；淡框＝混入四成五；文字＝狀態色再提亮
+$primary-text-emphasis:   $champagne-light;
+$secondary-text-emphasis: $ivory;
+$success-text-emphasis:   mix($jade, $ivory, 70%);
+$info-text-emphasis:      mix($steel, $ivory, 70%);
+$warning-text-emphasis:   mix($copper, $ivory, 70%);
+$danger-text-emphasis:    mix($garnet, $ivory, 70%);
+$light-text-emphasis:     $ivory;
+$dark-text-emphasis:      $ivory;
+
+$primary-bg-subtle:       mix($champagne, $walnut, 12%);
+$secondary-bg-subtle:     $smoke;
+$success-bg-subtle:       mix($jade, $walnut, 12%);
+$info-bg-subtle:          mix($steel, $walnut, 12%);
+$warning-bg-subtle:       mix($copper, $walnut, 12%);
+$danger-bg-subtle:        mix($garnet, $walnut, 12%);
+$light-bg-subtle:         $smoke;
+$dark-bg-subtle:          $obsidian;
+
+$primary-border-subtle:   mix($champagne, $walnut, 45%);
+$secondary-border-subtle: $line-strong;
+$success-border-subtle:   mix($jade, $walnut, 45%);
+$info-border-subtle:      mix($steel, $walnut, 45%);
+$warning-border-subtle:   mix($copper, $walnut, 45%);
+$danger-border-subtle:    mix($garnet, $walnut, 45%);
+$light-border-subtle:     $line;
+$dark-border-subtle:      $line;
+
+// 元件的「選中」：香檳金底＋曜石黑字（下拉選單、分頁、列表群組、核取方塊共用）
+$component-active-bg:    $champagne;
+$component-active-color: $obsidian;
+
+// 焦點環：香檳金 2px 實線＋曜石黑間隙（9.8:1，深色底上一定看得見）
+// 一般元素用 outline＋2px 位移（間隙就是底色）；按鈕、核取方塊用下面這組雙層 box-shadow
+$focus-ring-width:   2px;
+$focus-ring-opacity: 1;
+$focus-ring-blur:    0;
+$focus-ring-color:   $champagne;
+$focus-ring-double:  0 0 0 2px $obsidian, 0 0 0 4px $champagne; // 自訂：內圈曜石黑間隙、外圈香檳金
+$focus-ring-box-shadow: $focus-ring-double; // Bootstrap 內建的焦點（導覽連結、分頁、關閉鈕、.focus-ring）都用這組
+
+$code-color: $champagne;
+$mark-bg:    mix($champagne, $obsidian, 30%);
+$mark-color: $ivory;
+$kbd-bg:     $ivory;
+$kbd-color:  $obsidian;
+
+$hr-color:   $line;
+$hr-opacity: 1;
+
+// ---------- 2. 字體與字級 ----------
+// 襯線：Bodoni Moda 負責英數（品牌字、大金額），中文落到 Noto Serif TC
+// 無襯線：Noto Sans TC 負責內文、表單、按鈕、小字與清單裡的小金額
+$font-family-serif:      "Bodoni Moda", "Noto Serif TC", "Songti TC", "PMingLiU", serif; // 自訂：.font-serif、標題、.amount
+$font-family-sans-serif: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+$font-family-base:       $font-family-sans-serif;
+$headings-font-family:   $font-family-serif;
+$display-font-family:    $font-family-serif;
+
+$font-size-base:   1rem;     // 16px
+$font-size-sm:     .875rem;  // 14px
+$font-size-lg:     1.125rem; // 18px
+$small-font-size:  .8125rem; // 13px
+
+// 只載入 300／400／500 三個字重：半粗與粗體一律收斂到 500
+$font-weight-light:    300;
+$font-weight-normal:   400;
+$font-weight-medium:   500;
+$font-weight-semibold: 500;
+$font-weight-bold:     500;
+$font-weight-bolder:   500;
+
+$line-height-base: 1.85; // 中文內文需要較寬鬆的行高
+$line-height-sm:   1.6;
+$line-height-lg:   2;
+
+// 字級階層：襯線大標＋大量留白，字重只用 400／500
+$h1-font-size: 2.5rem;    // 40px
+$h2-font-size: 2rem;      // 32px
+$h3-font-size: 1.5rem;    // 24px
+$h4-font-size: 1.25rem;   // 20px
+$h5-font-size: 1.0625rem; // 17px
+$h6-font-size: .9375rem;  // 15px
+
+$headings-font-weight:   500;
+$headings-line-height:   1.45;
+$headings-margin-bottom: 1rem;
+
+$display-font-sizes: (
+  1: 4.5rem,
+  2: 4rem,
+  3: 3.5rem,
+  4: 3rem,
+  5: 2.5rem,
+  6: 2.25rem,
+);
+$display-font-weight: 500;
+$display-line-height: 1.3;
+
+$lead-font-size:   1.125rem;
+$lead-font-weight: 300;
+
+// 自訂：字距（非 Bootstrap 變數，於 _base.scss 使用）
+$letter-spacing-body:    .03em;
+$letter-spacing-heading: .06em;
+$letter-spacing-label:   .08em; // 小字、標籤、按鈕
+$letter-spacing-brand:   .04em; // 品牌字 NestCraft（Bodoni Moda）
+
+// ---------- 3. 間距：擴充 6–8 階，用於區塊留白 ----------
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * .25,  // 4px
+  2: $spacer * .5,   // 8px
+  3: $spacer,        // 16px
+  4: $spacer * 1.5,  // 24px
+  5: $spacer * 3,    // 48px
+  6: $spacer * 4,    // 64px
+  7: $spacer * 6,    // 96px
+  8: $spacer * 8,    // 128px
+);
+
+$grid-gutter-width: 2rem;
+$container-padding-x: 2.5rem; // 左右各 20px（Bootstrap 取一半），需 ≥ gutter 才不會讓 .row 溢出
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  xxl: 1280px,
+);
+// RWD 斷點沿用 Bootstrap 預設：sm 576 / md 768 / lg 992 / xl 1200 / xxl 1400
+
+// ---------- 4. 圓角與陰影：直角、幾乎無陰影 ----------
+// 圓角一律 0（剪裁俐落）；只有拱門圖框、狀態圓點、radio 是圓的。
+// 不用 $enable-rounded: false，因為那會連 radio 的圓形一起拿掉
+$border-width:       1px;
+$border-radius-sm:   0;
+$border-radius:      0;
+$border-radius-lg:   0;
+$border-radius-xl:   0;
+$border-radius-xxl:  0;
+$border-radius-pill: 50rem; // 只給圓點、radio、拱門
+
+$enable-shadows:   false;
+// 深色底上的陰影要更深才看得出來；只用在浮層（下拉選單、對話框）
+$box-shadow-sm:    0 1px 2px rgba(#000, .4);
+$box-shadow:       0 12px 32px rgba(#000, .45);
+$box-shadow-lg:    0 24px 64px rgba(#000, .55);
+$box-shadow-inset: inset 0 1px 2px rgba(#000, .3);
+
+$enable-negative-margins: true;
+
+// ---------- 5. 元件 ----------
+// 按鈕：主要＝香檳金底＋曜石黑字（9.8:1），hover 淺香檳；次要＝透明底＋暖白細框（_base.scss）
+$btn-padding-y:        .75rem;
+$btn-padding-x:        2rem;
+$btn-font-size:        .9375rem;
+$btn-padding-y-sm:     .5625rem; // 高約 44px，符合觸控目標
+$btn-padding-x-sm:     1.125rem;
+$btn-font-size-sm:     .8125rem;
+$btn-padding-y-lg:     1rem;
+$btn-padding-x-lg:     2.75rem;
+$btn-font-size-lg:     1rem;
+$btn-font-weight:      400;
+$btn-border-radius:    0;
+$btn-border-radius-sm: 0;
+$btn-border-radius-lg: 0;
+$btn-disabled-opacity: .4;
+$btn-focus-width:      $focus-ring-width;
+$btn-link-disabled-color: $ivory-faint;
+
+// 表單：胡桃墨底、表單框線（3.4:1）、placeholder 用淡霧白（對胡桃墨 5.0:1）
+$input-bg:                    $walnut;
+$input-color:                 $ivory;
+$input-border-color:          $control;
+$input-placeholder-color:     $ivory-faint;
+$input-plaintext-color:       $ivory;
+$input-padding-y:             .75rem;
+$input-padding-x:             1rem;
+$input-font-size:             1rem;
+$input-border-radius:         0;
+$input-focus-bg:              $walnut;
+$input-focus-color:           $ivory;
+$input-focus-border-color:    $champagne;
+$input-focus-box-shadow:      0 0 0 1px $champagne; // 與 1px 邊框合成 2px 香檳金實線
+$input-disabled-bg:           transparent;          // 停用：沒有底色，框線變暗，看起來「退回頁面」
+$input-disabled-color:        $ivory-faint;
+$input-disabled-border-color: $line-strong;
+$input-group-addon-bg:        $smoke;
+$input-group-addon-color:     $ivory-muted;
+$input-group-addon-border-color: $control;
+$form-label-font-size:        .875rem;
+$form-label-color:            $ivory;
+$form-label-margin-bottom:    .5rem;
+$form-text-color:             $ivory-muted;
+$form-file-button-bg:         $smoke;
+$form-file-button-hover-bg:   $line;
+$form-file-button-color:      $ivory;
+$form-floating-label-disabled-color: $ivory-faint;
+
+// 下拉選單箭頭：霧白（SVG 內的顏色，要用實色）
+$form-select-indicator-color: $ivory-muted;
+$form-select-focus-box-shadow: $input-focus-box-shadow;
+
+// 核取方塊、radio：胡桃墨底＋表單框線；選中為香檳金底＋曜石黑勾勾／圓點
+$form-check-input-bg:                   $walnut;
+$form-check-input-border:               1px solid $control;
+$form-check-input-border-radius:        0;
+$form-check-input-checked-color:        $obsidian;
+$form-check-input-checked-bg-color:     $champagne;
+$form-check-input-checked-border-color: $champagne;
+$form-check-input-focus-border:         $champagne;
+$form-check-input-focus-box-shadow:     $focus-ring-double;
+$form-check-input-active-filter:        brightness(110%);
+
+// 開關：未開為霧白圓鈕、開啟為曜石黑圓鈕在香檳金軌道上
+$form-switch-color:         $ivory-muted;
+$form-switch-focus-color:   $champagne;
+$form-switch-checked-color: $obsidian;
+
+$form-range-track-bg:        $smoke;
+$form-range-thumb-active-bg: $champagne-light;
+
+$form-feedback-valid-color:   $jade;
+$form-feedback-invalid-color: $garnet;
+
+// 關閉鈕 X：暖白（Bootstrap 預設是黑色，在深色底上看不到）
+$btn-close-color:         $ivory;
+$btn-close-opacity:       .8;
+$btn-close-hover-opacity: 1;
+$btn-close-focus-shadow:  $focus-ring-double;
+
+// 卡片
+$card-bg:            $walnut;
+$card-color:         $ivory;
+$card-border-color:  $line;
+$card-border-radius: 0;
+$card-cap-bg:        transparent;
+$card-spacer-y:      1.5rem;
+$card-spacer-x:      1.5rem;
+
+// 頁首高度：sticky 側欄、錨點捲動的位移都以此為準
+$site-header-height: 4.8125rem; // 實測 77px：$navbar-padding-y 上下各 1rem＋圖示按鈕 44px＋底線 1px
+$sticky-top-offset:  $site-header-height + 1.5rem;
+
+// 導覽列
+$navbar-padding-y:             1rem;
+$navbar-nav-link-padding-x:    1rem;
+$navbar-light-color:           $ivory-muted;
+$navbar-light-hover-color:     $ivory;
+$navbar-light-active-color:    $ivory;
+$navbar-light-brand-color:     $ivory;
+$navbar-light-brand-hover-color: $ivory;
+$navbar-light-toggler-border-color: transparent;
+$navbar-toggler-border-radius: 0;
+$nav-link-font-size:           .9375rem;
+$nav-link-color:               $ivory-muted;
+$nav-link-hover-color:         $ivory;
+$nav-link-disabled-color:      $ivory-faint;
+$nav-tabs-border-color:        $line;
+$nav-tabs-link-active-color:   $ivory;
+$nav-tabs-link-active-bg:      transparent;
+$nav-tabs-link-hover-border-color: $line $line $line;
+$nav-tabs-link-active-border-color: $line $line $obsidian;
+$nav-pills-link-active-bg:     $champagne;
+$nav-pills-link-active-color:  $obsidian;
+$nav-underline-border-width:   1px;
+$nav-underline-link-active-color: $ivory; // 底線色在 _base.scss 改成香檳金
+
+// 下拉選單
+$dropdown-bg:                 $walnut;
+$dropdown-color:              $ivory;
+$dropdown-border-color:       $line;
+$dropdown-divider-bg:         $line;
+$dropdown-box-shadow:         $box-shadow;
+$dropdown-link-color:         $ivory;
+$dropdown-link-hover-color:   $ivory;
+$dropdown-link-hover-bg:      $smoke;
+$dropdown-link-active-color:  $obsidian;
+$dropdown-link-active-bg:     $champagne;
+$dropdown-link-disabled-color: $ivory-faint;
+$dropdown-header-color:       $ivory-faint;
+
+// 對話框、側邊抽屜
+$modal-content-bg:            $walnut;
+$modal-content-color:         $ivory;
+$modal-content-border-color:  $line;
+$modal-content-border-radius: 0;
+$modal-header-border-color:   $line;
+$modal-backdrop-bg:           #000;
+$modal-backdrop-opacity:      .7;
+$offcanvas-bg-color:          $walnut;
+$offcanvas-color:             $ivory;
+$offcanvas-border-color:      $line;
+$offcanvas-backdrop-bg:       #000;
+$offcanvas-backdrop-opacity:  .7;
+
+// 列表群組
+$list-group-color:              $ivory;
+$list-group-bg:                 $walnut;
+$list-group-border-color:       $line;
+$list-group-hover-bg:           $smoke;
+$list-group-active-color:       $obsidian;
+$list-group-active-bg:          $champagne;
+$list-group-active-border-color: $champagne;
+$list-group-disabled-color:     $ivory-faint;
+$list-group-disabled-bg:        $walnut;
+$list-group-action-color:       $ivory-muted;
+$list-group-action-hover-color: $ivory;
+$list-group-action-active-color: $ivory;
+$list-group-action-active-bg:   $smoke;
+
+// Accordion：透明底，展開時不加底色，只把箭頭換成香檳金
+$accordion-color:               $ivory;
+$accordion-bg:                  transparent;
+$accordion-border-color:        $line;
+$accordion-border-radius:       0;
+$accordion-button-color:        $ivory;
+$accordion-button-active-bg:    transparent;
+$accordion-button-active-color: $ivory;
+$accordion-icon-color:          $ivory-muted;
+$accordion-icon-active-color:   $champagne;
+$accordion-button-focus-box-shadow: inset 0 0 0 2px $champagne;
+
+// 標籤
+$badge-color:         $obsidian; // 主題色都是淺色（香檳金、翡翠…），字用曜石黑
+$badge-font-weight:   400;
+$badge-border-radius: 0;
+$badge-padding-y:     .375em;
+$badge-padding-x:     .75em;
+
+// 麵包屑：連結霧白、分隔線深古銅（裝飾）、目前頁暖白
+$breadcrumb-divider:        quote("/");
+$breadcrumb-font-size:      .8125rem;
+$breadcrumb-divider-color:  $line-strong;
+$breadcrumb-active-color:   $ivory;
+
+// 分頁
+$pagination-color:                $ivory;
+$pagination-bg:                   transparent;
+$pagination-border-color:         $line;
+$pagination-hover-color:          $champagne;
+$pagination-hover-bg:             $smoke;
+$pagination-hover-border-color:   $line-strong;
+$pagination-focus-color:          $champagne;
+$pagination-focus-bg:             $smoke;
+$pagination-focus-box-shadow:     $focus-ring-double;
+$pagination-active-color:         $obsidian;
+$pagination-active-bg:            $champagne;
+$pagination-active-border-color:  $champagne;
+$pagination-disabled-color:       $ivory-faint;
+$pagination-disabled-bg:          transparent;
+$pagination-disabled-border-color: $line;
+
+// 輪播：控制鈕暖白、目前指示點香檳金（照片都是深色背景）
+$carousel-control-color:        $ivory;
+$carousel-indicator-active-bg:  $champagne;
+$carousel-caption-color:        $ivory;
+
+// 提示框、彈出框、toast
+$tooltip-bg:                 $ivory;
+$tooltip-color:              $obsidian;
+$tooltip-opacity:            1;
+$tooltip-border-radius:      0;
+$popover-bg:                 $walnut;
+$popover-border-color:       $line;
+$popover-header-bg:          $smoke;
+$popover-header-color:       $ivory;
+$popover-body-color:         $ivory;
+$popover-arrow-outer-color:  $line;
+$popover-border-radius:      0;
+$toast-background-color:     $walnut;
+$toast-color:                $ivory;
+$toast-border-color:         $line;
+$toast-header-background-color: $smoke;
+$toast-header-color:         $ivory-muted;
+$toast-border-radius:        0;
+
+// 表格：透明底（放在燻木區塊上也一致）、古銅線分隔
+$table-color:          $ivory;
+$table-bg:             transparent;
+$table-border-color:   $line;
+$table-striped-bg:     rgba($ivory, .03);
+$table-hover-bg:       rgba($ivory, .05);
+$table-active-bg:      rgba($ivory, .08);
+$table-cell-padding-y: .875rem;
+$table-cell-padding-x: 1rem;
+$table-bg-scale:       75%; // .table-success 等狀態列：狀態色加深 75%，上面自動配暖白字
+
+// 提示（alert 顏色由上面的「文字、淡底、淡框」三件組決定）
+$alert-border-radius: 0;
+$alert-padding-y:     1rem;
+$alert-padding-x:     1.25rem;
+
+// 進度條
+$progress-bg:        $smoke;
+$progress-bar-bg:    $champagne;
+$progress-bar-color: $obsidian;
+$progress-border-radius: 0;
+
+// 縮圖、圖說
+$thumbnail-bg:           $walnut;
+$thumbnail-border-color: $line;
+$figure-caption-color:   $ivory-muted;
+
+// ---------- 6. 本風格的招牌：燙金邊框與金屬卡片 ----------
+// 燙金漸層（.foil 的 1px 框線）：亮金與暗金交錯，細線上才看得出「燙金」的明暗變化，不像一條單色框
+$foil-shadow:    mix($champagne-deep, $obsidian, 75%); // 燙金暗部（≈ #846E49），只用在漸層裡
+$foil-gradient:  linear-gradient(115deg, $champagne-deep 0%, $champagne-light 20%, $foil-shadow 42%, $champagne 60%, $champagne-light 78%, $champagne-deep 100%);
+// 拉絲金屬：底色漸層。古金只在左上角一小段（只放標題，曜石黑字 ≥ 5.8:1），
+// 其餘是香檳金～淺香檳，次要文字 $metal-ink-muted 在這段都 ≥ 6:1
+$metal-gradient: linear-gradient(135deg, $champagne-deep 0%, $champagne 14%, $champagne-light 38%, $champagne 60%, $champagne-light 82%, $champagne 100%);

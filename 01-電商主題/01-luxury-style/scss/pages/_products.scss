@@ -1,0 +1,253 @@
+// ============================================================
+// 商品一覽（products.html）
+// 版型：頁首 → lg 左 3 欄篩選／右 9 欄展品；手機分類改為標籤列＋offcanvas 篩選
+// 展間的節奏：桌機側欄「分類」標題與右側工具列底下是同一條古銅線，
+// 下方的展品像沿著同一面牆陳列；商品卡用共用的展示牌（components/_product-card.scss）
+// ============================================================
+
+// 頁首沿用共用的 .page-header；分類標籤旁的件數用共用的 .tab-count（_base.scss）
+
+// ---------- 手機分類標籤列：可橫向捲動，手機時貼齊螢幕兩側 ----------
+.products-tabs {
+  margin-bottom: map-get($spacers, 4);
+
+  .nav-underline {
+    @include bleed-x;
+  }
+}
+
+// ---------- 篩選（lg 側邊欄／手機 offcanvas 共用同一份標記） ----------
+// 側欄不固定（sticky）：篩選項目比視窗高，固定後得在欄內再捲一次；跟著頁面捲動最單純
+.products-filter {
+  .offcanvas-header {
+    border-bottom: 1px solid $line;
+  }
+  .btn-close {
+    padding: .875rem; // 觸控範圍 44px
+  }
+
+  // 1200 以上側欄右側多留一點空，篩選與展品之間不擁擠
+  @include media-breakpoint-up(xl) {
+    padding-right: map-get($spacers, 4);
+  }
+}
+.products-filter-group {
+  padding-bottom: map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 4);
+  border-bottom: 1px solid $line;
+
+  // 手機 offcanvas：最後一組與底部按鈕列之間只留一條線
+  @include media-breakpoint-down(lg) {
+    &:last-of-type {
+      padding-bottom: 0;
+      margin-bottom: 0;
+      border-bottom: 0;
+    }
+  }
+}
+
+// 每組的小標題：襯線，與頁尾欄標題同一種語氣
+.products-filter-title {
+  float: none;
+  margin-bottom: .75rem;
+  font-family: $font-family-serif;
+  font-optical-sizing: auto;
+  font-size: $h6-font-size;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-sm;
+  letter-spacing: $letter-spacing-heading;
+  color: $ivory;
+}
+
+// 勾選項：整列可點，觸控高度 ≥ 44px
+// 桌機側欄用滑鼠操作（pointer: fine）時才縮成 36px；平板橫放（lg 以上但用手指點）維持 44px
+.products-filter .form-check {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 2.75rem;
+  margin-bottom: 0;
+  padding-left: 0;
+
+  .form-check-input {
+    float: none;
+    flex-shrink: 0;
+    margin: 0;
+  }
+  // label 撐滿整列高度：點整列（不只文字那一行）都能勾選
+  .form-check-label {
+    display: flex;
+    flex: 1;
+    align-self: stretch;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    font-size: $font-size-sm;
+    cursor: pointer;
+  }
+
+  @include media-breakpoint-up(lg) {
+    @media (pointer: fine) {
+      min-height: 2.25rem;
+    }
+  }
+}
+.products-filter-count {
+  color: $body-secondary-color;
+}
+
+// ---------- 分類清單（lg） ----------
+// 桌機：「分類」標題列與右側工具列同高，底線接成同一條水平線
+.products-cat-title {
+  @include media-breakpoint-up(lg) {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;          // 同工具列的排序選單高度
+    padding-bottom: map-get($spacers, 3);
+    margin-bottom: map-get($spacers, 2);
+    border-bottom: 1px solid $line;
+    box-sizing: content-box;
+  }
+}
+
+// 每列：左名稱、右件數；列與列之間不畫線，只靠留白與件數對齊
+// 高度同勾選項：手指點 44px，滑鼠 40px
+.products-cat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 2.75rem;
+
+  @media (pointer: fine) {
+    min-height: 2.5rem;
+  }
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+  letter-spacing: $letter-spacing-label;
+  text-decoration: none;
+  transition: color .2s ease;
+
+  &:hover { color: $ivory; }
+
+  // 目前分類：暖白字，前方一條香檳金短線（與頁首目前頁的金色底線同語彙）
+  &.is-active {
+    color: $ivory;
+
+    .products-cat-name::before {
+      content: "";
+      display: inline-block;
+      width: 1rem;
+      margin-right: .625rem;
+      vertical-align: middle;
+      border-top: 1px solid $champagne;
+    }
+  }
+}
+
+// offcanvas 底部按鈕列（手機）：與抽屜同為胡桃墨底，上方一條古銅線
+.products-filter-foot {
+  display: flex;
+  gap: map-get($spacers, 2);
+  padding: map-get($spacers, 3) $offcanvas-padding-x;
+  border-top: 1px solid $line;
+  background-color: $walnut;
+}
+
+// ---------- 工具列 ----------
+.products-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 2);
+
+  // 手機「篩選」按鈕與右側排序選單同字級（14px）、同高（44px），並排時上下緣對齊
+  .btn {
+    --bs-btn-padding-y: .5rem;
+    --bs-btn-padding-x: 1.25rem;
+    --bs-btn-font-size: #{$font-size-sm};
+    min-height: 2.75rem;
+  }
+
+  // 桌機：底線與左側「分類」標題的底線同高
+  @include media-breakpoint-up(lg) {
+    padding-bottom: map-get($spacers, 3);
+    margin-bottom: map-get($spacers, 5);
+    border-bottom: 1px solid $line;
+  }
+}
+// 件數：說明用霧白，數字用暖白
+.products-count {
+  margin-bottom: 0;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+  letter-spacing: $letter-spacing-label;
+
+  .num {
+    color: $ivory;
+  }
+}
+.products-sort {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+
+  .form-select {
+    width: auto;
+    min-height: 2.75rem;
+    padding-block: .5rem;
+    font-size: $font-size-sm;
+    background-color: transparent;
+  }
+}
+.products-sort-label {
+  font-size: $font-size-sm;
+  color: $body-secondary-color;
+  white-space: nowrap;
+}
+
+// ---------- 清單尾端提示：像展間牆上的說明牌 ----------
+// 胡桃墨底＋上緣一條古金細線（與商品卡的展示牌細線同色），下方是一條「牆面寬度」的尺寸線
+.products-note {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: map-get($spacers, 5);
+  height: 100%;
+  padding: map-get($spacers, 4);
+  background-color: $walnut;
+  border-top: 1px solid $champagne-deep;
+
+  p {
+    max-width: 30em;
+    color: $body-secondary-color;
+  }
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 5);
+  }
+}
+// 尺寸線：撐滿說明牌的寬度，兩端的短線比內文的尺寸線高，像建築圖上的牆寬標註
+.products-note-dim {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+
+  .dim-line {
+    width: 100%;
+    height: .75rem;
+    margin-top: 0;
+  }
+}
+
+// ---------- 分頁（排版用 utilities，這裡只放大頁碼的觸控範圍） ----------
+.products-pager {
+  .page-link {
+    display: grid;
+    place-items: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0 .75rem;
+  }
+}

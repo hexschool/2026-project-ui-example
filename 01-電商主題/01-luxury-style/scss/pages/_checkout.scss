@@ -1,0 +1,232 @@
+// ============================================================
+// 結帳（checkout.html）— 本風格的招牌頁
+// 由安靜到醒目分四層：
+//   表單欄位（Bootstrap 預設的深色表單）
+//   → 配送方式（安靜的深色細框，.co-ship 底下的 .co-option）
+//   → 付款方式（燙金邊框，共用的 .foil，見 _base.scss）
+//   → 訂單摘要（香檳拉絲金屬卡，共用的 .order-summary.is-metal，見 components/_order-summary.scss）
+// 這裡只寫本頁的排版；金屬卡與燙金框的底色、框線由共用類別負責，不在這裡覆寫
+// ============================================================
+
+// ---------- 表單分組 ----------
+// 每組標題後面接一條古銅髮絲線、延伸到欄位右緣；分組之間只用留白（手機 48px、桌機 64px）
+.co-fieldset + .co-fieldset {
+  margin-top: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    margin-top: map-get($spacers, 6);
+  }
+}
+// legend 預設只有文字寬（Bootstrap 還會讓它浮動）；改成撐滿整列的 flex，才能在標題後接上髮絲線
+.co-legend {
+  display: flex;
+  align-items: center;
+  gap: map-get($spacers, 4);
+  width: 100%;
+  float: none;
+  margin-bottom: map-get($spacers, 4);
+  font-size: inherit;
+
+  &::after {
+    content: "";
+    flex: 1 1 0;
+    min-width: map-get($spacers, 5);
+    border-top: 1px solid $line;
+  }
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: $spacer * 2;
+  }
+}
+
+// 縣市、鄉鎮市區還停在「請選擇」時，字色和其他欄位的 placeholder 相同（淡霧白），
+// 不會看起來像已經選好；展開的清單仍是暖白字
+.co-fieldset .form-select:has(option[value=""]:checked) {
+  color: $input-placeholder-color;
+
+  option { color: $input-color; }
+}
+
+// ---------- 選項（配送、付款共用的排版）：整塊都是 <label> ----------
+// 這裡只放排版；外框由下面的 .co-ship（深色細框）或共用的 .foil（燙金邊框）提供
+.co-option {
+  display: flex;
+  align-items: flex-start;
+  gap: .875rem;
+  padding: map-get($spacers, 3) 1.25rem;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease, box-shadow .2s ease;
+
+  .form-check-input {
+    flex-shrink: 0;
+    margin-top: .3rem;
+
+    // 焦點改由整塊選項的外框表示（下方），radio 本身不再加一圈：
+    // 否則滑鼠或手指點選後 radio 會多一圈光暈，和預設選中的外觀不一致
+    &:focus { box-shadow: none; }
+  }
+
+  // 鍵盤移到選項上時，整塊外推一圈香檳金
+  &:has(.form-check-input:focus-visible) {
+    outline: 2px solid $champagne;
+    outline-offset: 2px;
+  }
+  // 燙金選項選中時外面已有 1px 香檳金光圈，外框多推 1px，焦點環和選中框之間才留得出深色間隙
+  &.foil:has(.form-check-input:focus-visible) {
+    outline-offset: 3px;
+  }
+}
+.co-option-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: .25rem;
+  min-width: 0;
+}
+.co-option-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: map-get($spacers, 3);
+}
+.co-option-title {
+  color: $ivory;
+}
+.co-option-fee {
+  white-space: nowrap;
+}
+// 說明在窄欄要換行時，只在標點、空白與 <wbr> 處斷開（同 .text-phrase），
+// 不會剩「進屋。」「付款」兩三個字在下一行；整段放不下時才強制斷行
+.co-option-desc {
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+  line-height: $line-height-sm;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 配送方式：安靜的深色細框 ----------
+// 預設透明底＋深古銅細框；選中時框線提亮成霧白、加粗成 2px（內側再加 1px 陰影），內底胡桃墨
+// radio 的實心圓點＋框線變粗，選中狀態不只靠顏色
+.co-ship .co-option {
+  background-color: transparent;
+  border: 1px solid $line-strong;
+
+  &:hover:not(.is-disabled) {
+    border-color: $control;
+  }
+
+  &:has(.form-check-input:checked) {
+    background-color: $walnut;
+    border-color: $ivory-muted;
+    box-shadow: inset 0 0 0 1px $ivory-muted;
+  }
+
+  // 停用：虛線外框、不降低說明文字的對比，讓原因清楚可讀
+  &.is-disabled {
+    border-style: dashed;
+    cursor: not-allowed;
+
+    .co-option-title,
+    .co-option-fee { color: $body-secondary-color; }
+  }
+}
+
+// ---------- 付款方式：燙金邊框的選項卡 ----------
+// 外框、內底、選中的金邊加粗與柔光都由共用的 .foil 處理（這裡不要寫 border、background）
+// 版面：上排左側大圖示、右側 radio；下排付款名稱（襯線）＋說明。手機也是兩欄
+.co-pay-option {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "icon radio"
+    "body body";
+  align-content: start;
+  gap: map-get($spacers, 3) .75rem;
+  padding: map-get($spacers, 3);
+
+  .form-check-input {
+    grid-area: radio;
+    margin-top: 0;
+  }
+  .co-option-body { grid-area: body; }
+
+  .co-option-title {
+    font-family: $font-family-serif;
+    font-optical-sizing: auto;
+    font-size: $h5-font-size;
+    font-weight: $font-weight-medium;
+    line-height: $line-height-sm;
+    letter-spacing: $letter-spacing-heading;
+  }
+
+  @include media-breakpoint-up(md) {
+    padding: 1.25rem map-get($spacers, 4) map-get($spacers, 4);
+  }
+}
+.co-pay-icon {
+  grid-area: icon;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: $champagne;
+}
+
+// ---------- 信用卡欄位：只有選「信用卡」時顯示（純 CSS，不需要 JS） ----------
+// 面板用 Bootstrap 的 .card .card-body（胡桃墨底、古銅細框、內距取自 $card-*）
+// 欄位沒有 required，隱藏時不會擋住表單送出（說明見 checkout.html）
+.co-pay:has([name="payment"]:checked:not([value="card"])) .co-card {
+  display: none;
+}
+// 手機內距縮成 20px（與選項卡相同），欄位不會被擠窄
+.co-card {
+  @include media-breakpoint-down(md) {
+    --bs-card-spacer-x: 1.25rem;
+    --bs-card-spacer-y: 1.25rem;
+  }
+}
+
+// 桌機右欄的金屬摘要：固定在畫面上由共用的 .order-summary.is-sticky 處理，這裡不用另外寫
+
+// ---------- 手機、平板：表單前面可展開的金屬摘要 ----------
+// 收合時只有一條金屬列；內距由列與展開內容各自負責，所以面板本身不留內距
+.co-summary-mobile {
+  padding: 0;
+}
+.co-summary-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 4rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 3);
+  padding: map-get($spacers, 3) 1.25rem;
+  background: none;
+  border: 0;
+  color: $metal-ink; // 外層 h2 的標題色是暖白，這裡指定金屬上的曜石黑
+  font-size: $h5-font-size;
+  text-align: left;
+
+  // 按鈕和卡片一樣寬，焦點環往內縮，才不會畫到卡片外的深色底上
+  &:focus-visible { outline-offset: -.375rem; }
+
+  .amount { font-size: 1.25rem; }
+
+  &[aria-expanded="true"] .co-summary-chevron { transform: rotate(180deg); }
+}
+.co-summary-chevron {
+  font-size: 1rem;
+  transition: transform .2s ease;
+}
+// 展開的內容：分隔線縮在卡片內側，與金屬卡的刻線對齊
+.co-summary-body {
+  margin-inline: 1.25rem;
+  padding-block: map-get($spacers, 3) 1.25rem;
+  border-top: 1px solid rgba($metal-ink, .22);
+}
+
+// ---------- 手機、平板：表單最後的應付總額與確認付款 ----------
+.co-confirm {
+  margin-top: map-get($spacers, 5);
+  padding-top: map-get($spacers, 5);
+  border-top: 1px solid $line;
+}

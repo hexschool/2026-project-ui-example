@@ -1,0 +1,286 @@
+// ============================================================
+// 訂單摘要（購物車、結帳、付款結果共用）
+// 三頁用同一套 markup，換頁時面板的內距、行距、字級都不會變：
+//
+// <aside class="order-summary is-sticky" aria-labelledby="…">   ← 結帳頁再加 .is-metal（香檳拉絲金屬卡）
+//   <h2 class="order-summary-title">訂單摘要</h2>
+//   <ul class="order-summary-items">                       ← 品項（結帳、付款結果）
+//     <li class="order-summary-item">
+//       <div class="order-summary-thumb img-frame"><img src="…" alt="" /></div>
+//       <div class="order-summary-item-body">
+//         <p class="order-summary-item-name">品名</p>
+//         <p class="order-summary-item-meta"><span>數量 2</span><span class="num">NT$ 2,560</span></p>
+//       </div>
+//     </li>
+//   </ul>
+//   <dl class="order-summary-rows">                        ← 金額列（標籤左、數值右）
+//     <div class="order-summary-row"><dt>商品小計</dt><dd class="num">NT$ 20,250</dd></div>
+//     <div class="order-summary-row"><dt>運費</dt><dd>免運</dd><dd class="order-summary-note">補充說明</dd></div>
+//     <div class="order-summary-row order-summary-total"><dt>應付總額</dt><dd class="price">NT$ 20,250</dd></div>
+//   </dl>
+// </aside>
+//
+// 兩種外觀：
+// - 預設（購物車、付款結果）：安靜的深色版，胡桃墨底＋古金細框
+// - .is-metal（只用在結帳頁）：香檳拉絲金屬卡，曜石黑字，載入時有一道反光掃過一次
+// ============================================================
+
+// ---------- 面板 ----------
+.order-summary {
+  padding: map-get($spacers, 4);
+  background-color: $walnut;
+  border: 1px solid $champagne-deep;
+
+  @include media-breakpoint-up(xl) {
+    padding: $spacer * 2;
+  }
+}
+
+// lg 以上固定在右欄。矮螢幕時先讓品項清單縮短、在清單內捲動，
+// 金額與按鈕維持看得到；再矮時整個面板捲動，不會被切掉
+.order-summary.is-sticky {
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - #{$sticky-top-offset} - #{map-get($spacers, 4)});
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    > * { flex-shrink: 0; }
+    > .order-summary-items {
+      flex-shrink: 1;
+      min-height: 7.5rem; // 至少露出一個半品項，看得出可以捲動
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+  }
+}
+
+.order-summary-title {
+  margin-bottom: map-get($spacers, 4);
+  font-size: $h4-font-size;
+}
+
+// 區塊之間（品項 ↔ 金額）以髮絲線分開，上下各 16px
+.order-summary-items + .order-summary-rows,
+.order-summary-rows + .order-summary-items,
+.order-summary-rows + .order-summary-rows {
+  margin-top: map-get($spacers, 3);
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $line;
+}
+
+// ---------- 品項 ----------
+.order-summary-items {
+  display: grid;
+  gap: map-get($spacers, 3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.order-summary-item {
+  display: flex;
+  align-items: flex-start;
+  gap: map-get($spacers, 3);
+}
+.order-summary-thumb {
+  flex: 0 0 auto;
+  width: 4rem;
+  aspect-ratio: 1 / 1;
+}
+.order-summary-item-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.order-summary-item-name {
+  margin-bottom: map-get($spacers, 1);
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
+  // 品名以詞組換行（同共用的 .text-phrase）：只在空白與零寬空白處換行，「(三入組)」這類片語不會被拆開；
+  // 單一片語放不下時才強制斷行。寫在元件裡，購物車、結帳、付款結果與 Guideline 的摘要都不用另外加 class
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+// 數量在左、小計在右：價格不另佔一欄，窄欄時品名也有足夠寬度
+.order-summary-item-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: map-get($spacers, 3);
+  margin-bottom: 0;
+  font-size: $font-size-sm;
+
+  > :first-child {
+    color: $body-secondary-color;
+    font-size: $small-font-size;
+    letter-spacing: $letter-spacing-label;
+  }
+  > :last-child { white-space: nowrap; }
+}
+
+// ---------- 金額列 ----------
+.order-summary-rows {
+  margin-bottom: 0;
+
+  dt {
+    font-weight: $font-weight-normal;
+    color: $body-secondary-color;
+  }
+  dd { margin-bottom: 0; }
+}
+.order-summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: map-get($spacers, 3);
+
+  > dt { flex: 0 0 auto; }
+  > dd {
+    font-feature-settings: "halt"; // 全形標點用半形寬度：「宅配到府（免運）」的右緣才和金額對齊
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: right;
+  }
+  // 列與列固定 8px
+  & + & { margin-top: map-get($spacers, 2); }
+}
+// 金額下方的補充說明（例如免運門檻），獨立一行靠左
+.order-summary-row > .order-summary-note {
+  flex-basis: 100%;
+  margin-top: map-get($spacers, 1);
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+  letter-spacing: $letter-spacing-label;
+  text-align: left;
+}
+
+// ---------- 總額：大金額用 Bodoni Moda（同 .amount） ----------
+.order-summary-total {
+  > dt { color: $ivory; }
+  > dd {
+    flex: 1 0 auto; // 合計金額不換行也不縮：卡片很窄時由標籤讓位，金額不會被裁切
+    font-family: $font-family-serif;
+    font-optical-sizing: none;
+    font-variation-settings: "opsz" 18; // 同 .amount：固定小字光學尺寸，逗號才不會像句點
+    font-size: 1.75rem;
+    font-weight: $font-weight-medium;
+    font-variant-numeric: lining-nums;
+    line-height: 1.3;
+  }
+}
+.order-summary-row + .order-summary-total {
+  margin-top: map-get($spacers, 3);
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $line;
+}
+
+// ============================================================
+// .is-metal：香檳拉絲金屬卡（結帳頁的訂單摘要，全站唯一的金屬面）
+// 底色＝四層背景由上到下：細拉絲紋（兩組不同間距的橫線，避免看起來像條碼）→ 金屬漸層
+// 反光＝::before 一道斜向亮帶，載入時從左掃到右一次；prefers-reduced-motion 時不播
+// 文字一律曜石黑，次要文字 $metal-ink-muted；焦點環改成曜石黑（香檳金在金屬上看不見）
+// ============================================================
+.order-summary.is-metal {
+  // 反光層需要定位元素；已經是 sticky 的卡片（.is-sticky，lg 以上）本身就是定位元素，不能改回 relative
+  &:not(.is-sticky) { position: relative; }
+  @include media-breakpoint-down(lg) {
+    &.is-sticky { position: relative; }
+  }
+  isolation: isolate; // 讓 ::before 的 z-index: -1 停在卡片底色之上、文字之下
+  color: $metal-ink;
+  border: 0;
+  background:
+    repeating-linear-gradient(180deg, rgba(#fff, .09) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(180deg, rgba($champagne-deep, .12) 0 1px, transparent 1px 7px),
+    $metal-gradient;
+  box-shadow:
+    inset 0 1px 0 rgba(#fff, .55),               // 上緣高光
+    inset 0 -1px 0 rgba($champagne-deep, .8),    // 下緣暗邊
+    0 1.5rem 3rem rgba(#000, .5);                // 浮在深色頁面上
+  // 內側一條刻線，像金屬卡上的壓紋邊框
+  outline: 1px solid rgba($metal-ink, .14);
+  outline-offset: -.625rem;
+
+  // 卡片裡的標題沿用曜石黑（全站標題預設是暖白，在金屬上看不見）
+  h2, h3 { color: inherit; }
+
+  // 一次性的反光掃過：亮帶在 3 倍寬的背景圖中，移動 background-position 不會讓卡片多出捲動範圍
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(105deg, transparent 38%, rgba(#fff, .55) 48%, rgba(#fff, 0) 58%) no-repeat;
+    background-size: 300% 100%;
+    background-position: -20% 0; // 動畫結束（或不播）時，亮帶停在卡片外
+    pointer-events: none;
+    animation: metal-sheen 1.6s cubic-bezier(.3, .1, .2, 1) .4s 1 both;
+  }
+
+  // 文字與分隔線
+  .order-summary-title,
+  .order-summary-total > dt,
+  .order-summary-item-name { color: $metal-ink; }
+  .order-summary-rows dt,
+  .order-summary-item-meta > :first-child,
+  .order-summary-row > .order-summary-note,
+  .text-note { color: $metal-ink-muted; }
+
+  .order-summary-items + .order-summary-rows,
+  .order-summary-rows + .order-summary-items,
+  .order-summary-rows + .order-summary-rows,
+  .order-summary-row + .order-summary-total {
+    border-top-color: rgba($metal-ink, .22);
+  }
+  .order-summary-total > dd { font-size: 2rem; }
+
+  .order-summary-thumb {
+    box-shadow: 0 0 0 1px rgba($metal-ink, .25);
+  }
+
+  // 卡片上的按鈕：曜石黑底＋淺香檳字（12.6:1），在金屬上最醒目；加 .foil 會多一圈金邊
+  .btn-primary {
+    --bs-btn-bg: #{$obsidian};
+    --bs-btn-border-color: #{$obsidian};
+    --bs-btn-color: #{$champagne-light};
+    --bs-btn-hover-bg: #{$walnut};
+    --bs-btn-hover-border-color: #{$walnut};
+    --bs-btn-hover-color: #{$champagne-light};
+    --bs-btn-active-bg: #{$walnut};
+    --bs-btn-active-border-color: #{$walnut};
+    --bs-btn-active-color: #{$champagne-light};
+  }
+  .btn-primary.foil {
+    --foil-bg: #{$obsidian};
+    --bs-btn-border-color: transparent;
+    --bs-btn-hover-border-color: transparent;
+    --bs-btn-active-border-color: transparent;
+
+    &:hover,
+    &:active { --foil-bg: #{$walnut}; }
+  }
+  .btn-text {
+    --bs-btn-color: #{$metal-ink};
+    --bs-btn-hover-color: #{$metal-ink};
+    --bs-btn-active-color: #{$metal-ink};
+    text-decoration-color: rgba($metal-ink, .45);
+  }
+  a:not(.btn) { color: $metal-ink; }
+
+  // 焦點：曜石黑 2px（對香檳金 9.8:1）
+  :focus-visible { outline-color: $metal-ink; }
+  .btn { --bs-btn-focus-box-shadow: 0 0 0 2px #{$champagne-light}, 0 0 0 4px #{$metal-ink}; }
+}
+
+@keyframes metal-sheen {
+  from { background-position: 120% 0; }
+  to   { background-position: -20% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .order-summary.is-metal::before {
+    animation: none;
+  }
+}

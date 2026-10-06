@@ -1,0 +1,191 @@
+// ============================================================
+// 購物車（cart.html）
+// 「夜間展間」的安靜版本：品項像一列一列的展品（展品照＋襯線品名＋尺寸線），以古銅髮絲線分隔，
+// 不做卡片框；金色只留給「前往結帳」與訂單摘要的古金細框
+// - 頁首用共用的 .page-header，訂單摘要用共用的 .order-summary 預設深色版（金屬卡只在結帳頁）
+// - 手機：總額列 → 品項列（圖文在上、數量與小計在下）→ 折扣碼 → 訂單摘要
+// - md 以上：品項改成「商品／數量／小計」三欄；lg 以上訂單摘要移到右側並固定
+// - 底部附「購物車是空的時」狀態示意（共用 .demo-state、.demo-state-stage、.empty-state）
+// ============================================================
+
+// ---------- 手機、平板：清單上方的精簡總額列 ----------
+// 與訂單摘要同一種面板（胡桃墨底＋古金細框），一眼看得出是同一筆金額；排版用 utilities
+.cart-quick {
+  padding: map-get($spacers, 3);
+  background-color: $walnut;
+  border: 1px solid $champagne-deep;
+
+  .btn { flex-shrink: 0; }
+}
+// 應付總額是大金額：用 .amount（Bodoni Moda），字級在這裡放大
+.cart-quick-total {
+  display: block;
+  font-size: 1.5rem;
+  line-height: 1.3;
+}
+
+// ---------- 欄位：md 以上「商品／數量／小計」三欄 ----------
+// 數量、小計固定寬度（數量鍵 138px、金額約 95px，各加左右 gutter），商品欄 .col 吃掉剩下的寬度，
+// lg 右側有摘要、清單變窄時，被壓縮的只有商品欄，品名與尺寸不會被擠成一小條
+// 欄位標題與品項列用同一組 class，三欄上下對齊
+@include media-breakpoint-up(md) {
+  .cart-col-qty {
+    width: 10rem;
+  }
+  .cart-col-total {
+    flex: 0 0 auto;
+    width: 7.5rem;
+  }
+}
+
+// 欄位標題（md 以上；只是視覺輔助，HTML 已對螢幕閱讀器隱藏）
+.cart-cols {
+  padding-bottom: .75rem;
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+  letter-spacing: $letter-spacing-label;
+}
+
+// ---------- 品項列 ----------
+// 清單上緣一條古銅線（md 以上剛好是欄位標題的底線），每列下緣再一條
+.cart-list {
+  border-top: 1px solid $line;
+}
+.cart-item {
+  padding-block: map-get($spacers, 4);
+  border-bottom: 1px solid $line;
+
+  @include media-breakpoint-up(xl) {
+    padding-block: $spacer * 2;
+  }
+}
+
+// 展品照：方形、深色展間的商品照；手機 88px → md（清單滿版）112px → lg（右側有摘要）80px → xl 120px
+.cart-item-media {
+  width: 5.5rem;
+  aspect-ratio: 1 / 1;
+  align-self: flex-start;
+
+  @include media-breakpoint-only(md) { width: 7rem; }
+  @include media-breakpoint-only(lg) { width: 5rem; }
+  @include media-breakpoint-up(xl) { width: 7.5rem; }
+
+  // 滑過時像把展品燈調亮一點（與商品卡相同的回饋，不放大、不浮起）
+  img { transition: filter .3s ease; }
+  &:hover img { filter: brightness(1.08); }
+}
+
+// 品名、尺寸、單價、規格、配送提醒：上下固定 8px，不用逐行寫 margin
+.cart-item-info {
+  display: grid;
+  justify-items: start;
+  align-content: start;
+  row-gap: map-get($spacers, 2);
+  flex: 1 1 auto;
+  min-width: 0;
+
+  > p { margin-bottom: 0; }
+}
+
+// 品名像展示牌上的品名：襯線（h3 預設）、字級比內文大一點
+.cart-item-name {
+  margin-bottom: 0;
+  font-size: $h5-font-size;
+  line-height: 1.5;
+
+  @include media-breakpoint-up(xl) {
+    font-size: $font-size-lg;
+  }
+
+  a {
+    color: $ivory;
+    text-decoration: none;
+
+    &:hover {
+      color: $champagne;
+      text-decoration: underline;
+      text-decoration-color: $champagne-deep;
+      text-decoration-thickness: 1px;
+      text-underline-offset: .3em;
+    }
+  }
+}
+
+// 規格：標籤與下拉選單同一行
+.cart-spec-field {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+
+  label { flex-shrink: 0; }
+}
+.cart-spec {
+  width: auto;
+  min-height: 2.75rem; // 觸控目標 44px
+}
+
+// 大型家具的配送提醒：圖示用香檳金點一下
+.cart-item-note {
+  display: flex;
+  align-items: flex-start;
+  gap: map-get($spacers, 2);
+
+  .bi { color: $champagne; }
+}
+
+// 移除：平常與其他文字連結相同，滑過才轉成石榴色（刪除的警示色）
+.cart-remove {
+  --bs-btn-hover-color: #{$garnet};
+  --bs-btn-active-color: #{$garnet};
+}
+
+// 小計：清單裡的小金額用 .price（等寬數字），字級略大於單價
+// md 以上整列靠上對齊（展品照、品名、數量鍵的上緣同一條線）；
+// 小計的行高等於數量鍵的外框高（44px 按鈕＋上下 1px 框線），在框內垂直置中，
+// 小計金額與數量「1」落在同一條基線上，讀起來是「數量 → 小計」一行
+.cart-item-subtotal {
+  font-size: $h5-font-size;
+
+  @include media-breakpoint-up(md) {
+    display: block;
+    line-height: 2.875rem;
+  }
+}
+
+// ---------- 折扣碼 ----------
+// 「套用」用表單框線色的細框，和輸入框合成同一個外框（不用金色，金色留給「前往結帳」）；滑過才亮成暖白框
+.cart-coupon {
+  max-width: 26rem;
+  margin-top: map-get($spacers, 5);
+
+  .btn {
+    --bs-btn-padding-x: #{map-get($spacers, 4)};
+    --bs-btn-border-color: #{$input-border-color};
+    --bs-btn-hover-color: #{$ivory};
+    --bs-btn-hover-bg: #{$smoke};
+    --bs-btn-hover-border-color: #{$ivory};
+    --bs-btn-active-color: #{$ivory};
+    --bs-btn-active-bg: #{$smoke};
+    --bs-btn-active-border-color: #{$ivory};
+  }
+}
+
+// ---------- 摘要下方的安心說明 ----------
+.cart-assure {
+  display: grid;
+  gap: map-get($spacers, 2);
+  margin-top: map-get($spacers, 4);
+  padding-top: map-get($spacers, 4);
+  border-top: 1px solid $line;
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+
+  li {
+    display: flex;
+    gap: map-get($spacers, 2);
+  }
+  .bi { color: $champagne; }
+}
+
+// ---------- 狀態示意：空購物車 ----------
+// 虛線框與內距來自共用的 .demo-state-stage

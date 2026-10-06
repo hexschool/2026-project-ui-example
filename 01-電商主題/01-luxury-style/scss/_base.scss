@@ -1,0 +1,711 @@
+// ============================================================
+// 全站基礎：字體、字距、區塊節奏、焦點、共用小工具
+// 以及本風格的共用類別：.arch（拱門圖框）、.placard（展示牌）、.foil（燙金邊框）
+// ============================================================
+
+// 單一深色主題：讓瀏覽器原生的捲軸、日期選擇器、下拉選單清單也用深色
+:root {
+  color-scheme: dark;
+  accent-color: $champagne;
+}
+
+body {
+  letter-spacing: $letter-spacing-body;
+  -webkit-font-smoothing: antialiased; // 深色底上的淺色字，不加會顯得太粗
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+// 標題：Bodoni Moda（英數）＋ Noto Serif TC（中文），字型由 $headings-font-family 設定
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  letter-spacing: $letter-spacing-heading;
+  font-optical-sizing: auto; // Bodoni Moda 依字級自動調整筆畫粗細（大字更細緻、小字不會太細）
+  text-wrap: balance;        // 標題多行時平均分配，避免最後一行只剩一兩個字
+}
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty; // 內文避免孤字
+}
+
+// sticky 頁首不遮住焦點與錨點目標（值同 $sticky-top-offset）
+html {
+  scroll-padding-top: $sticky-top-offset;
+}
+
+// 反白選取：香檳金三成混入曜石黑（暖白字 7.9:1）
+::selection {
+  background-color: $mark-bg;
+  color: $ivory;
+}
+
+// ---------- 字體與數字 ----------
+// 襯線：短標題、引言、展示牌品名等非 h 標籤的地方
+.font-serif {
+  font-family: $font-family-serif;
+  font-optical-sizing: auto;
+  letter-spacing: $letter-spacing-heading;
+}
+
+// 大金額：商品詳情售價、訂單合計、金屬卡片上的金額，用 Bodoni Moda 的襯線數字
+// 字級由所在位置決定（例如 <p class="amount h2">NT$ 16,800</p>）
+// Bodoni Moda 的光學尺寸（opsz）預設跟著字級走，28px 以上時千分位逗號細到像句點、「1」的旗角消失，
+// 所以金額固定用小字的光學尺寸 18（筆畫較穩），「16,800」的逗號才看得出來
+.amount {
+  font-family: $font-family-serif;
+  font-optical-sizing: none;
+  font-variation-settings: "opsz" 18;
+  font-weight: $font-weight-medium;
+  font-variant-numeric: lining-nums;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+// 小金額、數量、日期、訂單編號：Noto Sans TC 等寬數字，上下對齊更整齊
+.num,
+.price {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+}
+.price {
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+
+// 次要說明文字
+.text-note {
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+  letter-spacing: $letter-spacing-label;
+}
+
+// ---------- 區塊節奏 ----------
+// 區塊上下留白：手機 64px → 桌機 96px → 1200 以上 128px
+.section {
+  padding-block: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7);
+  }
+  @include media-breakpoint-up(xl) {
+    padding-block: map-get($spacers, 8);
+  }
+}
+// 相鄰的兩個區塊之間用古銅髮絲線分隔
+.section + .section {
+  border-top: 1px solid $line;
+}
+.section-alt {
+  background-color: $smoke;
+}
+
+// 區塊標題：標題＋一句說明，靠左對齊
+.section-heading {
+  margin-bottom: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: map-get($spacers, 6);
+  }
+
+  h2,
+  .h2 {
+    margin-bottom: map-get($spacers, 2);
+  }
+  p {
+    margin-bottom: 0;
+    color: $body-secondary-color;
+    max-width: 36em;
+  }
+}
+
+// 髮絲分隔線
+.rule {
+  border: 0;
+  border-top: 1px solid $line;
+  opacity: 1;
+  margin: 0;
+}
+
+// ---------- 尺寸標註：模擬建築圖的尺寸線 |——| W160 × D80 × H75 cm ----------
+.dim {
+  display: inline-flex;
+  align-items: flex-start; // 換行時尺寸線對齊第一行
+  gap: .5rem;
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+}
+.dim-line {
+  position: relative;
+  flex: 0 0 auto;
+  width: 1.5rem;
+  height: .5rem;
+  margin-top: calc((1lh - .5rem) / 2); // 垂直置中於第一行
+  border-inline: 1px solid $control;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 50% 0 auto;
+    border-top: 1px solid $control;
+  }
+}
+
+// ---------- 圖片框：固定比例、裁切填滿 ----------
+// 底色用胡桃墨，與深色展間的商品照背景接近，圖片載入前不會閃白
+.img-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.img-frame {
+  position: relative;
+  overflow: hidden;
+  background-color: $walnut;
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+// ---------- 拱門圖框（全站唯一的形狀母題，只用在首頁 Hero 與登入／註冊頁的圖片） ----------
+// 上緣半圓、下緣直角，內側再描一條淺香檳細線，像旅店拱廊
+// 比例預設 4:5，可用 style 或頁面 class 改 aspect-ratio（不要再加 max-height，會把寬度卡住）
+// <div class="arch">
+//   <img src="images/hero.jpg" alt="…">
+// </div>
+.arch {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  background-color: $walnut;
+  border-radius: $border-radius-pill $border-radius-pill 0 0; // 圓角大於寬度的一半時，會自動縮成剛好的半圓
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  // 內側細線：與外框同心的拱門
+  &::after {
+    content: "";
+    position: absolute;
+    inset: .75rem .75rem 0;
+    border: 1px solid rgba($champagne-light, .55);
+    border-bottom: 0;
+    border-radius: $border-radius-pill $border-radius-pill 0 0;
+    pointer-events: none;
+  }
+}
+
+// ---------- 展示牌：細香檳線＋襯線標題＋小字 ----------
+// 像展品旁的說明牌。商品卡的資訊區、Hero 旁的「5 坪小套房」說明都用這個樣子
+// <div class="placard">
+//   <p class="placard-title">5 坪（約 16.5 m²）的明亮小套房</p>
+//   <p class="placard-text">一句說明或尺寸</p>
+// </div>
+.placard {
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $champagne-deep;
+}
+.placard-title {
+  margin-bottom: map-get($spacers, 1);
+  word-break: keep-all;      // 中文只在空白與標點處換行，「小套房」這類詞不會被拆開
+  overflow-wrap: anywhere;   // 真的放不下時才強制斷行
+  font-family: $font-family-serif;
+  font-optical-sizing: auto;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-sm;
+  letter-spacing: $letter-spacing-heading;
+  color: $ivory;
+}
+.placard-text {
+  margin-bottom: 0;
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+  letter-spacing: $letter-spacing-label;
+}
+
+// ---------- 燙金邊框（結帳的付款方式選項、「確認付款」按鈕） ----------
+// 原理：同一個元素疊兩層背景——上層是內底色（只鋪到 padding-box），下層是金色漸層（鋪到 border-box），
+// 再把 1px 邊框設成透明，金色就只從邊框的位置露出來。
+// 注意：
+// - 內底色由 --foil-bg 決定，必須是不透明的顏色，否則整塊都會透出金色
+// - .foil 會設定 border 與 background；元件自己的 class 不要再寫 border、background，否則會蓋掉金邊
+//
+// 選項卡：<label class="co-option foil">…<input class="form-check-input" type="radio" …>…</label>
+// 按鈕：  <a class="btn btn-primary foil" href="order-result.html">確認付款</a>（香檳金底＋金邊）
+//         <a class="btn foil" href="…">…</a>（曜石黑底＋淺香檳字＋金邊）
+.foil {
+  --foil-bg: #{$walnut};
+  border: 1px solid transparent;
+  background: linear-gradient(var(--foil-bg), var(--foil-bg)) padding-box, $foil-gradient border-box;
+  transition: box-shadow .2s ease;
+}
+.foil:hover {
+  --foil-bg: #{$smoke};
+}
+// 選中（裡面的 radio／checkbox 已勾選，或加 .active）：外加一圈香檳金讓金邊看起來加粗、帶一點光，內底換成金紗
+.foil:has(:checked),
+.foil.active {
+  --foil-bg: #{$champagne-veil};
+  box-shadow: 0 0 0 1px $champagne, 0 0 1.5rem rgba($champagne, .2);
+}
+
+// 按鈕版：曜石黑底＋淺香檳字（12.6:1）
+.btn.foil {
+  --foil-bg: #{$obsidian};
+  --bs-btn-color: #{$champagne-light};
+  --bs-btn-hover-color: #{$champagne-light};
+  --bs-btn-active-color: #{$champagne-light};
+  --bs-btn-disabled-color: #{$champagne-light};
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-border-color: transparent;
+
+  &:hover { --foil-bg: #{$smoke}; }
+  &:active,
+  &.active { --foil-bg: #{$walnut}; box-shadow: none; }
+}
+// 主要按鈕加燙金框：內底維持香檳金，金邊像打磨過的斜角
+.btn-primary.foil {
+  --foil-bg: #{$champagne};
+  --bs-btn-color: #{$obsidian};
+  --bs-btn-hover-color: #{$obsidian};
+  --bs-btn-active-color: #{$obsidian};
+  --bs-btn-disabled-color: #{$obsidian};
+
+  &:hover,
+  &:active,
+  &.active { --foil-bg: #{$champagne-light}; }
+}
+
+// ---------- 按鈕 ----------
+// 主要：.btn-primary（香檳金底＋曜石黑字），同一組動作只放一個
+// 次要：.btn-outline-secondary（透明底＋暖白細框）
+// 金色細框：.btn-outline-primary（香檳金框＋香檳金字），用在需要一點金色指引的次要動作
+// 文字連結：.btn-text
+.btn {
+  letter-spacing: $letter-spacing-label;
+  // 焦點：曜石黑間隙＋香檳金外圈，所有按鈕一致
+  --bs-btn-focus-box-shadow: #{$focus-ring-double};
+}
+// 主要按鈕 hover／active 使用色票內的淺香檳，而非 Bootstrap 自動計算的色階
+.btn-primary {
+  --bs-btn-hover-bg: #{$champagne-light};
+  --bs-btn-hover-border-color: #{$champagne-light};
+  --bs-btn-active-bg: #{$champagne-light};
+  --bs-btn-active-border-color: #{$champagne-light};
+}
+.btn-outline-primary {
+  --bs-btn-hover-bg: #{$champagne};
+  --bs-btn-hover-color: #{$obsidian};
+  --bs-btn-active-bg: #{$champagne-light};
+  --bs-btn-active-border-color: #{$champagne-light};
+  --bs-btn-active-color: #{$obsidian};
+  // 停用：古金框字、不再疊透明度（與次要按鈕相同的規則）
+  --bs-btn-disabled-color: #{$champagne-deep};
+  --bs-btn-disabled-border-color: #{$line-strong};
+  --bs-btn-disabled-opacity: 1;
+}
+// 次要按鈕：暖白字＋暖白細框；hover 反白成暖白底＋曜石黑字
+.btn-outline-secondary {
+  --bs-btn-color: #{$ivory};
+  --bs-btn-border-color: #{$ivory};
+  --bs-btn-hover-color: #{$obsidian};
+  --bs-btn-hover-bg: #{$ivory};
+  --bs-btn-hover-border-color: #{$ivory};
+  --bs-btn-active-color: #{$obsidian};
+  --bs-btn-active-bg: #{$ivory-muted};
+  --bs-btn-active-border-color: #{$ivory-muted};
+  --bs-btn-disabled-color: #{$ivory-muted};
+  --bs-btn-disabled-border-color: #{$line-strong};
+  // 停用色已經調暗，不再疊 Bootstrap 的 .4 透明度（否則「已售完」只剩約 2.3:1，幾乎看不見）
+  --bs-btn-disabled-opacity: 1;
+}
+// 文字連結型按鈕：底線（古金）、無外框
+.btn-text {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: .25rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem; // 觸控目標 44px，視覺上仍是一行文字連結
+  --bs-btn-color: #{$ivory};
+  --bs-btn-hover-color: #{$champagne};
+  --bs-btn-active-color: #{$champagne};
+  --bs-btn-border-width: 0;
+  text-decoration: underline;
+  text-decoration-color: $champagne-deep;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .4em;
+  vertical-align: baseline; // 放在句子裡（「已經有帳號？登入」）時和前後文字的基線對齊
+
+  &:hover { text-decoration-color: currentColor; }
+  // 沒有左右內距，box-shadow 焦點環會貼著字；改用有間距的外框
+  &:focus-visible {
+    box-shadow: none;
+    outline: 2px solid $champagne;
+    outline-offset: 4px;
+  }
+}
+
+// 核取方塊、radio、開關：只有鍵盤操作時顯示焦點環，滑鼠或手指點完不留光暈
+.form-check-input:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+
+// 內文裡沒有 class 的連結：古金底線，hover 換成文字色（與 .btn-text 一致）
+a:not([class]) {
+  text-decoration-color: $champagne-deep;
+  text-underline-offset: .35em;
+
+  &:hover { text-decoration-color: currentColor; }
+}
+
+// ---------- 表單微調 ----------
+.form-control,
+.form-select {
+  caret-color: $champagne;
+}
+// 瀏覽器自動填入時不要變成淺藍底
+.form-control:-webkit-autofill {
+  -webkit-text-fill-color: $ivory;
+  box-shadow: inset 0 0 0 100px $walnut;
+}
+.form-control:-webkit-autofill:focus {
+  box-shadow: inset 0 0 0 100px $walnut, $input-focus-box-shadow;
+}
+
+// 數量增減
+.qty {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid $input-border-color; // 表單控制項邊框（3:1）
+  background-color: $walnut;
+
+  .btn {
+    --bs-btn-padding-x: .75rem;
+    --bs-btn-padding-y: .375rem;
+    --bs-btn-border-width: 0;
+    --bs-btn-color: #{$ivory};
+    --bs-btn-hover-color: #{$champagne};
+    --bs-btn-hover-bg: #{$smoke};
+    --bs-btn-active-bg: #{$smoke};
+    --bs-btn-disabled-color: #{$line-strong}; // 停用：深古銅，不再疊透明度
+    --bs-btn-disabled-opacity: 1;
+    --bs-btn-focus-box-shadow: inset 0 0 0 2px #{$champagne};
+    min-width: 2.75rem;  // 觸控目標 44px
+    min-height: 2.75rem;
+  }
+  input {
+    width: 3rem;
+    border: 0;
+    text-align: center;
+    background: transparent;
+    font-variant-numeric: tabular-nums;
+    color: $ivory;
+    &:focus-visible { outline: none; box-shadow: inset 0 0 0 2px $champagne; }
+  }
+
+  &:has(input:disabled) { border-color: $input-disabled-border-color; }
+}
+
+// ---------- 底線式分頁籤（商品詳情、訂單篩選、Guideline 共用） ----------
+// 目前分頁：暖白字＋香檳金 1px 底線
+.nav-underline {
+  --bs-nav-underline-gap: 2rem;
+  --bs-nav-underline-border-width: 1px;
+  --bs-nav-underline-link-active-color: #{$ivory};
+  border-bottom: 1px solid $line;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  .nav-link {
+    min-width: 2.75rem; // 兩個字的分頁也有 44px 觸控寬度（文字仍靠左，第一個分頁對齊版心）
+    padding-block: .875rem;
+    color: $body-secondary-color;
+    letter-spacing: $letter-spacing-label;
+    white-space: nowrap;
+    &:hover { color: $ivory; }
+  }
+  .nav-link.active {
+    font-weight: $font-weight-normal;
+    border-bottom-color: $champagne;
+  }
+  // 捲動容器會裁掉外擴的焦點環，改畫在內側
+  .nav-link:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px $champagne;
+  }
+  // 滑鼠點過的非目前分頁不要留下底線（避免看起來有兩個選中項）
+  .nav-link:not(.active):focus:not(:focus-visible) {
+    border-bottom-color: transparent;
+  }
+
+  @include media-breakpoint-down(md) {
+    --bs-nav-underline-gap: 1.5rem;
+  }
+}
+
+// ---------- 麵包屑：連結用霧白、無底線，目前頁用暖白；單一項目不從中間斷行 ----------
+.breadcrumb {
+  align-items: center;
+  letter-spacing: $letter-spacing-label;
+}
+.breadcrumb-item {
+  display: flex; // 讓分隔符「/」（::before）與 44px 高的連結垂直置中
+  align-items: center;
+  white-space: nowrap;
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem; // 觸控目標 44px
+  color: $body-secondary-color;
+  text-decoration: none;
+
+  &:hover {
+    color: $champagne;
+    text-decoration: underline;
+  }
+}
+
+// 浮層陰影：$enable-shadows 關閉時 Bootstrap 不會輸出，這裡手動套用
+.dropdown-menu {
+  box-shadow: var(--bs-dropdown-box-shadow);
+}
+.modal-content {
+  box-shadow: $box-shadow-lg;
+}
+
+// ---------- 鍵盤焦點 ----------
+// 一律是香檳金 2px 實線，外推 2px 露出底色當間隙（9.8:1）
+:focus-visible {
+  outline: 2px solid $champagne;
+  outline-offset: 2px;
+}
+// offcanvas、modal 開啟時焦點會落在容器本身，不需要外框
+.offcanvas:focus-visible,
+.modal:focus-visible {
+  outline: 0;
+}
+// 程式移動焦點的目標（main、錨點區塊）不畫外框
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+// 按鈕、表單控制項由 Bootstrap 的 box-shadow 畫焦點（雙層或 2px 框），不再疊一層 outline
+.btn:focus-visible,
+.btn-close:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible {
+  outline: none;
+}
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: $zindex-fixed + 10;
+  padding: .5rem 1rem;
+  background: $champagne;
+  color: $obsidian;
+  &:focus { top: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
+
+// ---------- 訂單狀態標籤（我的訂單、Guideline 共用） ----------
+// 用法：<span class="badge-status is-shipping">出貨中</span>
+// 5 種狀態不只靠顏色分辨：文字本身＋外框樣式不同
+//   待付款＝實心（需要你處理，最醒目）、已付款／出貨中／已完成＝細框＋實心圓點、已取消＝虛線框＋空心圓點
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .25rem .625rem;
+  border: 1px solid currentColor;
+  font-size: .75rem;
+  line-height: 1.4;
+  letter-spacing: $letter-spacing-label;
+  white-space: nowrap;
+
+  &::before {
+    content: "";
+    width: .375rem;
+    height: .375rem;
+    border-radius: 50%;
+    background-color: currentColor;
+  }
+
+  &.is-pending  { color: $obsidian; background-color: $copper; border-color: $copper; } // 曜石黑字對銅橘 8.4:1
+  &.is-paid     { color: $steel;     background-color: rgba($steel, .08); }
+  &.is-shipping { color: $champagne; background-color: rgba($champagne, .1); }
+  &.is-done     { color: $jade;      background-color: rgba($jade, .08); }
+  &.is-cancel {
+    color: $body-secondary-color;
+    background-color: transparent;
+    border-style: dashed;
+
+    &::before {
+      background-color: transparent;
+      border: 1px solid currentColor;
+    }
+  }
+}
+
+// ---------- 頁首區塊節奏（除首頁外的各頁共用） ----------
+// 用法：
+// <header class="page-header">
+//   <nav aria-label="目前位置"><ol class="breadcrumb">…</ol></nav>   ← 或 <CheckoutSteps>
+//   <h1>頁面標題</h1>
+//   <p class="page-lead">一句說明</p>
+// </header>
+.page-header {
+  padding-top: map-get($spacers, 4);          // 手機 24px
+  margin-bottom: map-get($spacers, 5);        // 到第一個內容區塊 48px
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 5);        // 桌機 48px
+    margin-bottom: map-get($spacers, 6);      // 桌機 64px
+  }
+
+  > nav,
+  > .checkout-steps {
+    margin-bottom: map-get($spacers, 4);      // 麵包屑／步驟 → h1：手機 24px
+
+    @include media-breakpoint-up(lg) {
+      margin-bottom: map-get($spacers, 5);    // 桌機 48px
+    }
+  }
+  .breadcrumb {
+    margin-bottom: 0;
+  }
+  h1,
+  .h1 {
+    margin-bottom: map-get($spacers, 2);
+  }
+}
+.page-lead {
+  max-width: 36em;
+  margin-bottom: 0;
+  color: $body-secondary-color;
+}
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、標點處換行，品名「(三入組)」這類片語不會被拆開；整段放不下時才強制斷行
+// 用在品名、短標題；長段落不要用（會讓行尾參差）
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 選填標示（表單 label 內） ----------
+// 用法：<label class="form-label">備註<span class="form-label-optional">選填</span></label>
+.form-label-optional {
+  margin-left: map-get($spacers, 2);
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+}
+
+// ---------- 手機滿版橫向捲動列 ----------
+// 手機（< 576px）時 container 沒有最大寬，讓橫向捲動列貼齊螢幕兩側，內容起點仍對齊版心
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+  }
+}
+.bleed-x {
+  @include bleed-x;
+}
+
+// ---------- 設計稿狀態示意（登入、註冊、購物車、付款結果、我的訂單共用） ----------
+// 頁面底部示範「另一種狀態」的畫面：以虛線和正式內容分開，標籤寫明「設計稿狀態示意」，避免被當成正式內容
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag">設計稿狀態示意</p>
+//   <h2 id="…" class="demo-state-title">購物車是空的時</h2>
+//   <p class="text-note">什麼情況下出現、畫面哪裡會改變</p>
+//   …示意畫面…
+// </section>
+.demo-state {
+  margin-top: map-get($spacers, 6);
+  padding-top: map-get($spacers, 4);
+  border-top: 1px dashed $line-strong;
+
+  > .text-note {
+    margin-bottom: map-get($spacers, 3);
+  }
+}
+.demo-state-tag {
+  display: inline-block;
+  margin-bottom: map-get($spacers, 3);
+  padding: .125rem .625rem;
+  border: 1px solid $line-strong;
+  color: $body-secondary-color;
+  font-size: .75rem;
+  letter-spacing: $letter-spacing-label;
+}
+.demo-state-title {
+  margin-bottom: map-get($spacers, 1);
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  letter-spacing: $letter-spacing-body;
+}
+// 狀態示意裡的「示範畫面」外框：虛線表示這是示意，不是正式版面的一部分
+.demo-state-stage {
+  padding: map-get($spacers, 4);
+  border: 1px dashed $line-strong;
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 4) + .5rem; // 32px：留白接近真實頁面
+  }
+}
+
+// ---------- 空狀態（購物車、我的訂單、Guideline 共用） ----------
+// 一句說明＋一個動作；靠左、起點與原本的列表相同，不放插圖、不加框、不加底色
+// 整頁沒有內容時用主要按鈕；篩選後沒有結果時用低強調按鈕（btn-outline-secondary）回到全部
+// <div class="empty-state">
+//   <p>購物車裡還沒有商品。</p>
+//   <a class="btn btn-primary" href="products.html">瀏覽商品一覽</a>
+// </div>
+// 上方留白 48px：整頁時由 .page-header 的下邊距提供；列表上方有篩選列時由下面這條規則提供
+.empty-state > p {
+  max-width: 30em;
+  margin-bottom: map-get($spacers, 4);
+}
+.nav + .empty-state {
+  padding-top: map-get($spacers, 5);
+}
+
+// ---------- 分頁籤旁的數量（商品分類、商品評價） ----------
+// 用法：<button class="nav-link">評價<span class="tab-count num">3</span></button>
+.tab-count {
+  margin-left: .375rem;
+  font-size: .75rem;
+  color: $body-tertiary-color;
+}
