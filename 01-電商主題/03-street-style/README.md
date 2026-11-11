@@ -88,11 +88,37 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 2. `_variables.scss`：本風格的變數覆寫
 3. `bootstrap/scss/bootstrap`：用上面的變數編譯出整套 Bootstrap
 4. `bootstrap-icons`：圖示字型與 class（字型路徑指向 `css/fonts/`）
-5. `_base.scss`：字體、區塊節奏、共用工具
+5. `_base.scss`：字體、區塊節奏、共用工具，以及下表的共用類別
 6. `components/*`：頁首、頁尾、商品卡、結帳步驟、訂單摘要
 7. `pages/*`：各頁專屬樣式
 
 原則：先用 Bootstrap 的變數與工具類別，做不到才寫自訂 CSS，而且只引用變數，不寫死色碼。
+
+### 共用類別
+
+下面這些類別跨頁共用，新頁面直接套用，不要在 `pages/*` 另寫一份。用法與示範都在 `guideline.html`。
+
+| 類別 | 用途 | 位置 |
+|---|---|---|
+| `.page-header`、`.page-lead` | 首頁以外各頁的頁首：麵包屑（或結帳步驟 `.checkout-steps`）→ h1 → 一句說明，間距固定 | `_base.scss` |
+| `.section`、`.section-dark`、`.section-rule`、`.section-heading` | 區塊上下留白（`lg` 以上加大）；深炭反白區塊（焦點環改用螢光）；區塊之間的粗分隔線；區塊標題＋一句說明 | `_base.scss` |
+| `.tag`（`.tag-neon`／`.tag-dark`／`.tag-safety`） | 招牌元素：粗體標籤，例如現貨、小坪數、已售完 | `_base.scss` |
+| `.badge-status` ＋ `.is-pending`／`.is-paid`／`.is-shipping`／`.is-done`／`.is-cancel` | 5 種訂單狀態標籤（待付款、已付款、出貨中、已完成、已取消） | `_base.scss` |
+| `.spec-plate`、`.spec-note` | 規格銘牌：W／D／H 三格尺寸，單位 cm 由 `::after` 標示；銘牌上方的限定詞（單入、沙發模式、單片底板） | `_base.scss` |
+| `.num`、`.price`、`.price-lg` | 價格、尺寸、編號用 Archivo 窄體＋等寬數字；商品詳情與摘要總額的大價格 | `_base.scss` |
+| `.text-note` | 次要說明小字 | `_base.scss` |
+| `.img-frame` | 圖片框：中水泥底，圖片 `object-fit: cover` 填滿 | `_base.scss` |
+| `.btn-neon`、`.btn-text` | 深色區塊上的螢光主要按鈕；文字連結型按鈕（粗底線、44px 觸控高度） | `_base.scss` |
+| `.qty` | 數量增減（減少鍵、數字欄、增加鍵） | `_base.scss` |
+| `.nav-underline`、`.nav-tabs`（Bootstrap）＋ `.tab-count` | 底線分頁籤；商品詳情的方塊分頁籤；分頁文字後面的數量 | `_base.scss` |
+| `.text-phrase` | 品名與短標題只在空白與 `<wbr>` 處換行，詞組不被拆開；不要用在長段落 | `_base.scss` |
+| `.form-label-optional` | 標籤後的「選填」 | `_base.scss` |
+| `.bleed-x`（mixin `bleed-x`） | 576px 以下讓橫向捲動列貼齊螢幕兩側，內容起點仍對齊版心 | `_base.scss` |
+| `.demo-state`、`.demo-state-tag`、`.demo-state-title`、`.demo-state-stage` | 頁面底部的「設計稿狀態示意」，以虛線和正式內容分開 | `_base.scss` |
+| `.empty-state` | 空狀態：一句說明＋一個動作 | `_base.scss` |
+| `.product-card`（`-bar`、`-media`、`-tags`、`-body`、`-title`、`-foot`） | 粗框商品卡：上方編號條、圖上的粗體標籤、規格銘牌、大價格、滿版按鈕 | `components/_product-card.scss` |
+| `.checkout-steps`（`-item`、`-num`、`-label`；`.is-done`／`.is-current`） | 三段式結帳步驟；手機只顯示目前步驟的文字 | `components/_steps.scss` |
+| `.order-summary`（`-head`、`-body`、`-items`、`-row`、`-total`、`.is-sticky`） | 購物車、結帳、付款結果共用的訂單摘要：3px 粗框＋硬陰影 | `components/_order-summary.scss` |
 
 ## Design token 摘要
 
@@ -107,7 +133,7 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 | 陰影 | 只有硬陰影 `4px 4px 0` 深炭，用在主要按鈕與重點面板 |
 | 焦點 | 螢光內圈＋深炭外圈（淺底、深底都看得見） |
 
-完整規範請看 `guideline.html`。
+完整規範請看 `guideline.html`。改色時，Guideline 的色票 hex、對比度與其他寫死色碼的地方也要一起改，清單見上一層 [`../README.md`](../README.md) 的「換色時同步檢查」。
 
 ## 圖片
 
