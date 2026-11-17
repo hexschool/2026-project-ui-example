@@ -1,0 +1,167 @@
+// ============================================================
+// 我的票券（tickets.html）：class 一律加 tickets- 前綴
+// 頁首區同活動列表（展牆灰底），分頁是頁首區最下面的一條分段分頁（components/_member.scss 的 .seg-tabs）
+// 票券卡（TicketCard）像圖錄的作品圖版：黑白照片在上（左上角日期方塊）、說明在下；≥ 768px 每列 2 張
+// 狀態：預設＝有效／.is-used 已使用（照片淡出）／.is-expired 已過期、.is-cancelled 活動已取消（照片蓋斜線紋、框線變水泥灰）
+// 卡片上不放 QR Code（QR 只在電子票券詳情出示）
+// ============================================================
+
+.tickets-hero {
+  padding-bottom: map-get($spacers, 5);
+
+  .page-header { padding-bottom: map-get($spacers, 4); }
+}
+
+// ---------- 票券列表 ----------
+.tickets-list {
+  display: grid;
+  gap: 1.5rem;
+  margin: 0;
+
+  > li { min-width: 0; }
+  > [hidden] { display: none; }
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @include media-breakpoint-up(lg) {
+    gap: 2rem;
+  }
+}
+
+// ---------- 票券卡（TicketCard） ----------
+.tickets-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid $ink;
+  background-color: $paper;
+}
+.tickets-card-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-bottom: 1px solid $ink;
+  background-color: $paper;
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+.tickets-card-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 1.25rem;
+
+  @include media-breakpoint-up(md) { padding: 1.5rem 1.75rem; }
+}
+.tickets-card-state { margin-bottom: .75rem; }
+.tickets-card-title {
+  margin-bottom: .75rem;
+  font-size: 1.625rem;
+  font-weight: $font-weight-black;
+  line-height: 1.3;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    &:hover { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: .25em; }
+  }
+}
+// 日期時間、城市 ‧ 場地、票種 × 張數：三行，各帶圖示（同活動列表卡）
+.tickets-card-meta {
+  display: grid;
+  gap: .25rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+  font-size: .9375rem;
+
+  li {
+    display: grid;
+    grid-template-columns: 1.25rem 1fr;
+    gap: .5rem;
+  }
+  .bi { line-height: inherit; }
+  li:last-child { font-weight: $font-weight-bold; } // 票種 × 張數
+}
+// 底列：訂單編號（＋附註）在左，「查看票券」在右；< 576px 按鈕滿寬
+.tickets-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid $ink;
+
+  > div { min-width: 0; }
+  .btn { flex-shrink: 0; }
+
+  @include media-breakpoint-down(sm) {
+    .btn { width: 100%; }
+  }
+}
+.tickets-card-order {
+  margin: 0;
+  font-size: .8125rem;
+  color: $graphite;
+  letter-spacing: $letter-spacing-label;
+}
+.tickets-card-note {
+  display: flex;
+  gap: .375rem;
+  margin: .375rem 0 0;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+
+  .bi { line-height: inherit; }
+}
+// 活動已取消（狀態示意）：提示框放在票種下方
+.tickets-card .alert {
+  margin: 0 0 1.25rem;
+  font-size: .9375rem;
+}
+
+// ---------- 狀態 ----------
+// 已使用、已過期：整張降低對比（文字改石墨灰 6.7:1，仍達 AA）
+.tickets-card.is-used,
+.tickets-card.is-expired {
+  .tickets-card-title,
+  .tickets-card-meta { color: $graphite; }
+}
+// 已使用：照片淡出（像驗過的票）
+.tickets-card.is-used .tickets-card-media > img { opacity: .35; }
+// 已過期、活動已取消：照片蓋斜線紋（不能用），外框換成水泥灰
+.tickets-card.is-expired,
+.tickets-card.is-cancelled {
+  border-color: $concrete;
+
+  .tickets-card-media {
+    border-bottom-color: $concrete;
+
+    > img { opacity: .3; }
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: $hatch;
+    }
+  }
+  .date-chip { z-index: 1; color: $graphite; }
+}
+
+// ---------- 設計稿狀態示意：兩個並排（≥ 992px），示意框各自依內容決定高度 ----------
+// （空狀態只有一小段，拉成和票券卡一樣高會留下一大片空的點狀框，看起來像沒畫完）
+.tickets-demos {
+  align-items: flex-start;
+
+  // 992～1199px 右邊的說明句會換成 2 行：兩邊都保留 2 行高，兩個示意框的上緣才對齊
+  @include media-breakpoint-only(lg) {
+    .demo-state > .text-note { min-height: calc(#{$line-height-base} * 2em); }
+  }
+}

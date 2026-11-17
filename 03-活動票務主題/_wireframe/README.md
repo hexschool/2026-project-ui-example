@@ -10,7 +10,7 @@
 
 1. **wireframe 只提供版型與資訊架構**：有哪些頁面、區塊順序、桌機欄數、元件與狀態。它雖然有配色（奶油底、墨褐、磚紅），但那是 wireframe 自己的示意風格，**不是**任何一套風格的規格。
 2. **文案以 Notion 為唯一來源**，已逐字整理在上一層的 [`../CONTENT.md`](../CONTENT.md)。wireframe 上有不少字是自己改寫或補的（例如「為什麼在這裡買票比較安心？」「02 天 05:12:48」「@late_night_gigs_」），兩者不一致時以 Notion 為準，對照表在 `WIREFRAME_SPEC.md` §4。
-3. **本次 5 頁全部必做**：設計 Guideline、首頁、活動列表、活動細節、購票確認與快速支付。付款結果與電子票券依 wireframe 放在結帳頁下方的頁內區塊，不另開頁。
+3. **每套共 10 頁**。Notion 規定的 5 頁（設計 Guideline、首頁、活動列表、活動細節、購票確認與快速支付）剛好就是 wireframe 的 5 個頁面區塊；付款結果與電子票券依 wireframe 放在結帳頁下方的頁內區塊，不另開頁。2026-11 補的 5 頁（註冊、我的票券、電子票券詳情、購票紀錄、追蹤的主辦方）**wireframe 沒有、也沒有截圖**，版型直接看 `WIREFRAME_SPEC.md` §3.05～3.09，文案與示意資料看 §2.9.1～2.9.7。登入仍用共用的登入 Modal，不另做登入頁。主辦方後台、行動驗票工具與帳號設定仍是第二階段，不做。
 4. wireframe 的設計稿工具列、頁首的設計稿頁面導覽、頁尾的「設計稿」欄、「設計註」標註，都是給審稿用的，**不要做進正式頁面**。
 
 ## 怎麼瀏覽
@@ -38,7 +38,7 @@ _wireframe/
 ├─ index.html          ← Notion 附件原檔（未修改，外部只引用 Bootstrap 5.3.3 CDN）
 ├─ WIREFRAME_SPEC.md   ← 逐頁版型規格（3 套風格的實作依據，從這裡開始讀）
 ├─ README.md           ← 本檔
-└─ screenshots/        ← 1440px 寬全頁截圖，淺色模式
+└─ screenshots/        ← 1440px 寬全頁截圖，淺色模式（只有 wireframe 的 5 頁；2026-11 補的 5 頁沒有）
    ├─ guideline.png      guideline-notes.png
    ├─ home.png           home-notes.png
    ├─ events.png         events-notes.png

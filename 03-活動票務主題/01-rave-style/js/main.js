@@ -171,3 +171,18 @@ document.querySelectorAll('.carousel').forEach((carousel) => {
     if (index) index.textContent = event.to + 1
   })
 })
+
+// 9. 我的票券的分頁：即將到來／已使用／已過期，只顯示選中的那一組（2026-11 補；屬性名稱照電商 js/main.js 的分頁篩選）
+//    <div data-filter-list="#ticketList"><button class="chip" data-filter="upcoming" aria-pressed="true">…
+//    票券：<ul id="ticketList"><li data-status="upcoming|used|expired">…
+//    HTML 先全部顯示（沒有 JS 也看得到所有票券），載入時套用 aria-pressed="true" 的那一個（預設「即將到來」）
+document.querySelectorAll('[data-filter-list]').forEach((group) => {
+  const tabs = group.querySelectorAll('[data-filter]')
+  const items = document.querySelectorAll(`${group.dataset.filterList} > [data-status]`)
+  const show = (filter) => {
+    tabs.forEach((tab) => tab.setAttribute('aria-pressed', String(tab.dataset.filter === filter)))
+    items.forEach((item) => { item.hidden = item.dataset.status !== filter })
+  }
+  tabs.forEach((tab) => tab.addEventListener('click', () => show(tab.dataset.filter)))
+  show(group.querySelector('[aria-pressed="true"]')?.dataset.filter || tabs[0].dataset.filter)
+})

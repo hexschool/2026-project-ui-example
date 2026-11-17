@@ -1,0 +1,247 @@
+// ============================================================
+// 追蹤的主辦方 follows.html（class 前綴 fl-）
+// 機櫃黑頁首（麵包屑、H1、說明、追蹤數）→ 主辦方卡每張一列 → 設計稿狀態示意
+//
+// OrganizerCard 主辦方卡：同活動細節「關於主辦方」的左右構圖。
+//   ≥ 992px  左 5：字母章＋名稱 → 簡介 → 即將舉辦 1 場活動 → 取消追蹤
+//            右 7：「下一場」小卡（整張連到活動細節）
+//   < 992px  照 DOM 上下排：字母章＋名稱（橫排）→ 簡介 → 場數 → 下一場 → 取消追蹤
+// 「取消追蹤」是次要小按鈕，不比下一場小卡搶眼。主辦方名稱不做連結（沒有主辦方頁）
+// ============================================================
+.fl-list {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fl-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "head"
+    "intro"
+    "upcoming"
+    "next"
+    "actions";
+  padding: 1.5rem 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 2rem;
+  }
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-rows: auto auto auto 1fr;
+    grid-template-areas:
+      "head     next"
+      "intro    next"
+      "upcoming next"
+      "actions  next";
+    column-gap: 2.5rem;
+  }
+}
+.fl-card-head { grid-area: head; }
+.fl-intro     { grid-area: intro; }
+.fl-upcoming  { grid-area: upcoming; }
+.fl-next-wrap { grid-area: next; }
+.fl-actions   { grid-area: actions; }
+
+// 字母章＋名稱：橫排
+.fl-card-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+// 圓形字母章：外圈極光綠到霓虹粉的雙色環（同活動細節的「NC」，CSS 畫，不是圖片）
+.fl-logo {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 4rem;
+  height: 4rem;
+  margin: 0;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  background:
+    linear-gradient($blackout, $blackout) padding-box,
+    conic-gradient(from 200deg, $aurora, $neon, $aurora) border-box;
+  font-family: $font-family-display;
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: 1;
+
+  @include media-breakpoint-up(md) {
+    width: 4.5rem;
+    height: 4.5rem;
+    font-size: 1.25rem;
+  }
+}
+.fl-name {
+  margin: 0;
+  font-size: 1.3125rem;
+  line-height: 1.3;
+
+  @include media-breakpoint-up(md) {
+    font-size: 1.5rem;
+  }
+}
+.fl-intro {
+  margin-bottom: 1rem;
+  color: $body-secondary-color;
+}
+// 即將舉辦 1 場活動：數字放大（同活動細節的數據卡）
+.fl-upcoming {
+  display: inline-flex;
+  align-items: baseline;
+  justify-self: start;
+  gap: .375rem;
+  margin: 0 0 1.5rem;
+  padding: .375rem .875rem;
+  border: 1px solid $line-strong;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+  @include bevel($cut-sm);
+
+  b {
+    color: $aurora;
+    font-family: $font-family-display;
+    font-size: 1.375rem;
+    font-weight: 800;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: 0;
+  }
+}
+
+// ---------- 下一場小卡 ----------
+.fl-next-wrap {
+  @include media-breakpoint-up(lg) {
+    align-self: center;
+    padding-left: 2.5rem;
+    border-left: 1px solid $line;
+  }
+}
+.fl-next-label {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .75rem;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  font-weight: 700;
+  letter-spacing: $letter-spacing-label;
+
+  // 標籤後面拉一條掃描線
+  &::after {
+    content: "";
+    flex: 1 1 0;
+    height: 1px;
+    background-color: $line;
+  }
+}
+// 整張是一個連結（卡內沒有其他連結）。切角用 bevel()，焦點環才不會被切掉
+// hover／focus 只換框線色、標題色與箭頭位移，尺寸不變
+// < 576px 縮圖在上（2 : 1）、文字在下，標題才不會擠成三行；≥ 576px 縮圖｜文字｜箭頭橫排
+.fl-next {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: .875rem;
+  align-items: center;
+  padding: .75rem;
+  border: 1px solid $line-strong;
+  background-color: $blackout;
+  color: $strobe;
+  text-decoration: none;
+  @include bevel($cut-sm);
+
+  &:hover {
+    border-color: $aurora;
+    color: $strobe;
+
+    .fl-next-title { color: $aurora; }
+    .fl-next-arrow {
+      color: $aurora;
+      transform: translateX(.25rem);
+    }
+  }
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 9rem minmax(0, 1fr) auto;
+    gap: 1.25rem;
+    padding: 1rem;
+  }
+}
+.fl-next-media {
+  --cut: #{$cut-sm};
+  aspect-ratio: 2 / 1;
+  background-color: $floor;
+  clip-path: $cut-polygon;
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  @include media-breakpoint-up(sm) {
+    aspect-ratio: 4 / 3;
+  }
+}
+.fl-next-body {
+  min-width: 0;
+
+  p {
+    margin: 0;
+    color: $body-secondary-color;
+    font-size: $font-size-sm;
+  }
+}
+.fl-next-title {
+  margin-bottom: .25rem;
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+.fl-next-body .fl-next-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .75rem;
+  margin-top: .5rem;
+
+  .price {
+    color: $strobe;
+    font-size: 1rem;
+  }
+}
+.fl-next-free {
+  color: $strobe;
+  font-weight: 700;
+}
+.fl-next-arrow {
+  display: none;
+  color: $haze;
+  font-size: 1.25rem;
+  transition: transform .2s ease, color .2s ease;
+
+  @include media-breakpoint-up(sm) {
+    display: block;
+  }
+}
+
+// ---------- 取消追蹤 ----------
+.fl-actions {
+  margin-top: 1.5rem;
+
+  @include media-breakpoint-up(lg) {
+    align-self: end;
+  }
+  @include media-breakpoint-down(sm) {
+    .btn { width: 100%; }
+  }
+}

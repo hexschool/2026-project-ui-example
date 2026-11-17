@@ -1,5 +1,5 @@
 // 檢查每個頁面的共用區塊（<head> 共用部分、頁首、頁尾＋登入 Modal＋底部 script）是否與 templates/page.html 一致
-// 頁首、頁尾、登入 Modal 在每頁都完整寫一份，改範本後可以用這支確認 5 個頁面都同步了
+// 頁首、頁尾、登入 Modal 在每頁都完整寫一份，改範本後可以用這支確認 10 個頁面都同步了
 // 用法：npm run check
 import fs from 'node:fs'
 import path from 'node:path'
@@ -8,13 +8,18 @@ import { fileURLToPath } from 'node:url'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const pages = fs.readdirSync(root).filter((f) => f.endsWith('.html')).sort()
 
-// 每頁頁首「目前頁」應該指向哪裡：活動細節標「活動列表」；結帳與 Guideline 不標示
+// 每頁頁首「目前頁」應該指向哪裡：活動細節標「活動列表」；結帳、Guideline 與 2026-11 補的 5 頁不標示
 const expectedNav = {
   'index.html': 'index.html',
   'events.html': 'events.html',
   'event.html': 'events.html',
   'checkout.html': null,
   'guideline.html': null,
+  'register.html': null,
+  'tickets.html': null,
+  'ticket.html': null,
+  'orders.html': null,
+  'follows.html': null,
 }
 
 // 去掉「目前頁」標示與每頁不同的 title／description，再比對

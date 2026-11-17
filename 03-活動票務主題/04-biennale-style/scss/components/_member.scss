@@ -1,0 +1,162 @@
+// ============================================================
+// 會員頁共用（2026-11 補的我的票券、電子票券詳情、購票紀錄、追蹤的主辦方）
+// 1. 頁首區：同活動列表的展牆灰頁首（麵包屑 → H1 → 說明），右側多一個「展牆編號」式的大數字
+// 2. 狀態標籤 .state-tag：在 .tag 上加黑白狀態語法（反白、黑框、斜線紋、虛線），一律圖示＋文字
+// 3. 分段分頁 .seg-tabs：等寬方格一列排開，選中＝反白（我的票券的分頁、電子票券詳情的 3 張切換）
+// hover／focus 只換框線、底線與顏色，不改變任何元素的尺寸
+// ============================================================
+
+// ---------- 1. 頁首區 ----------
+// <div class="section-wall"><div class="container">
+//   <header class="page-header member-header has-count">
+//     <div>麵包屑、H1、說明</div>
+//     <p class="member-count">共 <b class="num">6</b> 筆訂單</p>
+//   </header>
+// </div></div>
+.member-header.has-count {
+  @include media-breakpoint-up(md) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: map-get($spacers, 5);
+  }
+}
+// 大數字：Archivo 加寬＋最粗，前後的字維持一般大小（整句仍是「共 6 筆訂單」）
+.member-count {
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
+  margin: map-get($spacers, 4) 0 0;
+  font-size: 1.125rem;
+  font-weight: $font-weight-bold;
+  white-space: nowrap;
+
+  b {
+    font-size: clamp(3.5rem, 2.25rem + 4vw, 6.5rem);
+    font-weight: $font-weight-black;
+    font-stretch: $font-stretch-wide;
+    line-height: .85;
+    letter-spacing: -.02em;
+  }
+  @include media-breakpoint-up(md) { margin: 0; }
+}
+// 頁首區下方的內容區：上下留白同活動列表
+.member-body {
+  padding-block: map-get($spacers, 5) map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 6) map-get($spacers, 7);
+  }
+}
+// 會員頁卡片上的小按鈕（查看票券、申請退票、取消追蹤…）補到 44px 高，符合觸控目標（規格 §6.5）
+// 全站的 .btn-sm 實際是 41px（14 × 1.5 + 8 × 2 + 框線 2 × 2）；既有頁這一輪不動，所以只在 2026-11 補的頁面補高度
+// 只加 min-height，文字仍由 .btn 的 inline-flex 垂直置中
+.member-body .btn-sm,
+.ticket-demo-actions .btn {
+  min-height: 2.75rem;
+}
+
+// ---------- 2. 狀態標籤（票券卡、訂單卡、下一場小卡） ----------
+// <span class="tag state-tag is-on"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>有效</span>
+//   .is-on       反白（現在、這一個）：有效、已付款、已購票
+//   （不加修飾） 1px 黑框（已經結束的正常狀態）：已使用、已退款
+//   .is-void     左側斜線紋條＋2px 框（不能用）：已過期、付款失敗、活動已取消
+//   .is-pending  虛線框（還沒到）：退款處理中
+.state-tag {
+  &.is-on {
+    border-color: $ink;
+    background-color: $ink;
+    color: $paper;
+  }
+  &.is-void {
+    border-width: 2px;
+    padding-left: .875rem;
+    background-image: linear-gradient(to right, transparent .375rem, $paper .375rem), $hatch-dense;
+  }
+  &.is-pending {
+    border-style: dashed;
+  }
+}
+
+// ---------- 3. 分段分頁 ----------
+// 我的票券（aria-pressed，js/main.js 第 8 項）：
+//   <div class="seg-tabs" role="group" aria-label="票券分頁" data-filter-list="#ticketList">
+//     <button class="seg-tab" type="button" data-filter="upcoming" aria-pressed="true">
+//       <span class="seg-tab-label">即將到來</span><span class="seg-tab-count num">2<small>場</small></span>
+// 電子票券詳情（Bootstrap pill，不寫 JS）：
+//   <div class="nav seg-tabs" role="tablist"><button class="seg-tab active" data-bs-toggle="pill" role="tab" aria-selected="true">…
+.seg-tabs {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  max-width: 40rem;
+  border: 1px solid $ink;
+  background-color: $paper;
+}
+.seg-tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: .25rem;
+  min-width: 0;
+  min-height: 4.5rem;
+  padding: .625rem .75rem;
+  border: 0;
+  border-left: 1px solid $ink;
+  background-color: $paper;
+  color: $ink;
+  line-height: 1.3;
+  text-align: left;
+
+  &:first-child { border-left: 0; }
+  // hover：底部一條 3px 黑線（內陰影，不改尺寸）
+  &:hover { box-shadow: inset 0 -3px 0 $ink; }
+  &:focus-visible {
+    z-index: 1;
+    outline: 3px solid var(--focus-color);
+    outline-offset: 2px;
+  }
+  // 選中：反白（黑底白字），標籤改粗
+  &[aria-pressed="true"],
+  &.active {
+    --focus-gap: #{$ink};
+    background-color: $ink;
+    color: $paper;
+    box-shadow: none;
+
+    .seg-tab-label { font-weight: $font-weight-black; }
+    .seg-tab-sub,
+    .seg-tab-count small { color: $fog; }
+  }
+
+  @include media-breakpoint-up(sm) {
+    padding: .75rem 1.25rem;
+  }
+}
+.seg-tab-label {
+  font-size: .9375rem;
+  font-weight: $font-weight-bold;
+}
+.seg-tab-sub {
+  font-size: .8125rem;
+  color: $graphite;
+}
+// 數量：加寬的大數字＋小字單位
+.seg-tab-count {
+  display: flex;
+  align-items: baseline;
+  gap: .25rem;
+  font-size: 1.75rem;
+  font-weight: $font-weight-black;
+  font-stretch: $font-stretch-wide;
+  line-height: 1;
+
+  small {
+    font-size: .8125rem;
+    font-weight: $font-weight-bold;
+    font-stretch: 100%;
+    color: $graphite;
+  }
+}

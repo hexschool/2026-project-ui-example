@@ -8,7 +8,7 @@
 
 - **HTML**：每頁一個完整的 `.html`，用一般的 `<a href>` 換頁，瀏覽器直接打開就能看。
 - **CSS**：Bootstrap 用 Sass 客製，唯一的編譯工具是 `sass` CLI（`scss/` → `css/style.css`）。這是**單一深色主題**：直接把 Bootstrap 原本給淺色用的變數設成深色，不使用 `data-bs-theme`。
-- **JS**：互動都交給 Bootstrap 的 `data-bs-*` 屬性，自己寫的只有 `js/main.js` 裡的 8 個小功能（必做的只有活動類型篩選）。
+- **JS**：互動都交給 Bootstrap 的 `data-bs-*` 屬性，自己寫的只有 `js/main.js` 裡的 9 個小功能（必做的是活動類型篩選與我的票券的分頁）。
 
 ## 快速開始
 
@@ -21,7 +21,7 @@ npm install        # 安裝 bootstrap、bootstrap-icons、sass，並把 Bootstra
 npm run watch      # 開發時：監看 scss/，存檔就重新編譯 css/style.css
 npm run css        # 編譯一次
 npm run build      # 交付前：重新複製 vendor 檔案＋編譯一次 CSS
-npm run check      # 檢查 5 個頁面的 head、頁首、頁尾＋登入 Modal 是否與範本一致
+npm run check      # 檢查 10 個頁面的 head、頁首、頁尾＋登入 Modal 是否與範本一致
 npm run vendor     # 只重新複製 Bootstrap JS 與圖示字型（npm install 時會自動執行）
 npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖時才用）
 ```
@@ -35,32 +35,43 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 | 活動列表 | `events.html` | `scss/pages/_events.scss` |
 | 活動細節（含票種選擇與選位；以「午夜噪音祭 Vol.7」示範） | `event.html` | `scss/pages/_event.scss` |
 | 購票確認與快速支付（含付款結果與電子票券，在頁內 `#result`） | `checkout.html` | `scss/pages/_checkout.scss` |
+| 註冊 | `register.html` | `scss/pages/_register.scss` |
+| 我的票券 | `tickets.html` | `scss/pages/_tickets.scss` |
+| 電子票券詳情（午夜噪音祭 Vol.7 的 3 張票） | `ticket.html` | `scss/pages/_ticket.scss` |
+| 購票紀錄（含退票申請，在頁內 `#refund`） | `orders.html` | `scss/pages/_orders.scss` |
+| 追蹤的主辦方 | `follows.html` | `scss/pages/_follows.scss` |
 
-頁面上沒有列出所有頁面的導覽：依購票流程點進去即可（首頁 → 活動列表 → 活動細節 →「下一步：確認訂單」→ 結帳 →「確認付款」→ `#result`），Guideline 直接開 `guideline.html`。
+後 5 頁（2026-11 補）共用的頁首區、分頁與狀態標籤在 `scss/components/_member.scss`（見下方「共用類別」）。
+
+頁面上沒有列出所有頁面的導覽：依流程點進去即可，Guideline 直接開 `guideline.html`。
+
+- 購票：首頁 → 活動列表 → 活動細節 →「下一步：確認訂單」→ 結帳 →「確認付款」→ `#result` →「查看我的票券」→ 我的票券。
+- 註冊：登入 Modal 的「註冊新帳號」→ 註冊 →「完成註冊」回首頁；註冊頁的「登入」再開回登入 Modal。
+- 會員中心：頁尾「購票者」欄的「我的票券」「購票紀錄」「追蹤的主辦方」（頁首導覽沒有這幾項）。我的票券 →「查看票券」→ 電子票券詳情；電子票券詳情的「申請退票」→ 購票紀錄 `#refund`；追蹤的主辦方的「下一場」→ 活動細節。
 
 - 活動細節只做一頁靜態示範，首頁與活動列表的每張活動卡都連到 `event.html`。
-- 倒數、動態 QR Code、鎖位、付款中、付款結果都是**固定的 Notion 數字＋靜態畫面**，不用 JS 跑倒數。其他狀態放在頁面上虛線框的「設計稿狀態示意」：活動列表（篩選無結果）、活動細節（選位衝突、全部售罄、尚未開賣、活動取消、無劃位的活動）、結帳（剩 2 分鐘、逾時、實名制、付款中、付款成功、付款失敗）。
+- 倒數、動態 QR Code、鎖位、付款中、付款結果都是**固定的 Notion 數字＋靜態畫面**，不用 JS 跑倒數。其他狀態放在頁面上虛線框的「設計稿狀態示意」：活動列表（篩選無結果）、活動細節（選位衝突、全部售罄、尚未開賣、活動取消、無劃位的活動）、結帳（剩 2 分鐘、逾時、實名制、付款中、付款成功、付款失敗）、註冊（欄位有錯誤時）、我的票券（還沒有任何票券、主辦方取消活動）、電子票券詳情（驗票之後、活動結束沒有入場、主辦方取消活動）、購票紀錄（還沒有購票紀錄、退款處理中）、追蹤的主辦方（還沒有追蹤任何主辦方）。
 - 活動細節的票種數量與座位可以實際點選，「已選票券」的張數與小計會跟著變；結帳頁是另一個獨立範例（3 張、NT$ 5,974），兩頁的數字照 Notion，不互相同步。
 
 ## 檔案結構
 
 ```
 01-rave-style/
-├─ *.html                    ← 5 個頁面，每頁完整包含頁首、頁尾與登入 Modal
+├─ *.html                    ← 10 個頁面，每頁完整包含頁首、頁尾與登入 Modal
 ├─ templates/page.html       ← 頁面骨架：新增頁面從這裡複製
 ├─ css/
 │  ├─ style.css              ← 編譯結果（Bootstrap＋Icons＋本風格樣式），要提交
 │  └─ fonts/                 ← Bootstrap Icons 字型（npm run vendor 複製）
 ├─ js/
-│  ├─ main.js                ← 全站共用的 8 個小功能
+│  ├─ main.js                ← 全站共用的 9 個小功能
 │  └─ vendor/bootstrap.bundle.min.js
 ├─ images/                   ← 活動照片（AI 生成）、QR Code、示意地圖、Logo（SVG）
 ├─ scss/
 │  ├─ main.scss              ← 樣式進入點（載入順序見下方）
 │  ├─ _variables.scss        ← ★ Design token：Bootstrap 變數覆寫＋票務語意色
 │  ├─ _base.scss             ← 全站基礎、切角（bevel、.cut、.cut-panel）、全息（.holo）、共用類別
-│  ├─ components/            ← 頁首、頁尾、狀態小元件、搜尋列、活動卡、票種卡、座位圖、購票卡、結帳元件、電子票券、驗票畫面
-│  └─ pages/                 ← 各頁專屬樣式（class 加頁面前綴：home-、events-、ev-、co-、gl-）
+│  ├─ components/            ← 頁首、頁尾、狀態小元件、搜尋列、活動卡、票種卡、座位圖、購票卡、結帳元件、電子票券、驗票畫面、會員中心
+│  └─ pages/                 ← 各頁專屬樣式（class 加頁面前綴：home-、events-、ev-、co-、gl-、reg-、tk-、tkd-、od-、fl-）
 └─ scripts/
    ├─ copy-vendor.mjs        ← 把 Bootstrap JS 與圖示字型從 node_modules 複製進專案
    ├─ check-layout.mjs       ← 檢查各頁的 head、頁首、頁尾＋登入 Modal 是否與範本一致
@@ -69,10 +80,10 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 
 ## 沒有打包工具時的工作方式
 
-- **頁首、頁尾、登入 Modal 每頁一份**：沒有元件系統，所以 5 個頁面各自完整寫一份。要改的時候先改 `templates/page.html`，再同步到每一頁，最後執行 `npm run check`。比對範圍從 `<footer>` 一路到 `</html>`，所以頁尾後面的登入 Modal 也會一起比對。每頁只有一處不同：頁首導覽的目前頁（`active`＋`aria-current="page"`）。活動細節標「活動列表」但不加 `aria-current`；結帳與 Guideline 不標目前頁。
+- **頁首、頁尾、登入 Modal 每頁一份**：沒有元件系統，所以 10 個頁面各自完整寫一份。要改的時候先改 `templates/page.html`，再同步到每一頁，最後執行 `npm run check`。比對範圍從 `<footer>` 一路到 `</html>`，所以頁尾後面的登入 Modal 也會一起比對。每頁只有一處不同：頁首導覽的目前頁（`active`＋`aria-current="page"`）。活動細節標「活動列表」但不加 `aria-current`；結帳、Guideline 與後 5 頁（註冊、我的票券、電子票券詳情、購票紀錄、追蹤的主辦方，頁首導覽沒有對應項目）不標目前頁。新增頁面時從範本複製，並把檔名加進 `scripts/check-layout.mjs` 的頁面清單。
 - **`<body>` 的屬性不在比對範圍**：活動細節與結帳加了 `class="has-bottom-bar"`（< 992px 有底部固定列，要補 `padding-bottom`）；Guideline 加了 Bootstrap ScrollSpy 的 `data-bs-spy="scroll"`。
-- **假資料直接寫在 HTML**：8 場活動、票種、座位、訂單都寫死在頁面裡（Notion 原文；Notion 沒寫的起價、狀態標籤、排序、座位、訂單、票號照 `../_wireframe/WIREFRAME_SPEC.md` §2.8～§2.9）。星期幾照 Notion 原文，沒有改成 2026 年的日曆。
-- **JS**：`js/main.js` 的 8 件事：
+- **假資料直接寫在 HTML**：8 場活動、票種、座位、訂單都寫死在頁面裡（Notion 原文；Notion 沒寫的起價、狀態標籤、排序、座位、訂單、票號照 `../_wireframe/WIREFRAME_SPEC.md` §2.8～§2.9；後 5 頁的 6 筆訂單、4 組票券、4 個主辦方與 3 張票的票號、座位、持票人照 §2.9）。星期幾照 Notion 原文，沒有改成 2026 年的日曆。
+- **JS**：`js/main.js` 的 9 件事：
   1. 頁首搜尋列展開後自動聚焦
   2. **活動列表「活動類型」篩選**（必做）：膠囊 `data-filter`、卡片 `data-category`，更新「共 N 場活動」與已套用標籤
   3. 其他篩選群組（日期、地區、票價、狀態）只切換選中樣式；「自訂日期區間」展開日期欄位
@@ -81,9 +92,10 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
   6. 「加入追蹤」↔「已追蹤」
   7. 首頁熱門列的左右箭頭
   8. 電子票券輪播切換時更新「第 N 張，共 3 張」
-  其餘（選單、搜尋列、登入 Modal、篩選 Offcanvas、FAQ Accordion、付款方式收合、查看明細、票券輪播、Guideline 目錄）都靠 Bootstrap 的 `data-bs-*` 屬性。
+  9. **我的票券的分頁**（必做）：分頁 `data-filter-list`＋`data-filter`（屬性名稱同電商的分頁篩選）、票券卡 `data-status`，只顯示選中的那一組（即將到來／已使用／已過期）
+  其餘（選單、搜尋列、登入 Modal、篩選 Offcanvas、FAQ Accordion、付款方式收合、查看明細、票券輪播、電子票券詳情的 3 張票切換、Guideline 目錄）都靠 Bootstrap 的 `data-bs-*` 屬性。追蹤的主辦方的「取消追蹤」只是按鈕樣式，沒有做切換。
 - **換行與空白**：活動名、短標題用 `.text-phrase`＋`<wbr>` 只在詞組之間換行；「島嶼獨白｜」這類名稱前半段用 `.text-nowrap` 包起來，`｜` 不會掉到下一行開頭。
-- **表單**：設計稿沒有後端。搜尋列是 `<form action="events.html">`；結帳的「確認付款」是連到 `#result` 的連結，串接金流時改成送出，並在送出時把整個 `<fieldset>` 停用（見結帳頁的「付款中」狀態示意）。
+- **表單**：設計稿沒有後端。搜尋列是 `<form action="events.html">`；結帳的「確認付款」是連到 `#result` 的連結，串接金流時改成送出，並在送出時把整個 `<fieldset>` 停用（見結帳頁的「付款中」狀態示意）。註冊是 `<form action="index.html">`，姓名、手機、Email、密碼都不加 `name`（GET 送出時不會出現在網址），只有 `id`、`<label for>` 與 `autocomplete`。購票紀錄的退票申請不送出：「送出退票申請」是 `type="button"`，退款試算是固定數字（勾選 T-4471-02）。
 
 ## 樣式架構
 
@@ -135,6 +147,21 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 | `.eticket`（`.is-used`、`.is-expired`、`.is-cancelled`）、`.qr`、`.qr-holo` | 招牌：切角全息電子票券與 QR Code | `components/_eticket.scss` |
 | `.scan-screen`（`.is-ok`、`.is-fail`） | 驗票回饋畫面（主辦方端，Guideline 示範） | `components/_validation.scss` |
 
+後 5 頁（註冊、我的票券、電子票券詳情、購票紀錄、追蹤的主辦方）另外用到下面這些類別。Guideline 沒有示範，用法寫在各 partial 開頭的註解：
+
+| 類別 | 用途 | 位置 |
+|---|---|---|
+| `.member-header`、`.member-count` | 會員中心頁首區（搭配 `.page-header`）：麵包屑 → H1 → 說明 → 分頁或計數；計數的數字是 Unbounded 極光綠 | `components/_member.scss` |
+| `.member-tabs`（`.member-tabs-demo`） | 我的票券的分頁：一列 `.chip`，放不下時在自己的容器內橫向捲動；`-demo` 是狀態示意裡不切換的那一份 | `components/_member.scss` |
+| `.chip[aria-selected="true"]` | Bootstrap pill 的選中也套用膠囊的選中樣式（電子票券詳情的 3 張票切換）；和 `.chip[aria-pressed="true"]` 寫在同一條規則 | `components/_status.scss` |
+| `.btn-sm` 的 44px 觸控高度 | 後 5 頁的 `.tk-card-stub`、`.tkd-actions`、`.od-card`、`.fl-card` 裡的 `.btn-sm` 補 `min-height: 2.75rem`（SPEC §2.11）；既有頁的 `.btn-sm` 不動 | `components/_member.scss` |
+| `.tag-valid`／`-used`／`-expired`／`-cancelled`、`.tag-paid`／`-failed`／`-refunded`／`-refunding`、`.tag-owned` | 票券 4 態（有效、已使用、已過期、活動已取消）、訂單 4 態（已付款、付款失敗、已退款、退款處理中）、已購票；一律圖示＋文字，已過期與退款處理中用虛線框 | `components/_member.scss` |
+| `.reg-card`、`.reg-guarantee` | 註冊表單卡（雙色光框線的大切角面板）、入場保障一列三欄 | `pages/_register.scss` |
+| `.tk-card`（`.is-used`、`.is-expired`、`.is-cancelled`）、`.tk-card-stub` | 我的票券的票根卡：縮圖｜資訊｜票根（張數＋查看票券），撕線上下兩端切 V 形缺口 | `pages/_tickets.scss` |
+| `.tkd-switch`、`.tkd-facts`、`.tkd-actions`、`.tkd-rules` | 電子票券詳情：3 張票切換、票號／票種／座位／持票人 2 × 2、3 顆操作鈕、入場須知 | `pages/_ticket.scss` |
+| `.od-card`（`.is-failed`、`.is-refunded`、`.is-refunding`）、`.od-pick`、`.od-quote` | 訂單卡（卡頭｜活動、票種明細、總額與付款｜卡尾）、整列可點的退票勾選列、sticky 退款試算 | `pages/_orders.scss` |
+| `.fl-card`、`.fl-logo`、`.fl-next` | 主辦方卡（左 5 主辦方、右 7 下一場）、雙色環字母章、整張可點的「下一場」小卡 | `pages/_follows.scss` |
+
 ## Design token 摘要
 
 | 類別 | 設定 |
@@ -149,7 +176,7 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 | 切角 | 6／14／28px，固定右上＋左下；沒有圓角（只有狀態圓點、radio、主辦方 Logo 是圓的） |
 | 陰影 | 黑底上不靠陰影分層，用 1px 掃描線＋底色差；只有對話框與底部固定列有深陰影；選中的票種卡有淡淡的極光綠光暈 |
 | 焦點 | 2px 黑色間隙＋2px 極光綠外圈 |
-| 動態 | 只有全息票券的緩慢流動與情境卡 hover；`prefers-reduced-motion` 時全部停止。Hero 主標與活動 H1 的綠／粉色散陰影是靜態的 |
+| 動態 | 只有全息票券的緩慢流動與情境卡 hover 的照片微放大（場次與票價常駐顯示）；`prefers-reduced-motion` 時全部停止。Hero 主標與活動 H1 的綠／粉色散陰影是靜態的 |
 | 頁首 | 高 72px（`$site-header-height`）；sticky 元素 top 96px（`$sticky-top-offset`） |
 
 完整規範請看 `guideline.html`。改色時，Guideline 的色票 hex、對比度、`images/` 裡 SVG（Logo、favicon、QR Code、示意地圖）的色碼也要一起改，清單見上一層 [`../README.md`](../README.md) 的「換色時同步檢查」。
@@ -162,6 +189,7 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 - 活動列表：「探索活動」「篩選」「篩選與排序」「清除全部」「共 8 場活動」「套用篩選（顯示 8 場）」「票價」「票種」「追蹤／已追蹤」「立即報名」（城市夜跑）、「開始日期」「結束日期」
 - 活動細節：「選擇座位」「舞台」「A 區」「11 排」「可選／已選／已售出／不可選」「已選座位」「已選票券」「已完售」「重新選位」、示意地圖上的「步行 8 分鐘」「公車宏匯廣場站」「北」
 - 結帳：「查看明細」「應付總額」「票種明細」「票券小計」「平台服務費」、信用卡欄位 placeholder、ATM 展開後的「確認付款後顯示轉帳帳號與繳費期限。」、「第 1 張，共 3 張」
+- 註冊、會員中心（2026-11 補，用詞照 `WIREFRAME_SPEC.md` §2.9）：註冊的欄位說明、「入場保障」3 項、錯誤訊息；我的票券的「即將到來／已使用／已過期」「查看票券」「共 N 張」；電子票券詳情的「加入行事曆」「轉贈」「申請退票」「怎麼去？」「開啟導航」「入場須知」；購票紀錄的「票種明細」「總額」「付款方式」「電子發票」「下載」「申請退票」「退款試算」「預估退款」「送出退票申請」；追蹤的主辦方的「即將舉辦 N 場活動」「下一場」「取消追蹤」，以及各頁空狀態的標題與說明
 - Guideline 的說明文字與「設計稿狀態示意」的情境說明
 
 ## 圖片

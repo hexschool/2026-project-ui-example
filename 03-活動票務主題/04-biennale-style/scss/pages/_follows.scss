@@ -1,0 +1,195 @@
+// ============================================================
+// 追蹤的主辦方（follows.html）：class 一律加 follows- 前綴
+// 像雙年展的「參展單位」名冊：≥ 768px 每列 2 位，每位上方一條 3px 黑線（不加外框，同首頁價值主張、評價）
+// 主辦方卡（OrganizerCard）：圓形字母章（沿用活動細節的 .organizer-logo）＋名稱＋簡介 → 即將舉辦 N 場活動（大數字）
+//   →「下一場」小卡（NextEventCard，1px 黑框，整張連到活動細節）→「取消追蹤」（次要小按鈕）
+// ============================================================
+
+.follows-list {
+  display: grid;
+  gap: 3.5rem 3rem;
+  margin: 0;
+
+  > li { min-width: 0; }
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+// ---------- 主辦方卡 ----------
+.follows-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  height: 100%;
+  padding-top: 1.5rem;
+  border-top: $border-width-bold solid $ink;
+}
+.follows-card-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 1.25rem;
+}
+// 字母章：活動細節「關於主辦方」的圓形 Logo，縮小一號
+.follows-card-logo {
+  width: 4.5rem;
+  height: 4.5rem;
+  margin-bottom: 0;
+  font-size: 1.375rem;
+}
+.follows-card-name {
+  margin: .25rem 0 .5rem;
+  font-size: $h3-font-size;
+  font-weight: $font-weight-black;
+  letter-spacing: 0;
+}
+.follows-card-intro {
+  margin: 0;
+  color: $graphite;
+}
+// 即將舉辦 1 場活動：數字放大（同活動細節的數據卡）
+.follows-card-count {
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
+  margin: 0;
+  padding-block: .75rem;
+  border-block: 1px solid $ink;
+  font-weight: $font-weight-bold;
+
+  b {
+    font-size: 2.5rem;
+    font-weight: $font-weight-black;
+    font-stretch: $font-stretch-wide;
+    line-height: 1;
+  }
+}
+.follows-card-label {
+  margin: 0 0 -.75rem;
+  font-size: .8125rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+  color: $graphite;
+}
+// 取消追蹤：次要小按鈕，固定最小寬度，換成「追蹤」時不會縮
+.follows-unfollow {
+  align-self: flex-start;
+  min-width: 8.5rem;
+  margin-top: auto;
+
+  @include media-breakpoint-down(sm) {
+    align-self: stretch;
+  }
+}
+
+// ---------- 下一場小卡（NextEventCard） ----------
+// 整張是一個連結（.stretched-link）；hover／focus 時框線看起來變 3px（疊一層框，不改尺寸）
+.follows-next {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  border: 1px solid $ink;
+  background-color: $paper;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border: 2px solid transparent;
+    pointer-events: none;
+  }
+  &:hover::before,
+  &:focus-within::before { border-color: $ink; }
+
+  > img {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-right: 1px solid $ink;
+  }
+}
+.follows-next-body {
+  display: grid;
+  align-content: start;
+  gap: .125rem;
+  min-width: 0;
+  padding: 1rem 1.25rem;
+
+  p {
+    margin: 0;
+    font-size: .875rem;
+  }
+}
+.follows-next-title {
+  margin-bottom: .375rem;
+  font-size: 1.125rem;
+  font-weight: $font-weight-black;
+  line-height: 1.35;
+  letter-spacing: 0;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+.follows-next:hover .follows-next-title a {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .25em;
+}
+.follows-next-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .75rem;
+  margin-top: .5rem !important;
+
+  .price { font-size: 1rem; }
+}
+// < 576px 與 768～991px（每列 2 張、卡片窄）：縮圖在上、文字在下
+@mixin follows-next-stacked {
+  grid-template-columns: 1fr;
+
+  > img {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+    border-right: 0;
+    border-bottom: 1px solid $ink;
+  }
+}
+@include media-breakpoint-down(sm) {
+  .follows-next { @include follows-next-stacked; }
+}
+@include media-breakpoint-only(md) {
+  .follows-next { @include follows-next-stacked; }
+}
+
+// ≥ 768px 同一列的兩張卡用 subgrid 對齊：簡介長短不同時，「即將舉辦」橫線、下一場小卡、按鈕仍在同一高度
+// （卡片 5 個子元素＝5 列：卡頭、即將舉辦、下一場小標、下一場小卡、取消追蹤）
+@include media-breakpoint-up(md) {
+  @supports (grid-template-rows: subgrid) {
+    // 列間距改成卡內間距 1.25rem，卡與卡之間的 3.5rem 由 li 的下內距補上（2.25 + 1.25）
+    .follows-list { row-gap: 1.25rem; }
+    .follows-list > li {
+      display: grid;
+      grid-row: span 5;
+      grid-template-rows: subgrid;
+      padding-bottom: 2.25rem;
+    }
+    .follows-card {
+      display: grid;
+      grid-row: span 5;
+      grid-template-rows: subgrid;
+      height: auto;
+    }
+    .follows-unfollow {
+      justify-self: start;
+      margin-top: 0;
+    }
+  }
+}

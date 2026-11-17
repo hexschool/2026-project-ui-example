@@ -1,6 +1,6 @@
 // ============================================================
 // StageOne 城市現場｜04 當代雙年展：全站共用的少量互動
-// collapse、modal、offcanvas、accordion 都由 Bootstrap 的 data-bs-* 屬性處理，這裡只補下面 7 件事
+// collapse、modal、offcanvas、accordion 都由 Bootstrap 的 data-bs-* 屬性處理，這裡只補下面 8 件事
 // 倒數、付款中、付款結果等動態功能都是靜態畫面（規格 §2.7），這裡不跑任何計時器
 // ============================================================
 
@@ -139,6 +139,7 @@ if (seatMap) {
 // 6. 「追蹤」切換：♡ 加入追蹤 ↔ ♥ 已追蹤
 //    <button type="button" data-follow aria-pressed="false"><i class="bi bi-heart"></i><span>加入追蹤</span></button>
 //    文字可用 data-follow-on／data-follow-off 自訂（活動列表卡是「追蹤」「已追蹤」）
+//    追蹤的主辦方的「取消追蹤」也用這段：aria-pressed="true" 開始，data-follow-on="取消追蹤"、data-follow-off="追蹤"
 document.querySelectorAll('[data-follow]').forEach((button) => {
   const label = button.querySelector('span')
   const off = button.dataset.followOff || label?.textContent
@@ -163,3 +164,19 @@ document.querySelectorAll('[data-scroll-track]').forEach((button) => {
     track.scrollBy({ left: Number(button.dataset.scrollDir) * (card.offsetWidth + 24), behavior: smooth ? 'smooth' : 'auto' })
   })
 })
+
+// 8. 我的票券的分頁（即將到來／已使用／已過期）：按了只顯示那一類票券卡
+//    分頁：<div data-filter-list="#ticketList">…<button type="button" data-filter="upcoming" aria-pressed="true">
+//    票券卡：<li data-status="upcoming">；HTML 先全部顯示（沒有 JS 也看得到），載入時套用選中的那一個分頁
+document.querySelectorAll('[data-filter-list]').forEach((group) => {
+  const buttons = [...group.querySelectorAll('[data-filter]')]
+  const items = document.querySelectorAll(`${group.dataset.filterList} > [data-status]`)
+  const apply = (filter) => {
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === filter)))
+    items.forEach((item) => { item.hidden = item.dataset.status !== filter })
+  }
+  buttons.forEach((button) => button.addEventListener('click', () => apply(button.dataset.filter)))
+  const current = buttons.find((b) => b.getAttribute('aria-pressed') === 'true') || buttons[0]
+  if (current) apply(current.dataset.filter)
+})
+

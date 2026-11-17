@@ -1,5 +1,5 @@
 // 檢查每個頁面的共用區塊（<head> 共用部分、頁首、頁尾＋登入 Modal＋底部 script）是否與 templates/page.html 一致
-// 頁首、頁尾、登入 Modal 在每頁都完整寫一份，改範本後可以用這支確認 5 個頁面都同步了
+// 頁首、頁尾、登入 Modal 在每頁都完整寫一份，改範本後可以用這支確認 10 個頁面都同步了
 // 用法：npm run check
 import fs from 'node:fs'
 import path from 'node:path'
@@ -8,13 +8,18 @@ import { fileURLToPath } from 'node:url'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const pages = fs.readdirSync(root).filter((f) => f.endsWith('.html')).sort()
 
-// 每頁的「目前頁」：活動細節標示「活動列表」；結帳與 Guideline 不標示
+// 每頁的「目前頁」：活動細節標示「活動列表」；結帳、Guideline 與 2026-11 補的 5 頁（頁首沒有對應項目）不標示
 const expectedCurrent = {
   'index.html': 'index.html',
   'events.html': 'events.html',
   'event.html': 'events.html',
   'checkout.html': null,
   'guideline.html': null,
+  'register.html': null,
+  'tickets.html': null,
+  'ticket.html': null,
+  'orders.html': null,
+  'follows.html': null,
 }
 
 // 去掉「目前頁面」標示與每頁不同的 title／description，再比對
@@ -30,8 +35,8 @@ const normalize = (html) =>
 const blocks = {
   'head': /<head>[\s\S]*?<\/head>/,
   '頁首': /<a class="skip-link"[\s\S]*?<\/header>/,
-  // 頁尾之後一路到 </html>：包含登入 Modal 與底部的 script
-  '頁尾＋登入 Modal＋script': /<footer class="site-footer">[\s\S]*<\/html>/,
+  // 頁尾之後一路到 </html>：包含登入 Modal 與底部的 script（頁尾的 class 是 "site-footer on-ink"，所以用 [^"]* 比對）
+  '頁尾＋登入 Modal＋script': /<footer class="site-footer[^"]*">[\s\S]*<\/html>/,
 }
 const pick = (html, re) => normalize((html.match(re) || [''])[0])
 

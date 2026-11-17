@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>我的票券｜StageOne 城市現場</title>
+  <meta name="description" content="查看即將到來、已使用與已過期的票券。入場時打開電子票券，出示動態 QR Code 就能進場。">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Unbounded（品牌字、英數大字、價格、倒數、票號）、Noto Sans TC（中文標題 900、內文 400） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="navbar navbar-expand-lg" aria-label="主要導覽">
+        <div class="container-xl">
+          <a class="navbar-brand site-brand" href="index.html">
+            <img class="site-brand-mark" src="images/logo.svg" alt="" width="32" height="32">
+            <span class="site-brand-name">StageOne</span>
+            <span class="site-brand-sub">城市現場</span>
+          </a>
+
+          <!-- 992px 以下：搜尋＋選單按鈕 -->
+          <div class="d-flex d-lg-none align-items-center gap-1">
+            <button class="site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋活動">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <button class="navbar-toggler site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="events.html">活動列表</a></li>
+            </ul>
+            <div class="site-header-actions">
+              <button class="btn btn-text site-search-toggle d-none d-lg-inline-flex" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false">
+                <i class="bi bi-search" aria-hidden="true"></i>搜尋
+              </button>
+              <button class="btn btn-text" type="button" data-bs-toggle="modal" data-bs-target="#loginModal">登入／註冊</button>
+              <a class="btn btn-primary btn-sm" href="index.html#organizer">我要辦活動</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- 點「搜尋」在頁首下方展開的搜尋列 -->
+      <div id="siteSearch" class="collapse site-search">
+        <div class="container-xl">
+          <form class="site-search-form" role="search" action="events.html">
+            <label class="visually-hidden" for="siteSearchInput">搜尋活動</label>
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input id="siteSearchInput" class="form-control" type="search" name="q" placeholder="想看什麼？試試「爵士」、「書展」或「高雄」">
+            <button class="btn btn-primary" type="submit">搜尋活動</button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!-- ============ 頁首區：麵包屑、H1、說明、分頁（同活動列表的機櫃黑頁首） ============ -->
+      <header class="page-header member-header">
+        <div class="container-xl">
+          <nav aria-label="目前位置">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+              <li class="breadcrumb-item active" aria-current="page">我的票券</li>
+            </ol>
+          </nav>
+          <h1>我的票券</h1>
+          <p class="page-lead">付款完成的票券都存在這裡，入場時打開票券、出示 QR Code 即可。</p>
+
+          <!-- 分頁：真的會切換（js/main.js 第 9 項）。卡片的 data-status 對應 data-filter；
+               HTML 先全部顯示（沒有 JS 也看得到所有票券），載入後套用預設的「即將到來」。數字以場次計 -->
+          <div id="ticketTabs" class="member-tabs" role="group" aria-label="票券分類" data-filter-list="#ticketList">
+            <button class="chip" type="button" data-filter="upcoming" aria-pressed="true" aria-controls="ticketList">即將到來<span class="chip-count">2<span class="visually-hidden"> 場</span></span></button>
+            <button class="chip" type="button" data-filter="used" aria-pressed="false" aria-controls="ticketList">已使用<span class="chip-count">1<span class="visually-hidden"> 場</span></span></button>
+            <button class="chip" type="button" data-filter="expired" aria-pressed="false" aria-controls="ticketList">已過期<span class="chip-count">1<span class="visually-hidden"> 場</span></span></button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ============ 票券列表：每張一列的切角票根（左縮圖、中資訊、右票根＋查看票券） ============ -->
+      <div class="section">
+        <div class="container-xl">
+          <ul id="ticketList" class="tk-list">
+            <li data-status="upcoming">
+              <article class="tk-card cut-panel" aria-labelledby="tkMidnight">
+                <div class="tk-card-media">
+                  <img src="images/event-midnight-noise.jpg" alt="" width="1600" height="1067" loading="lazy">
+                </div>
+                <div class="tk-card-body">
+                  <p class="tk-card-status"><span class="tag tag-valid"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>有效</span></p>
+                  <h2 id="tkMidnight" class="tk-card-title text-phrase"><a href="ticket.html">午夜噪音祭 Vol.7</a></h2>
+                  <ul class="tk-card-facts">
+                    <li><i class="bi bi-calendar3" aria-hidden="true"></i><span class="visually-hidden">日期時間：</span><span class="num">2026/10/18 (六) 20:00</span></li>
+                    <li><i class="bi bi-geo-alt" aria-hidden="true"></i><span class="visually-hidden">地點：</span>台北 ‧ Zepp New Taipei</li>
+                    <li><i class="bi bi-ticket" aria-hidden="true"></i><span class="visually-hidden">票種：</span>預售全票 × 2、VIP 搖滾區 × 1</li>
+                  </ul>
+                  <p class="tk-card-order num">訂單 #SO-20261018-4471</p>
+                </div>
+                <div class="tk-card-stub">
+                  <p class="tk-card-count">共<b>3</b>張</p>
+                  <a class="btn btn-outline-light btn-sm" href="ticket.html">查看票券<span class="visually-hidden">：午夜噪音祭 Vol.7</span></a>
+                </div>
+              </article>
+            </li>
+            <li data-status="upcoming">
+              <article class="tk-card cut-panel" aria-labelledby="tkIsland">
+                <div class="tk-card-media">
+                  <img src="images/event-island-monologue.jpg" alt="" width="1600" height="1067" loading="lazy">
+                </div>
+                <div class="tk-card-body">
+                  <p class="tk-card-status"><span class="tag tag-valid"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>有效</span></p>
+                  <h2 id="tkIsland" class="tk-card-title text-phrase"><a href="ticket.html"><span class="text-nowrap">島嶼獨白｜</span><wbr>現代舞獨舞展</a></h2>
+                  <ul class="tk-card-facts">
+                    <li><i class="bi bi-calendar3" aria-hidden="true"></i><span class="visually-hidden">日期時間：</span><span class="num">2026/10/25 (六) 19:30</span></li>
+                    <li><i class="bi bi-geo-alt" aria-hidden="true"></i><span class="visually-hidden">地點：</span>台中 ‧ 國家歌劇院小劇場</li>
+                    <li><i class="bi bi-ticket" aria-hidden="true"></i><span class="visually-hidden">票種：</span>地板席 × 2</li>
+                  </ul>
+                  <p class="tk-card-order num">訂單 #SO-20261025-2207</p>
+                </div>
+                <div class="tk-card-stub">
+                  <p class="tk-card-count">共<b>2</b>張</p>
+                  <a class="btn btn-outline-light btn-sm" href="ticket.html">查看票券<span class="visually-hidden">：島嶼獨白｜現代舞獨舞展</span></a>
+                </div>
+              </article>
+            </li>
+            <li data-status="used">
+              <article class="tk-card is-used cut-panel" aria-labelledby="tkSilent">
+                <div class="tk-card-media">
+                  <img src="images/event-silent-realm.jpg" alt="" width="1600" height="1067" loading="lazy">
+                </div>
+                <div class="tk-card-body">
+                  <p class="tk-card-status"><span class="tag tag-used"><i class="bi bi-check2-circle" aria-hidden="true"></i>已使用</span></p>
+                  <h2 id="tkSilent" class="tk-card-title text-phrase"><a href="ticket.html"><span class="text-nowrap">無聲之境｜</span><wbr>當代攝影聯展</a></h2>
+                  <ul class="tk-card-facts">
+                    <li><i class="bi bi-calendar3" aria-hidden="true"></i><span class="visually-hidden">日期時間：</span><span class="num">2026/10/04 (六) – 12/14 (日)</span></li>
+                    <li><i class="bi bi-geo-alt" aria-hidden="true"></i><span class="visually-hidden">地點：</span>台北 ‧ 旭川藝術空間</li>
+                    <li><i class="bi bi-ticket" aria-hidden="true"></i><span class="visually-hidden">票種：</span>單人票 × 1</li>
+                  </ul>
+                  <p class="tk-card-order num">訂單 #SO-20261004-1189</p>
+                  <p class="tk-card-note"><i class="bi bi-check2-circle" aria-hidden="true"></i><span class="num">已於 2026/10/04 15:26 完成驗票</span></p>
+                </div>
+                <div class="tk-card-stub">
+                  <p class="tk-card-count">共<b>1</b>張</p>
+                  <a class="btn btn-outline-light btn-sm" href="ticket.html">查看票券<span class="visually-hidden">：無聲之境｜當代攝影聯展</span></a>
+                </div>
+              </article>
+            </li>
+            <li data-status="expired">
+              <article class="tk-card is-expired cut-panel" aria-labelledby="tkMidnight6">
+                <div class="tk-card-media">
+                  <img src="images/organizer-past-4.jpg" alt="" width="1024" height="1024" loading="lazy">
+                </div>
+                <div class="tk-card-body">
+                  <p class="tk-card-status"><span class="tag tag-expired"><i class="bi bi-clock-history" aria-hidden="true"></i>已過期</span></p>
+                  <h2 id="tkMidnight6" class="tk-card-title text-phrase"><a href="ticket.html">午夜噪音祭 Vol.6</a></h2>
+                  <ul class="tk-card-facts">
+                    <li><i class="bi bi-calendar3" aria-hidden="true"></i><span class="visually-hidden">日期時間：</span><span class="num">2025/10/11 (六) 20:00</span></li>
+                    <li><i class="bi bi-geo-alt" aria-hidden="true"></i><span class="visually-hidden">地點：</span>台北 ‧ Zepp New Taipei</li>
+                    <li><i class="bi bi-ticket" aria-hidden="true"></i><span class="visually-hidden">票種：</span>預售全票 × 1</li>
+                  </ul>
+                  <p class="tk-card-order num">訂單 #SO-20251011-5120</p>
+                  <p class="tk-card-note"><i class="bi bi-clock-history" aria-hidden="true"></i>這場活動已經結束了，票券移至歷史紀錄。</p>
+                </div>
+                <div class="tk-card-stub">
+                  <p class="tk-card-count">共<b>1</b>張</p>
+                  <a class="btn btn-outline-light btn-sm" href="ticket.html">查看票券<span class="visually-hidden">：午夜噪音祭 Vol.6</span></a>
+                </div>
+              </article>
+            </li>
+          </ul>
+
+          <!-- ============ 設計稿狀態示意：還沒有任何票券（Notion #8） ============ -->
+          <section class="demo-state" aria-labelledby="demoTicketsEmptyTitle">
+            <p class="demo-state-tag">設計稿狀態示意</p>
+            <h2 id="demoTicketsEmptyTitle" class="demo-state-title">還沒有任何票券時</h2>
+            <p class="text-note">三個分頁都沒有票券時，分頁下方的列表換成這個空狀態。</p>
+            <div class="member-tabs member-tabs-demo" role="group" aria-label="票券分類（示意）">
+              <button class="chip" type="button" aria-pressed="true">即將到來<span class="chip-count">0<span class="visually-hidden"> 場</span></span></button>
+              <button class="chip" type="button" aria-pressed="false">已使用<span class="chip-count">0<span class="visually-hidden"> 場</span></span></button>
+              <button class="chip" type="button" aria-pressed="false">已過期<span class="chip-count">0<span class="visually-hidden"> 場</span></span></button>
+            </div>
+            <div class="empty-state cut-panel">
+              <i class="bi bi-ticket-perforated empty-state-icon" aria-hidden="true"></i>
+              <h3>你還沒有任何票券</h3>
+              <p>看看這週有什麼好去處。</p>
+              <a class="btn btn-primary" href="events.html">探索活動</a>
+            </div>
+          </section>
+
+          <!-- ============ 設計稿狀態示意：主辦方取消活動（Notion #11） ============ -->
+          <section class="demo-state" aria-labelledby="demoTicketsCancelTitle">
+            <p class="demo-state-tag">設計稿狀態示意</p>
+            <h2 id="demoTicketsCancelTitle" class="demo-state-title">主辦方取消活動時</h2>
+            <p class="text-note">主辦方取消活動後，票券卡留在「即將到來」直到退款完成；退款完成後票券作廢，從我的票券移除。</p>
+            <article class="tk-card is-cancelled cut-panel" aria-labelledby="tkCancelled">
+              <div class="tk-card-media">
+                <img src="images/event-midnight-noise.jpg" alt="" width="1600" height="1067" loading="lazy">
+              </div>
+              <div class="tk-card-body">
+                <p class="tk-card-status"><span class="tag tag-cancelled"><i class="bi bi-x-octagon" aria-hidden="true"></i>活動已取消</span></p>
+                <h3 id="tkCancelled" class="tk-card-title text-phrase"><a href="ticket.html">午夜噪音祭 Vol.7</a></h3>
+                <ul class="tk-card-facts">
+                  <li><i class="bi bi-calendar3" aria-hidden="true"></i><span class="visually-hidden">日期時間：</span><span class="num">2026/10/18 (六) 20:00</span></li>
+                  <li><i class="bi bi-geo-alt" aria-hidden="true"></i><span class="visually-hidden">地點：</span>台北 ‧ Zepp New Taipei</li>
+                  <li><i class="bi bi-ticket" aria-hidden="true"></i><span class="visually-hidden">票種：</span>預售全票 × 2、VIP 搖滾區 × 1</li>
+                </ul>
+                <p class="tk-card-order num">訂單 #SO-20261018-4471</p>
+                <div class="alert alert-danger alert-action tk-card-alert">
+                  <i class="bi bi-x-octagon-fill" aria-hidden="true"></i>
+                  <p>主辦方已取消本場活動，退款將於 <span class="text-nowrap">3–5 個工作天</span>內原路退回。</p>
+                </div>
+              </div>
+              <div class="tk-card-stub">
+                <p class="tk-card-count">共<b>3</b>張</p>
+                <a class="btn btn-outline-light btn-sm" href="orders.html">查看退款進度</a>
+              </div>
+            </article>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container-xl">
+        <div class="row gy-5">
+          <div class="col-lg-4">
+            <a class="site-brand" href="index.html">
+              <img class="site-brand-mark" src="images/logo.svg" alt="" width="32" height="32">
+              <span class="site-brand-name">StageOne</span>
+              <span class="site-brand-sub">城市現場</span>
+            </a>
+            <p class="site-footer-lead text-phrase">
+              三步完成購票、<wbr>票券直接長在手機裡<br>
+              專為中小型現場活動<wbr>打造的售票平台。
+            </p>
+          </div>
+          <!-- 第二階段頁面（主辦方後台、驗票工具）：不帶 href 的佔位連結 -->
+          <div class="col-6 col-lg-2 offset-lg-2">
+            <h2 class="site-footer-title">購票者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="events.html">探索活動</a></li>
+              <li><a href="tickets.html">我的票券</a></li>
+              <li><a href="orders.html">購票紀錄</a></li>
+              <li><a href="follows.html">追蹤的主辦方</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h2 class="site-footer-title">主辦方</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="index.html#organizer">我要辦活動</a></li>
+              <li><a>主辦方後台</a></li>
+              <li><a>行動驗票工具</a></li>
+              <li><a>售票儀表板</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h2 class="site-footer-title">服務</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="event.html#faq">購票須知</a></li>
+              <li><a href="event.html#faq">退票規則</a></li>
+              <li><a href="event.html#faq">常見問題</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 StageOne 城市現場｜<wbr>本站為課程設計稿範例，活動與票券皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 登入／註冊 Modal：頁首「登入／註冊」與首頁「免費開賣我的第一場」共用。設計稿：「登入」只關閉 Modal -->
+  <div class="modal fade login-modal" id="loginModal" tabindex="-1" aria-labelledby="loginModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h4" id="loginModalTitle">登入／註冊</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body">
+          <p class="login-modal-lead">登入後就能買票，註冊只要 30 秒。</p>
+          <form>
+            <div class="mb-3">
+              <label class="form-label" for="loginEmail">Email</label>
+              <input id="loginEmail" class="form-control" type="email" autocomplete="email" placeholder="you@example.com">
+            </div>
+            <div class="mb-4">
+              <label class="form-label" for="loginPassword">密碼</label>
+              <input id="loginPassword" class="form-control" type="password" autocomplete="current-password">
+            </div>
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary" type="button" data-bs-dismiss="modal">登入</button>
+              <a class="btn btn-outline-light" href="register.html">註冊新帳號</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

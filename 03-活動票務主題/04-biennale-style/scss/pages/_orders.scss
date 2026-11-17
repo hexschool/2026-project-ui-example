@@ -1,0 +1,328 @@
+// ============================================================
+// 購票紀錄（orders.html）：class 一律加 orders- 前綴
+// 排法同活動細節的主欄＋側欄（約 8 : 4），但要到 ≥ 1200px 才並排：左邊訂單列表、右邊退票申請（3px 粗框卡，像購票卡；視窗夠高時 sticky）。
+// 側欄固定 26rem 寬：4 欄在 1200px 時只有 364px，「訂單」下拉的「#SO-20261018-4471 午夜噪音祭 Vol.7」會被截斷；
+// 992～1199px 放不下側欄，和手機一樣上下排；
+// 用 Grid 區域讓 < 1200px 的順序變成 訂單列表 → 退票申請 → 設計稿狀態示意（內容只寫一次）
+// 訂單卡（OrderCard）：卡頭（「訂單編號」小字＋訂單編號＋下單時間｜狀態）→ 活動 → 卡身 7 : 5（票種明細｜總額、付款方式、電子發票）→ 卡尾（說明＋按鈕）
+// 票種明細沿用結帳頁訂單明細的 .order-summary-label、.order-summary-rows；預估退款沿用 .order-summary-total（黑色量體）
+// ============================================================
+
+.orders-layout {
+  display: grid;
+  grid-template-areas:
+    "list"
+    "refund"
+    "demo";
+  gap: map-get($spacers, 5);
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 1fr) 26rem;
+    grid-template-areas:
+      "list refund"
+      "demo refund";
+    grid-template-rows: auto 1fr;
+    column-gap: 3rem;
+    row-gap: 0;
+  }
+}
+.orders-list {
+  grid-area: list;
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+  margin: 0;
+}
+.orders-demos {
+  grid-area: demo;
+  min-width: 0;
+
+  // < 1200px 上面已經有格線間距，第一個示意不再多留一段
+  @include media-breakpoint-down(xl) {
+    > .demo-state:first-child { margin-top: 0; }
+  }
+}
+.orders-refund {
+  grid-area: refund;
+  min-width: 0;
+}
+
+// ---------- 訂單卡（OrderCard） ----------
+// 卡身要不要分 7 : 5 看卡片本身的寬度（container query）：卡片寬 < 640px（手機）時太窄，改成上下排
+.orders-card {
+  container-type: inline-size;
+  border: 1px solid $ink;
+  background-color: $paper;
+}
+.orders-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  padding: 1.25rem;
+  border-bottom: 1px solid $ink;
+
+  @include media-breakpoint-up(md) { padding: 1.25rem 1.5rem; }
+}
+// 訂單編號：加寬的等寬數字，像作品編號；上方的「訂單編號」標籤是小字（同下方「下單時間」）
+.orders-card-no {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: $font-weight-black;
+  font-stretch: $font-stretch-wide;
+  letter-spacing: .01em;
+  line-height: 1.3;
+}
+.orders-card-no-label {
+  display: block;
+  margin-bottom: .125rem;
+  font-size: .875rem;
+  font-weight: $font-weight-normal;
+  font-stretch: 100%;
+  letter-spacing: $letter-spacing-body;
+  line-height: $line-height-base;
+  color: $graphite;
+}
+.orders-card-time {
+  margin: .25rem 0 0;
+  font-size: .875rem;
+  color: $graphite;
+}
+// 活動：縮圖＋名稱、日期時間、城市 ‧ 場地
+.orders-card-event {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 0;
+
+  img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+  p {
+    margin: 0;
+    font-size: .875rem;
+    color: $graphite;
+  }
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 7rem minmax(0, 1fr);
+    padding: 1.25rem 1.5rem 0;
+  }
+}
+.orders-card-title {
+  margin-bottom: .25rem;
+  font-size: 1.125rem;
+  font-weight: $font-weight-black;
+  letter-spacing: 0;
+}
+// 卡身：票種明細｜總額、付款方式、電子發票
+.orders-card-body {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.25rem;
+
+  .order-summary-label { margin-top: 0; }
+  .order-summary-rows {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  @include media-breakpoint-up(md) {
+    padding: 1.25rem 1.5rem 1.5rem;
+  }
+  // 卡片寬 ≥ 40rem（640px）才分 7 : 5，中間一條 1px 直線
+  @container (min-width: 40rem) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: 2rem;
+  }
+}
+// 平台服務費那一列：上面加一條細線，和票種分開
+.orders-card-fee {
+  padding-top: .625rem;
+  border-top: 1px solid $line;
+}
+.orders-card-sum {
+  min-width: 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid $ink;
+
+  @container (min-width: 40rem) {
+    padding: 0 0 0 2rem;
+    border-top: 0;
+    border-left: 1px solid $ink;
+  }
+}
+// 總額：卡內最大的數字
+.orders-card-total {
+  display: grid;
+  gap: .375rem;
+  margin: 0 0 1rem;
+
+  > span:first-child {
+    font-size: .8125rem;
+    font-weight: $font-weight-bold;
+    color: $graphite;
+  }
+  .amount { font-size: clamp(1.75rem, 1.25rem + 1vw, 2.25rem); }
+}
+// 付款方式、電子發票
+.orders-card-pay {
+  margin: 0;
+
+  > div {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: .75rem;
+    min-height: 2.75rem;
+    padding-block: .25rem;
+    border-top: 1px solid $line;
+  }
+  dt {
+    font-size: .8125rem;
+    font-weight: $font-weight-bold;
+    color: $graphite;
+  }
+  dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 .75rem;
+    margin: 0;
+    font-size: .9375rem;
+    font-weight: $font-weight-medium;
+  }
+  .btn-text { font-size: .875rem; }
+  .num { white-space: nowrap; } // 發票號碼不在連字號處斷行
+}
+// 卡尾：說明（左）＋按鈕（右）；< 576px 按鈕滿寬上下排
+.orders-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid $ink;
+
+  .alert { flex: 1 1 100%; margin: 0; }
+  @include media-breakpoint-up(md) { padding: 1rem 1.5rem; }
+}
+.orders-card-msg {
+  display: flex;
+  gap: .5rem;
+  flex: 1 1 18rem;
+  margin: 0;
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+
+  .bi { line-height: inherit; }
+}
+.orders-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-left: auto;
+
+  @include media-breakpoint-down(sm) {
+    flex-direction: column;
+    width: 100%;
+    .btn { width: 100%; }
+  }
+}
+
+// ---------- 退票申請（RefundForm）：3px 粗框卡（同購票卡），預估退款是黑色量體 ----------
+// 卡片約 1,130～1,180px 高（992～1199px 時更高），比一般筆電視窗高：sticky 會讓「送出退票申請」卡在視窗外，
+// 卡內捲動又會把它藏起來。所以只在 ≥ 1200px 寬、視窗 ≥ 1280px 高（整張放得下）時 sticky；其他情況跟著頁面捲動
+.orders-refund-card {
+  padding: 1.5rem;
+  border: $border-width-bold solid $ink;
+  background-color: $paper;
+
+  @include media-breakpoint-up(xl) {
+    @media (min-height: 80rem) {
+      position: sticky;
+      top: $sticky-top-offset;
+    }
+  }
+}
+.orders-refund-title {
+  margin-bottom: .5rem;
+  font-size: $h3-font-size;
+  font-weight: $font-weight-black;
+  letter-spacing: 0;
+}
+.orders-refund-lead {
+  margin-bottom: 1.25rem;
+  font-size: .9375rem;
+  color: $graphite;
+}
+.orders-refund-field + .orders-refund-field {
+  margin-top: 1.25rem;
+}
+// 退票規則：展牆灰底＋圖示（同活動細節購票須知的強調題，答案與其他文字同字級）
+.orders-refund-rule {
+  margin: 1rem 0 1.25rem;
+  padding: 1rem;
+  background-color: $wall;
+
+  p { margin: 0; font-size: .9375rem; }
+}
+.orders-refund-rule-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .375rem !important;
+  font-weight: $font-weight-black;
+}
+.orders-refund-tickets {
+  legend {
+    float: none;
+    margin-bottom: .25rem;
+    font-size: $form-label-font-size;
+    font-weight: $form-label-font-weight;
+  }
+  .form-check {
+    position: relative;
+    padding-block: .25rem;
+    border-top: 1px solid $line;
+
+    &:last-child { border-bottom: 1px solid $line; }
+  }
+  // 整列（至少 44px 高，含右邊的票價）都點得到：label 用 ::after 蓋滿這一列，觸控目標不只文字那 24px
+  .form-check-label {
+    flex: 1 1 auto;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+    }
+  }
+  .price { margin-left: auto; }
+}
+// 退款試算：<dl>，最後一列「預估退款」沿用結帳頁的 .order-summary-total（黑色量體，卡片左右滿版）
+.orders-refund-calc {
+  margin: 1.25rem 0 0;
+  padding-top: .75rem;
+  border-top: 1px solid $ink;
+
+  > div:not(.order-summary-total) {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: .25rem;
+  }
+  dt { font-weight: $font-weight-medium; }
+  dd { margin: 0; }
+  .order-summary-total { margin-top: .75rem; }
+  // 側欄只有 26rem 寬：預估退款比結帳頁的應付總額小一號，1200px 時也放得進一行
+  .order-summary-total .amount { font-size: clamp(1.75rem, .75rem + 1.75vw, 2.5rem); }
+}
+.orders-refund-note {
+  margin: 1rem 0;
+  font-size: .875rem;
+  color: $graphite;
+}

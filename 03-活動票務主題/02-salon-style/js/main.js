@@ -1,6 +1,6 @@
 // ============================================================
 // StageOne 城市現場｜02 古典藝文沙龍：全站共用的少量互動
-// collapse、modal、offcanvas、accordion、carousel 都由 Bootstrap 的 data-bs-* 屬性處理，這裡只補下面 8 件事
+// collapse、modal、offcanvas、accordion、carousel、tab 都由 Bootstrap 的 data-bs-* 屬性處理，這裡只補下面 10 件事
 // 倒數、鎖位、付款中等動態功能在設計稿裡是靜態畫面（不用 JS 跑倒數），其他狀態放在各頁的「設計稿狀態示意」
 // ============================================================
 
@@ -174,5 +174,39 @@ document.querySelectorAll('input[type="radio"][name="payMethod"]').forEach((radi
       const panel = document.querySelector(r.dataset.payTarget)
       if (panel) bootstrap.Collapse.getOrCreateInstance(panel, { toggle: false })[r.checked ? 'show' : 'hide']()
     })
+  })
+})
+
+// 9. 我的票券的分頁（2026-11 補，tickets.html）：即將到來／已使用／已過期
+//    分頁：<div data-ticket-tabs="#ticketList"><button type="button" data-filter="upcoming" aria-pressed="true">…</div>
+//    票券卡：#ticketList 裡的 <article data-status="upcoming|used|expired">，只顯示目前分頁那一組
+//    HTML 先全部顯示（沒有 JS 時也看得到所有票券），載入後套用 aria-pressed="true" 的那一個分頁
+document.querySelectorAll('[data-ticket-tabs]').forEach((group) => {
+  const tabs = [...group.querySelectorAll('[data-filter]')]
+  const items = document.querySelectorAll(`${group.dataset.ticketTabs} [data-status]`)
+  const show = (status) => {
+    tabs.forEach((tab) => tab.setAttribute('aria-pressed', String(tab.dataset.filter === status)))
+    items.forEach((item) => { item.hidden = item.dataset.status !== status })
+  }
+  tabs.forEach((tab) => tab.addEventListener('click', () => show(tab.dataset.filter)))
+  show((tabs.find((tab) => tab.getAttribute('aria-pressed') === 'true') || tabs[0])?.dataset.filter)
+})
+
+// 10. 「取消追蹤」按鈕切換（2026-11 補，follows.html；設計稿只換外觀與文字，不移除這一列、不呼叫 API）
+//     <button type="button" data-unfollow><i class="bi bi-person-dash"></i><span data-unfollow-label>取消追蹤</span></button>
+//     按下後換成「追蹤」（圖示 bi-person-plus），再按一次回到「取消追蹤」
+//     不和第 6 項共用：第 6 項是「加入追蹤 ↔ 已追蹤」、愛心圖示，這裡是「取消追蹤 ↔ 追蹤」、人像圖示，文字與圖示都不同
+//     也不用 aria-pressed：這顆按鈕的文字寫的是「按下去會做的事」，每次都會換字；
+//     如果再加 aria-pressed，報讀會變成「取消追蹤，已按下」這種互相矛盾的說法（切換按鈕的文字應該固定不變）
+//     所以狀態只記在 data-following（"false" 表示已取消追蹤），畫面與報讀都靠按鈕文字
+document.querySelectorAll('[data-unfollow]').forEach((button) => {
+  const label = button.querySelector('[data-unfollow-label]')
+  const icon = button.querySelector('.bi')
+  button.addEventListener('click', () => {
+    const following = button.dataset.following !== 'false'
+    button.dataset.following = String(!following)
+    if (label) label.textContent = following ? '追蹤' : '取消追蹤'
+    icon?.classList.toggle('bi-person-dash', !following)
+    icon?.classList.toggle('bi-person-plus', following)
   })
 })

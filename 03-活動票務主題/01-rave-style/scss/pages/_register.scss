@@ -1,0 +1,190 @@
+// ============================================================
+// 註冊 register.html（class 前綴 reg-）
+// 表單卡置中（像派對門口的入場登記）→ 入場保障一列三欄（≥ 992px；層級低於表單卡，只有細線）
+// → 欄位錯誤的狀態示意（寬度同表單卡）。不放麵包屑，H1 在表單卡裡
+// ============================================================
+$reg-card-width: 34rem; // 544px：表單卡與錯誤示意同寬
+
+// 舞台：兩道靜態的光（左上極光綠、右下霓虹粉）襯在表單卡後面，只是氛圍，不承載資訊、不會動
+.reg-stage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(ellipse 34rem 22rem at 18% 8%, rgba($aurora, .1), transparent 70%),
+      radial-gradient(ellipse 34rem 22rem at 82% 46%, rgba($neon, .08), transparent 70%);
+    pointer-events: none;
+  }
+}
+
+// ---------- 區塊一：表單卡 ----------
+// 切角面板，框線是極光綠到霓虹粉的雙色光（.cut-panel 的 --cut-line 可以放漸層）
+.reg-card {
+  --cut: #{$cut-lg};
+  --cut-line: linear-gradient(135deg, #{$aurora}, #{$line-strong} 40%, #{$line-strong} 60%, #{$neon});
+  max-width: $reg-card-width;
+  margin-inline: auto;
+  padding: 2rem 1.25rem 1.5rem;
+
+  @include media-breakpoint-up(sm) {
+    padding: 2.75rem 2.5rem 2rem;
+  }
+}
+.reg-title {
+  margin-bottom: .5rem;
+  font-size: clamp(2rem, 1.6rem + 1.4vw, 2.5rem);
+  font-weight: 900;
+  line-height: 1.2;
+}
+.reg-lead {
+  margin-bottom: 2rem;
+  color: $body-secondary-color;
+}
+.reg-field {
+  margin-bottom: 1.25rem;
+
+  .form-text { margin: .5rem 0 0; }
+  .invalid-feedback { margin-top: .5rem; }
+}
+// 同意條款：方框對齊第一行文字，文字可以換行
+.reg-agree {
+  margin-block: 1.5rem;
+
+  .form-check-label { line-height: 1.6; }
+  .invalid-feedback { margin-top: .375rem; }
+}
+// 服務條款、隱私權政策：沒有頁面（第二階段），但要看得出是連結
+.reg-terms-link {
+  margin-inline: .25em;
+  color: $strobe;
+  text-decoration: underline;
+  text-decoration-color: rgba($aurora, .7);
+  text-underline-offset: .3em;
+}
+.reg-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0 .25rem;
+  margin: 1.25rem 0 0;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+
+  .btn-text { --bs-btn-font-size: #{$font-size-sm}; font-weight: 700; }
+}
+// 錯誤訊息裡的「登入」：句子中的文字連結（開啟登入 Modal）
+.reg-inline-link {
+  margin-left: .25em;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $strobe;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: .3em;
+
+  &:hover { color: $aurora; }
+}
+
+// ---------- 區塊二：入場保障 ----------
+// 小標兩側拉掃描線；三列：< 992px 上下排（列之間分隔線），≥ 992px 一列三欄（欄之間直線）
+.reg-guarantee {
+  max-width: $reg-card-width;
+  margin: map-get($spacers, 6) auto 0;
+
+  @include media-breakpoint-up(lg) {
+    max-width: 60rem;
+  }
+}
+.reg-guarantee-title {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+  color: $aurora;
+  font-family: $font-family-base;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  letter-spacing: $letter-spacing-label;
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1 1 0;
+    height: 1px;
+    background-color: $line;
+  }
+}
+.reg-guarantee-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 1rem;
+    padding-block: 1.25rem;
+
+    + li { border-top: 1px solid $line; }
+  }
+  .bi {
+    grid-row: span 2;
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid $line-strong;
+    color: $aurora;
+    font-size: 1.25rem;
+    @include bevel($cut-sm);
+  }
+  h3 {
+    margin-bottom: .25rem;
+    font-size: 1.0625rem;
+  }
+  p {
+    margin: 0;
+    color: $body-secondary-color;
+    font-size: $font-size-sm;
+  }
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    li {
+      padding: 0 1.75rem;
+
+      &:first-child { padding-left: 0; }
+      &:last-child { padding-right: 0; }
+      + li {
+        border-top: 0;
+        border-left: 1px solid $line;
+      }
+    }
+  }
+}
+
+// ---------- 設計稿狀態示意：欄位有錯誤時（寬度同表單卡） ----------
+.reg-demo {
+  max-width: $reg-card-width;
+  margin-inline: auto;
+  margin-top: map-get($spacers, 6);
+}
+.reg-card-demo {
+  --cut-line: #{$line-strong};
+  max-width: none;
+  padding: 1.75rem 1.25rem 1.5rem;
+
+  @include media-breakpoint-up(sm) {
+    padding: 2rem 1.75rem 1.75rem;
+  }
+}

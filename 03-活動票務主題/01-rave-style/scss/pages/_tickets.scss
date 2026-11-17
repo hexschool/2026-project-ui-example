@@ -1,0 +1,247 @@
+// ============================================================
+// 我的票券 tickets.html（class 前綴 tk-）
+// 機櫃黑頁首（麵包屑、H1、說明、分頁）→ 票券列表（每張一列）→ 設計稿狀態示意
+//
+// TicketCard 票券卡：本風格的切角票根。≥ 768px 三段橫排：縮圖｜資訊｜票根（張數＋查看票券），
+// 資訊與票根之間是一條虛線撕線，上下兩端各切一個 V 形缺口（同電子票券撕線的 V 形缺口）。
+// < 768px 縮圖在上、票根在下（撕線改成橫向，不切缺口）。
+// 狀態：預設＝有效、.is-used 已使用、.is-expired 已過期（兩者整張降低對比，文字仍 ≥ AA）、.is-cancelled 活動已取消
+// 卡片上不放 QR Code（QR 只在電子票券詳情出示）
+// ============================================================
+.tk-list {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > [hidden] { display: none; }
+}
+
+.tk-card {
+  --stub-w: 11rem;   // 票根寬
+  --notch: .875rem;  // V 形缺口的深度與半寬
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+
+  // hover：框線變亮（只換顏色，卡片尺寸不變）
+  &:hover { --cut-line: #{$control}; }
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 10rem minmax(0, 1fr) var(--stub-w);
+
+    // 切角＋撕線兩端的 V 形缺口。::after（底色）往內縮了 1px，缺口位置要跟著補 1px，框線才會等寬
+    &::before,
+    &::after {
+      clip-path: polygon(
+        0 0,
+        calc(100% - var(--stub-x) - var(--notch)) 0,
+        calc(100% - var(--stub-x)) var(--notch),
+        calc(100% - var(--stub-x) + var(--notch)) 0,
+        calc(100% - var(--cut)) 0,
+        100% var(--cut),
+        100% 100%,
+        calc(100% - var(--stub-x) + var(--notch)) 100%,
+        calc(100% - var(--stub-x)) calc(100% - var(--notch)),
+        calc(100% - var(--stub-x) - var(--notch)) 100%,
+        var(--cut) 100%,
+        0 calc(100% - var(--cut))
+      );
+    }
+    &::before { --stub-x: var(--stub-w); }
+    &::after { --stub-x: calc(var(--stub-w) - 1px); }
+  }
+  @include media-breakpoint-up(lg) {
+    --stub-w: 13rem;
+    grid-template-columns: 13rem minmax(0, 1fr) var(--stub-w);
+  }
+}
+
+// 縮圖：< 768px 16:9 在上；≥ 768px 撐滿卡片高度（右上＋左下小切角）
+.tk-card-media {
+  --cut: #{$cut-sm};
+  margin: 1rem 1rem 0;
+  aspect-ratio: 16 / 9;
+  background-color: $floor;
+  clip-path: $cut-polygon;
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  @include media-breakpoint-up(md) {
+    margin: 1.25rem 0 1.25rem 1.25rem;
+    aspect-ratio: auto;
+    min-height: 8rem;
+  }
+}
+
+.tk-card-body {
+  min-width: 0;
+  padding: 1rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.25rem 1.5rem;
+  }
+}
+.tk-card-status {
+  margin-bottom: .75rem;
+}
+.tk-card-title {
+  margin-bottom: .625rem;
+  font-size: 1.375rem;
+  line-height: 1.35;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  a:hover { color: $aurora; }
+}
+.tk-card-facts {
+  margin: 0 0 .5rem;
+  padding: 0;
+  list-style: none;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+
+  li {
+    display: flex;
+    gap: .5rem;
+  }
+  li + li { margin-top: .125rem; }
+  .bi {
+    flex: 0 0 auto;
+    color: $haze;
+  }
+
+  // ≥ 992px：資訊欄夠寬，日期｜場地｜票種排成一列（中間細直線），卡身才不會空一大塊
+  // 放不下時會換行：直線畫在每一項左邊的間距正中（::before），ul 用 overflow: hidden 把每行開頭那一條切掉，
+  // 換到第二行的項目才不會帶著直線、也不會多縮排
+  @include media-breakpoint-up(lg) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .375rem 2rem;
+    margin-bottom: .75rem;
+    overflow: hidden;
+
+    li { position: relative; }
+    li + li { margin-top: 0; }
+    li::before {
+      content: "";
+      position: absolute;
+      top: .2em;
+      bottom: .2em;
+      left: -1rem;
+      border-left: 1px solid $line-strong;
+    }
+  }
+}
+.tk-card-order {
+  margin: 0;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+}
+// 已使用、已過期的附註
+.tk-card-note {
+  display: flex;
+  gap: .375rem;
+  margin: .75rem 0 0;
+  padding-top: .75rem;
+  border-top: 1px solid $line;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+
+  .bi { flex: 0 0 auto; }
+}
+.tk-card-alert {
+  margin: 1rem 0 0;
+}
+
+// 票根：張數（Unbounded 大字）＋查看票券。撕線是一條虛線
+.tk-card-stub {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  padding: 1rem;
+
+  // < 768px：橫向撕線
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 1rem auto;
+    border-top: 2px dashed $line-strong;
+  }
+
+  @include media-breakpoint-down(sm) {
+    .btn { flex: 1 1 100%; }
+  }
+  @include media-breakpoint-up(md) {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: space-between;
+    padding: 1.5rem 1.5rem 1.25rem;
+
+    // ≥ 768px：直向撕線，上下對齊 V 形缺口的尖端
+    &::before {
+      inset: calc(var(--notch) + .375rem) auto calc(var(--notch) + .375rem) 0;
+      border-top: 0;
+      border-left: 2px dashed $line-strong;
+    }
+  }
+}
+.tk-card-count {
+  display: flex;
+  align-items: baseline;
+  gap: .375rem;
+  margin: 0;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+
+  b {
+    color: $aurora;
+    font-family: $font-family-display;
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @include media-breakpoint-up(md) {
+    b { font-size: 3rem; }
+  }
+}
+
+// ---------- 狀態 ----------
+// 已使用、已過期：縮圖轉灰變暗、標題與張數降一階（煙霧灰 8.9:1，仍 ≥ AA）
+.tk-card.is-used,
+.tk-card.is-expired {
+  .tk-card-media > img {
+    filter: grayscale(1);
+    opacity: .45;
+  }
+  .tk-card-title,
+  .tk-card-count b { color: $haze; }
+}
+// 已過期：卡底改全黑（和頁面底同色，只剩框線），和已使用分開
+.tk-card.is-expired {
+  --cut-fill: #{$blackout};
+}
+// 活動已取消：雷射紅框線、縮圖轉灰
+.tk-card.is-cancelled {
+  --cut-line: #{$laser};
+
+  &:hover { --cut-line: #{$laser}; }
+  .tk-card-media > img {
+    filter: grayscale(1);
+    opacity: .5;
+  }
+  .tk-card-count b { color: $haze; }
+}

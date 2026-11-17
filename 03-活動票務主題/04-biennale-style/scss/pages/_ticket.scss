@@ -1,0 +1,326 @@
+// ============================================================
+// 電子票券詳情（ticket.html）：class 一律加 ticket- 前綴（注意：票種卡 .ticket-type 是活動細節的元件，不是這頁）
+// 版面像一面展牆：
+//   頁首（白底，同活動細節：麵包屑 → 反白眉標 → 海報級 H1）
+//   → 展牆灰區塊：3 張切換（分段分頁）→ 票券掛在牆中央，左邊是圖版編號「01／03」、右邊是說明牌（票券資訊）
+//     → 操作按鈕與退票規則置中
+//   → 白底的入場資訊：大字（日期、時間、地點；≥ 1400px 3 欄）→ 示意地圖＋怎麼去（7 : 5，同活動細節的場地區塊）→ 入場須知（編號清單）
+//   → 設計稿狀態示意（≥ 1200px 3 個並排、992～1199px 每列 2 個）
+// < 992px：單欄，票券置中，說明牌接在票券下方
+// ============================================================
+
+.ticket-breadcrumb {
+  padding-block: 1rem;
+}
+
+// ---------- 頁首區 ----------
+.ticket-header {
+  padding-bottom: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) { padding-bottom: map-get($spacers, 6); }
+}
+// 眉標：反白小方塊
+.ticket-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: 1rem;
+  padding: .25rem .625rem;
+  background-color: $ink;
+  color: $paper;
+  font-size: .8125rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+}
+// H1：活動名（連到活動細節），海報級大字；常駐細底線，hover 加粗
+.ticket-title {
+  margin: 0 0 1rem;
+  font-size: clamp(2.5rem, 1.25rem + 4vw, 4.5rem);
+  line-height: 1.05;
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: $concrete;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .12em;
+
+    &:hover { text-decoration-color: $ink; text-decoration-thickness: 4px; }
+  }
+}
+.ticket-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .75rem;
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-medium;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: $ink;
+    font-weight: $font-weight-bold;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .3em;
+    &:hover { text-decoration-thickness: 2px; }
+  }
+}
+
+// ---------- 區塊 2：電子票券（展牆） ----------
+.ticket-switch {
+  margin: 0 auto map-get($spacers, 5);
+}
+.ticket-plate {
+  display: grid;
+  justify-items: center;
+  gap: 1.5rem;
+
+  .eticket { width: 100%; }
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 23.75rem) minmax(0, 1fr);
+    align-items: end;
+    column-gap: map-get($spacers, 5);
+  }
+}
+// 圖版編號「01／03」：裝飾用（aria-hidden），讀屏讀的是 visually-hidden 的「第 1 張，共 3 張」
+.ticket-plate-no {
+  margin: 0;
+
+  > [aria-hidden] {
+    display: none;
+    font-size: clamp(5rem, 2rem + 5vw, 7.5rem);
+    font-weight: $font-weight-black;
+    font-stretch: $font-stretch-wide;
+    font-variant-numeric: tabular-nums;
+    line-height: .8;
+    letter-spacing: -.03em;
+
+    small {
+      font-size: .3em;
+      letter-spacing: 0;
+      color: $graphite;
+    }
+  }
+  @include media-breakpoint-up(lg) {
+    align-self: start;
+    justify-self: end;
+
+    > [aria-hidden] { display: block; }
+  }
+}
+// 說明牌（票券資訊）：票號、票種、座位、持票人
+.ticket-label {
+  width: 100%;
+  max-width: 23.75rem;
+  margin: 0;
+  border-top: $border-width-bold solid $ink;
+
+  > div {
+    display: grid;
+    grid-template-columns: 4.5rem 1fr;
+    gap: .75rem;
+    padding-block: .75rem;
+    border-bottom: 1px solid $concrete; // 展牆灰底上髮絲灰看不見
+  }
+  dt {
+    font-size: .8125rem;
+    font-weight: $font-weight-bold;
+    color: $graphite; // 展牆灰底上 5.7:1
+  }
+  dd {
+    margin: 0;
+    font-weight: $font-weight-bold;
+
+    small {
+      display: block;
+      margin-top: .125rem;
+      font-size: .8125rem;
+      font-weight: $font-weight-normal;
+      color: $graphite;
+    }
+  }
+  @include media-breakpoint-up(lg) {
+    justify-self: start;
+    max-width: 18rem;
+  }
+}
+
+// ---------- 區塊 3：操作 ----------
+.ticket-actions {
+  max-width: 40rem;
+  margin: map-get($spacers, 5) auto 0;
+  text-align: center;
+}
+.ticket-actions-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .75rem;
+
+  @include media-breakpoint-down(sm) {
+    flex-direction: column;
+    .btn { width: 100%; }
+  }
+}
+.ticket-actions-note {
+  max-width: 34em;
+  margin: 1rem auto 0;
+  font-size: .875rem;
+  color: $graphite;
+}
+
+// ---------- 區塊 4：入場資訊 ----------
+// 大字：日期、時間、地點（每格上方 3px 黑線，同首頁價值主張）
+// 加寬字在 3 欄裡太擠（1399px 以下每欄不到 340px，「20:00 開演 ‧ 19:30 入場」會斷成兩三行），所以：
+//   < 768px 單欄；768～1399px 日期｜時間一列、地點跨整列；≥ 1400px 才 3 欄
+// HTML 裡的詞組用 .text-nowrap 包起來，真的放不下時只在「‧」後面換行
+.ticket-facts {
+  display: grid;
+  gap: 1.5rem;
+  margin: 0 0 map-get($spacers, 5);
+
+  > div {
+    min-width: 0;
+    padding-top: 1.25rem;
+    border-top: $border-width-bold solid $ink;
+  }
+  dt {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: .5rem;
+    font-size: .875rem;
+    font-weight: $font-weight-bold;
+    color: $graphite;
+  }
+  dd {
+    margin: 0;
+    font-size: clamp(1.375rem, 1rem + 1vw, 1.875rem);
+    font-weight: $font-weight-black;
+    font-stretch: $font-stretch-wide;
+    line-height: 1.3;
+
+    small {
+      display: block;
+      margin-top: .5rem;
+      font-size: .9375rem;
+      font-weight: $font-weight-medium;
+      font-stretch: 100%;
+      color: $graphite;
+    }
+  }
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 2rem;
+
+    > div:last-child { grid-column: 1 / -1; }
+  }
+  @include media-breakpoint-up(xxl) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    > div:last-child { grid-column: auto; }
+  }
+}
+.ticket-route {
+  margin-bottom: map-get($spacers, 5);
+
+  ul {
+    margin: 0 0 .25rem;
+    padding-left: 1.125rem;
+  }
+  p { margin-bottom: 1.5rem; }
+}
+.ticket-entry-subtitle {
+  margin-bottom: 1rem;
+  font-size: $h3-font-size;
+  font-weight: $font-weight-black;
+}
+// 入場須知：6 項，前面是加寬的編號（CSS 計數器，裝飾用），≥ 768px 2 欄、≥ 992px 3 欄
+.ticket-rules {
+  counter-reset: rule;
+  display: grid;
+  column-gap: 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid $ink;
+
+  > li {
+    counter-increment: rule;
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    gap: .75rem;
+    padding-block: 1rem 1.25rem;
+    border-bottom: 1px solid $line;
+
+    &::before {
+      content: counter(rule, decimal-leading-zero);
+      font-size: 1.5rem;
+      font-weight: $font-weight-black;
+      font-stretch: $font-stretch-wide;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+    }
+  }
+  b {
+    display: block;
+    margin-bottom: .125rem;
+    font-weight: $font-weight-black;
+  }
+  ul {
+    margin: 0;
+    padding-left: 1.125rem;
+  }
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @include media-breakpoint-up(lg) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+// ---------- 區塊 5：設計稿狀態示意（≥ 1200px 3 個並排；992～1199px 每列 2 個，3 欄時票券只剩 240px 寬會被擠壞） ----------
+.ticket-demos {
+  padding-bottom: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) { padding-bottom: map-get($spacers, 7); }
+
+  > .row > [class*="col-"] { display: flex; }
+  .demo-state {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  .demo-state-tag { align-self: flex-start; } // flex 欄裡的標籤維持原本寬度
+  // ≥ 1200px 3 個並排：說明句有的 1 行、有的 2 行，一律保留 2 行高，3 個示意框的上緣才對齊
+  @include media-breakpoint-up(xl) {
+    .demo-state > .text-note { min-height: calc(#{$line-height-base} * 2em); }
+  }
+  .demo-state-stage {
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+    flex-grow: 1;
+    container-type: inline-size; // 給下面 3 顆停用按鈕判斷寬度用
+
+    > .alert { margin: 0; }
+  }
+}
+.ticket-demo-text {
+  margin: 0;
+  font-weight: $font-weight-bold;
+  text-align: center;
+}
+// 3 顆停用按鈕一列；示意框內寬不到 17rem（約 320px 以下的手機）時改成直排，按鈕文字不在按鈕裡斷行
+// （992～1199px 改成每列 2 個示意之後，6 個驗收寬度裡每顆至少 92px 寬，「加入行事曆」放得進一行）
+.ticket-demo-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .5rem;
+
+  .btn { padding-inline: .25rem; }
+
+  @container (max-width: 17rem) {
+    grid-template-columns: 1fr;
+  }
+}

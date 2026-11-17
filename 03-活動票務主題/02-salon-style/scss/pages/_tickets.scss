@@ -1,0 +1,279 @@
+// ============================================================
+// 我的票券 tickets.html（2026-11 補）
+// 頁首區（.mc-head，pages/_member.scss）下緣貼著索引分頁 .ticket-tabs → 票券列表（一列一張橫式打孔票券 .ticket-card）
+// ============================================================
+
+// ---------- 分頁 TicketTabs：像節目冊側邊的索引標籤，貼在米卡其頁首區的下緣 ----------
+// 目前分頁＝米白紙底（和下方頁面接成一張紙）＋上緣一道赭紅線＋細框；其他分頁是透明的
+// js/main.js 第 9 項切換 aria-pressed，hover 只換顏色，不改變尺寸
+.ticket-tabs {
+  display: flex;
+  gap: .25rem;
+  margin-bottom: -1px; // 蓋住頁首區的底線，目前分頁才會和下方接起來
+  overflow-x: auto;     // 576px 以下放不下時在自己的容器內橫向捲動
+  scrollbar-width: none;
+  @include bleed-x;
+
+  @include media-breakpoint-down(sm) { gap: .125rem; }
+}
+.ticket-tab {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: .5rem;
+  min-height: 3rem;
+  padding: .625rem 1.25rem;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: $border-radius-lg $border-radius-lg 0 0;
+  background-color: transparent;
+  color: $ink-muted;
+  font-weight: $font-weight-medium;
+  letter-spacing: $letter-spacing-label;
+  transition: background-color .15s ease, color .15s ease;
+
+  &:hover {
+    background-color: rgba($vellum, .55);
+    color: $ink;
+  }
+  &:focus-visible { outline-offset: -3px; }
+
+  &[aria-pressed="true"] {
+    border-color: $rule;
+    background-color: $parchment;
+    color: $ink;
+    box-shadow: inset 0 3px 0 $ochre;
+  }
+
+  // < 576px 收窄內距，390px 寬三個分頁剛好放得下（更窄時在容器內橫向捲動）
+  @include media-breakpoint-down(sm) {
+    gap: .375rem;
+    padding-inline: .75rem;
+  }
+}
+.ticket-tab-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding-inline: .375rem;
+  border: 1px solid $rule-strong;
+  border-radius: $border-radius-pill;
+  font-size: .875rem;
+  line-height: 1;
+
+  [aria-pressed="true"] > & {
+    border-color: $ochre;
+    color: $ochre-deep;
+  }
+}
+
+// ---------- 票券卡 TicketCard ----------
+// 橫式打孔票券：正券＝縮圖＋狀態、活動名、時間地點票種、訂單編號；票根＝日期（裝飾）＋「查看票券」
+// 狀態：有效（預設，浮起）、.is-past（已使用／已過期：虛線框、不浮起、縮圖去色）、.is-used（票根多打一個孔）、.is-cancelled
+// < 768px 換成直式：縮圖在上，票根換到下方、日期與按鈕左右排
+.ticket-list {
+  display: grid;
+  gap: 1.5rem;
+}
+.ticket-card {
+  &[hidden] { display: none; }
+
+  > .ticket-main {
+    display: grid;
+    gap: 1rem;
+    padding: .75rem .75rem 1.25rem;
+
+    @include media-breakpoint-up(md) {
+      grid-template-columns: 13rem minmax(0, 1fr);
+      align-items: start;
+      gap: 1.5rem;
+      padding: .75rem 1.75rem .75rem .75rem;
+    }
+    @include media-breakpoint-up(xl) {
+      grid-template-columns: 16rem minmax(0, 1fr);
+    }
+  }
+  > .ticket-stub {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    width: 12rem;
+    padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+    text-align: center;
+  }
+
+  // hover：只把描邊換成赭紅（不改變尺寸、不浮起）
+  &:has(a:hover) { --ticket-edge: #{$ochre}; }
+
+  @include media-breakpoint-down(md) {
+    @include ticket-vertical;
+
+    > .ticket-main { border-radius: $border-radius-lg $border-radius-lg 0 0; }
+    > .ticket-stub {
+      flex-direction: row;
+      justify-content: space-between;
+      width: auto;
+      padding: 1.125rem 1.25rem 1.25rem;
+      border-radius: 0 0 $border-radius-lg $border-radius-lg;
+    }
+  }
+}
+.ticket-card-media {
+  aspect-ratio: 4 / 3;
+  border-radius: $border-radius-sm;
+}
+.ticket-card-body {
+  display: grid;
+  gap: .5rem;
+  min-width: 0;
+  padding-inline: .5rem;
+
+  @include media-breakpoint-up(md) {
+    padding: .75rem 0 .5rem;
+  }
+  p { margin: 0; }
+}
+.ticket-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .375rem;
+}
+.ticket-card-title {
+  margin: 0;
+  font-size: 1.375rem;
+  line-height: 1.4;
+
+  @include media-breakpoint-up(xl) { font-size: 1.5rem; }
+
+  a {
+    color: $ink;
+    text-decoration: none;
+
+    &:hover { color: $ochre; text-decoration: underline; }
+  }
+}
+// 時間、地點、票種：≥ 1200px 排成三格（像實體票上的欄位），以下一行一項
+.ticket-card-facts {
+  display: grid;
+  gap: .25rem;
+  margin: 0;
+  color: $ink-muted;
+  font-size: .9375rem;
+
+  li {
+    display: flex;
+    gap: .5rem;
+  }
+  .bi {
+    flex: none;
+    color: $ochre;
+  }
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: auto auto minmax(0, 1fr); // 時間、地點照內容寬，票種占剩下的寬度
+    gap: 0;
+    margin-block: .25rem;
+    padding-block: .75rem;
+    border-block: 1px solid $rule;
+
+    li { padding-inline: 1rem; }
+    li:first-child { padding-left: 0; }
+    li + li { border-left: 1px solid $rule; }
+  }
+}
+.ticket-card-order {
+  color: $ink-muted;
+  font-size: .875rem;
+}
+.ticket-card-note {
+  display: flex;
+  gap: .375rem;
+  color: $ink-muted;
+  font-size: .9375rem;
+
+  .bi { flex: none; margin-top: .125rem; }
+}
+.ticket-card-alert {
+  margin: .25rem 0 0;
+}
+
+// 票根上的日期：年月小字（赭紅）→ 日期大字（EB Garamond）→ 星期；和左邊的時間重複，所以 aria-hidden
+.ticket-card-date {
+  display: grid;
+  justify-items: center;
+  margin: 0;
+  line-height: 1.15;
+
+  @include media-breakpoint-down(md) { justify-items: start; }
+}
+.ticket-card-date-ym {
+  color: $ochre-deep;
+  font-size: .8125rem;
+  letter-spacing: $letter-spacing-label;
+}
+.ticket-card-date-day {
+  font-size: 2.75rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.1;
+
+  @include media-breakpoint-down(md) { font-size: 2.25rem; }
+}
+.ticket-card-date-wd {
+  color: $ink-muted;
+  font-size: .875rem;
+}
+.ticket-card-btn {
+  --bs-btn-padding-x: .75rem;
+  width: 100%;
+  white-space: nowrap;
+
+  @include media-breakpoint-down(md) { width: auto; }
+}
+// < 576px：日期在上一行，「查看票券」滿寬
+@include media-breakpoint-down(sm) {
+  .ticket-card > .ticket-stub {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ticket-card-btn { width: 100%; }
+}
+
+// ---------- 已使用、已過期：整張降低對比（文字仍 ≥ AA），虛線框、不浮起 ----------
+.ticket-card.is-past {
+  filter: none;
+
+  > .ticket-part {
+    border: 1px dashed $rule-strong;
+    background-color: rgba($vellum, .45);
+  }
+  > .ticket-main { border-right-width: 0; }
+  > .ticket-stub {
+    border-left-width: 0;
+    background-color: rgba($khaki, .7);
+  }
+  .ticket-card-media img {
+    filter: grayscale(1);
+    opacity: .7;
+  }
+  .ticket-card-title a,
+  .ticket-card-date-day { color: $ink-muted; }
+  .ticket-card-date-ym { color: $ink-muted; }
+
+  &:has(a:hover) > .ticket-part { border-color: $ink-muted; }
+
+  @include media-breakpoint-down(md) {
+    > .ticket-main { border-right-width: 1px; border-bottom-width: 0; }
+    > .ticket-stub { border-left-width: 1px; border-top-width: 0; }
+  }
+}
+// 已使用：票根被剪票鉗打了一個孔（再多挖一個圓，同電子票券的 .is-used）
+.ticket-card.is-used > .ticket-stub {
+  @include media-breakpoint-up(md) {
+    @include notch-mask("0 0", "0 100%", "calc(100% - 1.5rem) 1.5rem");
+  }
+}
+// 活動已取消（狀態示意）：票根的日期加刪除線
+.ticket-card.is-cancelled .ticket-card-date-day { color: $ink-muted; }

@@ -51,12 +51,30 @@
 | Guideline 的元件示範（活動卡、票券等） | 用上面任一張 |
 | 電子票券的背景（若風格需要） | `event-midnight-noise.jpg` 或純 CSS |
 
+### 2026-11 補的 5 頁：沿用既有圖片，不新增
+
+註冊、我的票券、電子票券詳情、購票紀錄、追蹤的主辦方是 2026-11 補的頁面（`_wireframe/WIREFRAME_SPEC.md` §3.05～3.09）。**這次不生新圖，總數維持 22 張**，3 套都用自己 `images/` 裡已有的檔案，不用重跑 `npm run images`。哪張圖配哪筆資料以 SPEC §2.9.2（訂單）、§2.9.4（票券卡）、§2.9.7（主辦方）為準。
+
+| 頁面 | 用哪張 | 說明 |
+|---|---|---|
+| `register.html` 註冊 | 不需要圖 | 表單＋入場保障。風格需要裝飾時用純 CSS，不放活動照片（不能搶過表單） |
+| `tickets.html` 我的票券 | `event-midnight-noise.jpg`（午夜噪音祭 Vol.7）、`event-island-monologue.jpg`（島嶼獨白）、`event-silent-realm.jpg`（無聲之境，已使用）、`organizer-past-4.jpg`（午夜噪音祭 Vol.6，已過期） | 票券卡縮圖，顯示比例沿用活動列表卡（約 4:3）或小方圖；`alt=""`（旁邊就有活動名） |
+| `ticket.html` 電子票券詳情 | `event-midnight-noise.jpg`（選用，例如票券上方的小主視覺或電子票券背景，同結帳頁）；示意地圖用活動細節的 SVG（選用） | QR Code、條碼仍用 SVG |
+| `orders.html` 購票紀錄 | O1 `event-midnight-noise.jpg`、O2 `event-silent-realm.jpg`、O3 `event-island-zine-fest.jpg`、O4 `event-island-monologue.jpg`、O5 `event-resonance-friday.jpg`、O6 `organizer-past-4.jpg` | 訂單卡縮圖，約 4:3 小縮圖（同結帳頁訂單明細）；`alt=""` |
+| `follows.html` 追蹤的主辦方 | 下一場小卡：`event-resonance-friday.jpg`（B1 Underground）、`event-midnight-noise.jpg`（噪音共同體）、`event-island-monologue.jpg`（微光舞團）、`event-riverside-market.jpg`（台南好市集協會） | 主辦方 Logo 不是照片，見下一節 |
+
+- `organizer-past-4.jpg` 本來就是「前一屆午夜噪音祭」，所以拿來當 Vol.6 的票券與訂單縮圖；它是 1:1，放進 4:3 框時用 `object-fit: cover` 置中裁切。
+- 週五共振 9 月那一場（O5）與 10 月那一場共用 `event-resonance-friday.jpg`，用日期區分。
+- 狀態示意（例如活動已取消的票券卡、退款處理中的訂單卡）用同一場活動的同一張圖，不另外做灰階版圖檔；需要降低存在感時用 CSS（`opacity`、`filter: grayscale()`），文字對比仍要 ≥ AA。
+
 ## 不要生成的圖形（用 SVG／CSS／圖示）
 
 | 圖形 | 做法 |
 |---|---|
 | StageOne Logo、favicon | SVG（各風格自己設計，字標「StageOne」） |
 | 主辦方「噪音共同體」圓形 Logo | SVG／CSS（例如「NC」字母組合） |
+| 追蹤的主辦方頁的另外 3 個圓形 Logo（2026-11 補） | CSS 字母章，和「NC」同一種做法：B1 Underground「B1」、微光舞團「微光」、台南好市集協會「好市」（`aria-hidden="true"`，名稱已在旁邊） |
+| 我的票券、購票紀錄的狀態標籤，空狀態的插圖（2026-11 補） | HTML＋CSS＋Bootstrap Icons（空狀態用大圖示，不生插圖） |
 | QR Code | SVG，25×25 模組＋三個定位方塊，深色模組＋淺色底（規格見 `WIREFRAME_SPEC.md` §2.5） |
 | 條碼（04 雙年展的巨型條碼等） | SVG |
 | 座位圖、舞台 | HTML＋CSS（`<button>` 座位，資料見規格 §2.9） |
