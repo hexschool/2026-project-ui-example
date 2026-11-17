@@ -1,0 +1,295 @@
+// ============================================================
+// 我的課程 my-courses.html（class 前綴 mycourses-、shelf-）
+// 標題區（右側 3 項統計，界欄分隔）→ 篩選分頁（.nav-underline）→ 書架：每門課一列
+// 書架列：直式封面（線裝書的書衣＋直排題簽）｜狀態、課名、講師、上次看到｜進度羅盤＋進度文字｜按鈕
+// ============================================================
+
+// ---------- 標題區 ----------
+.mycourses-header-row {
+  display: flex;
+  flex-direction: column;
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+.mycourses-orders {
+  margin-top: map-get($spacers, 2);
+  font-size: $font-size-sm;
+}
+// 統計：小標在上、明體大數字＋單位在下；項目之間一條界欄直線
+.mycourses-stats {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  justify-content: start;
+  margin: 0;
+
+  > div {
+    padding-inline: map-get($spacers, 3);
+    border-left: 1px solid $line;
+
+    &:first-child {
+      padding-left: 0;
+      border-left: 0;
+    }
+  }
+  dt {
+    color: $ink-muted;
+    font-size: $small-font-size;
+    font-weight: $font-weight-normal;
+    letter-spacing: $letter-spacing-label;
+    white-space: nowrap;
+  }
+  dd {
+    margin: 0;
+    color: $ink-muted;
+    font-size: $font-size-sm;
+    white-space: nowrap;
+
+    .num {
+      margin-right: .25rem;
+      color: $ink;
+      font-family: $font-family-serif;
+      font-size: 1.75rem;
+      font-weight: $font-weight-semibold;
+      line-height: 1.25;
+    }
+  }
+  @include media-breakpoint-up(sm) {
+    > div { padding-inline: map-get($spacers, 4); }
+    dd .num { font-size: 2.125rem; }
+  }
+  @include media-breakpoint-up(lg) {
+    > div:last-child { padding-right: 0; }
+  }
+}
+
+// ---------- 篩選分頁：.nav-underline 的按鈕版，每顆附數字 ----------
+.mycourses-tabs {
+  margin-bottom: 0;
+}
+.mycourses-tab-count {
+  display: inline-block;
+  min-width: 1.5em;
+  margin-left: .375rem;
+  padding: 0 .3125rem;
+  border: 1px solid $line-strong;
+  border-radius: $border-radius-sm;
+  color: $ink-muted;
+  font-size: .75rem;
+  line-height: 1.5;
+  text-align: center;
+}
+.mycourses-tabs .nav-link.active .mycourses-tab-count {
+  border-color: $bamboo-mist;
+  background-color: $bamboo-mist;
+  color: $bamboo-deep;
+}
+
+// ---------- 書架 ----------
+.shelf {
+  margin: 0;
+}
+.shelf-item {
+  border-bottom: 1px solid $line;
+}
+.shelf-book {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  grid-template-areas:
+    "cover info"
+    "progress progress"
+    "action action";
+  gap: map-get($spacers, 3) 1.25rem;
+  padding-block: map-get($spacers, 4);
+
+  // 768～991px 進度欄是圓環在上、文字在下：寬度要放得下一行「已完成 18／18 單元 ‧ 100%」（約 185px）
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 7rem minmax(0, 1fr) 12.5rem;
+    grid-template-areas:
+      "cover info progress"
+      "cover action progress";
+    grid-template-rows: auto 1fr;
+    column-gap: map-get($spacers, 4);
+  }
+  // 進度欄固定寬度，三列的圓環才會上下對齊；寬度要放得下圓環＋一行「已完成 18／18 單元 ‧ 100%」
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: 7rem minmax(0, 1fr) 17.5rem 9rem;
+    grid-template-areas: "cover info progress action";
+    grid-template-rows: auto;
+    align-items: center;
+    column-gap: map-get($spacers, 4) + .5rem; // 32px
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: 8rem minmax(0, 1fr) 19rem 10rem;
+    column-gap: map-get($spacers, 5);
+  }
+}
+
+// 封面：直式書衣（3:4）。左上角一張直排題簽（素箋底、深墨細框、明體）；右側一道點線像線裝書的縫線
+.shelf-cover {
+  grid-area: cover;
+  align-self: start;
+  aspect-ratio: 3 / 4;
+  border-radius: $border-radius-sm;
+  box-shadow: $box-shadow-sm;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: .4375rem;
+    border-right: 2px dotted rgba($sheet, .75);
+    pointer-events: none;
+  }
+}
+.shelf-slip {
+  position: absolute;
+  top: .5rem;
+  left: .5rem;
+  max-height: calc(100% - 1rem);
+  overflow: hidden;
+  padding: .375rem .1875rem;
+  border: 1px solid $ink;
+  outline: 2px solid $sheet; // 題簽外緣留一圈紙色，在深色照片上也看得出輪廓
+  background-color: $sheet;
+  color: $ink;
+  font-family: $font-family-serif;
+  font-size: .5625rem;
+  font-weight: $font-weight-semibold;
+  line-height: 1;
+  letter-spacing: .06em;
+  white-space: nowrap; // 放不下時裁掉，不另起一行
+  writing-mode: vertical-rl;
+
+  @include media-breakpoint-up(md) {
+    font-size: .6875rem;
+    letter-spacing: .14em;
+  }
+}
+
+.shelf-info {
+  grid-area: info;
+  min-width: 0;
+}
+.shelf-title {
+  margin: .5rem 0;
+  font-size: 1.125rem;
+  line-height: 1.55;
+  letter-spacing: .04em;
+
+  @include media-breakpoint-up(md) {
+    font-size: 1.25rem;
+  }
+}
+.shelf-teacher {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .75rem;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  .avatar-text {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: .8125rem;
+  }
+}
+// 上次看到：小標籤＋單元＋時間（竹青）
+.shelf-last {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .125rem .625rem;
+  margin: 0;
+  font-size: $font-size-sm;
+  line-height: 1.7;
+}
+.shelf-last-label {
+  color: $ink-muted;
+  font-size: $small-font-size;
+  white-space: nowrap;
+}
+.shelf-last-unit {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.shelf-last-time {
+  color: $bamboo-deep;
+  font-weight: $font-weight-bold;
+}
+.shelf-last-icon {
+  align-self: center;
+  color: $bamboo;
+}
+
+// 進度：小進度羅盤＋文字
+.shelf-progress {
+  grid-area: progress;
+  display: flex;
+  align-items: center;
+  gap: map-get($spacers, 3);
+
+  @include media-breakpoint-up(md) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .75rem;
+  }
+  @include media-breakpoint-up(lg) {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+// 小號進度羅盤 .progress-ring-sm 在 components/_progress-ring.scss
+.shelf-progress-text {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  line-height: 1.6;
+
+  // ≥ 768px 不換行，「‧ 50%」不會單獨掉到第二行
+  @include media-breakpoint-up(md) {
+    white-space: nowrap;
+  }
+}
+
+// 按鈕：手機滿寬；768px 起靠左（課名下方）；992px 起在最右欄
+.shelf-action {
+  grid-area: action;
+  align-self: end;
+
+  @include media-breakpoint-up(md) {
+    justify-self: start;
+  }
+  @include media-breakpoint-up(lg) {
+    align-self: center;
+    justify-self: stretch;
+  }
+}
+
+// 已完課：整列降一階（封面褪色、按鈕改次要），文字對比不變
+.shelf-item.is-finished {
+  .shelf-cover img {
+    filter: saturate(.45);
+    opacity: .78;
+  }
+}
+
+// ---------- 狀態示意：還沒有任何課程時 ----------
+.mycourses-demo-head {
+  margin-bottom: map-get($spacers, 4);
+  padding-bottom: map-get($spacers, 3);
+  border-bottom: 1px solid $line;
+}
+.mycourses-demo-title {
+  margin-bottom: .25rem;
+  font-family: $font-family-serif;
+  font-size: 1.5rem;
+  font-weight: $font-weight-semibold;
+  letter-spacing: $letter-spacing-heading;
+}

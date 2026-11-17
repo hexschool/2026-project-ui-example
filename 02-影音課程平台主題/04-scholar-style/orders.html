@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>購買紀錄｜Craftory 手感工藝線上學院</title>
+  <meta name="description" content="查看每一筆課程訂單的付款狀態，下載發票，符合條件的訂單可以在 7 天內申請退費。">
+  <meta name="theme-color" content="#F6F0E2">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Noto Serif TC（品牌字、標題、章節名稱、價格）、Noto Sans TC（內文、介面）、芫荽 Iansui（學員引言、評價、鼓勵文案；楷書風格，採台灣教育部標準字形） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Iansui&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 頁首、頁尾與登入對話框的說明見 templates/page.html -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="navbar navbar-expand-lg" aria-label="主要導覽">
+        <div class="container">
+          <a class="navbar-brand site-brand" href="index.html" aria-label="Craftory 手感工藝線上學院 首頁">
+            <!-- 品牌標誌：「工」字白文方印 -->
+            <svg class="seal" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="4"/><path d="M8.5 8.5h15v2.75h-6.125v9.5H23.5v2.75h-15v-2.75h6.125v-9.5H8.5z"/></svg>
+            <span class="site-brand-name">Craftory</span>
+          </a>
+
+          <!-- 992px 以下：登入／註冊＋選單按鈕（桌機的登入按鈕在選單最後，Tab 順序與畫面一致） -->
+          <div class="site-header-compact d-flex d-lg-none">
+            <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#authModal">登入／註冊</button>
+            <button class="navbar-toggler site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="courses.html">探索課程</a></li>
+            </ul>
+            <div class="site-header-actions">
+              <form class="site-search" role="search" action="courses.html">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control" type="search" name="q" placeholder="搜尋課程、工藝或講師" aria-label="搜尋課程">
+              </form>
+              <a class="nav-link site-mycourses active" href="my-courses.html"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>我的課程</a>
+              <button class="btn btn-outline-primary btn-sm d-none d-lg-inline-flex" type="button" data-bs-toggle="modal" data-bs-target="#authModal">登入／註冊</button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!--
+        購買紀錄（2026-11 補頁，WIREFRAME_SPEC §3.09、CONTENT.md §9.14、訂單資料 §9.9）
+        像一本帳簿：≥ 992px 是表格，上下各一條深墨粗線、欄與欄之間是界欄直線、金額靠右用明體數字；
+        < 992px 每筆變成一張帳頁卡（課名在上，其他欄位用目錄點線「訂單編號 ········ CR-…」排，768px 起兩欄）
+        5 筆依日期新到舊；第 1 筆＝付款結果那一筆。只有藤編那筆有「申請退費」，連到本頁的退費處理中示意
+        退費說明（Notion 原文）放在帳簿下方，不藏在小字裡
+      -->
+      <div class="container">
+        <header class="page-header">
+          <nav aria-label="目前位置">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+              <li class="breadcrumb-item"><a href="my-courses.html">我的課程</a></li>
+              <li class="breadcrumb-item active" aria-current="page">購買紀錄</li>
+            </ol>
+          </nav>
+          <h1>購買紀錄</h1>
+          <p class="page-lead">每一筆課程訂單都在這裡，可以下載發票，符合條件的訂單也能申請退費。</p>
+        </header>
+
+        <p class="orders-count">共 <span class="num">5</span> 筆訂單</p>
+
+        <!-- 每一格的 data-label 是 < 992px 帳頁卡上的欄名（CSS 的 attr() 讀取）；值都包在元素裡，才能排在點線之後 -->
+        <table id="orders-list" class="ledger">
+          <caption class="visually-hidden">購買紀錄，依日期新到舊排列</caption>
+          <thead>
+            <tr>
+              <th scope="col">訂單編號</th>
+              <th scope="col">日期</th>
+              <th scope="col">課程</th>
+              <th scope="col" class="ledger-amount">金額</th>
+              <th scope="col">付款方式</th>
+              <th scope="col">狀態</th>
+              <th scope="col"><span class="visually-hidden">動作</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td data-label="訂單編號"><span class="ledger-no num">CR-20261116-027</span></td>
+              <td data-label="日期"><span class="ledger-date num">2026/11/16</span></td>
+              <td class="ledger-course"><span class="text-phrase"><span class="text-nowrap">從零開始的手捏陶｜</span><wbr>做出第一只日用食器</span></td>
+              <td data-label="金額" class="ledger-amount"><span class="price">NT$&nbsp;2,480</span></td>
+              <td data-label="付款方式"><span class="text-phrase">信用卡<wbr><span class="text-nowrap">（末四碼 <span class="num">4242</span>）</span></span></td>
+              <td data-label="狀態" class="ledger-status"><span class="tag tag-paid"><i class="bi bi-check-circle" aria-hidden="true"></i>已付款</span></td>
+              <td class="ledger-actions"><button class="btn btn-outline-secondary btn-sm" type="button"><i class="bi bi-download" aria-hidden="true"></i>下載發票<span class="visually-hidden">（CR-20261116-027）</span></button></td>
+            </tr>
+            <tr>
+              <td data-label="訂單編號"><span class="ledger-no num">CR-20261112-014</span></td>
+              <td data-label="日期"><span class="ledger-date num">2026/11/12</span></td>
+              <td class="ledger-course"><span class="text-phrase"><span class="text-nowrap">藤編收納｜</span><wbr>一個下午的療癒練習</span></td>
+              <td data-label="金額" class="ledger-amount"><span class="price">NT$&nbsp;1,480</span></td>
+              <td data-label="付款方式"><span>LINE Pay</span></td>
+              <td data-label="狀態" class="ledger-status"><span class="tag tag-paid"><i class="bi bi-check-circle" aria-hidden="true"></i>已付款</span><span class="ledger-note">可申請退費至 <span class="num">2026/11/19</span></span></td>
+              <td class="ledger-actions">
+                <!-- 申請退費：設計稿捲到本頁的「退費處理中」示意，不送出 -->
+                <a class="btn btn-outline-primary btn-sm" href="#refund-pending"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>申請退費<span class="visually-hidden">（CR-20261112-014）</span></a>
+                <button class="btn btn-outline-secondary btn-sm" type="button"><i class="bi bi-download" aria-hidden="true"></i>下載發票<span class="visually-hidden">（CR-20261112-014）</span></button>
+              </td>
+            </tr>
+            <tr>
+              <td data-label="訂單編號"><span class="ledger-no num">CR-20261030-031</span></td>
+              <td data-label="日期"><span class="ledger-date num">2026/10/30</span></td>
+              <td class="ledger-course"><span class="text-phrase"><span class="text-nowrap">植鞣皮革入門｜</span><wbr>縫一只用十年的卡夾</span></td>
+              <td data-label="金額" class="ledger-amount"><span class="price">NT$&nbsp;1,980</span></td>
+              <td data-label="付款方式"><span class="text-phrase">信用卡<wbr><span class="text-nowrap">（末四碼 <span class="num">4242</span>）</span></span></td>
+              <td data-label="狀態" class="ledger-status"><span class="tag tag-failed"><i class="bi bi-x-circle" aria-hidden="true"></i>付款失敗</span><span class="ledger-note">這筆付款沒有完成，沒有扣款。</span></td>
+              <td class="ledger-actions"><a class="btn btn-outline-primary btn-sm" href="course.html">重新購買<span class="visually-hidden">（植鞣皮革入門）</span></a></td>
+            </tr>
+            <tr>
+              <td data-label="訂單編號"><span class="ledger-no num">CR-20261018-009</span></td>
+              <td data-label="日期"><span class="ledger-date num">2026/10/18</span></td>
+              <td class="ledger-course"><span class="text-phrase"><span class="text-nowrap">銀飾鍛敲入門｜</span><wbr>從一條銀線到一只戒指</span></td>
+              <td data-label="金額" class="ledger-amount"><span class="price">NT$&nbsp;2,180</span></td>
+              <td data-label="付款方式"><span class="text-phrase">信用卡<wbr><span class="text-nowrap">（末四碼 <span class="num">4242</span>）</span></span></td>
+              <td data-label="狀態" class="ledger-status"><span class="tag tag-refunded"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>已退費</span><span class="ledger-note"><span class="num">2026/10/21</span> 已全額退回，發票已作廢。</span></td>
+              <td class="ledger-actions"></td>
+            </tr>
+            <tr>
+              <td data-label="訂單編號"><span class="ledger-no num">CR-20260920-022</span></td>
+              <td data-label="日期"><span class="ledger-date num">2026/09/20</span></td>
+              <td class="ledger-course"><span class="text-phrase"><span class="text-nowrap">香氛蠟燭調香｜</span><wbr>做出屬於家的味道</span></td>
+              <td data-label="金額" class="ledger-amount"><span class="price">NT$&nbsp;1,680</span></td>
+              <td data-label="付款方式"><span>Apple Pay</span></td>
+              <td data-label="狀態" class="ledger-status"><span class="tag tag-paid"><i class="bi bi-check-circle" aria-hidden="true"></i>已付款</span></td>
+              <td class="ledger-actions"><button class="btn btn-outline-secondary btn-sm" type="button"><i class="bi bi-download" aria-hidden="true"></i>下載發票<span class="visually-hidden">（CR-20260920-022）</span></button></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- ============ 退費說明（標題與規則是 Notion 原文） ============ -->
+        <section id="refund" class="orders-refund" aria-labelledby="refundTitle">
+          <div class="row gy-3 gx-xl-5 jielan jielan-lg">
+            <div class="col-lg-4">
+              <h2 id="refundTitle" class="orders-refund-title"><span class="orders-refund-icon" aria-hidden="true"><i class="bi bi-arrow-counterclockwise"></i></span>7 天不滿意退費</h2>
+            </div>
+            <div class="col-lg-8">
+              <p class="orders-refund-rule">購買後 7 天內、觀看未超過課程 20%，可申請全額退費。</p>
+              <p class="orders-refund-more">符合條件的訂單會出現「申請退費」按鈕。退款會退回原付款方式，發票會一併作廢。</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ 設計稿狀態示意 ============ -->
+        <section class="demo-state" aria-label="設計稿狀態示意">
+          <p class="demo-state-tag">設計稿狀態示意</p>
+
+          <!-- 「申請退費」捲到這裡（錨點捲動扣掉頁首高度：html 的 scroll-padding-top） -->
+          <div id="refund-pending" class="demo-state-item" tabindex="-1">
+            <h2 class="demo-state-title">退費處理中</h2>
+            <p class="text-note">按下「申請退費」之後，那一筆訂單會變成這樣。</p>
+            <div class="demo-state-stage">
+              <!-- 只畫藤編那一列：沒有「申請退費」「下載發票」 -->
+              <table class="ledger">
+                <caption class="visually-hidden">退費處理中的訂單</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">訂單編號</th>
+                    <th scope="col">日期</th>
+                    <th scope="col">課程</th>
+                    <th scope="col" class="ledger-amount">金額</th>
+                    <th scope="col">付款方式</th>
+                    <th scope="col">狀態</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td data-label="訂單編號"><span class="ledger-no num">CR-20261112-014</span></td>
+                    <td data-label="日期"><span class="ledger-date num">2026/11/12</span></td>
+                    <td class="ledger-course"><span class="text-phrase"><span class="text-nowrap">藤編收納｜</span><wbr>一個下午的療癒練習</span></td>
+                    <td data-label="金額" class="ledger-amount"><span class="price">NT$&nbsp;1,480</span></td>
+                    <td data-label="付款方式"><span>LINE Pay</span></td>
+                    <td data-label="狀態" class="ledger-status ledger-status-wide"><span class="tag tag-refunding"><i class="bi bi-hourglass-split" aria-hidden="true"></i>退費處理中</span><span class="ledger-note">退費申請已送出，款項會在 3 到 5 個工作天內退回 LINE Pay。退費完成後，這門課會從「我的課程」移除。</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="demo-state-item">
+            <h2 class="demo-state-title">沒有購買紀錄時</h2>
+            <p class="text-note">帳號還沒有任何訂單時，結果數與列表都不顯示，只留這個空狀態；退費說明保留。</p>
+            <div class="demo-state-stage">
+              <div class="empty-state">
+                <span class="empty-state-icon" aria-hidden="true"><i class="bi bi-receipt"></i></span>
+                <p>目前還沒有購買紀錄。買下第一門課之後，訂單、發票與退費申請都會在這裡。</p>
+                <a class="btn btn-primary" href="courses.html">探索課程</a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="row gy-5">
+          <div class="col-lg-4">
+            <a class="site-brand" href="index.html">
+              <svg class="seal" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="4"/><path d="M8.5 8.5h15v2.75h-6.125v9.5H23.5v2.75h-15v-2.75h6.125v-9.5H8.5z"/></svg>
+              <span class="site-brand-name">Craftory 手感工藝線上學院</span>
+            </a>
+            <p class="site-footer-lead">專為「想養成第二專長、<wbr>但一直沒開始」的<wbr>上班族打造的<wbr>工藝影音學院</p>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2 offset-lg-1">
+            <h2 class="site-footer-title">探索課程</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="courses.html">陶藝</a></li>
+              <li><a href="courses.html">皮革</a></li>
+              <li><a href="courses.html">木工</a></li>
+              <li><a href="courses.html">織品染繡</a></li>
+              <li><a href="courses.html">金工銀飾</a></li>
+              <li><a href="courses.html">蠟燭香氛</a></li>
+              <li><a href="courses.html">紙藝絹印</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">學習保障</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="index.html#guarantee">7 天不滿意退費</a></li>
+              <li><a href="index.html#guarantee">一次購買永久觀看</a></li>
+              <li><a href="index.html#guarantee">卡關有人回答</a></li>
+            </ul>
+          </div>
+          <!-- 關於我們、成為講師、聯絡我們尚未設計頁面：不帶 href 的佔位連結 -->
+          <div class="col-md-4 col-lg-3">
+            <h2 class="site-footer-title">關於 Craftory</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a>關於我們</a></li>
+              <li><a>成為講師</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 Craftory 手感工藝線上學院｜<wbr>本站為課程設計稿範例，課程、講師與評價皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!--
+    登入對話框（每頁共用）
+    - 設計稿沒有後端：表單送出後前往 learn.html（視為登入成功）。串接後端時把 action 換成登入 API，並移除 GET。
+    - 從「立即購買，開始上課」開啟時（data-auth-context="purchase"），顯示 .auth-notice 並切換主要按鈕文字（js/main.js）
+  -->
+  <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content auth-modal">
+        <div class="modal-header">
+          <h2 class="modal-title h4" id="authModalTitle">登入 Craftory</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body">
+          <p class="auth-notice" data-auth-notice hidden>
+            <i class="bi bi-bookmark-heart" aria-hidden="true"></i>
+            <span>登入後就能開始上課，馬上註冊只要 30 秒。</span>
+          </p>
+          <form action="learn.html">
+            <div class="mb-3">
+              <label class="form-label" for="authEmail">電子郵件</label>
+              <input id="authEmail" class="form-control" type="email" name="email" placeholder="mail@example.com" autocomplete="email">
+            </div>
+            <div class="mb-2">
+              <label class="form-label" for="authPassword">密碼</label>
+              <input id="authPassword" class="form-control" type="password" name="password" placeholder="至少 8 碼" autocomplete="current-password">
+            </div>
+            <p class="mb-3"><a class="auth-link">忘記密碼？</a></p>
+            <button class="btn btn-primary w-100" type="submit">
+              <span data-auth-label="default">登入</span>
+              <span data-auth-label="purchase" hidden>登入並開始上課</span>
+            </button>
+          </form>
+          <p class="auth-footer">還沒有帳號？<a class="auth-link" href="register.html">立即註冊</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

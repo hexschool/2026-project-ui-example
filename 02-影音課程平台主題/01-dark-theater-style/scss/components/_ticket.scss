@@ -1,0 +1,83 @@
+// ============================================================
+// 票券撕線 .ticket-perf、票券外框 .ticket（2026-11 補頁）
+// 註冊、購買課程的售票口面板，付款結果的入場票，購買紀錄的票根都用同一條撕線：
+// 一條虛線，兩端各咬一個半圓缺口（缺口填上票券後面的底色，看起來像被打掉一塊）。
+//
+// <article class="ticket"> <div>票根</div> <div class="ticket-perf" aria-hidden="true"></div> <div>主體</div> </article>
+//
+// - 撕線預設是橫的（上下兩段，缺口在左右兩端）；要變成直的（左右兩段，缺口在上下兩端），
+//   在該頁的斷點裡 @include ticket-perf-vertical。
+// - 撕線要碰到外框才咬得到邊：外框有內距時，撕線用負的 margin 拉到外框邊緣（各頁自己設定）。
+// - --ticket-cut：缺口的顏色＝票券後面的底色（預設深空黑）。
+// - 純裝飾：撕線一律 aria-hidden="true"，不承載資訊。
+// ============================================================
+.ticket-perf {
+  --ticket-notch: .625rem; // 缺口半徑 10px
+  position: relative;
+  flex-shrink: 0;
+  border-top: 1px dashed $line-strong;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: calc(var(--ticket-notch) * 2);
+    height: calc(var(--ticket-notch) * 2);
+    border: 1px solid $line-strong;
+    border-radius: 50%;
+    background-color: var(--ticket-cut, #{$space});
+  }
+  // 圓心壓在外框的外緣（多推 1px 蓋住外框線），只露出咬進票券的那一半
+  &::before {
+    left: 0;
+    transform: translate(calc(-50% - 1px), -50%);
+    clip-path: inset(0 0 0 50%);
+  }
+  &::after {
+    right: 0;
+    transform: translate(calc(50% + 1px), -50%);
+    clip-path: inset(0 50% 0 0);
+  }
+}
+
+// 直的撕線：左右兩段，缺口在上下兩端
+@mixin ticket-perf-vertical {
+  border-top: 0;
+  border-left: 1px dashed $line-strong;
+
+  &::before,
+  &::after {
+    left: 0;
+    right: auto;
+  }
+  &::before {
+    top: 0;
+    transform: translate(-50%, calc(-50% - 1px));
+    clip-path: inset(50% 0 0 0);
+  }
+  &::after {
+    top: auto;
+    bottom: 0;
+    transform: translate(-50%, calc(50% + 1px));
+    clip-path: inset(0 0 50% 0);
+  }
+}
+
+// 只留虛線、不咬缺口（外框貼齊螢幕兩側、沒有左右框線時）
+@mixin ticket-perf-plain {
+  &::before,
+  &::after {
+    content: none;
+  }
+}
+
+// 票券外框：放映室底、深線外框、12px 圓角；不加 overflow: hidden（缺口要壓在外框線上）
+.ticket {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid $line-strong;
+  border-radius: $border-radius-lg;
+  background-color: $booth;
+}

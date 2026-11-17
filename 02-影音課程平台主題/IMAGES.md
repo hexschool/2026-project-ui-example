@@ -3,6 +3,7 @@
 > 三套風格共用的圖片清單：**檔名、比例、輸出尺寸、用途與畫面主體都一樣**，每套風格用自己的攝影調性（光線、色溫、背景、質感、構圖語言）各自生成一份，放在各風格的 `images/`。檔名一致，HTML 就能在風格之間互換。
 >
 > - 共 **23 張**（上限 24）。另外的 `favicon.svg` 由各風格手繪向量，不在此清單。
+> - 2026-11 補的 5 頁（註冊、購買課程、付款結果、我的課程、購買紀錄）**不生新圖**，只沿用下面的課程封面，見文末「每頁用到的圖片」。
 > - 描述只寫「拍什麼、怎麼構圖」，刻意不寫顏色與氣氛；風格調性寫在各風格 `scripts/generate-images.mjs` 的 `STYLE`（做法同 `01-電商主題/01-luxury-style/scripts/generate-images.mjs`）。
 > - 文案與圖片的對應見 [`CONTENT.md`](./CONTENT.md)，版面位置見 [`_wireframe/WIREFRAME_SPEC.md`](./_wireframe/WIREFRAME_SPEC.md)。
 
@@ -36,7 +37,7 @@
 
 ### 課程封面（8 張）
 
-用在：首頁區塊四熱門課程卡（前 4 張）、課程列表課程卡（全部 8 張）、頁首「我的課程」相關的縮圖（手捏陶）。全部是**手部特寫的製作過程**，看得出是哪一種工藝。
+用在：首頁區塊四熱門課程卡（前 4 張）、課程列表課程卡（全部 8 張）、頁首「我的課程」相關的縮圖（手捏陶）；2026-11 補頁的購買摘要（手捏陶）、我的課程的課程卡（手捏陶、藤編、蠟燭）、購買紀錄的縮圖（選用）。全部是**手部特寫的製作過程**，看得出是哪一種工藝。
 
 | # | 檔名 | 比例 | 輸出尺寸 | 課程 | 畫面主體 |
 |---|---|---|---|---|---|
@@ -71,6 +72,17 @@
 | `course.html` | `player-trial`、`outcome-bowl`、`instructor-lin-avatar`、`instructor-lin-studio`、`instructor-lin-work-1`～`3` |
 | `learn.html` | `player-learn`；頁首「我的課程」或狀態示意若有課程縮圖，用 `course-pottery` |
 | `guideline.html` | 自由取用以上圖片示範元件（課程卡、播放器、圖片比例） |
+| `register.html`（2026-11 補） | 接續購買提示的小封面 `course-pottery`（選用；不放圖也可以） |
+| `checkout.html`（2026-11 補） | 購買摘要的封面 `course-pottery` |
+| `order-result.html`（2026-11 補） | 購買內容的封面 `course-pottery`（付款失敗示意不放圖） |
+| `my-courses.html`（2026-11 補） | 課程卡封面 `course-pottery`、`course-rattan`、`course-candle`（CONTENT §9.9 的 3 門已購課程）；空狀態示意不放圖 |
+| `orders.html`（2026-11 補） | 選用：每筆訂單一張小縮圖 `course-pottery`、`course-rattan`、`course-leather`、`course-silver`、`course-candle`。要放就 5 筆都放，不放就都不放 |
+
+2026-11 補頁的用圖規則：
+
+- **不生新圖**，也不新增檔名；23 張的數量不變。需要「成功」「付款失敗」「空狀態」這類插圖的地方，用 Bootstrap Icons（CONTENT §9.8），不要另外畫或生成。
+- 課程封面原本是 16:9。補頁裡當成小縮圖時可以裁成 4:3 或 1:1（`object-fit: cover`），主體都在中央約 70% 的範圍內（見「共同規則」的裁切），裁了也看得出是哪一種工藝。
+- 替代文字：購買摘要、購買紀錄這類小縮圖旁邊就有課名，用 `alt=""`；我的課程的課程卡封面比較大，可以沿用這套課程列表同一張圖的 `alt`，兩種做法擇一，同一頁要一致。
 
 ## 給生圖腳本的提醒
 

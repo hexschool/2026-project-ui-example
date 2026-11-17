@@ -1,0 +1,883 @@
+// ============================================================
+// 售票口：註冊 register.html、購買課程 checkout.html、付款結果 order-result.html（2026-11 補）
+// 共用的 class 前綴 office-；各頁另有 reg-（註冊）、co-（購買課程）、or-（付款結果）
+//
+// 「放映前的售票口」：整個畫面是暗的，上方一道冷藍光打下來，只照亮中間一塊面板。
+// 面板裡用票券的撕線（components/_ticket.scss）分出兩段：註冊＝表單｜接續購買的票根、
+// 購買課程＝付款資料｜要買的課；付款結果則是一張開好的入場票。
+// 流程頁不放麵包屑（WIREFRAME_SPEC §3 內頁頁首的一致性）。
+// ============================================================
+
+// ---------- 舞台：光束 ----------
+.office {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip; // 撕線的缺口在 576px 以下會貼到螢幕邊，保險起見不讓它撐出水平捲軸
+  padding-top: map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) {
+    padding-top: map-get($spacers, 5);
+  }
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 6);
+  }
+
+  // 光束：和首頁底部 CTA 同一種放映機的光，範圍更窄、更淡，只落在面板上
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: -1;
+    height: 44rem;
+    background: radial-gradient(42% 100% at 50% 0%, rgba($glow, .13) 0%, rgba($glow, .04) 50%, rgba($glow, 0) 80%);
+    pointer-events: none;
+  }
+}
+
+// ---------- 面板：唯一被照亮的一塊 ----------
+// 576px 以下貼齊螢幕兩側（沒有左右框線與圓角），表單才有足夠的寬度
+.office-window {
+  --office-pad: #{map-get($spacers, 4)}; // 24px；768px 以上 48px
+  position: relative;
+  margin-inline: $container-padding-x * -.5;
+  padding: var(--office-pad);
+  border-block: 1px solid $line-strong;
+  background-color: $booth;
+
+  @include media-breakpoint-up(sm) {
+    margin-inline: auto;
+    border: 1px solid $line-strong;
+    border-radius: $border-radius-xl;
+    box-shadow: 0 2.5rem 6rem rgba($glow, .07); // 被光照到的面板，下緣滲出一點冷光
+  }
+  @include media-breakpoint-up(md) {
+    --office-pad: #{map-get($spacers, 5)};
+  }
+
+  // 上緣接到光：中間亮、兩端淡出的一條冷藍細線
+  &::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 18%;
+    right: 18%;
+    height: 1px;
+    background: linear-gradient(to right, rgba($glow, 0), rgba($glow, .65), rgba($glow, 0));
+    pointer-events: none;
+  }
+
+  // 576px 以下面板沒有左右框線：撕線只留虛線，不咬缺口
+  .ticket-perf {
+    @include media-breakpoint-down(sm) {
+      @include ticket-perf-plain;
+    }
+  }
+}
+
+// ---------- 標題 ----------
+.office-title {
+  margin-bottom: .5rem;
+  font-size: 1.75rem;
+  line-height: 1.45;
+
+  @include media-breakpoint-up(md) {
+    font-size: $h1-font-size;
+  }
+}
+.office-lead {
+  max-width: 32em;
+  margin-bottom: 0;
+  color: $body-secondary-color;
+}
+
+// 區塊小標（購買帳號、付款方式、發票、購買的課程、訂單資訊…）：純白 15px，比頁面 h1 低兩階
+.office-label {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .875rem;
+  padding: 0;
+  color: $white;
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.6;
+  letter-spacing: $letter-spacing-label;
+
+  .bi {
+    color: $glow;
+  }
+}
+// fieldset 的 legend 也用 .office-label：沿用 Bootstrap reboot 的 float: left、width: 100%（下一個元素 clear: left），
+// legend 才不會畫進 fieldset 的上框線裡，分隔線、留白、小標的節奏和 <section> 一樣；字級與字重由 .office-label 決定
+
+// 欄位錯誤：用 Guideline 的 .is-invalid＋.invalid-feedback；要加圖示時寫 d-flex gap-2（圖示＋文字，不只靠顏色）
+// 錯誤文字裡的「登入」這類文字按鈕：縮回內文大小，不撐高行距
+.invalid-feedback .btn-text {
+  min-height: 0;
+  padding: 0;
+  font-size: inherit;
+  vertical-align: baseline;
+}
+
+// 核取方塊與多行文字：方框對齊第一行（.form-check 預設是垂直置中）
+// 錯誤文字放在 .form-check 裡、label 後面（.is-invalid 的兄弟元素），換到下一行
+.office-check {
+  flex-wrap: wrap;
+  align-items: flex-start;
+
+  .form-check-input {
+    margin-top: calc(.5rem + (1.8em - #{$form-check-input-width}) / 2);
+  }
+  .form-check-label {
+    flex-basis: 0; // 可以換行之後，長的 label 仍留在方框右邊，不會整段掉到下一行
+    line-height: 1.8;
+  }
+  > .invalid-feedback {
+    margin-top: 0; // 和上一行的距離由 .form-check 的 gap 決定
+  }
+}
+// 條款連結：沒有頁面，做成連結樣式的佔位（不帶 href）
+.office-terms-link {
+  color: $white;
+  text-decoration: underline;
+  text-decoration-color: $glow-deep;
+  text-underline-offset: .35em;
+}
+
+// 課程的講師列：文字頭像＋名字（同課程卡）
+.office-teacher {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  margin-bottom: 0;
+  color: $mist;
+  font-size: $font-size-sm;
+}
+// 課程封面：16:9、12px 圓角
+.office-cover {
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: $border-radius;
+  background-color: $aisle;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+// ============================================================
+// 註冊 register.html（reg-）
+// 992px 以上：面板左＝表單，右＝接續購買的票根（20rem），中間一條直的撕線
+// 992px 以下：表單在上，票根在下（縮小封面＋文字橫排），中間一條橫的撕線
+//   面板收窄到「內容 30rem＋左右內距」，標題、表單、登入連結、票根共用同一條左緣與中線
+//   （不收窄的話 768～991px 面板比表單寬，會出現靠左的標題、置中的表單兩種對齊）
+// ============================================================
+.reg-window {
+  padding: 0;
+
+  // 576px 以下面板貼齊螢幕兩側（負的 margin-inline），不設上限
+  @include media-breakpoint-up(sm) {
+    max-width: calc(30rem + var(--office-pad) * 2);
+  }
+  @include media-breakpoint-up(lg) {
+    max-width: 56rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto 20rem;
+  }
+  > .ticket-perf {
+    @include media-breakpoint-up(lg) {
+      @include ticket-perf-vertical;
+    }
+  }
+}
+.reg-main {
+  padding: var(--office-pad);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 5) + 1rem;
+  }
+  .office-lead {
+    margin-bottom: map-get($spacers, 4);
+  }
+}
+// 表單本身維持窄（約 30rem），一行一個欄位
+.reg-form,
+.reg-demo {
+  max-width: 30rem;
+  margin-inline: auto;
+}
+.reg-field + .reg-field {
+  margin-top: map-get($spacers, 4);
+}
+.reg-form .office-check {
+  margin-top: map-get($spacers, 3);
+}
+.reg-submit {
+  margin-top: map-get($spacers, 4);
+}
+.reg-switch {
+  max-width: 30rem;
+  margin: map-get($spacers, 3) auto 0;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+  text-align: center;
+
+  .btn-text {
+    margin-left: .25rem;
+    font-size: inherit;
+  }
+}
+
+// 票根：接續購買提示。層級低於表單：文字用銀幕灰、封面維持熄燈的亮度、沒有按鈕
+.reg-stub {
+  padding: var(--office-pad);
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+
+  @include media-breakpoint-up(lg) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: map-get($spacers, 4) map-get($spacers, 4) + .5rem;
+  }
+  .office-label {
+    color: $mist;
+    font-size: $font-size-sm;
+  }
+  .purchase-card-note {
+    margin-top: map-get($spacers, 3);
+  }
+}
+// 992px 以下：小封面在左、課名與價格在右
+.reg-stub-course {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  align-items: start;
+  gap: .875rem;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: .75rem;
+  }
+  .office-cover img {
+    filter: brightness($media-dim);
+  }
+}
+.reg-stub-name {
+  margin-bottom: .375rem;
+  color: $mist;
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.6;
+}
+.reg-stub-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+
+  .price {
+    margin: 0;
+    font-size: 1.0625rem;
+  }
+}
+
+// ============================================================
+// 購買課程 checkout.html（co-）
+// 整塊面板就是一張 <form>。992px 以上：左＝標題、購買帳號、付款方式、發票；右＝購買的課程、
+// 應付金額與確認付款；中間一條直的撕線（陪著整個面板高度）
+// 992px 以下：單欄，順序是 標題 → 購買的課程 → 撕線 → 購買帳號 → 付款方式 → 發票 → 應付金額＋確認付款
+// 版型用 CSS Grid：HTML 依手機的順序寫，桌機用 grid-template-areas 排到左右兩欄（同課程詳情的 .cd-layout）
+// ============================================================
+.co-window {
+  max-width: 70rem;
+
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) auto minmax(0, 5fr);
+    grid-template-areas:
+      "head   perf course"
+      "fields perf course"
+      "fields perf total";
+    grid-template-rows: auto auto 1fr;
+    column-gap: map-get($spacers, 5);
+  }
+  @include media-breakpoint-up(xl) {
+    column-gap: map-get($spacers, 5) + 1rem;
+  }
+  > .ticket-perf {
+    grid-area: perf;
+    margin: map-get($spacers, 4) calc(var(--office-pad) * -1);
+
+    @include media-breakpoint-up(lg) {
+      @include ticket-perf-vertical;
+      margin: calc(var(--office-pad) * -1) 0;
+    }
+  }
+}
+.co-head {
+  grid-area: head;
+
+  @include media-breakpoint-up(lg) {
+    padding-bottom: map-get($spacers, 4);
+  }
+}
+.co-back {
+  margin-bottom: map-get($spacers, 2);
+
+  .bi {
+    margin-inline-end: .5rem;
+  }
+}
+.co-course {
+  grid-area: course;
+  margin-top: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    margin-top: 0;
+  }
+}
+.co-fields {
+  grid-area: fields;
+}
+.co-total {
+  grid-area: total;
+  align-self: start;
+  margin-top: map-get($spacers, 4);
+  padding-top: map-get($spacers, 4);
+  border-top: 1px solid $line;
+}
+
+// 購買的課程：992px 以下小封面在左、課名在右；以上封面在上
+.co-course-head {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  align-items: start;
+  gap: .875rem 1rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 11rem minmax(0, 1fr);
+  }
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.co-course-name {
+  margin-bottom: .5rem;
+  color: $white;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.6;
+  letter-spacing: .04em;
+}
+.co-course-meta {
+  margin-top: .5rem;
+  font-size: $font-size-sm;
+}
+.co-includes {
+  margin-top: map-get($spacers, 4);
+  padding-top: map-get($spacers, 4);
+  border-top: 1px solid $line;
+
+  .purchase-card-includes {
+    gap: .75rem 1rem;
+    margin-bottom: 0;
+
+    @include media-breakpoint-up(sm) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    // 992px 以上右欄只有 5 欄寬，兩欄會把「可下載材料清單 PDF」從中間折斷，改回一欄
+    @include media-breakpoint-up(lg) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}
+// 永久觀看的說明：常見問題的一問一答
+.co-faq {
+  margin: map-get($spacers, 4) 0 0;
+  padding: .875rem 1rem;
+  border-left: 2px solid $glow-deep;
+  background-color: $aisle;
+  border-radius: 0 $border-radius $border-radius 0;
+
+  dt {
+    margin-bottom: .25rem;
+    color: $white;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+  }
+  dd {
+    margin: 0;
+    color: $mist;
+    font-size: $font-size-sm;
+  }
+}
+
+// 區塊之間：髮絲線
+.co-section + .co-section {
+  margin-top: map-get($spacers, 4);
+  padding-top: map-get($spacers, 4);
+  border-top: 1px solid $line;
+}
+.co-section {
+  min-width: 0; // fieldset 預設 min-width: min-content，會撐破窄螢幕
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+// 購買帳號
+.co-account {
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+  margin: 0;
+
+  > .bi {
+    display: inline-grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid $line-strong;
+    border-radius: 50%;
+    color: $silver;
+    font-size: 1.25rem;
+  }
+}
+.co-account-email {
+  display: block;
+  color: $white;
+  font-family: $font-family-display;
+  letter-spacing: .03em;
+  word-break: break-all;
+}
+.co-account-note {
+  display: block;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+}
+
+// 付款方式：每個選項一塊（radio＋名稱＋一行說明）；選中＝冷藍框＋冷藍紗底，radio 本身也是實心圓點（不只靠顏色）
+.co-pay-options {
+  display: grid;
+  gap: .75rem;
+}
+.co-pay-option {
+  border: 1px solid $line-strong;
+  border-radius: $border-radius;
+  background-color: $booth;
+  transition: border-color .2s ease, background-color .2s ease;
+
+  &:hover {
+    border-color: $control;
+  }
+  &:has(.form-check-input:checked) {
+    border-color: $glow;
+    background-color: $glow-veil;
+  }
+  > .form-check {
+    align-items: flex-start;
+    padding: .25rem 1rem;
+
+    .form-check-input {
+      margin-top: calc(.5rem + (1.8em - #{$form-check-input-width}) / 2);
+    }
+  }
+}
+.co-pay-name {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  color: $white;
+  font-weight: $font-weight-medium;
+
+  .bi {
+    color: $silver;
+  }
+}
+.co-pay-note {
+  display: block;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  line-height: 1.6;
+}
+// 信用卡欄位：放在「信用卡」選項的框裡；選 LINE Pay、Apple Pay 時隱藏（CSS :has()，不寫 JS）
+.co-card-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem .75rem;
+  padding: .25rem 1rem 1.25rem;
+
+  .form-label {
+    font-size: $small-font-size;
+  }
+}
+.co-card-number {
+  grid-column: 1 / -1;
+}
+.co-payment:has(#payLinePay:checked, #payApplePay:checked) .co-card-fields {
+  display: none;
+}
+
+// 應付金額＋安心提示＋確認付款
+.co-amount {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: map-get($spacers, 3);
+
+  dt {
+    color: $mist;
+    font-weight: $font-weight-normal;
+  }
+  dd {
+    margin: 0;
+  }
+  .price {
+    font-size: 2rem;
+    font-weight: $font-weight-normal;
+    line-height: 1.2;
+  }
+}
+.co-total .purchase-card-note {
+  margin-bottom: map-get($spacers, 4);
+}
+
+// 狀態示意：付款處理中、付款失敗
+.co-demo {
+  max-width: 26rem;
+}
+.co-processing {
+  // 停用的主要按鈕維持冷藍底（Bootstrap 的 .4 透明度在深色底上太暗，看不出是「處理中」）
+  --bs-btn-disabled-opacity: .75;
+
+  .spinner-border {
+    margin-inline-end: .5rem;
+  }
+}
+.co-alert {
+  display: flex;
+  gap: .75rem;
+  max-width: 36rem;
+  margin: 0;
+
+  > .bi {
+    color: $danger;
+    font-size: 1.25rem;
+    line-height: 1.5;
+  }
+  p {
+    margin: 0;
+    color: $mist;
+  }
+  .co-alert-title {
+    margin-bottom: .25rem;
+    color: $white;
+    font-weight: $font-weight-medium;
+  }
+}
+
+// ============================================================
+// 付款結果 order-result.html（or-）
+// 結果訊息置中 → 一張開好的入場票（主體＝購買內容；票根＝訂單資訊與發票）→ 接下來 3 步 → 按鈕列 → 退費提醒
+// 768px 以上：票根在右（直的撕線）；以下：票根在下（橫的撕線）
+// ============================================================
+.or-result {
+  max-width: 40rem;
+  margin: 0 auto map-get($spacers, 5);
+  text-align: center;
+
+  .office-lead {
+    margin-inline: auto;
+  }
+}
+// 結果圖示：成功＝薄荷勾、失敗＝珊瑚驚嘆號（圖示＋標題文字，不只靠顏色）
+.or-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  margin-bottom: map-get($spacers, 3);
+  border: 1px solid rgba($mint, .55);
+  border-radius: 50%;
+  color: $mint;
+  font-size: 2rem;
+  box-shadow: 0 0 2.5rem rgba($mint, .18);
+
+  &.is-error {
+    border-color: rgba($coral, .6);
+    color: $coral;
+    box-shadow: none;
+  }
+}
+
+.or-ticket {
+  max-width: 56rem;
+  margin-inline: auto;
+  box-shadow: 0 2.5rem 6rem rgba($glow, .07);
+
+  @include media-breakpoint-up(md) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto 18rem;
+  }
+  > .ticket-perf {
+    @include media-breakpoint-up(md) {
+      @include ticket-perf-vertical;
+    }
+  }
+}
+.or-ticket-main,
+.or-ticket-stub {
+  padding: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    padding: map-get($spacers, 4) + .5rem;
+  }
+}
+// 576px 以下：封面縮小放在課名左側
+.or-course {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  align-items: start;
+  gap: .875rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: map-get($spacers, 3);
+  }
+}
+.or-course-name {
+  margin-bottom: .5rem;
+  color: $white;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.6;
+  letter-spacing: .04em;
+
+  @include media-breakpoint-up(sm) {
+    font-size: 1.25rem;
+  }
+}
+.or-course-meta {
+  margin-top: map-get($spacers, 3);
+  font-size: $font-size-sm;
+
+  .bi {
+    color: $silver;
+  }
+  // 768～991px 票券主體只剩約 340px，3 項會折成兩行：和 768px 以下一樣改用間距，行首不留孤零零的分隔線
+  @include media-breakpoint-between(md, lg) {
+    column-gap: 1.25rem;
+
+    > li + li::before {
+      content: none;
+    }
+  }
+}
+// 票根：標籤在上、值在下（像票根上的「編號」「座位」），數字用等寬
+.or-dl {
+  display: grid;
+  gap: .875rem;
+  margin: 0;
+
+  dt {
+    color: $body-secondary-color;
+    font-size: .75rem;
+    font-weight: $font-weight-normal;
+    letter-spacing: $letter-spacing-label;
+  }
+  dd {
+    margin: 0;
+    color: $white;
+    font-size: .9375rem;
+    overflow-wrap: anywhere;
+  }
+  .price {
+    font-size: 1.25rem;
+  }
+}
+.or-invoice {
+  margin-top: map-get($spacers, 4);
+  padding-top: map-get($spacers, 4);
+  border-top: 1px solid $line;
+}
+
+// 接下來：3 步，768px 以上橫排，之間用直的髮絲線（同首頁「為什麼學得完」）
+.or-next {
+  max-width: 56rem;
+  margin: map-get($spacers, 6) auto 0;
+}
+.or-next-title {
+  margin-bottom: map-get($spacers, 4);
+  font-size: $h3-font-size;
+  font-weight: $font-weight-light;
+  letter-spacing: $letter-spacing-heading;
+  text-align: center;
+}
+.or-steps {
+  display: grid;
+  gap: map-get($spacers, 4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+
+    > li {
+      padding-inline: map-get($spacers, 4);
+    }
+    > li + li {
+      border-left: 1px solid $line;
+    }
+  }
+  > li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: start; // 3 欄高度不同時，較矮的步驟不把多出來的高度分給各列，小標才會對齊
+    column-gap: map-get($spacers, 3);
+
+    @include media-breakpoint-up(md) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  p {
+    margin: 0;
+    color: $body-secondary-color;
+    font-size: .9375rem;
+  }
+}
+.or-step-no {
+  display: inline-grid;
+  place-items: center;
+  grid-row: span 2;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid $glow-deep;
+  border-radius: 50%;
+  color: $glow;
+  font-size: 1.0625rem;
+
+  @include media-breakpoint-up(md) {
+    grid-row: auto;
+    margin-bottom: map-get($spacers, 3);
+  }
+}
+.or-step-title {
+  margin-bottom: .375rem;
+  font-size: $h5-font-size;
+  color: $white;
+}
+.or-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .75rem 1rem;
+  margin-top: map-get($spacers, 5);
+
+  // 576px 以下上下排，主要按鈕在上
+  @include media-breakpoint-down(sm) {
+    flex-direction: column;
+
+    .btn {
+      width: 100%;
+    }
+  }
+}
+.or-refund {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0 .5rem;
+  margin: map-get($spacers, 4) 0 0;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  text-align: center;
+
+  > .bi {
+    color: $mint;
+  }
+  .btn-text {
+    margin-left: .25rem;
+    font-size: inherit;
+  }
+}
+
+// 狀態示意：付款沒有完成時
+.or-fail {
+  max-width: 36rem;
+  margin-inline: auto;
+  text-align: center;
+
+  .or-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.5rem;
+  }
+}
+.or-fail-title {
+  margin-bottom: .5rem;
+  font-size: $h3-font-size;
+  font-weight: $font-weight-light;
+  letter-spacing: $letter-spacing-heading;
+}
+.or-fail-text {
+  margin-bottom: map-get($spacers, 4);
+  color: $mist;
+}
+.or-fail-amount {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: .25rem .75rem;
+  margin: 0 0 map-get($spacers, 4);
+  padding: .75rem 1.25rem;
+  border-radius: $border-radius;
+  background-color: $aisle;
+
+  dt {
+    color: $mist;
+    font-weight: $font-weight-normal;
+  }
+  dd {
+    margin: 0;
+    color: $body-secondary-color;
+    font-size: $font-size-sm;
+  }
+  .price {
+    font-size: 1.25rem;
+  }
+}
+.or-fail-todo {
+  max-width: 24rem;
+  margin: 0 auto;
+  text-align: left;
+
+  .office-label {
+    justify-content: flex-start;
+  }
+}
+.or-fail-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: $mist;
+  font-size: .9375rem;
+
+  li + li {
+    margin-top: .375rem;
+  }
+  li::marker {
+    color: $silver;
+  }
+}
+.or-fail .or-actions {
+  margin-top: map-get($spacers, 4);
+}

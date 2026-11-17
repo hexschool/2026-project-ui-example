@@ -1,0 +1,267 @@
+// ============================================================
+// 購買課程 checkout.html（class 前綴 checkout-、pay-、summary-）
+// 延續課程詳情的 8 : 4（CSS Grid，同 .course-layout）：左欄購買帳號 → 付款方式 → 發票；
+// 右欄文武邊購買摘要（.purchase-card.frame-wenwu），右欄跨整個高度，摘要在視窗夠高時 sticky
+// 992～1199px 容器只有 960px，1/3 欄放不下課名與應付金額，這一段改成 7 : 5；≥ 1200px 回到 8 : 4
+// < 992px 單欄：精簡的課程列 → 左欄各段 → 完整摘要＋確認付款
+// ============================================================
+.checkout-head {
+  margin-bottom: map-get($spacers, 5);
+
+  h1 { margin-bottom: map-get($spacers, 2); }
+}
+.checkout-back {
+  margin-bottom: map-get($spacers, 2);
+  font-size: $font-size-sm;
+}
+
+// ---------- 版面 ----------
+.checkout-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: $grid-gutter-width;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    column-gap: map-get($spacers, 5);
+  }
+}
+// sticky：top＝頁首高度＋24px；視窗比摘要矮時不 sticky，避免「確認付款」永遠捲不到
+@include media-breakpoint-up(lg) {
+  @media (min-height: 900px) {
+    .checkout-summary {
+      position: sticky;
+      top: $sticky-top-offset;
+      box-shadow: $box-shadow-sm;
+    }
+  }
+}
+
+// ---------- 左欄：每段一個明體小標，段與段之間一條界線 ----------
+.checkout-block {
+  min-width: 0;
+
+  // 付款方式的 <fieldset> 包在 .checkout-block 裡（fieldset 的上框會被 legend 截斷，分隔線畫在外層）
+  > fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  + .checkout-block {
+    margin-top: map-get($spacers, 5);
+    padding-top: map-get($spacers, 5) - 1rem;
+    border-top: 1px solid $line;
+  }
+}
+.checkout-account {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .25rem;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-medium;
+  overflow-wrap: anywhere;
+
+  .bi { color: $bamboo; font-size: 1.25rem; }
+}
+.checkout-invoice {
+  max-width: 26rem;
+}
+
+// < 992px：購買的課程精簡成一列（封面＋課名＋金額）
+// < 576px 金額移到課名下方，課名才有整欄寬度，「｜」前後兩個半句各自完整一行
+.checkout-mini {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  grid-template-areas:
+    "cover name"
+    "cover price";
+  align-items: center;
+  gap: .25rem .875rem;
+  margin-bottom: map-get($spacers, 5);
+  padding: .75rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $sheet;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+    grid-template-areas: "cover name price";
+    gap: .875rem;
+  }
+}
+.checkout-mini-cover {
+  grid-area: cover;
+  aspect-ratio: 4 / 3;
+}
+.checkout-mini-name {
+  grid-area: name;
+  margin: 0;
+  font-family: $font-family-serif;
+  font-size: .9375rem;
+  font-weight: $font-weight-semibold;
+  line-height: 1.5;
+  letter-spacing: .04em;
+}
+.checkout-mini-price {
+  grid-area: price;
+  margin: 0;
+  font-size: 1.0625rem;
+}
+
+// ---------- 付款方式：目錄式的選項列（上方一條深墨粗線、列與列之間細界線） ----------
+// 選中：杏仁黃底（同學習頁「目前單元」）＋左側 2px 竹青線＋名稱加粗；radio 實心，不只靠顏色
+// hover 只換底色，不改尺寸
+.pay-options {
+  border-top: 2px solid $ink;
+}
+.pay-option {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: .875rem;
+  padding: 1rem 1rem 1rem .875rem;
+  border-bottom: 1px solid $line;
+  border-left: 2px solid transparent;
+  transition: background-color .2s ease;
+
+  > .form-check-input {
+    margin: .3125rem 0 0;
+  }
+  &:hover {
+    background-color: rgba($almond-light, .5);
+  }
+  &:has(> .form-check-input:checked) {
+    border-left-color: $bamboo;
+    background-color: $almond-light;
+
+    .pay-option-name { font-weight: $font-weight-bold; }
+  }
+}
+// label 撐滿整列（::after 蓋住整個選項），信用卡欄位疊在上面才點得到
+.pay-option-label {
+  display: grid;
+  gap: .125rem;
+  cursor: pointer;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+}
+.pay-option-name {
+  font-weight: $font-weight-medium;
+}
+.pay-option-note {
+  color: $ink-muted;
+  font-size: $font-size-sm;
+  line-height: 1.6;
+}
+.pay-option-icon {
+  color: $ink-muted;
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+.pay-card-fields {
+  position: relative;
+  z-index: 1;
+  grid-column: 2 / -1;
+  max-width: 28rem;
+  margin-top: map-get($spacers, 3);
+}
+// 選 LINE Pay、Apple Pay 時收起信用卡欄位（點選後才變，不是 hover）
+.pay-options:not(:has(#payCard:checked)) .pay-card-fields {
+  display: none;
+}
+
+// ---------- 右欄：購買摘要 ----------
+.summary-title {
+  margin-bottom: .75rem;
+  font-family: $font-family-base;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+}
+.summary-course {
+  display: flex;
+  align-items: flex-start;
+  gap: .875rem;
+  margin-bottom: .875rem;
+}
+.summary-cover {
+  flex: 0 0 5.5rem;
+  aspect-ratio: 4 / 3;
+}
+.summary-name {
+  margin-bottom: .375rem;
+  font-family: $font-family-serif;
+  font-size: 1rem;
+  font-weight: $font-weight-semibold;
+  line-height: 1.55;
+  letter-spacing: .04em;
+}
+.summary-facts {
+  margin-bottom: map-get($spacers, 3);
+}
+// 永久觀看的說明：一問一答，問題用明體
+.summary-faq {
+  margin: 0 0 map-get($spacers, 3);
+  padding-top: map-get($spacers, 3);
+  border-top: 1px dotted $line-strong;
+
+  dt {
+    margin-bottom: .25rem;
+    font-family: $font-family-serif;
+    font-size: .9375rem;
+    font-weight: $font-weight-semibold;
+    letter-spacing: .04em;
+  }
+  dd {
+    margin: 0;
+    color: $ink-muted;
+    font-size: $font-size-sm;
+    line-height: 1.7;
+  }
+}
+// 應付金額 ········ NT$ 2,480：上方一條深墨線，像帳的合計
+.summary-total {
+  align-items: baseline;
+  margin: 0 0 .75rem;
+  padding-top: .75rem;
+  border-top: 2px solid $ink;
+  font-weight: $font-weight-medium;
+
+  // 標籤不拆成「應付／金額」兩行
+  .toc-row-label { white-space: nowrap; }
+  .toc-row-value.price,
+  .price {
+    color: $ink;
+    font-size: 1.875rem;
+    line-height: 1.2;
+  }
+}
+.summary-submit {
+  margin-top: map-get($spacers, 3);
+}
+
+// ---------- 狀態示意 ----------
+.checkout-demo-pay {
+  max-width: 24rem;
+}
+.checkout-demo-note {
+  margin: .625rem 0 0;
+}
+.checkout-demo-fail {
+  max-width: 40rem;
+}
+.checkout-demo-next {
+  margin: map-get($spacers, 4) 0 0;
+  color: $ink-muted;
+}

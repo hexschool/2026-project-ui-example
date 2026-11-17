@@ -1,0 +1,227 @@
+// ============================================================
+// 2026-11 補的 5 頁共用（註冊、購買課程、付款結果、我的課程、購買紀錄）
+// .flow-page    流程頁（註冊、購買課程、付款結果不放麵包屑）的上方留白
+// .flow-title   段落小標：明體＋左側 2px 竹青短線（.section-heading 的縮小版，也可以用在 <legend>）
+// .ledger-list  明細：標籤 ········ 值（目錄點線），訂單資訊、發票
+// .summary-teacher  講師列：文字頭像＋名字（購買課程、付款結果）
+// .flow-facts   加在 .course-facts 上：窄欄換行時，行首不留孤立的分隔線（購買課程、付款結果）
+// .invalid-feedback.has-icon  欄位錯誤（和 Guideline 同一個 Bootstrap 類別）多一個圖示；.feedback-link 是句子裡的連結型按鈕
+// .flow-alert   錯誤提示框（付款失敗）
+// .tag-learning／.tag-paid／.tag-refunded／.tag-failed／.tag-refunding  學習中與訂單狀態（圖示＋文字，不只靠顏色）
+// ============================================================
+
+// ---------- 流程頁的上方留白：沒有麵包屑時，標題落在和內頁差不多的高度 ----------
+.flow-page {
+  padding-top: map-get($spacers, 4) + 1rem;     // 40px
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 5) + .5rem;  // 56px
+  }
+}
+
+// ---------- 段落小標 ----------
+.flow-title {
+  position: relative;
+  float: none; // 用在 <legend> 時取消 Bootstrap 的 float
+  width: 100%;
+  margin-bottom: map-get($spacers, 3);
+  padding: 0 0 0 .875rem;
+  font-family: $font-family-serif;
+  font-size: 1.1875rem;
+  font-weight: $font-weight-semibold;
+  line-height: 1.5;
+  letter-spacing: $letter-spacing-heading;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .3em;
+    bottom: .3em;
+    width: 2px;
+    background-color: $bamboo;
+  }
+}
+
+// ---------- 明細：標籤 ········ 值 ----------
+// <dl class="ledger-list">
+//   <div><dt>訂單編號</dt><dd class="num">CR-20261116-027</dd></div>
+//   <div class="is-total"><dt>付款金額</dt><dd class="price">NT$&nbsp;2,480</dd></div>
+// </dl>
+// 點線畫在 dt::after（dl 的 div 裡只能放 dt、dd），值換行時點線對齊最後一行
+.ledger-list {
+  margin: 0;
+
+  > div {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    padding-block: .4375rem;
+  }
+  dt {
+    display: flex;
+    align-items: baseline;
+    flex: 1 1 auto;
+    gap: .5rem;
+    min-width: 0;
+    color: $ink-muted;
+    font-weight: $font-weight-normal;
+    white-space: nowrap;
+
+    &::after {
+      content: "";
+      flex: 1 1 1.5rem;
+      min-width: 1.5rem;
+      border-bottom: 2px dotted $line-strong;
+      transform: translateY(-.3em);
+    }
+  }
+  dd {
+    flex: 0 1 auto;
+    margin: 0;
+    color: $ink;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+  // 合計列：上方一條深墨線（像帳的合計），金額放大
+  > .is-total {
+    margin-top: .375rem;
+    padding-top: .75rem;
+    border-top: 2px solid $ink;
+
+    dt { color: $ink; font-weight: $font-weight-medium; }
+    .price { font-size: 1.5rem; line-height: 1.3; }
+  }
+}
+
+// ---------- 講師列：文字頭像＋名字 ----------
+.summary-teacher {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  .avatar-text {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: .8125rem;
+  }
+}
+
+// ---------- 課程資訊列換行時，行首不留孤立的分隔線 ----------
+// <ul class="course-facts flow-facts">…</ul>
+// .course-facts（pages/_course.scss）的分隔線畫在第 2 項起的左側；欄寬不夠換行時，新的一行會以「｜」開頭
+// .flow-facts：每一項左右都留 .875rem、分隔線畫在項目左側外 1px，整列往左拉 .875rem 並裁掉超出的部分
+// → 落在行首的那一項，分隔線剛好在裁切範圍外；同一行裡的分隔線照常顯示
+// < 576px 沿用 .course-facts 的手機排法（不畫分隔線）
+@include media-breakpoint-up(sm) {
+  .course-facts.flow-facts {
+    margin-left: -.875rem;
+    overflow: hidden;
+
+    li:first-child { padding-left: .875rem; }
+    li::before {
+      content: "";
+      position: absolute;
+      left: -1px;
+      top: 50%;
+      height: 1em;
+      border-left: 1px solid $line-strong;
+      transform: translateY(-50%);
+    }
+  }
+}
+
+// ---------- 欄位錯誤：Bootstrap 的 .invalid-feedback（同 Guideline）多一個圖示 ----------
+// <input class="form-control is-invalid" aria-invalid="true" aria-describedby="emailError">
+// <p id="emailError" class="invalid-feedback has-icon"><i class="bi bi-exclamation-circle" aria-hidden="true"></i><span>…</span></p>
+// 顯示時機照 Bootstrap：跟在 .is-invalid 後面才出現；字級、顏色、上距都沿用 .invalid-feedback
+.is-invalid ~ .invalid-feedback.has-icon {
+  display: flex;
+}
+.invalid-feedback.has-icon {
+  align-items: flex-start;
+  gap: .375rem;
+  margin-bottom: 0;
+  line-height: 1.6;
+
+  .bi {
+    flex: 0 0 auto;
+    margin-top: .1875rem;
+  }
+}
+// 錯誤句子裡的「登入」：行內的連結型按鈕（不撐高行高）
+.feedback-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-weight: $font-weight-bold;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .3em;
+  vertical-align: baseline;
+
+  &:hover { color: $danger-text-emphasis; }
+}
+
+// ---------- 錯誤提示框 ----------
+.flow-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid $danger-border-subtle;
+  border-left: 2px solid $cinnabar;
+  border-radius: 0 $border-radius $border-radius 0;
+  background-color: $danger-bg-subtle;
+  color: $ink;
+  line-height: 1.7;
+
+  > .bi {
+    flex: 0 0 auto;
+    color: $cinnabar;
+    font-size: 1.25rem;
+    line-height: 1.4;
+  }
+  p { margin: 0; }
+}
+.flow-alert-title {
+  margin-bottom: .25rem !important;
+  color: $danger-text-emphasis;
+  font-weight: $font-weight-bold;
+}
+
+// ---------- 狀態標籤（補 _base.scss 的 .tag） ----------
+// 學習中：竹青框字（同 .tag-playing）
+.tag-learning {
+  border-color: $bamboo;
+  background-color: $sheet;
+  color: $bamboo-deep;
+}
+// 已付款：竹霜底＋竹青字（同 .tag-done）＋勾勾圓圈
+.tag-paid {
+  border-color: $bamboo-mist;
+  background-color: $bamboo-mist;
+  color: $bamboo-deep;
+}
+// 已退費：淡墨框字＋逆時針箭頭（同 .tag-off 的「退回紙面」）
+.tag-refunded {
+  border-color: $ink-muted;
+  color: $ink-muted;
+}
+// 付款失敗：朱砂框字＋叉叉圓圈
+.tag-failed {
+  border-color: $cinnabar;
+  background-color: $sheet;
+  color: $cinnabar;
+}
+// 退費處理中：赭石虛線框＋沙漏（虛線＝還沒完成，同 .tag-draft）
+.tag-refunding {
+  border-style: dashed;
+  border-color: $ochre;
+  background-color: $sheet;
+  color: $ochre;
+}

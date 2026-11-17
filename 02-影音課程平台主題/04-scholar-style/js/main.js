@@ -1,16 +1,20 @@
 // ============================================================
 // Craftory｜04 人文書院風：全站共用的少量互動
-// collapse、modal、offcanvas、tab、dropdown、toast 都由 Bootstrap 的 data-bs-* 屬性處理，這裡只補五件事
+// collapse、modal、offcanvas、tab、dropdown、toast 都由 Bootstrap 的 data-bs-* 屬性處理，這裡只補六件事
 // ============================================================
 
-// 1. 登入對話框：從「立即購買，開始上課」開啟時，顯示未登入提示，主要按鈕改成「登入並開始上課」
+// 1. 登入對話框：從「立即購買，開始上課」（或註冊頁的「登入」）開啟時，顯示未登入提示，主要按鈕改成「登入並開始上課」
 //    觸發按鈕：<button data-bs-toggle="modal" data-bs-target="#authModal" data-auth-context="purchase">
+//    送出目的地也跟著換：購買情境到 checkout.html（購買課程），一般情境還原成表單原本的 action（learn.html）
 document.getElementById('authModal')?.addEventListener('show.bs.modal', (event) => {
   const purchase = event.relatedTarget?.dataset.authContext === 'purchase'
   const modal = event.target
   modal.querySelector('[data-auth-notice]').hidden = !purchase
   modal.querySelector('[data-auth-label="default"]').hidden = purchase
   modal.querySelector('[data-auth-label="purchase"]').hidden = !purchase
+  const form = modal.querySelector('form')
+  form.dataset.defaultAction ??= form.getAttribute('action')
+  form.setAttribute('action', purchase ? 'checkout.html' : form.dataset.defaultAction)
 })
 
 // 2. 關閉對話框後捲到指定位置（鎖定單元提示的「看看課程包含什麼」→ 購買卡）
@@ -50,3 +54,23 @@ if (craft) {
   const radio = document.querySelector(`input[name="craft"][value="${CSS.escape(craft)}"]`)
   if (radio) radio.checked = true
 }
+
+// 6. 篩選分頁：只顯示符合條件的項目（我的課程的「全部／學習中／已完成」）
+//    <div data-filter-list="#my-courses-list">…<button type="button" data-filter="學習中" aria-pressed="false">…
+//    清單的直接子項目寫 data-status="學習中"；data-filter="all" 顯示全部。目前選取的按鈕加 .active 與 aria-pressed="true"
+document.querySelectorAll('[data-filter-list]').forEach((group) => {
+  const buttons = group.querySelectorAll('[data-filter]')
+  const items = document.querySelectorAll(`${group.dataset.filterList} > [data-status]`)
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const filter = button.dataset.filter
+      buttons.forEach((b) => {
+        b.classList.toggle('active', b === button)
+        b.setAttribute('aria-pressed', String(b === button))
+      })
+      items.forEach((item) => {
+        item.hidden = filter !== 'all' && item.dataset.status !== filter
+      })
+    })
+  })
+})

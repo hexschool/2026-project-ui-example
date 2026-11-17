@@ -8,7 +8,7 @@
 
 - **HTML**：每頁一個完整的 `.html`，用一般的 `<a href>` 換頁，瀏覽器直接打開就能看。
 - **CSS**：Bootstrap 用 Sass 客製，唯一的編譯工具是 `sass` CLI（`scss/` → `css/style.css`）。這是**單一深色主題**：直接把 Bootstrap 原本給淺色用的變數設成深色，不使用 `data-bs-theme`。
-- **JS**：互動都交給 Bootstrap 的 `data-bs-*` 屬性，自己寫的只有 `js/main.js` 裡的六個小功能。
+- **JS**：互動都交給 Bootstrap 的 `data-bs-*` 屬性，自己寫的只有 `js/main.js` 裡的七個小功能。
 
 ## 快速開始
 
@@ -21,7 +21,7 @@ npm install        # 安裝 bootstrap、bootstrap-icons、sass，並把 Bootstra
 npm run watch      # 開發時：監看 scss/，存檔就重新編譯 css/style.css
 npm run css        # 編譯一次
 npm run build      # 交付前：重新複製 vendor 檔案＋編譯一次 CSS
-npm run check      # 檢查 5 個頁面的 head、頁首、頁尾與登入對話框是否與範本一致
+npm run check      # 檢查 10 個頁面的 head、頁首、頁尾與登入對話框是否與範本一致
 npm run vendor     # 只重新複製 Bootstrap JS 與圖示字型（npm install 時會自動執行）
 npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖時才用）
 ```
@@ -37,8 +37,15 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 | 課程列表 | `courses.html` | `scss/pages/_courses.scss` |
 | 課程詳情（以「從零開始的手捏陶」示範，含試看） | `course.html` | `scss/pages/_course.scss` |
 | 課程播放／學習頁（手捏陶 3-2） | `learn.html` | `scss/pages/_learn.scss` |
+| 註冊（2026-11 補） | `register.html` | `scss/pages/_office.scss`（售票口共用）、`components/_ticket.scss` |
+| 購買課程（2026-11 補，只做手捏陶） | `checkout.html` | `scss/pages/_office.scss`、`components/_ticket.scss` |
+| 付款結果（2026-11 補） | `order-result.html` | `scss/pages/_office.scss`、`components/_ticket.scss` |
+| 我的課程（2026-11 補） | `my-courses.html` | `scss/pages/_my-courses.scss` |
+| 購買紀錄（2026-11 補） | `orders.html` | `scss/pages/_orders.scss`、`components/_ticket.scss` |
 
-頁面上沒有列出所有頁面的導覽：依學生流程從首頁點進各頁即可（首頁 → 課程列表 → 課程詳情 →「立即購買，開始上課」→ 登入對話框 → 學習頁；頁首「我的課程」也連到學習頁）。Guideline 直接開 `guideline.html`。
+頁面上沒有列出所有頁面的導覽：依學生流程從首頁點進各頁即可（首頁 → 課程列表 → 課程詳情 →「立即購買，開始上課」→ 登入對話框（或對話框裡的「立即註冊」→ 註冊）→ 購買課程 → 付款結果 →「前往我的課程」→ 我的課程 →「繼續上課」→ 學習頁）。頁首「我的課程」連到我的課程頁，那裡的「購買紀錄」連到購買紀錄。Guideline 直接開 `guideline.html`。
+
+2026-11 補的 5 頁延伸「熄燈後的放映廳」：註冊、購買課程、付款結果是**售票口**（頂端一束冷光，整個畫面只亮一塊面板，面板中間一條帶半圓缺口的撕線，像一張還沒撕開的票）；我的課程是**片單**（一門課一列，學習中的封面亮著，已完課的熄燈一階）；購買紀錄是**一疊票根**（每筆訂單一張票，左邊票根、右邊主體）。
 
 課程詳情只做一頁靜態示範（從零開始的手捏陶），所有課程卡都連到 `course.html`，「免費試看」連到 `course.html#trial`。播放、續看、試看／鎖定、未登入、篩選結果這些動態功能用靜態畫面呈現，其他狀態放在各頁底部的「設計稿狀態示意」：
 
@@ -47,27 +54,32 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 | `courses.html` | 篩選沒有結果時 |
 | `course.html` | 點了鎖定單元時、已購買時（購買卡改「繼續上課」、第 1 章打勾）、未登入點擊購買時 |
 | `learn.html` | 完成一章時、全課完成時、影片載入失敗時、還沒有任何課程時 |
+| `register.html` | 欄位有錯誤時（電子郵件已註冊、密碼太短、沒有勾同意條款） |
+| `checkout.html` | 付款處理中、付款失敗 |
+| `order-result.html` | 付款沒有完成時 |
+| `my-courses.html` | 還沒有任何課程時 |
+| `orders.html` | 退費處理中（`#refund-pending`，「申請退費」會捲到這裡）、沒有購買紀錄時 |
 
-可以實際操作的：課程章節的鎖定單元（開啟鎖定提示，「看看課程包含什麼」捲到購買卡）、「立即購買，開始上課」（開啟登入對話框並顯示未登入提示）、篩選與排序的選中狀態、評價排序切換、FAQ 與章節的展開收合、願望清單切換、學習頁分頁、續看提示的關閉、播放速度與字幕的下拉選單、手機版的篩選抽屜與章節底部抽屜。
+可以實際操作的：課程章節的鎖定單元（開啟鎖定提示，「看看課程包含什麼」捲到購買卡）、「立即購買，開始上課」（開啟登入對話框並顯示未登入提示）、篩選與排序的選中狀態、評價排序切換、FAQ 與章節的展開收合、願望清單切換、學習頁分頁、續看提示的關閉、播放速度與字幕的下拉選單、手機版的篩選抽屜與章節底部抽屜；2026-11 補頁的我的課程分頁籤（真的篩選）、購買課程的付款方式（選 LINE Pay／Apple Pay 時信用卡欄位收起，純 CSS `:has()`）、註冊與購買的表單送出、購買紀錄的「申請退費」。
 
 ## 檔案結構
 
 ```
 01-dark-theater-style/
-├─ *.html                    ← 5 個頁面，每頁完整包含頁首、頁尾與登入對話框
+├─ *.html                    ← 10 個頁面，每頁完整包含頁首、頁尾與登入對話框
 ├─ templates/page.html       ← 頁面骨架：新增頁面從這裡複製
 ├─ css/
 │  ├─ style.css              ← 編譯結果（Bootstrap＋Icons＋本風格樣式），要提交
 │  └─ fonts/                 ← Bootstrap Icons 字型（npm run vendor 複製）
 ├─ js/
-│  ├─ main.js                ← 全站共用的六個小功能
+│  ├─ main.js                ← 全站共用的七個小功能
 │  └─ vendor/bootstrap.bundle.min.js
 ├─ images/                   ← 23 張課程照片（AI 生成，暗場冷光調性）、favicon.svg
 ├─ scss/
 │  ├─ main.scss              ← 樣式進入點（載入順序見下方）
 │  ├─ _variables.scss        ← ★ Design token：Bootstrap 變數覆寫
 │  ├─ _base.scss             ← 全站基礎與共用小工具
-│  ├─ components/            ← 頁首、頁尾、標籤、課程卡、工藝卡、正在播放小卡、播放器、章節清單、購買卡、評價、對話框
+│  ├─ components/            ← 頁首、頁尾、標籤、課程卡、工藝卡、正在播放小卡、播放器、章節清單、購買卡、評價、對話框、票券撕線
 │  └─ pages/                 ← 各頁專屬樣式（class 加頁面前綴）
 └─ scripts/
    ├─ copy-vendor.mjs        ← 把 Bootstrap JS 與圖示字型從 node_modules 複製進專案
@@ -77,12 +89,12 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 
 ## 沒有打包工具時的工作方式
 
-- **頁首、頁尾、登入對話框每頁一份**：沒有元件系統，所以 5 個頁面各自完整寫一份。要改時先改 `templates/page.html`，再同步到每一頁，最後執行 `npm run check`。每頁只有一處不同：頁首的目前頁（`active` 與 `aria-current="page"`）。首頁標「首頁」、課程列表標「探索課程」、課程詳情標「探索課程」但不加 `aria-current`、學習頁標「我的課程」（選單裡與桌機右側各一個）、Guideline 不標示。
+- **頁首、頁尾、登入對話框每頁一份**：沒有元件系統，所以 10 個頁面各自完整寫一份。要改時先改 `templates/page.html`，再同步到每一頁，最後執行 `npm run check`。每頁只有一處不同：頁首的目前頁（`active` 與 `aria-current="page"`）。首頁標「首頁」、課程列表標「探索課程」、課程詳情標「探索課程」但不加 `aria-current`、我的課程標「我的課程」（選單裡與桌機右側各一個）、學習頁與購買紀錄標「我的課程」但不加 `aria-current`；Guideline、註冊、購買課程、付款結果不標示。
 - **新增頁面**：複製範本成新頁，改 `<title>`、description 與頁首的目前頁標示，並在要連進來的地方補上連結。最後在 `scss/pages/` 新增 partial、在 `scss/main.scss` 加一行 `@import`，並把頁面加進 `scripts/check-layout.mjs` 的目前頁對照表，執行 `npm run check`。
 - **假資料直接寫在 HTML**：課程、講師、星等、學習人數與 28 個單元都寫死在頁面裡（`../CONTENT.md` 的 Notion 文案與 §9 補充資料）。同一門課會出現在首頁、課程列表與 Guideline 的課程卡，手捏陶的單元同時出現在課程詳情與學習頁，改資料時要多頁同步。
-- **JS**：`js/main.js` 只做六件事：手機搜尋列展開後自動聚焦、登入對話框依觸發按鈕顯示未登入提示（`data-auth-context="purchase"`）、鎖定提示的按鈕關閉對話框後捲到購買卡（`data-scroll-after-dismiss`）、課程列表依網址 `?craft=` 預先選好工藝分類、學習頁側欄「全部收合」（`data-collapse-all`）、分頁籤用方向鍵切換時把目前項目捲進畫面。其他互動（選單、分頁、下拉、抽屜、對話框、Toast、Accordion）都靠 Bootstrap 的 `data-bs-*` 屬性。
+- **JS**：`js/main.js` 只做七件事：手機搜尋列展開後自動聚焦、登入對話框依觸發按鈕顯示未登入提示並切換送出目的地（`data-auth-context="purchase"`：送出到 `checkout.html`；其他情境送出到 `learn.html`）、鎖定提示的按鈕關閉對話框後捲到購買卡（`data-scroll-after-dismiss`）、課程列表依網址 `?craft=` 預先選好工藝分類、學習頁側欄「全部收合」（`data-collapse-all`）、分頁籤用方向鍵切換時把目前項目捲進畫面、我的課程的篩選按鈕（`data-filter-list`＋`data-filter`，清單項目寫 `data-status`，切換 `aria-pressed`）。其他互動（選單、分頁、下拉、抽屜、對話框、Toast、Accordion）都靠 Bootstrap 的 `data-bs-*` 屬性。
 - **換行與空白**：課程名稱在「｜」之後用 `<wbr>` 標出斷點，搭配 `.text-phrase`，只在詞組之間換行；數字與單位之間用 `&nbsp;`（`4&nbsp;小時 20&nbsp;分`、`NT$&nbsp;2,480`）。
-- **表單**：設計稿沒有後端。登入對話框的表單 `action="learn.html"`（視為登入成功），欄位沒有 `name`，送出時網址不會帶上帳號密碼；課程問答送出後回到本頁。
+- **表單**：設計稿沒有後端。登入對話框的表單 `action="learn.html"`（視為登入成功；購買情境由 JS 改成 `checkout.html`），欄位沒有 `name`，送出時網址不會帶上帳號密碼；課程問答送出後回到本頁。註冊表單送到 `checkout.html`、購買表單送到 `order-result.html`，顯示名稱、電子郵件、密碼、卡號、有效期限、安全碼、發票都不加 `name`，只有付款方式的 radio 有 `name="payment"`（網址只會帶 `?payment=card`）。串接後端時改用 POST 並補上 `name`。
 
 ## 樣式架構
 
@@ -93,25 +105,30 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 3. `bootstrap/scss/bootstrap`：用上面的變數編譯出整套 Bootstrap
 4. `bootstrap-icons`：圖示字型與 class（字型路徑指向 `css/fonts/`）
 5. `_base.scss`：字距、換行規則、焦點樣式、區塊與頁首節奏，以及下表的共用類別
-6. `components/*`：頁首、頁尾、標籤、課程卡、工藝卡、正在播放小卡、播放器、章節清單、購買卡、評價、對話框
-7. `pages/*`：各頁專屬樣式，class 一律加頁面前綴（`home-`、`courses-`、`cd-`、`learn-`、`gl-`）
+6. `components/*`：頁首、頁尾、標籤、課程卡、工藝卡、正在播放小卡、播放器、章節清單、購買卡、評價、對話框、票券撕線
+7. `pages/*`：各頁專屬樣式，class 一律加頁面前綴（`home-`、`courses-`、`cd-`、`learn-`、`gl-`、`reg-`、`co-`、`or-`、`mc-`、`orders-`）；註冊、購買課程、付款結果共用的售票口版型用 `office-`，寫在 `pages/_office.scss`
 
 原則是**先用 Bootstrap 的變數與工具類別**，真的做不到才寫自訂 CSS，而且自訂 CSS 也只引用變數，不寫死色碼。想換風格，主要改 `_variables.scss`。
 
 ### 共用類別
 
-下面這些類別跨頁共用，新頁面直接套用，不要在 `pages/*` 另寫一份。用法與示範都在 `guideline.html`。
+下面這些類別跨頁共用，新頁面直接套用，不要在 `pages/*` 另寫一份。用法與示範都在 `guideline.html`；標「2026-11」的是補頁時新增、Guideline 沒有的元件，示範就在該頁。
 
 | 類別 | 用途 | 位置 |
 |---|---|---|
 | `.player`（`.is-paused`／`.is-playing`／`.is-loading`／`.is-error`／`.is-lit`） | ★ 招牌：柔光控制列的播放器。靜止時控制列銀幕灰；`:hover`、`:focus-within` 時亮起冷藍柔光；觸控裝置（`hover: none`）直接亮起；`.is-lit` 固定成亮起狀態（Guideline 用）。內含 `.player-caption`、`.player-bigplay`、`.player-controls`、`.player-progress`（`--played`、`--buffered`、`.player-progress-mark` 已觀看位置）、`.player-toast`（續看提示）、`.player-message`（載入中／失敗） | `components/_player.scss` |
 | `.lit`、`.lit-media`（`.is-lit`） | 亮燈：卡片平常略暗，hover／focus 時亮起並浮出冷藍柔光 | `_base.scss` |
 | `.course-card` | 課程卡：封面＋時長、分類與難度、課程名稱、講師文字頭像、星等與學習人數、價格＋「免費試看」 | `components/_course-card.scss` |
-| `.craft-card` | 工藝情境卡：hover／focus 浮現課程數與最短完課時間，觸控裝置直接顯示 | `components/_craft-card.scss` |
+| `.craft-card` | 工藝情境卡：課程數與最短完課時間常駐顯示；hover／focus 只亮燈（圖片變亮），不展開、不改變卡片尺寸（2026-11-17） | `components/_craft-card.scss` |
 | `.now-playing` | 首頁 Hero 右下的「正在播放」小卡 | `components/_now-playing.scss` |
 | `.unit`（`.is-trial`／`.is-playing`／`.is-locked`／`.is-done`／`.is-todo`）、`.unit-list` | 單元列（課程詳情與學習頁共用），每一種狀態都有圖示＋視覺隱藏的狀態文字 | `components/_curriculum.scss` |
 | `.curriculum`、`.chapter`、`.chapter-toggle`、`.chapter-state` | 課程詳情的章節 Accordion；學習頁側欄的章節清單（可多章展開） | `components/_curriculum.scss` |
 | `.chip`（`-cat`、`-level`、`-duration`、`-trial`、`-lock`、`-playing`、`-done`、`-progress`、`-draft`、`-live`、`-off`） | 標籤：分類、難度、時長、試看、鎖定、播放中、已完課、學習進度、講師課程狀態 | `components/_chips.scss` |
+| `.chip-paid`、`.chip-refunded`、`.chip-failed`、`.chip-refunding`（2026-11） | 訂單狀態：已付款（薄荷實線＋勾）、已退費（表單框線＋回轉箭頭）、付款失敗（珊瑚實線＋叉）、退費處理中（琥珀虛線＋沙漏）。外框樣式也不同，不只靠顏色 | `components/_chips.scss` |
+| `.ticket`、`.ticket-perf`（mixin `ticket-perf-vertical`、`ticket-perf-plain`）（2026-11） | 票券外框與撕線：一條虛線，兩端各咬一個半圓缺口（`--ticket-cut` 是缺口顏色＝票券後面的底色）。預設橫的，在斷點裡 `@include ticket-perf-vertical` 變直的；撕線一律 `aria-hidden="true"`。用在註冊、購買課程、付款結果、購買紀錄 | `components/_ticket.scss` |
+| `.office`、`.office-window`、`.office-title`、`.office-lead`、`.office-label`、`.office-check`、`.office-cover`、`.office-teacher`（2026-11） | 售票口版型（註冊、購買課程、付款結果共用）：頂端一束冷光、一塊亮著的面板（576px 以下貼齊螢幕兩側）、面板裡的標題、小標、勾選框、16:9 封面與講師列。欄位錯誤沿用 Guideline 的 `.is-invalid`＋`.invalid-feedback`（加圖示時寫 `d-flex gap-2`），核取方塊的錯誤文字放在 `.office-check` 裡、label 後面 | `pages/_office.scss` |
+| `.mc-item`（`.is-learning`／`.is-done`）、`.mc-filter`、`.mc-stats`（2026-11） | 我的課程的課程列（MyCourseCard：封面、狀態徽章、課名、講師、進度條、上次看到或完課日期、按鈕）、篩選分頁籤（沿用 `.nav-tabs` 外觀，button＋`aria-pressed`）、標題區統計 | `pages/_my-courses.scss` |
+| `.orders-ticket`（`.is-void`）、`.orders-refund`（`.is-static`）（2026-11） | 購買紀錄的訂單票券（票根＝訂單編號、日期、狀態；主體＝課程、金額、付款方式、備註、動作）、退費說明側欄 | `pages/_orders.scss` |
 | `.purchase-card`（`.is-owned`）、`.btn-wish` | 購買卡；願望清單按鈕（`data-bs-toggle="button"` 切換文字與愛心） | `components/_purchase-card.scss` |
 | `.rating-summary`、`.rating-bars`、`.review-card`、`.stars`、`.rating` | 評價總覽、五段分佈、評價卡、星等 | `components/_rating.scss`、`_base.scss` |
 | `.auth-hint`、`.locked-dialog` | 登入對話框的未登入提示、單元鎖定提示 | `components/_dialogs.scss` |
@@ -134,7 +151,7 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 | 線 | 髮絲線 `$line #1E2631`、深線 `$line-strong #2C3644`（裝飾用）、表單框線 `$control #5A6A7E`（非文字 3.6:1） |
 | 文字 | 純白 `$white #FFFFFF`（標題、價格、片長，20:1）、霧白 `$mist #D6DCE4`（內文，14.5:1）、銀幕灰 `$silver #AAB5C3`（說明、控制列靜止，9.6:1）、暗場灰 `$dim #7E8A9A`（placeholder，5.7:1） |
 | 冷藍 | 微光冷藍 `$glow #7CC8FF`（主要按鈕底、焦點環、播放中、進度，11.0:1）、冷藍淡 `$glow-soft #B5E0FF`（hover、已觀看標記）、冷藍深 `$glow-deep #3F86C4`（裝飾線、圖示圈）、冷藍紗 `$glow-veil ≈ #192632`（選中列的底）。只在「被看著」的時候出現 |
-| 狀態色 | 薄荷 `$mint #74DDB9`（已完成）、琥珀 `$amber #F0C36A`（草稿）、珊瑚 `$coral #FF8E8E`（載入失敗、錯誤）；資訊用冷藍。在深色底上都達 AA |
+| 狀態色 | 薄荷 `$mint #74DDB9`（已完成、已付款、付款成功）、琥珀 `$amber #F0C36A`（草稿、退費處理中）、珊瑚 `$coral #FF8E8E`（載入失敗、付款失敗、錯誤）；資訊用冷藍。在深色底上都達 AA |
 | 柔光 | `$glow-halo-sm`（進度條、播放頭）、`$glow-halo`（卡片亮燈）、`$glow-halo-lg`（大播放鈕、主要按鈕 hover）、`$glow-rise`（控制列底部的冷光）、`$glow-transition .35s` |
 | 按鈕 | 膠囊形。主要：冷藍底＋深空黑字（同一組動作只放一個）；次要：`.btn-outline-light` 純白細框；低門檻動作（免費試看）：`.btn-outline-primary` 冷藍細框 |
 | 字體 | Jost（品牌字、價格、片長、時間碼、評分）＋ Noto Sans TC（中文，Display／H1／H2 用 300 細字＋寬字距，H3 以下 500，內文 400、行高 1.8）。不用全大寫眉標、不用等寬字 |

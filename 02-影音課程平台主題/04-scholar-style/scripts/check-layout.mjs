@@ -1,12 +1,16 @@
 // 檢查每個頁面的共用區塊（<head> 共用部分、頁首、頁尾＋登入對話框＋底部 script）是否與 templates/page.html 一致
-// 頁首頁尾在每頁都完整寫一份，改範本後可以用這支確認 5 個頁面都同步了
+// 頁首頁尾在每頁都完整寫一份，改範本後可以用這支確認 10 個頁面都同步了
 // 用法：npm run check
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const pages = ['guideline.html', 'index.html', 'courses.html', 'course.html', 'learn.html']
+const pages = [
+  'guideline.html', 'index.html', 'courses.html', 'course.html', 'learn.html',
+  // 2026-11 補的 5 頁
+  'register.html', 'checkout.html', 'order-result.html', 'my-courses.html', 'orders.html',
+]
 
 // 每頁的「目前頁」標示應該指向哪個連結（null＝不標示）；aria-current 只加在目前頁本身
 const expected = {
@@ -14,7 +18,13 @@ const expected = {
   'index.html': { href: 'index.html', current: true },
   'courses.html': { href: 'courses.html', current: true },
   'course.html': { href: 'courses.html', current: false }, // 課程詳情：頁首標示「探索課程」，不加 aria-current
-  'learn.html': { href: 'learn.html', current: true },     // 學習頁：頁首標示「我的課程」
+  'learn.html': { href: 'my-courses.html', current: false }, // 學習頁：我的課程的子頁，標示「我的課程」但不加 aria-current（2026-11 改）
+  // 2026-11 補的 5 頁：註冊、購買課程、付款結果是流程頁，不標示
+  'register.html': null,
+  'checkout.html': null,
+  'order-result.html': null,
+  'my-courses.html': { href: 'my-courses.html', current: true },
+  'orders.html': { href: 'my-courses.html', current: false }, // 購買紀錄：我的課程的子頁，不加 aria-current
 }
 
 // 去掉「目前頁面」標示與每頁不同的 title／description，再比對

@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>付款結果｜Craftory 手感工藝線上學院</title>
+  <meta name="description" content="付款完成後的訂單資訊與下一步：課程已經加進「我的課程」，現在就能開始上課。設計稿 05｜瑞士國際排版。">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta name="color-scheme" content="light">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Inter Tight（英數、價格、時間、大數字）＋ Noto Sans TC（中文；900 只給首頁主標與底部 CTA） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾、登入對話框在每一頁都完整寫一份；改的時候先改這份範本，
+      再同步到 10 個 .html，最後執行 npm run check 確認都一致。
+    - 頁首：桌機是「品牌字｜主導覽｜……｜搜尋｜我的課程｜登入／註冊」；
+      992px 以下是「品牌字｜登入／註冊｜選單按鈕」，選單內是主導覽、搜尋、我的課程（桌機與選單共用同一個「我的課程」連結）。
+    - 每頁只需要調整一處「目前頁面」標示：目前頁的 <a class="nav-link"> 加 active 與 aria-current="page"
+      - index.html → 首頁；courses.html → 探索課程；my-courses.html → 我的課程
+      - 子頁只加 active，不加 aria-current：course.html（課程詳情）→ 探索課程；learn.html、orders.html → 我的課程
+      - guideline.html、register.html、checkout.html、order-result.html 不標示
+    - 登入對話框（#authModal）：頁首「登入／註冊」、課程詳情「立即購買，開始上課」與註冊頁「登入」共用。
+      觸發按鈕加 data-auth-intent="purchase" 時，js/main.js 會顯示未登入提示、把按鈕改成「登入並開始上課」，
+      並把表單送出目的地改成 checkout.html（一般情境維持 learn.html）。
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="navbar navbar-expand-lg" aria-label="主要導覽">
+        <div class="container">
+          <a class="navbar-brand site-brand" href="index.html" aria-label="Craftory 手感工藝線上學院 首頁">
+            <span class="site-brand-mark" aria-hidden="true"></span>
+            <span class="site-brand-name">Craftory</span>
+          </a>
+
+          <!-- 992px 以下：登入／註冊＋選單按鈕（桌機另一顆登入按鈕在選單最後，讓 Tab 順序與畫面一致） -->
+          <div class="site-header-quick d-flex d-lg-none align-items-center gap-2">
+            <button class="btn btn-dark btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#authModal">登入／註冊</button>
+            <button class="navbar-toggler site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="courses.html">探索課程</a></li>
+            </ul>
+            <div class="site-header-actions">
+              <form class="site-search" role="search" action="courses.html">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control" type="search" name="q" placeholder="搜尋課程、工藝或講師" aria-label="搜尋課程">
+              </form>
+              <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" href="my-courses.html">我的課程</a></li>
+              </ul>
+              <button class="btn btn-dark btn-sm d-none d-lg-inline-flex" type="button" data-bs-toggle="modal" data-bs-target="#authModal">登入／註冊</button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!--
+        付款結果（2026-11 補頁）：流程頁，不放麵包屑，頁首不標示目前頁。文案：CONTENT.md §9.12（訂單資料 §9.9）
+        入口：購買課程「確認付款」。出口：前往我的課程 → my-courses.html、開始上課 → learn.html、查看購買紀錄 → orders.html
+        版型（pages/_flow.scss）：
+        - 頁首壓在 12 條欄線上：成功圖示 → 一整句的大標題（左 8 欄）＋說明（右 4 欄，靠底對齊）
+        - 992px 以上：左 6 欄＝訂單資訊、購買內容、發票（標籤｜值兩欄對齊的資料表）；右 5 欄＝「接下來」編號清單＋按鈕＋退費提醒
+        - 992px 以下：單欄，順序同上
+        訂單編號、日期、金額、付款方式和購買紀錄第 1 筆一致。learn.html 已經學到 3-2，和「剛買完」對不上：設計稿接受這個落差
+      -->
+      <div class="container grid-guides">
+        <header class="page-header member-head result-head">
+          <i class="bi bi-check-circle result-icon" aria-hidden="true"></i>
+          <div class="row align-items-end gy-3">
+            <div class="col-lg-8">
+              <h1 class="member-title is-sentence text-phrase">付款成功，<wbr>可以開始上課了</h1>
+            </div>
+            <div class="col-lg-4">
+              <p class="page-lead">收據與發票已寄到 koen.hsu@example.com，這門課也已經加進「我的課程」。</p>
+            </div>
+          </div>
+        </header>
+      </div>
+
+      <div class="container">
+        <div class="row gy-7">
+          <div class="col-lg-6">
+            <section class="result-block is-under-head" id="order" aria-labelledby="orderTitle">
+              <h2 class="result-block-title" id="orderTitle">訂單資訊</h2>
+              <dl class="result-dl">
+                <div><dt>訂單編號</dt><dd class="num">CR-20261116-027</dd></div>
+                <div><dt>付款時間</dt><dd class="num">2026/11/16 20:41</dd></div>
+                <div><dt>付款方式</dt><dd>信用卡（末四碼 <span class="num">4242</span>）</dd></div>
+                <div><dt>付款金額</dt><dd><span class="price result-price">NT$ 2,480</span></dd></div>
+              </dl>
+            </section>
+
+            <section class="result-block" aria-labelledby="itemTitle">
+              <h2 class="result-block-title" id="itemTitle">購買內容</h2>
+              <div class="result-course">
+                <div class="img-frame result-course-img">
+                  <img src="images/course-pottery.jpg" width="1600" height="900" loading="lazy" alt="">
+                </div>
+                <div>
+                  <p class="result-course-name text-phrase">從零開始的手捏陶｜<wbr>做出第一只日用食器</p>
+                  <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">林</span><span class="visually-hidden">講師</span>林子謙</p>
+                  <ul class="checkout-facts" aria-label="課程資訊">
+                    <li>6 章 28 單元</li>
+                    <li>總長 4&nbsp;小時 20&nbsp;分</li>
+                    <li><i class="bi bi-infinity" aria-hidden="true"></i>永久觀看</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <section class="result-block" aria-labelledby="invoiceTitle">
+              <h2 class="result-block-title" id="invoiceTitle">發票</h2>
+              <dl class="result-dl">
+                <div><dt>類型</dt><dd>電子發票（會員載具）</dd></div>
+                <div><dt>發票號碼</dt><dd class="num">QK-20481736</dd></div>
+                <div><dt>寄送</dt><dd>已寄到 koen.hsu@example.com</dd></div>
+              </dl>
+            </section>
+          </div>
+
+          <div class="col-lg-5 offset-lg-1">
+            <section class="result-block result-next" id="next" aria-labelledby="nextTitle">
+              <h2 class="result-next-title" id="nextTitle">接下來</h2>
+              <ol class="result-steps">
+                <li>
+                  <span class="result-steps-no numeral" aria-hidden="true">1</span>
+                  <div>
+                    <h3>先備好材料</h3>
+                    <p>陶土 1kg、海綿、修坯刀、一張能弄髒的桌子（<a href="learn.html">完整清單可下載</a>）</p>
+                  </div>
+                </li>
+                <li>
+                  <span class="result-steps-no numeral" aria-hidden="true">2</span>
+                  <div>
+                    <h3>進度自動記住</h3>
+                    <p>關掉再回來，從上次停的那一秒繼續，不用重找。</p>
+                  </div>
+                </li>
+                <li>
+                  <span class="result-steps-no numeral" aria-hidden="true">3</span>
+                  <div>
+                    <h3>卡關有人回答</h3>
+                    <p>每個單元都有問答區，講師 72 小時內回覆。</p>
+                  </div>
+                </li>
+              </ol>
+              <div class="result-actions">
+                <a class="btn btn-primary btn-lg" href="my-courses.html">前往我的課程</a>
+                <a class="btn btn-outline-dark btn-lg" href="learn.html">開始上課</a>
+              </div>
+              <p class="purchase-note"><i class="bi bi-shield-check" aria-hidden="true"></i><span>7 天內觀看未逾 20%，可全額退費。<a href="orders.html">查看購買紀錄</a></span></p>
+            </section>
+          </div>
+        </div>
+
+        <!-- ========== 設計稿狀態示意 ========== -->
+        <section class="demo-state" aria-labelledby="demoStateTitle">
+          <p class="demo-state-tag" id="demoStateTitle">設計稿狀態示意</p>
+
+          <div class="demo-state-item">
+            <h2 class="demo-state-title">付款沒有完成時</h2>
+            <p class="text-note">付款沒有通過時，成功訊息、訂單資訊、購買內容、發票與「接下來」都換成這一段：先說明發生什麼事與應付金額，再列出可以怎麼做與兩顆按鈕（992px 以上左右並排）。</p>
+            <div class="demo-state-stage">
+              <div class="row gy-5">
+                <div class="col-lg-6">
+                  <i class="bi bi-exclamation-circle result-icon is-error" aria-hidden="true"></i>
+                  <h3 class="result-fail-title">付款沒有完成</h3>
+                  <p class="result-fail-text">發卡銀行沒有核准這筆交易，可能是額度不足或驗證碼逾時。這次沒有扣款，課程也還沒有開通。</p>
+                  <dl class="result-dl result-dl-single">
+                    <div><dt>應付金額</dt><dd><span class="price result-price">NT$ 2,480</span><span class="text-nowrap">（尚未扣款）</span></dd></div>
+                  </dl>
+                </div>
+                <div class="col-lg-5 offset-lg-1">
+                  <div class="result-block">
+                    <h4 class="result-block-title">你可以這樣做</h4>
+                    <ul class="result-todo">
+                      <li>確認卡片額度後，重新付款一次</li>
+                      <li>改用 LINE Pay 或 Apple Pay 付款</li>
+                      <li>還是無法付款時，請聯繫發卡銀行</li>
+                    </ul>
+                    <div class="result-actions">
+                      <a class="btn btn-primary btn-lg" href="checkout.html">重新付款</a>
+                      <a class="btn btn-outline-dark btn-lg" href="course.html">回到課程介紹</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container grid-guides-dark">
+        <div class="row gy-5">
+          <div class="col-lg-4">
+            <a class="site-brand" href="index.html" aria-label="Craftory 手感工藝線上學院 首頁">
+              <span class="site-brand-mark" aria-hidden="true"></span>
+              <span class="site-brand-name">Craftory</span>
+            </a>
+            <p class="site-footer-name">Craftory 手感工藝線上學院</p>
+            <p class="site-footer-lead">專為「想養成第二專長、但一直沒開始」的上班族打造的工藝影音學院</p>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2 offset-lg-2">
+            <h2 class="site-footer-title">探索課程</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="courses.html">陶藝</a></li>
+              <li><a href="courses.html">皮革</a></li>
+              <li><a href="courses.html">木工</a></li>
+              <li><a href="courses.html">織品染繡</a></li>
+              <li><a href="courses.html">金工銀飾</a></li>
+              <li><a href="courses.html">蠟燭香氛</a></li>
+              <li><a href="courses.html">紙藝絹印</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">學習保障</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="index.html#guarantee">7 天不滿意退費</a></li>
+              <li><a href="index.html#guarantee">一次購買永久觀看</a></li>
+              <li><a href="index.html#guarantee">卡關有人回答</a></li>
+            </ul>
+          </div>
+          <!-- 關於我們、成為講師、聯絡我們尚未設計頁面：不帶 href 的佔位連結 -->
+          <div class="col-md-4 col-lg-2">
+            <h2 class="site-footer-title">關於 Craftory</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a>關於我們</a></li>
+              <li><a>成為講師</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 Craftory 手感工藝線上學院｜<wbr>本站為課程設計稿範例，課程、講師與評價皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!--
+    登入對話框：設計稿沒有後端，送出就前往學習頁（視為登入成功）。
+    串接後端時：把 form 的 action 換成登入 API，成功後再導向原本要去的頁面。
+  -->
+  <div class="modal fade auth-modal" id="authModal" tabindex="-1" aria-labelledby="authModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="authModalTitle">登入 Craftory</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body">
+          <!-- 從「立即購買，開始上課」開啟時才顯示（js/main.js 第 1 項） -->
+          <p class="auth-notice" data-auth-notice hidden>
+            <i class="bi bi-lock-fill" aria-hidden="true"></i>
+            <span>登入後就能開始上課，馬上註冊只要 30 秒。</span>
+          </p>
+          <form class="auth-form" action="learn.html">
+            <div class="mb-3">
+              <label class="form-label" for="authEmail">電子郵件</label>
+              <input class="form-control" id="authEmail" type="email" name="email" placeholder="mail@example.com" autocomplete="email">
+            </div>
+            <div class="mb-1">
+              <label class="form-label" for="authPassword">密碼</label>
+              <input class="form-control" id="authPassword" type="password" name="password" placeholder="至少 8 碼" autocomplete="current-password">
+            </div>
+            <div class="d-flex justify-content-end mb-3">
+              <a class="btn btn-text btn-sm">忘記密碼？</a>
+            </div>
+            <button class="btn btn-primary w-100" type="submit" data-auth-submit>登入</button>
+          </form>
+          <p class="auth-switch">還沒有帳號？<a class="btn btn-text" href="register.html">立即註冊</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

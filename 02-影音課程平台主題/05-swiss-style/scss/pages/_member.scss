@@ -1,0 +1,496 @@
+// ============================================================
+// 2026-11 補頁：會員端（我的課程 my-courses.html、購買紀錄 orders.html）
+// 以及 5 個補頁共用的「海報式頁首」.member-head／.member-title（註冊、購買課程、付款結果也用）
+//
+// 排版語言同課程列表：大標題壓在 12 條欄線上（.container.grid-guides）、層級只靠字級、字重與線。
+// 不用卡片：課程與訂單都是「表格式的列」，大字數字＋1px 細線分隔，每一欄都落在 12 欄網格上。
+// hover／focus 只改顏色與底線，不改尺寸；要看的資訊（進度、上次看到、備註）都常駐顯示。
+// ============================================================
+
+// ---------- 海報式頁首（5 個補頁共用） ----------
+// <div class="container grid-guides">
+//   <header class="page-header member-head">（麵包屑）<div class="row align-items-end">標題｜說明</div></header>
+// </div>
+// 直接沿用課程列表的頁首（pages/_courses.scss 的 .courses-header、.courses-title），不另抄一份：
+// 課程列表的大標題調整時，5 個補頁會一起變。這裡只寫補頁才有的部分
+.member-head {
+  @extend .courses-header; // 底部 2px 墨黑線、麵包屑與說明的間距
+}
+// 超大標題：同課程列表的「探索課程」（56 → 80 → 120px，Noto Sans TC 900）
+.member-title {
+  @extend .courses-title;
+
+  // 一整句的標題（付款結果）：小一階、行高放寬，讓兩行之間不擠
+  &.is-sentence {
+    font-size: 2.25rem;
+    line-height: 1.15;
+
+    @include media-breakpoint-up(md) { font-size: 3.5rem; }
+    @include media-breakpoint-up(xl) { font-size: 4.5rem; }
+  }
+}
+// 說明下方的文字連結（我的課程 →「購買紀錄」）
+.member-head-link {
+  margin-top: map-get($spacers, 2);
+}
+
+// ---------- 我的課程：統計（大字數字＋上緣 1px 墨黑線，對齊 12 欄） ----------
+.member-stats {
+  margin-top: map-get($spacers, 6);
+  margin-bottom: 0;
+  row-gap: map-get($spacers, 3);
+
+  // 上緣的線畫在 dt 上：只占欄的內容寬度（欄間距留白），起點對齊欄線
+  dt {
+    padding-top: map-get($spacers, 2);
+    border-top: $rule-thin solid $ink;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+  }
+  dd {
+    display: flex;
+    align-items: baseline;
+    gap: .25rem;
+    margin: map-get($spacers, 2) 0 0;
+    font-weight: $font-weight-bold;
+  }
+  .numeral {
+    font-size: 2.75rem;
+
+    @include media-breakpoint-up(md) { font-size: 4rem; }
+    @include media-breakpoint-up(xl) { font-size: 5rem; }
+  }
+}
+
+// ---------- 我的課程：篩選分頁籤（沿用 .nav-underline，按鈕是 data-filter） ----------
+.member-tabs {
+  margin-bottom: 0;
+
+  .nav-link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: .375rem;
+  }
+  .num {
+    font-size: $font-size-sm;
+  }
+}
+
+// ---------- 我的課程：一列一門 ----------
+// 992px 以上：四段各 3 欄（封面｜狀態、課名、講師｜進度｜上次看到＋按鈕），每一段的起點都落在欄線上
+// 768～991px：封面 1–4 欄（跨兩列）｜右邊 8 欄上排課名、下排進度與上次看到
+// 768px 以下：小封面在課名左側，進度、上次看到與按鈕在下方
+.mycourse-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: $rule-heavy solid $rule;
+}
+.mycourse {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: map-get($spacers, 3);
+  padding-block: map-get($spacers, 4);
+  border-top: $rule-thin solid $hairline;
+
+  &:first-child {
+    border-top: 0;
+  }
+  p {
+    margin: 0;
+  }
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat($grid-columns, minmax(0, 1fr));
+    column-gap: $grid-gutter-width;
+    row-gap: map-get($spacers, 4);
+    padding-block: map-get($spacers, 5);
+  }
+}
+.mycourse-img {
+  aspect-ratio: 16 / 9;
+}
+.mycourse-progress,
+.mycourse-resume {
+  grid-column: 1 / -1;
+}
+@include media-breakpoint-up(md) {
+  .mycourse-img      { grid-column: 1 / span 4; grid-row: 1 / span 2; align-self: start; }
+  .mycourse-main     { grid-column: 5 / span 8; }
+  .mycourse-progress { grid-column: 5 / span 4; }
+  .mycourse-resume   { grid-column: 9 / span 4; }
+}
+@include media-breakpoint-up(lg) {
+  .mycourse-img      { grid-column: 1 / span 3; grid-row: 1; }
+  .mycourse-main     { grid-column: 4 / span 3; }
+  .mycourse-progress { grid-column: 7 / span 3; }
+  .mycourse-resume   { grid-column: 10 / span 3; }
+}
+.mycourse-tags {
+  margin-bottom: map-get($spacers, 2) !important;
+}
+.mycourse-title {
+  margin-bottom: map-get($spacers, 2);
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.45;
+
+  @include media-breakpoint-up(md) {
+    font-size: $h3-font-size;
+  }
+}
+// 進度：大數字（裝飾，aria-hidden；文字版在進度條下方）→ 進度條 → 文字
+.mycourse-figure {
+  margin-bottom: map-get($spacers, 2) !important;
+  font-size: 2.5rem;
+
+  span {
+    font-size: .5em;
+    vertical-align: .75em;
+    margin-left: .05em;
+  }
+}
+.mycourse-progress-text {
+  margin-top: map-get($spacers, 2) !important;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  font-variant-numeric: tabular-nums;
+}
+// 上次看到：標籤 → 單元＋時間 → 按鈕（按鈕貼齊這一欄的底部，三列的按鈕對齊同一條線）
+.mycourse-resume {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  .btn {
+    margin-top: map-get($spacers, 3);
+
+    @include media-breakpoint-down(md) {
+      align-self: stretch;
+    }
+    @include media-breakpoint-up(lg) {
+      margin-top: auto;
+    }
+  }
+}
+.mycourse-label {
+  margin-bottom: map-get($spacers, 1) !important;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+}
+.mycourse-unit {
+  font-weight: $font-weight-medium;
+  line-height: 1.6;
+}
+.mycourse-time {
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+}
+// 已完課：✓＋完課日期，占「上次看到」的位置
+.mycourse-done {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-weight: $font-weight-medium;
+}
+.mycourse-unit,
+.mycourse-time,
+.mycourse-done {
+  @include media-breakpoint-up(lg) {
+    padding-bottom: map-get($spacers, 1);
+  }
+}
+// 已完課：降一階。封面淡一點、進度條改墨黑（紅色只留給還在學的課）；文字對比不變
+.mycourse.is-done {
+  .mycourse-img img {
+    opacity: .55;
+  }
+  .progress-bar {
+    background-color: $ink;
+  }
+}
+
+// 狀態示意「還沒有任何課程時」：保留的標題＋購買紀錄連結
+.member-demo-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: map-get($spacers, 2) map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 4);
+}
+.member-demo-title {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: $font-weight-black;
+  line-height: 1;
+  letter-spacing: -.02em;
+}
+
+// ---------- 購買紀錄：結果數 ----------
+.member-count {
+  margin: 0;
+  padding-bottom: map-get($spacers, 3);
+  font-weight: $font-weight-bold;
+
+  .num {
+    font-size: 1.5rem;
+    letter-spacing: $letter-spacing-tight;
+  }
+}
+
+// ---------- 購買紀錄：訂單表格 ----------
+// 1200px 以上是真正的表格：表頭 1px 墨黑線、每筆 1px 細線、最後 2px 墨黑線收尾；金額靠右、等寬數字
+// 1200px 以下：每筆改成直排，「欄名｜值」兩欄對齊（欄名來自 td 的 data-label），整頁不會水平捲動
+// （7 欄擠在 992px 會讓付款方式斷成三行，所以表格從 1200px 才開始）
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: $rule-heavy solid $rule;
+  border-bottom: $rule-heavy solid $rule;
+  font-size: .9375rem;
+
+  th,
+  td {
+    padding: map-get($spacers, 3) map-get($spacers, 3) map-get($spacers, 3) 0;
+    vertical-align: top;
+    text-align: left;
+  }
+  th:last-child,
+  td:last-child {
+    padding-right: 0;
+  }
+  thead th {
+    padding-block: .75rem;
+    border-bottom: $rule-thin solid $ink;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    white-space: nowrap;
+  }
+  tbody tr + tr {
+    border-top: $rule-thin solid $hairline;
+  }
+  .num {
+    white-space: nowrap;
+  }
+}
+.orders-amount {
+  text-align: right !important;
+  white-space: nowrap;
+}
+td.orders-amount {
+  font-size: 1.0625rem;
+}
+.orders-course {
+  font-weight: $font-weight-medium;
+  line-height: 1.5;
+}
+.orders-thumb {
+  aspect-ratio: 16 / 9;
+  width: 5rem;
+  margin-bottom: map-get($spacers, 2);
+}
+.order-status {
+  white-space: nowrap;
+
+  // 付款失敗：瑞士紅框線＋紅字＋叉號（紅字對純白 4.88:1）；其他狀態見 HTML 的 .tag 修飾
+  &.is-failed {
+    border-color: $swiss-red;
+    color: $swiss-red;
+  }
+}
+.order-note {
+  margin: map-get($spacers, 2) 0 0;
+  max-width: 16em;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  line-height: 1.6;
+}
+.orders-actions {
+  .btn + .btn {
+    margin-top: map-get($spacers, 1);
+  }
+}
+
+@include media-breakpoint-up(xl) {
+  .orders-table {
+    td {
+      padding-block: map-get($spacers, 4);
+    }
+  }
+  // 課程欄：小封面在課名左側
+  td.orders-course {
+    display: flex;
+    align-items: flex-start;
+    gap: map-get($spacers, 3);
+    min-width: 16rem;
+  }
+  .orders-thumb {
+    flex: 0 0 auto;
+    margin: .125rem 0 0;
+  }
+  .orders-actions {
+    width: 1%; // 依按鈕寬度收縮
+    white-space: nowrap;
+
+    .btn {
+      display: flex;
+    }
+    .btn-text {
+      min-height: 2.25rem;
+    }
+  }
+  // 狀態欄的備註比較長、右邊沒有按鈕時（狀態示意「退費處理中」）：備註放寬一些，不擠成 4 行。
+  // 再寬（24em）會在 1200px 把付款方式的「LINE Pay」擠成兩行，所以停在 20em
+  .orders-status-wide .order-note {
+    max-width: 20em;
+  }
+}
+
+@include media-breakpoint-down(xl) {
+  .orders-table {
+    thead {
+      @include visually-hidden;
+    }
+    tbody {
+      display: block;
+    }
+    // 每筆直排；課程（order: -1）排在最上面
+    tr {
+      display: flex;
+      flex-direction: column;
+      padding-block: map-get($spacers, 3);
+    }
+    // 值一律從第 2 欄起排（左邊留欄名寬度），內容是文字＋標籤＋備註都不會被拆開
+    td {
+      display: block;
+      position: relative;
+      padding: .3125rem 0 .3125rem calc(5.5rem + #{map-get($spacers, 3)});
+
+      // 欄名：小字粗體、石墨灰，固定在左欄
+      &[data-label]::before {
+        content: attr(data-label);
+        position: absolute;
+        top: .3125rem;
+        left: 0;
+        width: 5.5rem;
+        color: $body-secondary-color;
+        font-size: $small-font-size;
+        font-weight: $font-weight-bold;
+        line-height: 1.85;
+      }
+    }
+    // 課程放在每筆最上面一列：小封面＋課名，不顯示欄名
+    td.orders-course {
+      display: grid;
+      grid-template-columns: 5.5rem minmax(0, 1fr);
+      gap: map-get($spacers, 3);
+      align-items: start;
+      order: -1;
+      padding: .3125rem 0 map-get($spacers, 2);
+      font-size: 1.0625rem;
+      font-weight: $font-weight-bold;
+
+      &::before {
+        display: none;
+      }
+    }
+    .orders-thumb {
+      width: auto;
+      margin: .25rem 0 0;
+    }
+    .orders-amount {
+      text-align: left !important;
+    }
+    .orders-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: map-get($spacers, 2) map-get($spacers, 4);
+      padding-top: map-get($spacers, 2);
+      padding-left: calc(5.5rem + #{map-get($spacers, 3)});
+
+      &.is-empty {
+        display: none;
+      }
+      .btn + .btn {
+        margin-top: 0;
+      }
+    }
+    .order-note {
+      max-width: none;
+    }
+  }
+}
+
+// 768～1199px：每筆對齊 12 欄，封面與課名在左 4 欄，「欄名｜值」排在右 8 欄
+@include media-breakpoint-between(md, xl) {
+  .orders-table {
+    tr {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      // 右欄最多 6 列（編號、日期、金額、付款方式、狀態、操作）；封面比較高時，多出的高度由最後的 1fr 吸收，列距不會被撐開
+      grid-template-rows: repeat(6, auto) 1fr;
+      column-gap: $grid-gutter-width;
+      align-content: start;
+      padding-block: map-get($spacers, 4);
+    }
+    td {
+      grid-column: 5 / -1;
+    }
+    td.orders-course {
+      display: block;
+      grid-column: 1 / span 4;
+      grid-row: 1 / -1;
+      align-self: start;
+      padding: .375rem 0 0;
+    }
+    .orders-thumb {
+      margin: 0 0 map-get($spacers, 3);
+    }
+  }
+}
+
+// ---------- 購買紀錄：退費說明 ----------
+// 區塊標題列的寫法（上緣 2px 墨黑線，左標題、右內文）；規則用大字，不藏在小字裡
+.orders-refund {
+  margin-top: map-get($spacers, 7);
+  padding-top: map-get($spacers, 4);
+  border-top: $rule-heavy solid $rule;
+
+  @include media-breakpoint-up(lg) {
+    margin-top: map-get($spacers, 8);
+  }
+}
+.orders-refund-title {
+  display: flex;
+  align-items: baseline;
+  gap: .625rem;
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: $font-weight-black;
+  line-height: 1.25;
+
+  .bi {
+    font-size: .8em;
+  }
+  @include media-breakpoint-up(md) {
+    font-size: 2.25rem;
+  }
+}
+.orders-refund-rule {
+  max-width: 24em;
+  margin-bottom: map-get($spacers, 3);
+  font-size: 1.25rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.6;
+
+  @include media-breakpoint-up(md) {
+    font-size: 1.5rem;
+  }
+}
+.orders-refund-more {
+  max-width: 32em;
+  margin: 0;
+  color: $body-secondary-color;
+}

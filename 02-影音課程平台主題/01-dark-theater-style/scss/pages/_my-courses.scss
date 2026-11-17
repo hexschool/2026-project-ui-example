@@ -1,0 +1,270 @@
+// ============================================================
+// 我的課程 my-courses.html（class 前綴 mc-，2026-11 補）
+// 「片單」：一門課一列，大封面在左、課程資訊在右，列之間用髮絲線；不做成卡片網格。
+// 學習中的課亮著（封面全亮，外圈一道冷藍細光），已完課的暗一階（封面熄燈、進度條改中性色）
+// 992px 以上：標題區右側放統計與「購買紀錄」；768px 以下：封面在上、資訊在下
+// ============================================================
+
+// ---------- 標題區 ----------
+.mc-head {
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: map-get($spacers, 5);
+
+    > nav {
+      grid-column: 1 / -1;
+    }
+  }
+}
+.mc-head-side {
+  display: flex;
+  flex-direction: column;
+  gap: map-get($spacers, 3);
+  margin-top: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    align-items: flex-end;
+    margin-top: 0;
+  }
+  // 992px 以下「購買紀錄」按鈕不撐滿整列
+  > .btn {
+    align-self: flex-start;
+
+    @include media-breakpoint-up(lg) {
+      align-self: auto;
+    }
+  }
+}
+// 統計：Jost 大數字＋單位，項目之間細直線
+.mc-stats {
+  display: flex;
+  margin: 0;
+
+  > div {
+    padding-inline: map-get($spacers, 4);
+
+    @include media-breakpoint-down(sm) {
+      flex: 1 1 0;
+      padding-inline: map-get($spacers, 3);
+    }
+  }
+  > div:first-child {
+    padding-left: 0;
+  }
+  > div:last-child {
+    padding-right: 0;
+  }
+  > div + div {
+    border-left: 1px solid $line;
+  }
+  dt {
+    color: $body-secondary-color;
+    font-size: $small-font-size;
+    font-weight: $font-weight-normal;
+    letter-spacing: $letter-spacing-label;
+    white-space: nowrap;
+  }
+  dd {
+    order: -1;
+    margin: 0;
+    color: $body-secondary-color;
+    font-size: $font-size-sm;
+    white-space: nowrap;
+  }
+  > div {
+    display: flex;
+    flex-direction: column;
+  }
+}
+.mc-stats-num {
+  margin-right: .25rem;
+  color: $white;
+  font-size: 2rem;
+  font-weight: $font-weight-light;
+  line-height: 1.2;
+
+  @include media-breakpoint-down(sm) {
+    font-size: 1.625rem;
+  }
+}
+
+// ---------- 分頁籤（篩選）：沿用學習頁的底線分頁外觀（.nav-tabs），這裡是 button＋aria-pressed ----------
+.mc-filter {
+  margin-bottom: 0;
+  border-bottom: 1px solid $line;
+
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: none;
+  }
+}
+.mc-filter-count {
+  color: $body-tertiary-color;
+  font-size: $small-font-size;
+}
+.mc-filter .nav-link.active .mc-filter-count {
+  color: $glow;
+}
+
+// ---------- 片單 ----------
+.mc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  // 篩選後被隱藏的項目不算：只有「前面還有看得到的項目」的那一列才畫上方髮絲線
+  > li:not([hidden]) ~ li:not([hidden]) {
+    border-top: 1px solid $line;
+  }
+}
+.mc-item {
+  display: grid;
+  gap: map-get($spacers, 4);
+  padding-block: map-get($spacers, 5);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: center;
+    column-gap: map-get($spacers, 5);
+  }
+  @include media-breakpoint-up(xl) {
+    column-gap: map-get($spacers, 6);
+  }
+}
+.mc-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: $border-radius-lg;
+  background-color: $aisle;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+// 學習中：亮著（一圈冷藍細框＋外擴柔光，常駐，不是 hover 才出現）
+.mc-item.is-learning .mc-media {
+  box-shadow: $glow-halo-soft;
+}
+// 已完課：暗一階（封面熄燈並降低彩度）
+.mc-item.is-done .mc-media img {
+  filter: brightness($media-off) saturate(.6);
+}
+
+.mc-body {
+  min-width: 0;
+
+  .chip {
+    margin-bottom: .75rem;
+  }
+}
+.mc-title {
+  margin-bottom: .75rem;
+  color: $white;
+  font-size: 1.375rem;
+  font-weight: $font-weight-light;
+  line-height: 1.5;
+  letter-spacing: .06em;
+
+  @include media-breakpoint-up(xl) {
+    font-size: 1.625rem;
+  }
+}
+.mc-item.is-done .mc-title {
+  color: $mist;
+}
+.mc-teacher {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  margin-bottom: map-get($spacers, 4);
+  color: $mist;
+  font-size: $font-size-sm;
+}
+// 進度：進度條＋進度文字（同學習頁側欄）
+.mc-progress {
+  max-width: 26rem;
+  margin-bottom: map-get($spacers, 3);
+
+  .progress {
+    margin-bottom: .5rem;
+  }
+  .progress-bar {
+    box-shadow: $glow-halo-sm;
+  }
+  p {
+    margin: 0;
+    color: $white;
+    font-size: $font-size-sm;
+  }
+}
+// 已完課：進度條改中性色（銀幕灰），不發光
+.mc-item.is-done .mc-progress .progress-bar {
+  background-color: $silver;
+  box-shadow: none;
+}
+// 上次看到：冷藍小標＋單元名稱＋時間碼（同首頁「正在播放」小卡的語氣）；已完課改成完課日期
+.mc-last {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .25rem .75rem;
+  max-width: 34rem;
+  margin: 0 0 map-get($spacers, 4);
+  color: $mist;
+  font-size: $font-size-sm;
+}
+.mc-last-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  color: $glow;
+  font-size: .75rem;
+  letter-spacing: $letter-spacing-label;
+  white-space: nowrap;
+}
+.mc-last-unit {
+  color: $white;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.mc-last .timecode {
+  color: $body-secondary-color;
+}
+.mc-finished {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0 0 map-get($spacers, 4);
+  color: $mist;
+  font-size: $font-size-sm;
+
+  .bi {
+    color: $mint;
+  }
+}
+
+// ---------- 狀態示意：還沒有任何課程時 ----------
+.mc-demo-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  margin-bottom: map-get($spacers, 4);
+  padding-bottom: map-get($spacers, 3);
+  border-bottom: 1px solid $line;
+}
+.mc-demo-title {
+  margin: 0;
+  font-size: $h3-font-size;
+  font-weight: $font-weight-light;
+  letter-spacing: $letter-spacing-heading;
+}

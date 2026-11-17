@@ -1,5 +1,5 @@
 // 檢查每個頁面的共用區塊（<head> 共用部分、頁首、頁尾＋登入對話框＋底部 script）是否與 templates/page.html 一致
-// 頁首頁尾在每頁都完整寫一份，改範本後可以用這支確認 5 個頁面都同步了
+// 頁首頁尾在每頁都完整寫一份，改範本後可以用這支確認 10 個頁面都同步了
 // 用法：npm run check
 import fs from 'node:fs'
 import path from 'node:path'
@@ -8,14 +8,19 @@ import { fileURLToPath } from 'node:url'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const pages = fs.readdirSync(root).filter((f) => f.endsWith('.html')).sort()
 
-// 每頁頁首「目前頁」應該指向的連結（guideline.html 不標示）
-// course.html 標示「探索課程」但不加 aria-current；learn.html 標示「我的課程」（選單裡與桌機右側各一個）
+// 每頁頁首「目前頁」應該指向的連結（guideline.html、register.html、checkout.html、order-result.html 不標示）
+// my-courses.html 標示「我的課程」（選單裡與桌機右側各一個）；
+// course.html 標示「探索課程」、learn.html 與 orders.html 標示「我的課程」，這三頁都不加 aria-current
 const expectedNav = {
   'index.html': 'index.html',
   'courses.html': 'courses.html',
   'course.html': 'courses.html',
-  'learn.html': 'learn.html',
+  'my-courses.html': 'my-courses.html',
+  'learn.html': 'my-courses.html',
+  'orders.html': 'my-courses.html',
 }
+// 標示目前頁但不加 aria-current 的子頁
+const noCurrent = ['course.html', 'learn.html', 'orders.html']
 
 // 去掉「目前頁面」標示與每頁不同的 title／description，再比對
 const normalize = (html) =>
@@ -46,10 +51,12 @@ for (const page of pages) {
   if (unique.length > 1) problems.push(`頁首有 ${unique.length} 種目前頁連結（${unique.join('、')}）`)
   if (expected && unique[0] !== expected) problems.push(`頁首目前頁應為 ${expected}${unique[0] ? `，目前是 ${unique[0]}` : '，目前沒有標示'}`)
   if (!expected && unique.length) problems.push(`這頁不需要標示目前頁，但標了 ${unique[0]}`)
-  // aria-current 只給「目前頁本身」：course.html 標探索課程但不加
+  // aria-current 只給「目前頁本身」：course.html 標探索課程、learn.html 與 orders.html 標我的課程，但都不加
+  // normalize() 比對範本前會拿掉 aria-current，不標示目前頁的頁面要在這裡另外擋
   const current = (header.match(/aria-current="page"/g) || []).length
-  if (page === 'course.html' && current) problems.push('course.html 的頁首不加 aria-current')
-  if (['index.html', 'courses.html', 'learn.html'].includes(page) && current !== activeHrefs.length) problems.push('目前頁的連結都要加 aria-current="page"')
+  if (!expected && current) problems.push('這頁不標示目前頁，但頁首有 aria-current')
+  if (noCurrent.includes(page) && current) problems.push(`${page} 的頁首不加 aria-current`)
+  if (expected && !noCurrent.includes(page) && current !== activeHrefs.length) problems.push('目前頁的連結都要加 aria-current="page"')
   console.log(`${problems.length ? '✗' : '✓'} ${page}${problems.length ? '：' + problems.join('；') : ''}`)
   if (problems.length) failed++
 }
