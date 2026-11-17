@@ -87,7 +87,7 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 - **假資料直接寫在 HTML**：課程、單元、進度的數字都寫死在頁面裡，來源是主題層的 `CONTENT.md`（§1～§8 Notion 原文、§9 補充資料）。同一份資料會出現在多頁，例如手捏陶的 28 個單元同時在課程詳情（未購買與已購買兩份）與學習頁側欄，學習進度 14／28 在學習頁側欄、手機抽屜按鈕與 Guideline，改動時要多頁同步。
 - **JS**：`js/main.js` 只做六件事：登入對話框依觸發按鈕（`data-auth-context="purchase"`）顯示未登入提示、換主要按鈕文字，並把送出目的地換成 `checkout.html`；關閉鎖定提示後捲到購買卡（`data-dismiss-to`）；啟用進度條上「上次看到 07:18」的 tooltip；學習頁側欄「全部收合」（`data-collapse-all`）；課程列表依 `?craft=` 預先選中分類；我的課程依學習狀態篩選（`data-filter-list`／`data-filter`，同電商的寫法）。其他互動（選單、分頁、Accordion、下拉、Offcanvas、Modal、Toast、願望清單切換）都靠 Bootstrap 的 `data-bs-*`。
 - **換行與空白**：課程名稱的「｜」前半段包在 `.text-nowrap` 裡、後面接 `<wbr>`，只會在「｜」之後換行；短標題用 `.text-phrase`（`word-break: keep-all`）＋ `<wbr>` 標出詞組斷點；數字與單位之間用 `&nbsp;`（`4&nbsp;小時&nbsp;20&nbsp;分`、`NT$&nbsp;2,480`）。章名「第 1 章」與章名之間是 Notion 原文的全形空白，不要刪。
-- **表單**：設計稿沒有後端，表單用 GET 送到下一頁。登入對話框用 `<form action="learn.html">` 直接前往學習頁（視為登入成功），從「立即購買」開啟時改送到 `checkout.html`；註冊送到購買課程、購買課程送到付款結果；課程問答送出回到本頁。新頁的密碼、Email、卡號欄位不加 `name`（避免出現在網址），只有付款方式的 radio 有 `name="payment"`。登入對話框是既有元件，電子郵件、密碼欄位帶 `name="email"`、`name="password"`，送出後網址會帶上這兩個值（例如 `checkout.html?email=…&password=…`）；補頁時原頁只改指定的連結，所以這一輪不改，列為已知例外（規格 §2.4）。串接後端時改用 `method="post"`，或統一修整既有頁時拿掉這兩個 `name`。
+- **表單**：設計稿沒有後端，表單用 GET 送到下一頁。登入對話框用 `<form action="learn.html">` 直接前往學習頁（視為登入成功），從「立即購買」開啟時改送到 `checkout.html`；註冊送到購買課程、購買課程送到付款結果；課程問答送出回到本頁。新頁的密碼、Email、卡號欄位不加 `name`（避免出現在網址），只有付款方式的 radio 有 `name="payment"`。登入對話框的電子郵件、密碼欄位原本帶 `name="email"`、`name="password"`，送出後網址會帶上這兩個值（例如 `checkout.html?email=…&password=…`），補頁時列為已知例外；2026-11-17 已拿掉（使用者同意，規格 §2.4），改在 `templates/page.html` 再同步到 10 頁。串接後端時改用 `method="post"` 並補上 `name`。
 
 ## 樣式架構
 

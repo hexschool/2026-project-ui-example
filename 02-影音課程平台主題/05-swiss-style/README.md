@@ -107,7 +107,7 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
   6. 我的課程的分頁籤：依學習狀態篩選（`data-filter-list` 指向清單、按鈕的 `data-filter` 對照項目的 `data-status`），切換 `.active` 與 `aria-pressed`，不符合的項目加 `hidden`。
 - **播放器**：沒有真的影片。`<img>` 當畫面，播放鈕、控制列、進度條都是 HTML／CSS；播放速度、字幕是 Bootstrap Dropdown，點了不會改變畫面。進度條用 CSS 變數 `--played`、`--buffered`、`--mark` 設定位置。
 - **換行與空白**：課程名稱、標題用 `.text-phrase`＋`<wbr>` 標出詞組斷點（課程名稱在「｜」之後），中文詞不會被拆開；數字與單位之間用 `&nbsp;`（「4&nbsp;小時 20&nbsp;分」）。
-- **表單**：設計稿沒有後端，表單用 GET 送到下一頁。登入對話框用 `<form action="learn.html">` 直接前往學習頁，從購買情境開啟時改送到 `checkout.html`；註冊送到購買課程、購買課程送到付款結果；課程問答送出後回到本頁；篩選只改變選中狀態。新頁的密碼、Email、卡號欄位不加 `name`（避免出現在網址），只有付款方式的 radio 有 `name="payment"`；串接後端時改用 `method="post"` 並補上 `name`。
+- **表單**：設計稿沒有後端，表單用 GET 送到下一頁。登入對話框用 `<form action="learn.html">` 直接前往學習頁，從購買情境開啟時改送到 `checkout.html`；註冊送到購買課程、購買課程送到付款結果；課程問答送出後回到本頁；篩選只改變選中狀態。新頁的密碼、Email、卡號欄位不加 `name`（避免出現在網址），只有付款方式的 radio 有 `name="payment"`。登入對話框的電子郵件、密碼欄位原本帶 `name="email"`、`name="password"`，補頁時列為已知例外；2026-11-17 已拿掉（使用者同意，規格 §2.4），改在 `templates/page.html` 再同步到 10 頁，送出後網址不會帶上帳號密碼。串接後端時改用 `method="post"` 並補上 `name`。
 
 ## 樣式架構
 
