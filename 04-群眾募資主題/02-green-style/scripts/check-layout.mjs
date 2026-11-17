@@ -1,5 +1,5 @@
 // 檢查每個頁面的共用區塊（<head> 共用部分、頁首、頁尾、底部 script）是否與 templates/page.html 一致
-// 頁首頁尾在每頁都完整寫一份，改範本後可以用這支確認 5 個頁面都同步了
+// 頁首頁尾在每頁都完整寫一份，改範本後可以用這支確認 10 個頁面都同步了
 // 用法：npm run check
 import fs from 'node:fs'
 import path from 'node:path'
@@ -25,13 +25,19 @@ const blocks = {
 }
 const pick = (html, [re]) => normalize((html.match(re) || [''])[0])
 
-// 頁首「目前頁」對應：專案細節標示「探索專案」（只加 active，不加 aria-current）；Guideline 不標示
+// 頁首「目前頁」對應：專案細節標示「探索專案」、贊助紀錄詳情標示「我的島造」（兩者都只加 active，不加 aria-current）；
+// Guideline 與 2026-11 補的登入、註冊、贊助結帳、贊助成功（流程頁）不標示
 const expectedNav = {
   'index.html': 'index.html',
   'projects.html': 'projects.html',
   'project.html': 'projects.html',
   'account.html': 'account.html',
+  'backing.html': 'account.html',
   'guideline.html': null,
+  'login.html': null,
+  'register.html': null,
+  'checkout.html': null,
+  'order-result.html': null,
 }
 
 const template = fs.readFileSync(path.join(root, 'templates/page.html'), 'utf8')

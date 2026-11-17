@@ -10,7 +10,7 @@
 1. **wireframe 只提供資訊架構與版型**：頁面有哪些、區塊順序、桌機欄數、元件、互動與狀態規則。
 2. 這份 wireframe 是一套**有自己視覺風格的高保真稿**（奶油底、磚紅、深夜色、襯線標題、藥丸按鈕）。它的配色、字體、圓角都**不是規格**，三套風格各自重新設計，見 `WIREFRAME_SPEC.md` §0.1。
 3. **文案以 Notion 為唯一來源**，整理在上一層的 [`../CONTENT.md`](../CONTENT.md)，逐字使用。wireframe 有一些 Notion 沒有的文字（例如首頁的平台數字 NT$ 14.2 億、各區塊的英文眉標、延遲原因說明），對照表在 `WIREFRAME_SPEC.md` §6；兩者不一致時**以 Notion 為準**。
-4. 本次必做 5 頁：設計 Guideline、首頁、專案列表、專案細節與贊助方案選擇、個人頁面。wireframe 剛好就是這 5 個頁面區塊。
+4. 每套共 10 頁。Notion 規定的 5 頁（設計 Guideline、首頁、專案列表、專案細節與贊助方案選擇、個人頁面）剛好就是 wireframe 的 5 個頁面區塊；2026-11 補的 5 頁（登入、註冊、贊助結帳、贊助成功、贊助紀錄詳情）**wireframe 沒有、也沒有截圖**，版型直接看 `WIREFRAME_SPEC.md` §3.05～3.09，文案看 `../CONTENT.md` 附錄 B.7～B.12。提案者後台與管理員後台仍是第二階段，不做。
 5. 圖片清單在 [`../IMAGES.md`](../IMAGES.md)；每套風格的規範與新增步驟在 [`../README.md`](../README.md)。
 
 ## 怎麼瀏覽
@@ -38,7 +38,7 @@
 | `<頁面>.png` | 預設畫面（設計註隱藏） |
 | `<頁面>-notes.png` | 打開「顯示設計標註」，可以看到每個設計註在哪個區塊 |
 
-頁面名稱：`guideline`、`home`、`projects`、`project`、`account`，共 10 張。截圖包含 wireframe 的設計稿工具列、頁首與頁尾（實作時這些要依規格改掉，見 `WIREFRAME_SPEC.md` §0.2）。
+頁面名稱：`guideline`、`home`、`projects`、`project`、`account`，共 10 張（2026-11 補的 5 頁沒有截圖）。截圖包含 wireframe 的設計稿工具列、頁首與頁尾（實作時這些要依規格改掉，見 `WIREFRAME_SPEC.md` §0.2）。
 
 重新截圖（Playwright 的 headless shell，不要用 Google Chrome.app，以免 Dock 圖示跳動）：
 
@@ -64,7 +64,7 @@ await browser.close()
 ```
 _wireframe/
 ├─ index.html          ← Notion 附件原檔（5 個頁面區塊，hash 切換）
-├─ WIREFRAME_SPEC.md   ← 逐頁版型規格（實作新風格的依據）
+├─ WIREFRAME_SPEC.md   ← 逐頁版型規格（10 頁，實作新風格的依據；§3.05～3.09 是 wireframe 沒有的補頁）
 ├─ README.md           ← 本檔
 └─ screenshots/        ← 1440px 全頁截圖，每頁「預設」與「顯示設計標註」各一張
 ```

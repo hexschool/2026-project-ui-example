@@ -1,0 +1,119 @@
+// ============================================================
+// 選擇卡（AddressOption 收件地址、PaymentOption 付款方式；2026-11 補頁）
+// 結帳 checkout.html 與贊助紀錄詳情 backing.html 的「修改收件資訊」共用
+// 一個 <label> 包住 radio，整張卡可點；外觀沿用個人頁的地址卡（白報紙底＋版線框），
+// 選中＝深霧藍 2px 框＋淡霧藍底＋右上勾（同回饋方案卡的「已選取」），不只靠顏色
+// hover 只換框線顏色，不改尺寸
+// ============================================================
+// <div class="choice-grid">                                  ← ≥ 768px 兩張並排（付款方式用 .choice-stack 直列）
+//   <label class="choice-card" for="coAddrHome">
+//     <input class="form-check-input choice-input" type="radio" name="address" id="coAddrHome" value="home" checked>
+//     <span class="choice-body">
+//       <span class="choice-head"><span class="choice-name">陳柏宇</span><span class="status is-live">…預設地址</span></span>
+//       <span class="choice-line">0912-345-678</span>
+//       <span class="choice-line">70801 台南市安平區平通路 128 號 5 樓</span>
+//     </span>
+//   </label>
+// </div>
+.choice-grid {
+  display: grid;
+  gap: map-get($spacers, 3);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.choice-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: .875rem;
+  height: 100%;
+  margin: 0;
+  padding: 1.125rem 2.75rem 1.125rem 1.125rem; // 右側留給選中的勾
+  border: 1px solid $rule;
+  background-color: $paper;
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.25rem 3rem 1.25rem 1.25rem;
+  }
+
+  &:hover {
+    border-color: $ink;
+  }
+
+  // 右上的勾：選中時才出現（位置固定，不推擠內容）
+  &::after {
+    content: "\f633"; // bi-check-lg
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-family: "bootstrap-icons";
+    font-size: 1.125rem;
+    line-height: 1;
+    color: $slate-deep;
+    opacity: 0;
+  }
+
+  &:has(.choice-input:checked) {
+    border-color: $slate-deep;
+    box-shadow: inset 0 0 0 1px $slate-deep;
+    background-color: $slate-tint;
+
+    &::after { opacity: 1; }
+  }
+  // 鍵盤焦點畫在整張卡上
+  &:has(.choice-input:focus-visible) {
+    outline: 2px solid $slate-deep;
+    outline-offset: 3px;
+  }
+}
+.choice-input {
+  flex: 0 0 auto;
+  float: none;
+  margin: .3em 0 0;
+
+  &:focus-visible {
+    box-shadow: none;
+  }
+}
+.choice-body {
+  display: flex;
+  flex-direction: column;
+  gap: .125rem;
+  min-width: 0;
+}
+.choice-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .625rem;
+  margin-bottom: .25rem;
+}
+.choice-name {
+  font-weight: $font-weight-bold;
+}
+.choice-line {
+  font-size: .9375rem;
+  color: $ink;
+  overflow-wrap: anywhere;
+}
+.choice-note {
+  font-size: .875rem;
+  color: $ink-muted;
+}
+// 付款方式的圖示：放在 radio 與名稱之間
+.choice-icon {
+  flex: 0 0 auto;
+  font-size: 1.375rem;
+  line-height: 1.3;
+  color: $ink;
+}
+// 直列的選擇卡（付款方式）：卡與卡之間的間距
+// fieldset 的第一個子元素是（視覺隱藏的）<legend>，排除它，第一張卡才不會多一段上方間距
+.choice-stack > .choice-card + *,
+.choice-stack > :not(legend) + .choice-card {
+  margin-top: map-get($spacers, 3);
+}

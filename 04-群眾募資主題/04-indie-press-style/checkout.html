@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>贊助結帳｜島造 ISLANDMAKE 在地製造提案平台</title>
+  <meta name="description" content="確認收件地址與付款方式，完成「一只走十年的台南帆布包」標準單入組的贊助。">
+  <meta name="theme-color" content="#F5F2EA">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Noto Serif TC（標題 700／900、長文 400）、Noto Sans TC（介面 400／500／700）、Newsreader（英數、金額、刻度數字） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="navbar navbar-expand-lg" aria-label="主要導覽">
+        <div class="container">
+          <a class="navbar-brand site-brand" href="index.html" aria-label="島造 ISLANDMAKE 首頁">
+            <span class="site-brand-name">島造</span>
+            <span class="site-brand-sub">ISLANDMAKE</span>
+          </a>
+
+          <!-- 992px 以下的圖示列（桌機另一組放在導覽之後，讓 Tab 順序與畫面順序一致） -->
+          <div class="site-header-mobile d-flex d-lg-none">
+            <button class="btn btn-icon site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearchMobile" aria-controls="siteSearchMobile" aria-expanded="false" aria-label="搜尋專案或提案者">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <a class="site-avatar" href="account.html" aria-label="我的島造（陳柏宇）">
+              <span class="avatar"><img src="images/proposer-avatar.jpg" alt="" width="1200" height="1200"></span>
+            </a>
+            <button class="navbar-toggler btn btn-icon site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="projects.html">探索專案</a></li>
+              <li class="nav-item"><a class="nav-link" href="account.html">我的島造</a></li>
+            </ul>
+            <!-- 992px 以下：「我要提案」放進選單 -->
+            <a class="btn btn-outline-secondary site-propose-mobile d-lg-none" href="index.html#propose">我要提案</a>
+            <!-- 桌機右側：搜尋 → 我要提案 → 頭像 -->
+            <div class="site-header-actions d-none d-lg-flex">
+              <form class="site-search" role="search" action="projects.html">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control" type="search" name="q" placeholder="搜尋專案或提案者" aria-label="搜尋專案或提案者">
+              </form>
+              <a class="btn btn-outline-secondary btn-sm" href="index.html#propose">我要提案</a>
+              <a class="site-avatar" href="account.html" aria-label="我的島造（陳柏宇）">
+                <span class="avatar"><img src="images/proposer-avatar.jpg" alt="" width="1200" height="1200"></span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- 992px 以下：點放大鏡展開的搜尋列 -->
+      <div id="siteSearchMobile" class="collapse d-lg-none site-search-mobile">
+        <div class="container">
+          <form class="site-search" role="search" action="projects.html">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input class="form-control" type="search" name="q" placeholder="搜尋專案或提案者" aria-label="搜尋專案或提案者">
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!--
+        贊助結帳（2026-11 補頁；WIREFRAME_SPEC §3.07，文案 CONTENT.md 附錄 B.10，示意資料 B.7、B.3）
+        - 入口：project.html 贊助小計的「下一步：填寫收件資訊」；「確認贊助並付款」→ order-result.html
+        - 靜態示意：不管在專案頁選了哪個方案，這頁都顯示「標準單入組 NT$ 2,280」，不讀網址參數、不寫 JS
+        - 像雜誌的訂閱回函：≥ 992px 左欄兩段表單（收件資訊、付款方式），右欄 sticky 的贊助摘要；樣式在 scss/pages/_checkout.scss
+          摘要裡的顏色說明、預計出貨列、扣款提示（.pledge-*）是 components/_pledge-summary.scss 的共用零件，贊助紀錄詳情也用
+        - 送出：<form id="checkoutForm" action="order-result.html">；摘要在表單外面，送出按鈕加 form="checkoutForm"
+          只有 radio 有 name（address=home、pay=card 這類代號，沒有個資）；卡號等欄位不加 name
+      -->
+      <div class="container co-page">
+        <!-- ========== 頁面標題區：步驟條（取代麵包屑）→ H1 → 說明 ========== -->
+        <header class="page-head co-head">
+          <nav class="co-steps" aria-label="贊助步驟">
+            <ol>
+              <li class="is-done">
+                <a href="project.html#rewards">
+                  <span class="co-step-node" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+                  <span class="co-step-name">選擇方案<span class="visually-hidden">（已完成）</span></span>
+                </a>
+              </li>
+              <li class="is-current" aria-current="step">
+                <span class="co-step-node" aria-hidden="true">2</span>
+                <span class="co-step-name">填寫收件資訊</span>
+              </li>
+              <li>
+                <span class="co-step-node" aria-hidden="true">3</span>
+                <span class="co-step-name">完成贊助</span>
+              </li>
+            </ol>
+          </nav>
+          <h1>贊助結帳</h1>
+          <p class="page-lead">確認收件地址與付款方式，按下「確認贊助並付款」就完成贊助。</p>
+        </header>
+
+        <div class="row gx-lg-5 gy-5">
+          <!-- ========== 左欄：回函表單（收件資訊 → 付款方式） ========== -->
+          <div class="col-lg-7 col-xl-8">
+            <form id="checkoutForm" class="co-form" action="order-result.html">
+              <section id="shipping-address" class="co-section" aria-labelledby="coShippingTitle">
+                <div class="co-heading">
+                  <h2 id="coShippingTitle">收件資訊</h2>
+                  <p>存好的地址會在贊助時自動帶入，可隨時更換。</p>
+                </div>
+                <fieldset>
+                  <legend class="visually-hidden">收件地址</legend>
+                  <div class="choice-grid">
+                    <!-- 預設地址（預設選中） -->
+                    <label class="choice-card" for="coAddressHome">
+                      <input class="form-check-input choice-input" type="radio" name="address" id="coAddressHome" value="home" checked required>
+                      <span class="choice-body">
+                        <span class="choice-head">
+                          <span class="choice-name">陳柏宇</span>
+                          <span class="status is-live"><span class="status-dot"></span>預設地址</span>
+                        </span>
+                        <span class="choice-line">0912-345-678</span>
+                        <span class="choice-line">70801 台南市安平區平通路 128 號 5 樓</span>
+                      </span>
+                    </label>
+                    <!-- 第二組地址 -->
+                    <label class="choice-card" for="coAddressOffice">
+                      <input class="form-check-input choice-input" type="radio" name="address" id="coAddressOffice" value="office" required>
+                      <span class="choice-body">
+                        <span class="choice-head">
+                          <span class="choice-name">陳柏宇（公司）</span>
+                        </span>
+                        <span class="choice-line">0912-345-678</span>
+                        <span class="choice-line">10491 台北市中山區南京東路二段 100 號 8 樓</span>
+                      </span>
+                    </label>
+                  </div>
+                </fieldset>
+                <!-- 沒有目的頁：button type="button"（同個人頁收件資訊） -->
+                <button class="btn btn-outline-secondary btn-sm co-add" type="button"><i class="bi bi-plus-lg" aria-hidden="true"></i>新增地址</button>
+              </section>
+
+              <section id="payment-method" class="co-section" aria-labelledby="coPaymentTitle">
+                <div class="co-heading">
+                  <h2 id="coPaymentTitle">付款方式</h2>
+                </div>
+                <!-- 選「行動支付」時，信用卡欄位用 CSS :has() 隱藏（scss/pages/_checkout.scss），不寫 JS -->
+                <fieldset class="co-pay choice-stack">
+                  <legend class="visually-hidden">付款方式</legend>
+                  <label class="choice-card" for="coPayCard">
+                    <input class="form-check-input choice-input" type="radio" name="pay" id="coPayCard" value="card" checked>
+                    <i class="bi bi-credit-card choice-icon" aria-hidden="true"></i>
+                    <span class="choice-body">
+                      <span class="choice-name">信用卡</span>
+                      <span class="choice-note">可以使用信用卡或簽帳金融卡，付款後立即完成贊助。</span>
+                    </span>
+                  </label>
+                  <!-- 信用卡欄位：不加 required（切到行動支付時只是被隱藏，required 會擋下送出），用 aria-required 告知必填 -->
+                  <div class="co-card-fields">
+                    <div class="row g-3">
+                      <div class="col-12">
+                        <label class="form-label" for="coCardNumber">卡號</label>
+                        <input class="form-control co-card-num" id="coCardNumber" type="text" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000" aria-required="true">
+                      </div>
+                      <div class="col-sm-6">
+                        <label class="form-label" for="coCardExpiry">有效期限</label>
+                        <input class="form-control co-card-num" id="coCardExpiry" type="text" inputmode="numeric" autocomplete="cc-exp" placeholder="MM / YY" aria-required="true">
+                      </div>
+                      <div class="col-sm-6">
+                        <label class="form-label" for="coCardCsc">安全碼</label>
+                        <input class="form-control co-card-num" id="coCardCsc" type="text" inputmode="numeric" autocomplete="cc-csc" placeholder="123" aria-required="true" aria-describedby="coCardCscHelp">
+                        <div class="form-text" id="coCardCscHelp">卡片背面末 3 碼</div>
+                      </div>
+                    </div>
+                  </div>
+                  <label class="choice-card" for="coPayMobile">
+                    <input class="form-check-input choice-input co-pay-mobile" type="radio" name="pay" id="coPayMobile" value="mobile">
+                    <i class="bi bi-phone choice-icon" aria-hidden="true"></i>
+                    <span class="choice-body">
+                      <span class="choice-name">行動支付</span>
+                      <span class="choice-note">按下確認後，會開啟行動支付的付款頁面。</span>
+                    </span>
+                  </label>
+                </fieldset>
+                <p class="text-note co-pay-note"><i class="bi bi-lock" aria-hidden="true"></i>付款由合作的金流服務商處理，島造不會儲存你的完整卡號。</p>
+              </section>
+            </form>
+          </div>
+
+          <!-- ========== 右欄：贊助摘要（≥ 992px sticky；手機接在付款方式之後） ========== -->
+          <div class="col-lg-5 col-xl-4">
+            <aside id="pledge-summary" class="co-summary" aria-labelledby="coSummaryTitle">
+              <h2 id="coSummaryTitle" class="co-summary-title">贊助摘要</h2>
+              <div class="co-summary-project">
+                <div class="img-frame ratio-4x3">
+                  <img src="images/project-01-canvas-bag.jpg" alt="原胚、墨綠、炭黑三色帆布通勤包" width="1600" height="1066">
+                </div>
+                <div>
+                  <p class="co-summary-name text-phrase">一只走十年的<wbr>台南帆布包</p>
+                  <p class="co-summary-by">布作工房 第三代</p>
+                </div>
+              </div>
+
+              <div class="co-plan">
+                <p class="co-plan-name"><span class="co-plan-label">已選方案</span>標準單入組</p>
+                <a class="btn btn-text" href="project.html#rewards">更換方案</a>
+              </div>
+              <ul class="tier-items" aria-label="回饋內容">
+                <li>帆布包 × 1</li>
+                <li>專屬編號吊牌</li>
+                <li>保養布一條</li>
+                <li>終身維修服務</li>
+              </ul>
+              <p class="pledge-color"><span class="pledge-color-label">顏色</span>募資結束後會寄送填寫表單，屆時再選即可，不影響現在的贊助。</p>
+
+              <dl class="pledge-rows">
+                <div>
+                  <dt>方案金額</dt>
+                  <dd class="num"><data value="2280">NT$ 2,280</data></dd>
+                </div>
+                <div>
+                  <dt>額外支持</dt>
+                  <dd class="num"><data value="0">NT$ 0</data></dd>
+                </div>
+                <div class="pledge-total">
+                  <dt>總計</dt>
+                  <dd><data value="2280">NT$ 2,280</data></dd>
+                </div>
+              </dl>
+              <p class="pledge-eta"><span>預計出貨</span><strong><time datetime="2027-02">2027 年 2 月</time></strong></p>
+
+              <button class="btn btn-primary btn-lg w-100 co-submit" type="submit" form="checkoutForm"><i class="bi bi-lock" aria-hidden="true"></i>確認贊助並付款</button>
+              <div class="callout is-ok pledge-note">
+                <i class="bi bi-shield-check" aria-hidden="true"></i>
+                <p>贊助當下即完成付款。若募資期滿未達標，款項會在 7 個工作天內全額原路退回。</p>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <!-- ========== 設計稿狀態示意：欄位有錯誤時（付款失敗 S10 在專案細節，這頁不重複） ========== -->
+        <section class="demo-state" aria-labelledby="coDemoTitle">
+          <p class="demo-state-tag">設計稿狀態示意</p>
+          <h2 id="coDemoTitle" class="demo-state-title">欄位有錯誤時</h2>
+          <p class="text-note">送出後檢查沒有通過時，表單最上方出現錯誤摘要，錯誤寫在各欄位下方；已選的收件地址與付款方式保留。付款失敗（S10）的畫面在專案細節的狀態示意。</p>
+          <div class="row">
+            <div class="col-lg-7 col-xl-8">
+              <!-- 信用卡 3 欄重畫一份（id 加 -demo，不包 form） -->
+              <div class="demo-state-stage co-demo-stage">
+                <div class="callout is-err">
+                  <i class="bi bi-x-circle" aria-hidden="true"></i>
+                  <p>信用卡資料有 3 個地方需要修改，請看欄位下方的說明。</p>
+                </div>
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label" for="coCardNumber-demo">卡號</label>
+                    <input class="form-control co-card-num is-invalid" id="coCardNumber-demo" type="text" inputmode="numeric" autocomplete="cc-number" value="4000 1234 5678" aria-invalid="true" aria-describedby="coCardNumber-demo-error">
+                    <div class="invalid-feedback" id="coCardNumber-demo-error"><i class="bi bi-x-circle" aria-hidden="true"></i>卡號不完整，請輸入卡片正面的 16 碼數字。</div>
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label" for="coCardExpiry-demo">有效期限</label>
+                    <input class="form-control co-card-num is-invalid" id="coCardExpiry-demo" type="text" inputmode="numeric" autocomplete="cc-exp" value="08 / 26" aria-invalid="true" aria-describedby="coCardExpiry-demo-error">
+                    <div class="invalid-feedback" id="coCardExpiry-demo-error"><i class="bi bi-x-circle" aria-hidden="true"></i>這張卡的有效期限已過，請改用其他卡片。</div>
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label" for="coCardCsc-demo">安全碼</label>
+                    <input class="form-control co-card-num is-invalid" id="coCardCsc-demo" type="text" inputmode="numeric" autocomplete="cc-csc" placeholder="123" aria-invalid="true" aria-describedby="coCardCsc-demo-error">
+                    <div class="invalid-feedback" id="coCardCsc-demo-error"><i class="bi bi-x-circle" aria-hidden="true"></i>請輸入卡片背面末 3 碼的安全碼。</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="row gy-4 site-footer-cols">
+          <div class="col-lg-5 col-xl-4">
+            <a class="site-brand" href="index.html" aria-label="島造 ISLANDMAKE 首頁">
+              <span class="site-brand-name">島造</span>
+              <span class="site-brand-sub">ISLANDMAKE</span>
+            </a>
+            <p class="site-footer-lead">專注台灣在地設計與製造的群眾募資平台。不做快消、不做轉賣，只收「說得出材料從哪來、工廠在哪裡、什麼時候能交到你手上」的提案。</p>
+          </div>
+          <!-- 沒有 href 的是佔位連結（還沒有設計頁面） -->
+          <div class="col-6 col-md-4 col-lg-2 offset-xl-1">
+            <h2 class="site-footer-title">贊助者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="projects.html">探索專案</a></li>
+              <li><a href="account.html#backings">我的贊助紀錄</a></li>
+              <li><a>追蹤中的專案</a></li>
+              <li><a href="project.html#faq">贊助常見問題</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">提案者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="index.html#propose">我要提案</a></li>
+              <li><a href="account.html#my-projects">提案管理</a></li>
+              <li><a href="account.html#dashboard">募資數據</a></li>
+              <li><a>排程與出貨規範</a></li>
+            </ul>
+          </div>
+          <div class="col-md-4 col-lg-3">
+            <h2 class="site-footer-title">平台</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a>關於島造</a></li>
+              <li><a>審核標準</a></li>
+              <li><a>退款政策</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 島造 ISLANDMAKE 在地製造提案平台｜<wbr>本站為課程設計稿範例，專案與金額皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,323 @@
+// ============================================================
+// 贊助紀錄詳情 backing.html（2026-11 補頁；class 前綴 bk-；個人頁的贊助紀錄卡用的是 backing-，不要混用）
+// 亮黃頁面標題區（麵包屑位置同 account.html）
+// → 專案摘要：整條深黑板，狀態用大字（亮黃超大達成率、剩餘天數）
+// → 告示板堆疊：我的方案＋付款資訊（≥ 992px 7：5）→ 收件資訊 → 生產與交付進度（4：8，同專案細節）→ 取消贊助
+// → 設計稿狀態示意 → 取消確認對話框（Modal，放在 <main> 最後）
+// 共用：.board、.choice-card、.detail-list（components/_flow.scss）、.milestones、.reward-tier-items、.pledge-rows、
+//       .address-card、.meta-inline（個人頁）
+// ============================================================
+
+// ---------- 頁面標題區：H1＋編號與日期，右側回到贊助紀錄 ----------
+.bk-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: .75rem 2rem;
+}
+.bk-head-meta {
+  font-weight: $font-weight-medium;
+
+  .num { font-weight: $font-weight-bold; }
+}
+.bk-back {
+  @include media-breakpoint-up(md) { margin-bottom: .125rem; }
+}
+
+// ---------- 專案摘要：深黑板 ----------
+// ≥ 768px 縮圖 4：資訊 8；≥ 992px 縮圖 3：名稱與狀態 5：大數字 4
+.bk-summary {
+  display: grid;
+  gap: 1.25rem;
+  margin-bottom: map-get($spacers, 5);
+  padding: 1.25rem;
+  border: $border-width solid $ink;
+  border-radius: $border-radius-xl;
+  background-color: $ink;
+  color: $on-dark;
+  box-shadow: 6px 6px 0 $yellow;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    align-items: center;
+    column-gap: 1.5rem;
+  }
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 4fr);
+    margin-bottom: map-get($spacers, 6);
+    padding: 1.5rem;
+    column-gap: 2rem;
+  }
+  .label { color: $on-dark-muted; }
+}
+.bk-summary-thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: $border-thin solid $on-dark;
+  border-radius: $border-radius-lg;
+}
+.bk-summary-title {
+  margin-bottom: .25rem;
+  color: $on-dark;
+  font-size: 1.5rem;
+  line-height: 1.35;
+
+  @include media-breakpoint-up(xl) { font-size: 1.75rem; }
+}
+// 深黑底上的連結：奶白字＋底線，hover 時底線加粗、字變亮黃（不換底色，避免奶白字落在亮黃上）
+.bk-summary-link {
+  color: $on-dark;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .25em;
+
+  &:hover {
+    color: $yellow;
+    text-decoration-thickness: 4px;
+  }
+}
+.bk-summary-maker {
+  margin-bottom: .875rem;
+  color: $on-dark-muted;
+}
+.bk-summary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1rem;
+}
+// 大數字：亮黃超大達成率＋剩餘天數＋小進度條
+.bk-summary-figures {
+  display: grid;
+  gap: .75rem;
+
+  @include media-breakpoint-up(md) {
+    grid-column: 1 / -1;
+  }
+  @include media-breakpoint-up(lg) {
+    grid-column: auto;
+    padding-left: 2rem;
+    border-left: $border-thin dashed $on-dark-muted;
+  }
+}
+.bk-summary-nums {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: .75rem 1.5rem;
+
+  .mega-pct {
+    --mega-size: clamp(4rem, 3rem + 3vw, 5.5rem);
+    color: $yellow;
+  }
+}
+.bk-summary-days {
+  font-size: 1.25rem;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+  white-space: nowrap;
+
+  .num-display { font-size: 3rem; }
+}
+
+// ---------- 告示板堆疊 ----------
+.bk-plan-name {
+  margin-bottom: .75rem;
+  font-size: 1.75rem;
+  font-weight: $font-weight-bolder;
+  line-height: 1.25;
+}
+.bk-color {
+  margin-bottom: 0;
+  font-size: $font-size-sm;
+
+  strong { margin-right: .375rem; }
+}
+.bk-plan .pledge-rows { margin-block: 1.25rem 1rem; }
+// 我的方案＋付款資訊並排時等高；付款資訊的說明緊接在明細下方，多出來的高度留在卡片最下面
+.bk-pair {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  > .board-body { flex: 1 1 auto; }
+}
+.bk-payment > .board-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+// 收件資訊：目前地址（沿用個人頁的地址卡）＋右側修改按鈕與說明
+.bk-ship {
+  display: grid;
+  gap: 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: center;
+  }
+  .address-card { margin-bottom: 0; }
+}
+.bk-ship-side {
+  display: grid;
+  justify-items: start;
+  gap: .75rem;
+
+  p { margin: 0; }
+}
+// 展開後的地址選擇
+.bk-ship-edit {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: $border-thin dashed $ink;
+}
+.bk-ship-edit-title {
+  margin-bottom: 1rem;
+  padding: 0;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bolder;
+}
+.bk-ship-edit-note { margin: 1.25rem 0; }
+
+// 生產與交付進度：左說明＋統計，右時間軸（同專案細節 4：8）
+.bk-progress-intro p { margin-bottom: 1rem; }
+
+// 取消贊助：規則在左、按鈕在右；危險樣式但層級低（文字按鈕）
+.bk-cancel-body {
+  display: grid;
+  gap: 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: 2rem;
+  }
+  p { max-width: 44em; }
+}
+// 確認對話框的危險按鈕：珊瑚紅底＋深黑框＋深黑字（7.4:1），hover 換成深紅底奶白字
+.bk-btn-danger {
+  --#{$prefix}btn-color: #{$ink};
+  --#{$prefix}btn-bg: #{$err-bg};
+  --#{$prefix}btn-border-color: #{$ink};
+  --#{$prefix}btn-hover-color: #{$cream};
+  --#{$prefix}btn-hover-bg: #{$err-ink};
+  --#{$prefix}btn-hover-border-color: #{$ink};
+  --#{$prefix}btn-active-color: #{$cream};
+  --#{$prefix}btn-active-bg: #{$err-ink};
+  --#{$prefix}btn-active-border-color: #{$ink};
+  box-shadow: $shadow-sm;
+}
+.bk-modal .modal-body p:last-child { margin-bottom: 0; }
+.bk-modal .modal-title { font-size: 1.25rem; }
+
+// ---------- 設計稿狀態示意 ----------
+// 縮小版專案摘要：縮圖＋名稱＋提案者＋方案、金額、日期
+// ≥ 576px 縮圖在左（4:3、96px）；< 576px 縮圖在上（16:9 滿寬），和個人頁窄版的贊助紀錄卡一樣
+.bk-mini {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  margin-bottom: 1rem;
+
+  @include media-breakpoint-up(sm) {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+.bk-mini-thumb {
+  flex: 0 0 auto;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border: $border-thin solid $ink;
+  border-radius: $border-radius;
+
+  @include media-breakpoint-up(sm) {
+    width: 6rem;
+    aspect-ratio: 4 / 3;
+  }
+}
+.bk-mini-title {
+  margin-bottom: .125rem;
+  font-weight: $font-weight-bolder;
+  line-height: 1.45;
+}
+.bk-mini-maker {
+  margin-bottom: .375rem;
+  color: $ink-muted;
+  font-size: $font-size-sm;
+}
+.bk-mini .meta-inline { font-size: $font-size-sm; }
+// 狀態列：大徽章＋這個狀態的說明
+.bk-state-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .75rem;
+  margin-bottom: 1rem;
+  font-weight: $font-weight-medium;
+}
+// 這個狀態下有變化的區塊：小標＋內容
+.bk-state-block {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: $border-thin solid $ink;
+
+  > :last-child { margin-bottom: 0; }
+}
+.bk-state-label {
+  margin-bottom: .5rem;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bolder;
+}
+// 募資失敗 ‧ 已退款：整塊降一階（同個人頁卡片 4）
+.bk-state-muted {
+  padding: 1rem;
+  border: $border-width solid $ink-muted;
+  border-radius: $border-radius-lg;
+  background-color: $sand;
+
+  .bk-mini-thumb { opacity: .55; filter: grayscale(.6); }
+  .bk-mini-title { color: $ink-muted; }
+  .bk-state-block { border-top-color: $ink-muted; }
+}
+// 第 4 格：募資失敗＋對話框上下疊；下面那格撐滿，底邊和左邊的已出貨對齊
+.bk-demo-stack {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: map-get($spacers, 4);
+  height: 100%;
+
+  > .demo-case { height: auto; }
+}
+// 取消確認對話框的靜態樣子：不加 .modal（WIREFRAME_SPEC §3.09 區塊 8），只用 .modal-content 以下的 class
+// Bootstrap 的 .modal-content、-header、-body、-footer 讀的是定義在 .modal 上的 --bs-modal-* 變數，
+// 這裡用同一組 Sass 變數補上，外觀和正式的對話框一致；寬度上限同正式對話框（$modal-md）
+// 右側與下方各留 8px 給 0 模糊硬陰影（.modal-content 的 $shadow-lift），撐滿示意框時陰影也完整
+.bk-dialog-demo {
+  --#{$prefix}modal-padding: #{$modal-inner-padding};
+  --#{$prefix}modal-color: #{$modal-content-color};
+  --#{$prefix}modal-bg: #{$modal-content-bg};
+  --#{$prefix}modal-border-color: #{$modal-content-border-color};
+  --#{$prefix}modal-border-width: #{$modal-content-border-width};
+  --#{$prefix}modal-border-radius: #{$modal-content-border-radius};
+  --#{$prefix}modal-inner-border-radius: #{$modal-content-inner-border-radius};
+  --#{$prefix}modal-header-padding: #{$modal-header-padding};
+  --#{$prefix}modal-header-border-color: #{$modal-header-border-color};
+  --#{$prefix}modal-header-border-width: #{$modal-header-border-width};
+  --#{$prefix}modal-title-line-height: #{$modal-title-line-height};
+  --#{$prefix}modal-footer-gap: #{$modal-footer-margin-between};
+  --#{$prefix}modal-footer-bg: #{$modal-footer-bg};
+  --#{$prefix}modal-footer-border-color: #{$modal-footer-border-color};
+  --#{$prefix}modal-footer-border-width: #{$modal-footer-border-width};
+  max-width: $modal-md;
+  margin: 0 .5rem .5rem 0;
+}

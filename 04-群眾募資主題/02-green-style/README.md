@@ -27,7 +27,7 @@ npm install        # 安裝 bootstrap、bootstrap-icons、sass，並把 Bootstra
 npm run watch      # 開發時：監看 scss/，存檔就重新編譯 css/style.css
 npm run css        # 編譯一次
 npm run build      # 交付前：重新複製 vendor 檔案＋編譯一次 CSS
-npm run check      # 檢查 5 個頁面的 head、頁首、頁尾是否與範本一致
+npm run check      # 檢查 10 個頁面的 head、頁首、頁尾是否與範本一致
 npm run vendor     # 只重新複製 Bootstrap JS 與圖示字型（npm install 時會自動執行）
 npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖時才用）
 ```
@@ -43,17 +43,26 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 | 專案列表 | `projects.html` | `scss/pages/_projects.scss` | S6 篩選無結果 |
 | 專案細節與贊助方案選擇（以帆布包示範） | `project.html` | `scss/pages/_project.scss` | 即將開始、已結束（成功）、已結束（失敗）、未登入點擊贊助、付款失敗、未選擇方案、里程碑逾期、留言區為空；生產排程下方另有「延遲狀態範例」 |
 | 個人頁面「我的島造」 | `account.html` | `scss/pages/_account.scss` | 5 種贊助徽章、贊助紀錄為空、追蹤清單為空、提案募資失敗、提案已下架、提案者尚無專案 |
+| 登入 | `login.html` | `scss/pages/_auth.scss` | 帳號或密碼錯誤 |
+| 註冊 | `register.html` | `scss/pages/_auth.scss` | 欄位有錯誤時（顯示名稱未填、Email 已註冊、密碼太短、未勾同意條款） |
+| 贊助結帳 | `checkout.html` | `scss/pages/_checkout.scss` | 欄位有錯誤時（錯誤摘要＋3 個信用卡欄位）；付款失敗（S10）在專案細節 |
+| 贊助成功 | `order-result.html` | `scss/pages/_checkout.scss` | — |
+| 贊助紀錄詳情（以帆布包這筆募資中的贊助示範） | `backing.html` | `scss/pages/_backing.scss` | 已達標待生產、生產中、已出貨、募資失敗 ‧ 已退款（S5）在這頁的差異；取消贊助確認對話框的靜態樣子 |
 
 - 頁面上沒有列出所有頁面的導覽：從首頁依流程點進各頁即可，Guideline 直接開 `guideline.html`。
 - 專案細節只做一頁（P1 一只走十年的台南帆布包），首頁與列表的專案卡都連到 `project.html`。
+- **贊助流程**：專案細節選好方案按「下一步：填寫收件資訊」→ `checkout.html` →「確認贊助並付款」→ `order-result.html` →「查看我的贊助紀錄」回到個人頁；狀態示意「未登入點擊贊助」的「登入 / 註冊」→ `login.html`（登入後回到專案的回饋方案），登入與註冊頁互相連結。
+- 個人頁贊助紀錄卡的專案名稱（4 張）都連到 `backing.html`，比照「所有專案卡都連到 `project.html`」的慣例；卡片上的「查看專案」仍連到專案頁。
+- 全站維持登入中的提案者「陳柏宇」，登入、註冊、結帳頁的頁首也一樣（頁首不因流程頁改變）。
+- 5 個流程頁的版型照這一套的排版語言：登入與註冊是葉影色帶裡置中的一張大圓角表單卡；結帳是白色分組卡＋右欄 sticky 贊助摘要（同專案細節的小計卡）；贊助成功是圖示＋H1（同個人頁的頭像＋H1）；贊助紀錄詳情把專案摘要卡放進標題色帶右側（同首頁 Hero 的左文右卡），主體 7：5。
 - **角色切換**：`account.html` 預設是提案者畫面；頁面標題區右側的「以提案者檢視／以贊助者檢視」可以切換，或直接開 `account.html?role=backer` 看贊助者畫面（沒有「提案」群組、有角色升級入口、`#my-projects` 位置顯示「這個區域需要提案者身分。」）。
-- 可以實際操作的：首頁分頁、專案列表的篩選浮層（< 992px）、回饋方案選取（小計與最低金額即時更新、低於最低金額顯示錯誤）、生產排程照片展開、FAQ、個人頁贊助紀錄分頁篩選、圖表的表格檢視、專案主視覺圖庫（縮圖切換）。
+- 可以實際操作的：首頁分頁、專案列表的篩選浮層（< 992px）、回饋方案選取（小計與最低金額即時更新、低於最低金額顯示錯誤）、生產排程照片展開、FAQ、個人頁贊助紀錄分頁篩選、圖表的表格檢視、專案主視覺圖庫（縮圖切換）；結帳頁的地址與付款方式選擇（選「行動支付」時信用卡欄位收起，用 CSS `:has()`，不寫 JS）；贊助紀錄詳情的「修改收件資訊」展開（Collapse）與取消贊助確認對話框（Modal）。
 
 ## 檔案結構
 
 ```
 02-green-style/
-├─ *.html                    ← 5 個頁面，每頁完整包含頁首與頁尾
+├─ *.html                    ← 10 個頁面，每頁完整包含頁首與頁尾
 ├─ templates/page.html       ← 頁面骨架：新增頁面從這裡複製
 ├─ css/
 │  ├─ style.css              ← 編譯結果（Bootstrap＋Icons＋本風格樣式），要提交
@@ -66,7 +75,7 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 │  ├─ main.scss              ← 樣式進入點（載入順序見下方）
 │  ├─ _variables.scss        ← ★ Design token：Bootstrap 變數覆寫
 │  ├─ _base.scss             ← 全站基礎與共用類別
-│  ├─ components/            ← 頁首、頁尾、生長條、專案卡、方案卡、時間軸、數據卡、圖表、留言
+│  ├─ components/            ← 頁首、頁尾、生長條、專案卡、方案卡、時間軸、數據卡、圖表、留言、流程元件
 │  └─ pages/                 ← 各頁專屬樣式（class 加頁面前綴）
 └─ scripts/
    ├─ copy-vendor.mjs        ← 把 Bootstrap JS 與圖示字型從 node_modules 複製進專案
@@ -76,14 +85,16 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 
 ## 沒有打包工具時的工作方式
 
-- **頁首、頁尾每頁一份**：沒有元件系統，所以 5 個頁面各自完整寫一份。要改頁首或頁尾時，先改 `templates/page.html`，再同步到每一頁，最後執行 `npm run check` 確認全部一致。每頁只有一處不同：頁首導覽的目前頁——首頁標「首頁」、專案列表標「探索專案」、**專案細節也標「探索專案」但只加 `active`、不加 `aria-current`**、個人頁標「我的島造」、Guideline 不標示（`check-layout.mjs` 會檢查這個對應）。
+- **頁首、頁尾每頁一份**：沒有元件系統，所以 10 個頁面各自完整寫一份。要改頁首或頁尾時，先改 `templates/page.html`，再同步到每一頁，最後執行 `npm run check` 確認全部一致。每頁只有一處不同：頁首導覽的目前頁：首頁標「首頁」、專案列表標「探索專案」、**專案細節也標「探索專案」但只加 `active`、不加 `aria-current`**、個人頁標「我的島造」、**贊助紀錄詳情也標「我的島造」但只加 `active`**、Guideline 與流程頁 `login.html`、`register.html`、`checkout.html`、`order-result.html` 不標示（`check-layout.mjs` 會檢查這個對應）。
 - **`<body>` 的屬性每頁不同**：ScrollSpy 寫在 `<body>` 上（專案細節對應故事目錄 `#storyToc`、個人頁對應側邊導覽 `#acctNav`、Guideline 對應目錄 `#glToc`），專案細節另有 `has-actionbar`（手機底部行動列的留白）。
 - **新增頁面**：複製範本成新頁，改 `<title>`、description 與頁首的目前頁標示；在 `scss/pages/` 新增 partial、在 `scss/main.scss` 加一行 `@import`；在 `check-layout.mjs` 的 `expectedNav` 加上這一頁，執行 `npm run check`。
 - **假資料直接寫在 HTML**：數字照 `../CONTENT.md`，同一個專案在每一頁都相同（帆布包 NT$ 1,235,600／目標 NT$ 500,000／247%／1,042 人／剩 12 天），改動時要多頁同步。進度條的刻痕位置照 `CONTENT.md` 附錄 B.5，寫在 `style="--target: 40.5%"`。
 - **JS**：`js/main.js` 只做五件事——手機搜尋列展開後自動聚焦、分頁籤切換時把目前項目捲進畫面、回饋方案選取與自訂金額、贊助紀錄分頁篩選（`data-filter` 對應 `data-status`，「等待出貨」＝已達標待生產＋生產中）、角色切換（外層 `data-role`＋網址 `?role=backer`）。
 - **圖表**：每日趨勢與累積 vs. 目標是 inline SVG（座標照 `WIREFRAME_SPEC.md` §3.04），方案分佈是 HTML／CSS 橫條；顏色全部走 CSS 變數，加 `.chart-dark` 就是深色底版本。每張圖都有「切換表格檢視」。
-- **換行與空白**：專案名稱用 `.text-phrase`＋`<wbr>` 標出詞組斷點，數字與單位之間用 `&nbsp;`，「帆布包」「量產備料」不會被拆成兩行。
-- **沒有目的頁的按鈕**（了解如何提案、取消贊助、編輯…）：按鈕用 `<button type="button">`，連結用不帶 `href` 的 `<a>`，樣式照常。
+- **換行與空白**：專案名稱用 `.text-phrase`＋`<wbr>` 標出詞組斷點，數字與單位之間用 `&nbsp;`，「帆布包」「量產備料」不會被拆成兩行。地址選擇卡的地址那一行也一樣：加 `.text-phrase`、在「區」後放 `<wbr>`、門牌用 `&nbsp;` 連起來，只會在郵遞區號後、「區」後、路名與門牌之間換行。
+- **沒有目的頁的按鈕**（了解如何提案、取消贊助、編輯、新增地址…）：按鈕用 `<button type="button">`，連結（忘記密碼？、服務條款、隱私權政策…）用不帶 `href` 的 `<a>`，樣式照常。
+- **表單**：照靜態設計稿的慣例用 `<form action="目的頁">`（登入與註冊 → `project.html#rewards`、結帳 → `order-result.html`、修改收件資訊 → `backing.html#shipping`）。密碼、Email、姓名、手機、地址、卡號欄位都**不加 `name`**，避免出現在網址；只有地址與付款方式的 radio 帶 `name`（值是 `home`、`card` 這類代號）。欄位一律有 `id`、`<label for>` 與 `autocomplete`；錯誤狀態示意的欄位重畫一份、`id` 加 `Demo` 後綴，不包 `<form>`。
+- **Modal**：`backing.html` 的取消贊助確認對話框放在 `<main>` 的最後，用 `data-bs-toggle="modal"` 開啟；兩個按鈕都只關閉對話框（設計稿不真的取消）。狀態示意裡另畫一份靜態樣子（不加 `.modal`），所以外觀寫在 `.bk-modal` 上，兩份共用。
 
 ## 樣式架構
 
@@ -94,8 +105,8 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 3. `bootstrap/scss/bootstrap`：用上面的變數編譯出整套 Bootstrap
 4. `bootstrap-icons`：圖示字型與 class（字型路徑指向 `css/fonts/`）
 5. `_base.scss`：字體、區塊節奏、焦點、按鈕、狀態徽章、提示框與共用小工具
-6. `components/*`：頁首、頁尾、生長條、專案卡、方案卡、時間軸、數據卡、圖表、留言
-7. `pages/*`：各頁專屬樣式，class 一律加頁面前綴（`home-`、`plist-`、`pd-`、`acct-`、`gl-`）
+6. `components/*`：頁首、頁尾、生長條、專案卡、方案卡、時間軸、數據卡、圖表、留言、流程元件（`_flow.scss`：5 個流程頁共用）
+7. `pages/*`：各頁專屬樣式，class 一律加頁面前綴（`home-`、`plist-`、`pd-`、`acct-`、`gl-`、`auth-`、`co-`／`or-`、`bk-`）
 
 原則是**先用 Bootstrap 的變數與工具類別**，真的做不到才寫自訂 CSS，而且自訂 CSS 也只引用變數，不寫死色碼。想換風格，主要改 `_variables.scss`。
 
@@ -128,6 +139,23 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 | `.stat-grid`、`.stat-tile`（`.is-ok`）、`.stat-strip` | 數據卡（葉影色塊）、統計列（文字照原文、只放大數字） | `components/_stat.scss` |
 | `.chart-card`（`.chart-dark`）、`.chart-svg`、`.bar-list` | 圖表卡、SVG 圖表、HTML 橫條圖 | `components/_chart.scss` |
 | `.comment`、`.comment-reply`、`.comment-form` | 留言與提案者回覆 | `components/_comment.scss` |
+| `.invalid-feedback`（前面放 `.bi`） | 欄位錯誤文字：圖示＋文字，不只靠顏色；欄位加 `.is-invalid`、`aria-invalid` 與 `aria-describedby` | `components/_flow.scss` |
+| `.flow-steps`、`.flow-step`（`.is-done`、`.is-current`）、`.flow-step-node` | 結帳 3 步驟條：節點同生產時間軸（已完成實心勾、目前初生綠、未到虛線），目前步驟加 `aria-current="step"`；< 576px 只顯示目前步驟的文字 | `components/_flow.scss` |
+| `.flow-card`（`-head`、`-icon`、`-title`、`-lead`） | 流程頁的白色分組卡：葉影圓形圖示＋標題＋一句說明 | `components/_flow.scss` |
+| `.option-grid`、`.option`、`.option-card`（`.is-current`）、`.option-mark` | 選擇卡：`.btn-check`＋`<label>`，選中＝森林墨綠 2px 框＋淡初生綠底＋實心勾（同回饋方案卡）；`.is-current` 是不能點的「目前的選擇」；`.option-grid` 在 768～991px 與 ≥ 1200px 兩張並排，992～1199px（卡片在 7 欄裡）改回上下排 | `components/_flow.scss` |
+| `.address-option-head`／`-name`／`-line`、`.pay-option`（`-icon`、`-name`、`-desc`） | 選擇卡內容：收件地址、付款方式 | `components/_flow.scss` |
+| `.pledge-summary`（`.is-sticky`）、`.pledge-project`、`.pledge-plan-head`、`.pledge-items`、`.pledge-note`、`.pledge-rows`、`.pledge-total`、`.pledge-ship`、`.pledge-fineprint` | 贊助摘要：專案縮圖、已選方案與內容、金額列、總計、預計出貨、安心說明；`.is-sticky` 在 ≥ 992px 黏住並加陰影 | `components/_flow.scss` |
+| `.detail-list`（`.detail-list-compact`、`.is-total`、`.detail-list-project`、`.detail-list-thumb`） | 明細清單（`dl`）：左標題右數值、細線分列，< 576px 上下排；用在贊助明細、收件資訊、付款資訊、物流資訊 | `components/_flow.scss` |
+
+流程頁的頁面專屬類別（不跨頁共用，列在這裡方便找）：
+
+| 類別 | 用途 | 位置 |
+|---|---|---|
+| `.auth-hero`、`.auth-card`、`.auth-mark`、`.auth-title`、`.auth-lead`、`.auth-label-row`、`.auth-forgot`、`.auth-terms`、`.auth-check`、`.auth-switch`、`.auth-demo` | 登入、註冊：葉影色帶裡置中的大圓角表單卡（寬 30rem）、Logo 標誌、佔位連結（「忘記密碼？」也有 44px 觸控高度）、44px 高的勾選列；狀態示意對齊同一個寬度 | `pages/_auth.scss` |
+| `.flow-body`、`.co-add-address`、`.co-pay`、`.co-card-fields`、`.co-pay-note` | 結帳：主體留白、新增地址按鈕、付款方式（選行動支付時 `:has()` 收起信用卡欄位）、再生紙底的信用卡欄位 | `pages/_checkout.scss` |
+| `.or-hero`、`.or-hero-icon`、`.or-next`、`.or-ship`、`.or-ship-note`、`.or-actions` | 贊助成功：白色圓形勾＋H1、預計出貨數據卡、兩顆等寬按鈕（≥ 576px 並排） | `pages/_checkout.scss` |
+| `.bk-head`、`.bk-head-meta`、`.bk-summary`（`-thumb`、`-info`、`-title`、`-maker`、`-status`、`-growth`）、`.bk-side`、`.bk-plan`、`.bk-plan-figures`、`.bk-shipping-*`、`.bk-timeline`、`.bk-cancel-button` | 贊助紀錄詳情：標題色帶右側的專案摘要卡、sticky 付款資訊、我的方案（768～991px 與 ≥ 1200px 左內容右金額，992～1199px 上下排）、收件資訊與修改、生產與交付進度、取消贊助 | `pages/_backing.scss` |
+| `.bk-modal`、`.bk-demo`（`.is-muted`）、`.bk-mini`（`-thumb`、`-title`、`-maker`、`-plan`、`-amount`）、`.bk-demo-*` | 取消贊助確認對話框（正式 Modal 與靜態樣子共用）、狀態示意的縮小版專案摘要；募資失敗已退款整塊降一階 | `pages/_backing.scss` |
 
 ## Design token 摘要
 

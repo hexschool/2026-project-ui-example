@@ -1,0 +1,570 @@
+// ============================================================
+// 2026-11 補頁的共用元件：表單錯誤文字、步驟條、分組卡、選擇卡（地址、付款方式）、贊助摘要、明細清單
+// 用在 login、register、checkout、order-result、backing（Guideline 不動，說明寫在 README 的「共用類別」）
+// 視覺沿用本風格：白卡＋細線＋大圓角、選中＝森林墨綠 2px 框＋淡初生綠底＋實心勾（同回饋方案卡）、
+// 步驟節點和生產時間軸同一套（已完成實心、目前初生綠、未到虛線）
+// hover 只換邊框色、文字色或底線，不改變尺寸，也不讓隱藏的內容浮現（使用者 2026-11-17 的決定）
+// ============================================================
+
+// ---------- 表單錯誤文字：前面加圖示，不只靠顏色 ----------
+// <p id="…Error" class="invalid-feedback"><i class="bi bi-x-circle" aria-hidden="true"></i>錯誤說明</p>
+.invalid-feedback {
+  margin-bottom: 0;
+
+  .bi { margin-right: .375rem; }
+  a { color: inherit; font-weight: $font-weight-medium; }
+}
+
+// ---------- 步驟條 .flow-steps（CheckoutSteps） ----------
+// <nav class="flow-steps" aria-label="贊助步驟"><ol>
+//   <li class="is-done"><a class="flow-step" href="project.html#rewards">
+//     <span class="flow-step-node" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+//     <span class="flow-step-label">選擇方案<span class="visually-hidden">（已完成）</span></span></a></li>
+//   <li class="is-current" aria-current="step"><span class="flow-step">…2…填寫收件資訊</span></li>
+//   <li><span class="flow-step">…3…完成贊助</span></li>
+// </ol></nav>
+// 節點之間的莖：已經走過的是森林墨綠實線，還沒走到的是虛線
+// 放在 .page-head 裡取代麵包屑（高度同麵包屑列 44px），H1 的位置和其他頁一致
+// < 576px 只顯示目前步驟的名稱，其他兩步的名稱留給螢幕報讀器
+.flow-steps {
+  margin-bottom: map-get($spacers, 2);
+
+  ol {
+    display: flex;
+    align-items: center;
+    max-width: 36rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+  }
+  li + li {
+    flex: 1 1 auto;
+
+    &::before {
+      content: "";
+      flex: 1 1 auto;
+      min-width: 1.25rem;
+      height: 3px;
+      margin-inline: .625rem;
+      border-radius: $border-radius-pill;
+      background-color: $forest;
+    }
+  }
+  // 還沒走到的步驟：虛線
+  li:not(.is-done):not(.is-current)::before {
+    height: 0;
+    border-top: 2px dashed $line-strong;
+    border-radius: 0;
+    background: none;
+  }
+}
+.flow-step {
+  display: inline-flex;
+  align-items: center;
+  gap: .625rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  color: $ink-muted;
+  font-family: $font-family-round;
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+  text-decoration: none;
+  white-space: nowrap;
+}
+a.flow-step {
+  color: $forest;
+
+  &:hover .flow-step-label {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .35em;
+  }
+}
+.flow-step-node {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border: 2px dashed $line-strong;
+  border-radius: 50%;
+  background-color: $surface;
+  color: $ink-muted;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+}
+.is-done .flow-step-node {
+  border: 0;
+  background-color: $forest;
+  color: $surface;
+  font-size: 1rem;
+}
+.is-current .flow-step-node {
+  border: 0;
+  background-color: $sprout;
+  box-shadow: 0 0 0 2px $forest;
+  color: $forest;
+}
+// 最後一步完成（贊助成功頁）：實心勾＋初生綠外圈，表示「目前在這一步」
+.is-done.is-current .flow-step-node {
+  background-color: $forest;
+  box-shadow: 0 0 0 3px $sprout;
+  color: $surface;
+}
+.is-done .flow-step-label { color: $forest; }
+.is-current .flow-step-label {
+  color: $ink;
+  font-weight: $font-weight-bold;
+}
+@include media-breakpoint-down(sm) {
+  .flow-steps li:not(.is-current) .flow-step-label { @include visually-hidden; }
+  .flow-step { justify-content: center; }
+}
+
+// ---------- 分組卡 .flow-card：白卡＋細線＋28px 圓角，一張卡一件事 ----------
+// <section class="flow-card" aria-labelledby="…">
+//   <div class="flow-card-head"><span class="flow-card-icon" aria-hidden="true"><i class="bi bi-house"></i></span>
+//     <div><h2 class="flow-card-title">收件資訊</h2><p class="flow-card-lead">…</p></div></div>
+//   …
+// </section>
+.flow-card {
+  padding: 1.5rem 1.25rem;
+  border: 1px solid $line;
+  border-radius: $border-radius-xl;
+  background-color: $surface;
+
+  @include media-breakpoint-up(md) { padding: 2rem; }
+  @include media-breakpoint-up(xl) { padding: 2.25rem 2.5rem; }
+
+  & + & { margin-top: 1.25rem; }
+}
+.flow-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: .875rem;
+  margin-bottom: 1.25rem;
+}
+// 標題前的圖示：葉影圓底＋森林墨綠線性圖示（像苗圃的標示牌）
+.flow-card-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: $leaf;
+  color: $forest;
+  font-size: 1.125rem;
+}
+.flow-card-title {
+  margin: .3125rem 0 0;
+  font-size: $h3-font-size;
+}
+.flow-card-lead {
+  margin: .375rem 0 0;
+  color: $ink-muted;
+}
+
+// ---------- 選擇卡 .option-card（AddressOption、PaymentOption） ----------
+// 和回饋方案卡同一種做法：radio 用 .btn-check 藏起來，整張 <label> 可點、方向鍵可切換
+// <div class="option-grid">
+//   <div class="option">
+//     <input class="btn-check" type="radio" name="address" id="addressHome" value="home" checked>
+//     <label class="option-card address-option" for="addressHome">
+//       <span class="option-mark" aria-hidden="true"></span>…（label 裡只放 span）
+//     </label>
+//   </div>
+// </div>
+// 選中：森林墨綠 2px 框（1px 框＋1px 內陰影，不推動版面）＋淡初生綠底＋右上角實心勾
+// 只顯示不能選的地址（贊助紀錄詳情「目前的收件地址」）：<div class="option-card address-option is-current">
+.option-grid {
+  display: grid;
+  gap: .75rem;
+
+  @include media-breakpoint-up(md) { gap: 1rem; }
+  // 2 欄只在 768～991px 與 ≥ 1200px：992～1199px 時卡片所在的 7 欄只有約 560px 寬，
+  // 兩張並排會把說明文字擠到一兩個字一行，所以這一段改回上下排
+  @include media-breakpoint-only(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @include media-breakpoint-up(xl) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.option {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+.option-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  width: 100%;
+  margin: 0;
+  padding: 1.125rem 3.25rem 1.125rem 1.25rem;
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $surface;
+  cursor: pointer;
+  transition: border-color .2s ease, background-color .2s ease;
+
+  &:hover { border-color: $forest; }
+}
+.option-mark {
+  position: absolute;
+  top: 1.125rem;
+  right: 1.125rem;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid $control;
+  border-radius: 50%;
+  background-color: $surface;
+  color: $surface;
+  font-size: .875rem;
+
+  &::before {
+    content: "\F633"; // bi-check-lg
+    font-family: bootstrap-icons;
+    opacity: 0;
+  }
+}
+.btn-check:checked + .option-card {
+  border-color: $forest;
+  background-color: $sprout-soft;
+  box-shadow: inset 0 0 0 1px $forest;
+
+  .option-mark {
+    border-color: $forest;
+    background-color: $forest;
+
+    &::before { opacity: 1; }
+  }
+}
+.btn-check:focus-visible + .option-card {
+  box-shadow: $focus-ring-double;
+}
+.btn-check:checked:focus-visible + .option-card {
+  box-shadow: inset 0 0 0 1px $forest, $focus-ring-double;
+}
+// 只顯示的地址卡：外框強調（同個人頁的預設地址卡），沒有勾選圓
+.option-card.is-current {
+  padding-right: 1.25rem;
+  border-color: $forest;
+  box-shadow: inset 0 0 0 1px $forest;
+  cursor: default;
+}
+
+// 地址：收件人（＋預設地址徽章）→ 手機號碼 → 郵遞區號＋地址
+// 地址那一行加 .text-phrase、「區」後放 <wbr>、門牌用 &nbsp; 連起來：
+// <span class="address-option-line text-phrase">70801 台南市安平區<wbr>平通路 128&nbsp;號&nbsp;5&nbsp;樓</span>
+// 只會在郵遞區號後、「區」後、路名與門牌之間換行，路名和門牌不會被拆開
+.address-option-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .75rem;
+  margin-bottom: .125rem;
+}
+.address-option-name {
+  font-family: $font-family-round;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bold;
+  color: $ink;
+}
+.address-option-line {
+  font-size: .9375rem;
+  color: $ink-muted;
+}
+
+// 付款方式：圖示（葉影圓底）＋名稱＋一句說明
+.pay-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: .125rem .875rem;
+}
+.pay-option-icon {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: $leaf;
+  color: $forest;
+  font-size: 1.125rem;
+}
+.pay-option-name {
+  font-family: $font-family-round;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bold;
+  color: $ink;
+}
+.pay-option-desc {
+  font-size: .875rem;
+  line-height: 1.65;
+  color: $ink-muted;
+}
+.btn-check:checked + .pay-option .pay-option-icon {
+  background-color: $surface;
+}
+
+// ---------- 贊助摘要 .pledge-*（PledgeSummary） ----------
+// 專案（縮圖 4:3＋名稱＋提案者）→ 已選方案（＋更換方案）→ 回饋內容（葉片項目符號，同回饋方案卡）→ 顏色說明
+// → 方案金額／額外支持／總計（同專案細節的贊助小計）→ 預計出貨 → 主要按鈕 → 扣款與退款小字
+// 結帳頁：<aside class="pledge-summary is-sticky">；贊助紀錄詳情的「我的方案」只用 .pledge-plan、.pledge-rows、.pledge-ship
+.pledge-summary {
+  padding: 1.5rem 1.25rem;
+  border: 1px solid $line;
+  border-radius: $border-radius-xl;
+  background-color: $surface;
+
+  @include media-breakpoint-up(md) { padding: 1.75rem; }
+}
+// ≥ 992px：捲動時跟著畫面（浮起的面才有陰影，同專案細節的贊助小計）
+.pledge-summary.is-sticky {
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+    box-shadow: $box-shadow;
+  }
+}
+.pledge-summary-title {
+  margin-bottom: 1.25rem;
+  font-size: $h4-font-size;
+}
+.pledge-project {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid $line;
+}
+.pledge-project-thumb {
+  border-radius: $border-radius;
+}
+.pledge-project-name {
+  margin: 0 0 .125rem;
+  font-family: $font-family-round;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.45;
+}
+.pledge-project-maker {
+  margin: 0;
+  font-size: .875rem;
+  color: $wood;
+}
+.pledge-summary .pledge-plan {
+  padding-block: 1.25rem;
+}
+.pledge-plan-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+}
+.pledge-label {
+  margin: 0;
+  font-size: .875rem;
+  color: $ink-muted;
+}
+.pledge-change { font-size: .9375rem; }
+.pledge-plan-name {
+  margin: 0 0 .75rem;
+  font-family: $font-family-round;
+  font-size: $h4-font-size;
+  font-weight: $font-weight-bold;
+  line-height: 1.4;
+  color: $ink;
+}
+// 回饋內容：葉片圖示當項目符號（同 .reward-items）
+.pledge-items {
+  display: grid;
+  gap: .25rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    padding-left: 1.625rem;
+
+    &::before {
+      content: "\F90C"; // bi-leaf
+      position: absolute;
+      top: 0;
+      left: 0;
+      font-family: bootstrap-icons;
+      font-size: .875rem;
+      line-height: $line-height-base * 1rem;
+      color: $forest;
+    }
+  }
+}
+// 顏色說明：再生紙小卡（同生產排程的「最新一則更新」）
+.pledge-note {
+  margin: 0;
+  padding: .75rem 1rem;
+  border-radius: $border-radius;
+  background-color: $paper;
+  font-size: .875rem;
+  line-height: 1.7;
+  color: $ink-muted;
+}
+.pledge-note-label {
+  margin-right: .5rem;
+  font-weight: $font-weight-medium;
+  color: $ink;
+}
+.pledge-rows {
+  margin: 0;
+  padding-top: .5rem;
+  border-top: 1px solid $line;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding-block: .5rem;
+  }
+  dt {
+    font-weight: $font-weight-normal;
+    color: $ink-muted;
+    white-space: nowrap; // 「總計」這類短標籤不會被擠成直排
+  }
+  dd {
+    margin: 0;
+    font-weight: $font-weight-medium;
+    text-align: right;
+    white-space: nowrap;
+  }
+}
+.pledge-total {
+  margin-top: .5rem;
+  padding-top: 1rem !important;
+  border-top: 1px dashed $line-strong;
+
+  dt {
+    color: $ink;
+    font-weight: $font-weight-medium;
+  }
+  dd {
+    font-family: $font-family-round;
+    font-size: 1.625rem;
+    font-weight: $font-weight-bold;
+    line-height: 1.2;
+    color: $forest;
+  }
+}
+// 預計出貨：圖示＋「預計出貨：」＋月份排成一行、不拆行。用行內排列而不是 flex：
+// 全形冒號本身已經帶空白，冒號和月份之間不再多一段 gap
+.pledge-ship {
+  margin: .75rem 0 1.25rem;
+  font-size: .9375rem;
+  color: $ink-muted;
+  white-space: nowrap;
+
+  .bi {
+    margin-right: .5rem;
+    color: $forest;
+  }
+  time { color: $ink; font-weight: $font-weight-medium; }
+}
+// 扣款與退款的小字：青瓷色盾牌圖示（安心提示）
+.pledge-fineprint {
+  display: flex;
+  gap: .5rem;
+  margin: .875rem 0 0;
+  font-size: .8125rem;
+  line-height: 1.7;
+  color: $ink-muted;
+
+  .bi {
+    flex-shrink: 0;
+    color: $tone-ok;
+  }
+}
+
+// ---------- 明細清單 .detail-list（DetailList） ----------
+// 左標籤、右值，列之間細線；< 576px 標籤與值上下排
+// <dl class="detail-list"><div><dt>贊助編號</dt><dd class="num">IM-20260918-0016</dd></div>…
+//   <div class="is-total"><dt>付款金額</dt><dd><data value="2280">NT$ 2,280</data></dd></div></dl>
+.detail-list {
+  margin: 0;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: .125rem 1.5rem;
+    padding-block: .875rem;
+    border-bottom: 1px solid $line;
+  }
+  > div:first-child { padding-top: 0; }
+  > div:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  dt {
+    flex-shrink: 0;
+    font-weight: $font-weight-normal;
+    color: $ink-muted;
+  }
+  dd {
+    min-width: 0;
+    margin: 0;
+    font-weight: $font-weight-medium;
+    text-align: right;
+  }
+  .is-total dd {
+    font-family: $font-family-round;
+    font-size: 1.375rem;
+    font-weight: $font-weight-bold;
+    line-height: 1.3;
+    color: $forest;
+  }
+
+  @include media-breakpoint-down(sm) {
+    > div {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    dd { text-align: left; }
+  }
+}
+// 緊湊版（狀態示意裡）
+.detail-list-compact > div {
+  padding-block: .5rem;
+  font-size: .9375rem;
+}
+// 值的前面放一張小縮圖（贊助成功的「專案」）
+.detail-list-project {
+  align-items: center !important;
+
+  dd {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .75rem;
+  }
+  @include media-breakpoint-down(sm) {
+    align-items: flex-start !important;
+
+    dd { justify-content: flex-start; }
+  }
+}
+.detail-list-thumb {
+  display: block;
+  flex-shrink: 0;
+  width: 4.5rem;
+  border-radius: $border-radius-sm;
+}

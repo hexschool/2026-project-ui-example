@@ -1,0 +1,403 @@
+// ============================================================
+// 贊助紀錄詳情 backing.html（class 前綴 bk-；2026-11 補頁，WIREFRAME_SPEC §3.09）
+// 像讀者帳本的一頁：
+//   專案摘要（雙線起頭的橫帶）→ 三欄帳本（我的方案｜付款資訊｜收件資訊，欄與欄之間欄線）
+//   → 生產與交付進度（白報紙底的排程表，同專案頁 #timeline）→ 取消贊助 → 設計稿狀態示意
+// < 992px：單欄，順序同上（專案摘要最前、取消贊助最後）
+// ============================================================
+
+// ---------- 頁面標題區：麵包屑 → H1 → 贊助編號與日期；右側「回到贊助紀錄」 ----------
+// 標題區下緣不畫髮絲線，直接接專案摘要的粗細雙線（兩道線疊在一起會重複）
+.page-head.bk-head {
+  margin-bottom: 0;
+  border-bottom: 0;
+}
+.bk-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: map-get($spacers, 2) map-get($spacers, 4);
+}
+.bk-head-meta {
+  margin-top: map-get($spacers, 1);
+  font-size: .9375rem;
+  color: $ink;
+}
+.bk-back {
+  font-size: .9375rem;
+}
+
+// ---------- 專案摘要：雙線起頭的橫帶，縮圖 3：資訊 6：操作 3 ----------
+.bk-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  grid-template-areas:
+    "thumb info"
+    "actions actions";
+  gap: map-get($spacers, 3);
+  padding-block: map-get($spacers, 4);
+  border-top: $rule-double double $ink;
+  border-bottom: 1px solid $rule;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr);
+    grid-template-areas: "thumb info actions";
+    gap: map-get($spacers, 4);
+  }
+}
+.bk-summary-thumb {
+  grid-area: thumb;
+  align-self: start;
+}
+.bk-summary-info {
+  grid-area: info;
+  min-width: 0;
+}
+.bk-summary-title {
+  margin-bottom: .25rem;
+  font-size: 1.25rem;
+  font-weight: $font-weight-black;
+  line-height: 1.4;
+
+  a {
+    color: $ink;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: .2em;
+    }
+  }
+  @include media-breakpoint-up(md) {
+    font-size: 1.625rem;
+  }
+  @include media-breakpoint-up(xl) {
+    font-size: 1.875rem;
+  }
+}
+.bk-summary-by {
+  margin-bottom: map-get($spacers, 3);
+  font-size: .875rem;
+  color: $ink-muted;
+}
+// 狀態列：徽章在前、說明在後（同個人頁贊助紀錄卡）
+.bk-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .75rem;
+
+  .status {
+    font-size: .875rem;
+    padding: .25rem .625rem;
+  }
+  .meta-line {
+    color: $ink;
+  }
+}
+.bk-summary-bar {
+  max-width: 20rem;
+  margin-top: map-get($spacers, 3);
+}
+.bk-summary-actions {
+  grid-area: actions;
+  display: flex;
+  align-items: flex-start;
+
+  .btn {
+    flex: 1 1 auto;
+  }
+  @include media-breakpoint-up(md) {
+    justify-content: flex-end;
+
+    .btn { flex: 0 1 11rem; }
+  }
+}
+
+// ---------- 三欄帳本：我的方案｜付款資訊｜收件資訊 ----------
+// 上緣一道 2px 粗線橫跨版心；欄線用 _base.scss 的 .column-rules
+// （≥ 992px 欄與欄之間 1px 直線，< 992px 改成每欄上方的髮絲線）
+// <div class="bk-ledger"><div class="row gx-lg-5 column-rules"><section class="col-lg-4 bk-col">…
+.bk-ledger {
+  margin-top: map-get($spacers, 5);
+  border-top: $rule-heavy solid $ink;
+
+  > .row > [class*="col"] {
+    padding-top: map-get($spacers, 4);
+    padding-bottom: map-get($spacers, 5);
+  }
+  // < 992px：第一欄上方的髮絲線和上緣粗線重複，拿掉（同贊助成功頁 .co-result-cols）
+  > .row > [class*="col"]:first-child {
+    @include media-breakpoint-down(lg) {
+      &::before { content: none; }
+    }
+  }
+}
+.bk-col-title {
+  margin-bottom: map-get($spacers, 3);
+  font-size: 1.375rem;
+}
+.bk-plan-name {
+  margin-bottom: 0;
+  font-family: $font-family-serif;
+  font-size: 1.25rem;
+  font-weight: $font-weight-bold;
+}
+// 顏色說明、預計出貨列、扣款提示是 components/_pledge-summary.scss 的共用零件（同結帳頁的贊助摘要）
+.bk-col .tier-items {
+  margin: map-get($spacers, 2) 0 map-get($spacers, 3);
+}
+.bk-col .pledge-rows {
+  margin-top: map-get($spacers, 3);
+}
+
+// 收件資訊：目前的地址（預設地址卡的鉛字黑外框）→ 修改收件資訊 → 說明 → 展開的地址選擇
+.bk-address {
+  padding: map-get($spacers, 3);
+  border: 1px solid $ink;
+  box-shadow: inset 0 0 0 1px $ink;
+  background-color: $paper;
+
+  .status {
+    margin-bottom: map-get($spacers, 2);
+  }
+  p {
+    margin-bottom: 0;
+  }
+}
+.bk-address-name {
+  font-weight: $font-weight-bold;
+}
+.bk-address-line {
+  font-size: .9375rem;
+  overflow-wrap: anywhere;
+}
+.bk-ship-toggle {
+  margin-top: map-get($spacers, 3);
+}
+.bk-ship-note {
+  margin: map-get($spacers, 2) 0 0;
+}
+.bk-ship-form {
+  margin-top: map-get($spacers, 3);
+  padding-top: map-get($spacers, 3);
+  border-top: 1px dashed $rule-strong;
+
+  fieldset {
+    min-width: 0;
+  }
+  .choice-card + .choice-card {
+    margin-top: map-get($spacers, 2);
+    height: auto;
+  }
+  .choice-card {
+    height: auto;
+  }
+}
+.bk-ship-legend {
+  margin-bottom: map-get($spacers, 2);
+  font-family: $font-family-serif;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bold;
+}
+.bk-ship-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 2);
+  margin-top: map-get($spacers, 3);
+}
+
+// ---------- 生產與交付進度：白報紙底的排程表（同專案頁 #timeline） ----------
+.bk-progress {
+  margin-top: map-get($spacers, 5);
+  padding-block: map-get($spacers, 6);
+  border-block: 1px solid $rule;
+  background-color: $paper;
+}
+// 左欄標題與說明：上方 2px 粗線（同專案頁生產排程）
+.bk-intro {
+  padding-top: map-get($spacers, 3);
+  border-top: $rule-heavy solid $ink;
+
+  > p {
+    margin-bottom: 0;
+    color: $ink-muted;
+  }
+}
+.bk-intro-title {
+  margin-bottom: map-get($spacers, 3);
+  font-size: 1.75rem;
+  font-weight: $font-weight-black;
+  line-height: 1.3;
+
+  @include media-breakpoint-up(xl) {
+    font-size: 2rem;
+  }
+}
+.bk-timeline-more {
+  margin-top: map-get($spacers, 4);
+  padding-top: map-get($spacers, 2);
+  border-top: 1px solid $rule;
+}
+
+// ---------- 取消贊助 ----------
+// 取消贊助與狀態示意所在的版心：最後一段，和頁尾之間留白（同專案列表、結帳頁）
+.bk-page-end {
+  padding-bottom: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-bottom: map-get($spacers, 7);
+  }
+}
+.bk-cancel {
+  padding-top: map-get($spacers, 6);
+}
+.bk-cancel-body {
+  max-width: 44rem;
+
+  .callout {
+    margin-bottom: map-get($spacers, 3);
+  }
+  .callout p {
+    margin-bottom: 0;
+  }
+  .callout p + p {
+    margin-top: map-get($spacers, 2);
+  }
+}
+
+// 確認對話框：白報紙、鉛字黑框，上緣粗細雙線（同儀表板）
+.bk-modal {
+  .modal-content {
+    border-top: $rule-double double $ink;
+  }
+  .modal-header {
+    padding: map-get($spacers, 4) map-get($spacers, 4) map-get($spacers, 2);
+    border-bottom: 0;
+  }
+  .modal-title {
+    font-size: 1.375rem;
+    line-height: 1.45;
+  }
+  .modal-body {
+    padding: map-get($spacers, 2) map-get($spacers, 4) map-get($spacers, 3);
+  }
+  .modal-footer {
+    gap: map-get($spacers, 2);
+    padding: map-get($spacers, 3) map-get($spacers, 4) map-get($spacers, 4);
+    border-top: 1px solid $rule;
+
+    > * { margin: 0; }
+  }
+}
+
+// ---------- 設計稿狀態示意：另外 4 種贊助狀態＋對話框的靜態樣子（≥ 992px 兩欄） ----------
+// 768～991px 仍是單欄：兩欄時縮圖旁的文字欄只剩約 165px，「募資失敗 ‧ 已退款」徽章會衝出示範框
+.bk-demo-case {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .demo-state-stage {
+    flex: 1 1 auto;
+  }
+}
+.bk-demo-title {
+  margin-bottom: .25rem;
+  font-family: $font-family-base;
+  font-size: 1rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-body;
+}
+.bk-demo-case > .text-note {
+  margin-bottom: map-get($spacers, 3);
+}
+// 縮小版專案摘要：縮圖＋名稱＋方案一列＋狀態列
+.bk-mini {
+  display: grid;
+  grid-template-columns: minmax(0, 5.5rem) minmax(0, 1fr);
+  gap: map-get($spacers, 3);
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr);
+  }
+  &.is-plain {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.bk-mini-title {
+  margin-bottom: .125rem;
+  font-size: 1.0625rem;
+  line-height: 1.45;
+}
+.bk-mini-by {
+  margin-bottom: map-get($spacers, 2);
+  font-size: .8125rem;
+  color: $ink-muted;
+}
+.bk-mini .meta-line {
+  font-size: .8125rem;
+}
+.bk-mini-plan {
+  margin-bottom: map-get($spacers, 2) !important;
+  color: $ink;
+}
+.bk-mini .bk-state .meta-line {
+  font-size: .875rem;
+}
+// 縮小版的欄寬窄（手機只剩約 10rem），單一項目放不下時允許換行，不被 .meta-line 的 overflow 裁掉
+.bk-mini .meta-line > li {
+  white-space: normal;
+}
+// 每種狀態才有的內容：小標＋內容，上方髮絲線
+.bk-demo-block {
+  margin-top: map-get($spacers, 3);
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $rule;
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+  .callout {
+    padding: .75rem .875rem;
+    font-size: .9375rem;
+  }
+}
+.bk-demo-label {
+  margin-bottom: map-get($spacers, 2);
+  font-family: $font-family-base;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-body;
+}
+.bk-demo-text {
+  font-family: $font-family-serif;
+}
+// 募資失敗 ‧ 已退款：整塊降一階（同個人頁卡片 4：淡底、標題次要色、縮圖降透明度）
+.bk-demo-muted {
+  padding: map-get($spacers, 3);
+  background-color: $idle-bg;
+
+  .bk-mini-title { color: $ink-muted; }
+  .img-frame > img { opacity: .55; filter: grayscale(.4); }
+  .bk-demo-block { border-top-color: $rule-strong; }
+}
+// 對話框示意的示範框：< 576px 內距縮小，兩顆按鈕才會和真正的 Modal 一樣左右並排
+.bk-demo-dialog-stage {
+  @include media-breakpoint-down(sm) {
+    padding: .75rem;
+  }
+}
+// 對話框的靜態樣子：不加 .modal（Bootstrap 的 --bs-modal-* 變數定義在 .modal 上，這裡直接給外觀）
+.bk-demo-dialog {
+  max-width: 32rem;
+
+  .modal-content {
+    border: 1px solid $modal-content-border-color;
+    border-top: $rule-double double $ink;
+    background-color: $modal-content-bg;
+    color: $modal-content-color;
+  }
+}

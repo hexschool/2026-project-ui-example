@@ -27,6 +27,7 @@ document.querySelectorAll('[data-bs-toggle="tab"], [data-bs-toggle="pill"]').for
 //    方案：<input type="radio" name="reward" data-price="2280" data-name="標準單入組">
 //    自訂金額：<input type="number" data-pledge-amount>（min 跟著方案變；低於方案金額時顯示錯誤）
 //    快捷鈕：<button data-pledge-add="500">；小計：data-pledge-name／-price／-extra／-total／-min 的元素
+//    下一步：<a href="checkout.html" data-pledge-next>（沒選方案或金額不足時停用）
 //    已額滿的方案 radio 是 disabled，選不到
 const pledge = document.querySelector('[data-pledge]')
 if (pledge) {
@@ -50,7 +51,18 @@ if (pledge) {
     out('min').forEach((el) => { el.textContent = price.toLocaleString('en-US') })
     out('extra').forEach((el) => { el.textContent = money(invalid ? 0 : extra) })
     out('total').forEach((el) => { el.textContent = money(invalid ? price : Math.max(total, price)) })
-    if (nextButton) nextButton.disabled = !radio || invalid
+    // 「下一步：填寫收件資訊」是連到 checkout.html 的 <a>：停用時用 .disabled＋aria-disabled＋tabindex="-1"
+    if (nextButton) {
+      const off = !radio || invalid
+      nextButton.classList.toggle('disabled', off)
+      if (off) {
+        nextButton.setAttribute('aria-disabled', 'true')
+        nextButton.setAttribute('tabindex', '-1')
+      } else {
+        nextButton.removeAttribute('aria-disabled')
+        nextButton.removeAttribute('tabindex')
+      }
+    }
   }
 
   // 換方案：金額重設為方案金額（回饋內容不變，額外支持歸零）

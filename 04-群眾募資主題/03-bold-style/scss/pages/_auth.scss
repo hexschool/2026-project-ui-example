@@ -1,0 +1,201 @@
+// ============================================================
+// 登入 login.html、註冊 register.html（2026-11 補頁；class 前綴 auth-，兩頁共用）
+// 構圖：整條亮黃告示板 → 左側超大 H1＋說明（≥ 992px 下方釘一張工坊照片），
+//       右側一張粗框表單告示卡，卡片下緣「越過」亮黃板的底線，像釘在板子邊上
+// < 992px：單欄，H1 → 說明 → 表單卡；照片不顯示
+// ============================================================
+
+// 表單卡超出亮黃板下緣的距離；下方的 .auth-after 用同一個值留出間距
+.auth,
+.auth-after {
+  --auth-overhang: 2.5rem;
+
+  @include media-breakpoint-up(lg) { --auth-overhang: 4rem; }
+}
+
+// 亮黃告示板：底部 3px 深黑線（同 .page-head），下方內距由表單卡的負邊距決定
+.auth-band {
+  padding-top: map-get($spacers, 5);
+  border-bottom: $border-width solid $ink;
+  background-color: $yellow;
+
+  @include media-breakpoint-up(lg) { padding-top: map-get($spacers, 6); }
+}
+.auth-layout {
+  display: grid;
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 32rem);
+    column-gap: map-get($spacers, 6);
+  }
+  @include media-breakpoint-up(xl) { column-gap: map-get($spacers, 8); }
+}
+
+// 左欄：H1 → 說明 →（≥ 992px）照片
+.auth-intro {
+  display: flex;
+  flex-direction: column;
+  gap: map-get($spacers, 3);
+  min-width: 0;
+
+  @include media-breakpoint-up(lg) { padding-bottom: map-get($spacers, 6); }
+}
+// 超大標題：只有兩個字，放到海報的尺寸（手機 56px → 桌機 144px）
+.auth-title {
+  margin: 0;
+  font-size: clamp(3.5rem, 1.25rem + 8vw, 9rem);
+  font-weight: $font-weight-bolder;
+  line-height: .95;
+  letter-spacing: 0;
+}
+.auth-lead {
+  max-width: 22em;
+  margin: 0;
+  font-size: $lead-font-size;
+  font-weight: $font-weight-medium;
+}
+// 工坊照片：釘在板子上的一張相片（裝飾，alt=""），微微傾斜＋硬陰影；只在 ≥ 992px 顯示
+// 固定 4:3、寬度上限 22rem：登入、註冊兩頁的照片大小與位置相同
+.auth-photo {
+  position: relative;
+  width: min(100%, 22rem);
+  aspect-ratio: 4 / 3;
+  margin: map-get($spacers, 3) 0 0 map-get($spacers, 2);
+  border: $border-width solid $ink;
+  border-radius: $border-radius-lg;
+  background-color: $sand;
+  box-shadow: $shadow;
+  transform: rotate(-2deg);
+  overflow: hidden;
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// 右欄：表單告示卡。貼齊亮黃板底部，再用負的下邊距越過底線 --auth-overhang
+// （不論左欄或卡片哪個比較高，超出的距離都固定，下方內容的間距才算得準）
+.auth-card {
+  position: relative;
+  z-index: 1;
+  align-self: end;
+  width: 100%;
+  max-width: 34rem;
+  margin-bottom: calc(var(--auth-overhang) * -1);
+  border: $border-width solid $ink;
+  border-radius: $border-radius-xl;
+  background-color: $paper;
+  box-shadow: $shadow;
+}
+// 右上角的圖釘（裝飾）
+.auth-pin {
+  position: absolute;
+  top: -1.125rem;
+  right: 1.5rem;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: $border-width solid $ink;
+  border-radius: 50%;
+  background-color: $ink;
+  color: $yellow;
+  font-size: 1.125rem;
+  transform: rotate(-8deg);
+}
+.auth-card-body {
+  padding: map-get($spacers, 4) 1.25rem;
+
+  @include media-breakpoint-up(sm) { padding: map-get($spacers, 5); }
+  @include media-breakpoint-up(lg) { padding: 2.25rem 2.5rem; }
+}
+// 密碼標籤與「忘記密碼？」同一列
+.auth-label-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 1rem;
+}
+// 佔位連結（本主題沒有忘記密碼頁）：外觀照文字連結
+// 觸控高度 44px：上下用內距長高（上方多一點，長進 Email 欄下方的留白），再用同樣的負外距抵掉，標籤列不會變高
+.auth-forgot {
+  display: inline-block;
+  margin-block: -.75rem -.4375rem;
+  padding-block: .75rem .4375rem;
+  color: $ink;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .25em;
+  cursor: default;
+}
+// 記住我、同意條款：label 上下各加 8px，整列可點的高度至少 44px；方框跟著往下 8px，仍和第一行文字對齊，文字可以換行
+// 上方用負外距抵掉多出來的 8px（和上一欄的距離不變）；錯誤文字換到下一行，左邊對齊 label 文字
+.auth-check {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  column-gap: .5rem;
+  min-height: 0;
+  margin-top: -.5rem;
+  padding-left: 0;
+
+  .form-check-input {
+    flex-shrink: 0;
+    float: none;
+    margin: calc(.5rem + #{($line-height-base - $form-check-input-width) * .5}) 0 0;
+  }
+  .form-check-label {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-block: .5rem;
+  }
+  .invalid-feedback {
+    flex-basis: 100%;
+    margin-top: -.25rem;
+    padding-left: 1.75rem;
+  }
+}
+// 條款裡的佔位連結：加 class，才不會被 Bootstrap 對「沒有 href 也沒有 class 的 a」的重設拿掉底線
+.auth-link {
+  color: inherit;
+  font-weight: $font-weight-bold;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .2em;
+  cursor: default;
+}
+// 底部切換連結：沙色票根
+.auth-card-foot {
+  padding: .875rem 1.25rem;
+  border-top: $border-width solid $ink;
+  border-radius: 0 0 calc(#{$border-radius-xl} - #{$border-width}) calc(#{$border-radius-xl} - #{$border-width});
+  background-color: $sand;
+  font-weight: $font-weight-medium;
+  text-align: center;
+
+  .btn-text { min-height: 2.75rem; }
+}
+
+// 亮黃板之後：設計稿狀態示意，上方留出表單卡超出的距離
+.auth-after {
+  padding-top: calc(var(--auth-overhang) + #{map-get($spacers, 6)});
+  padding-bottom: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) { padding-bottom: map-get($spacers, 7); }
+  .demo-state { margin-top: 0; }
+}
+// 狀態示意的寬度同上方表單卡（< 992px 卡片最寬 34rem；≥ 992px 表單欄 32rem）
+// 登入：說明在左、示意卡在右（和表單卡同一欄）；註冊：示意卡比較高，改成說明在上、示意卡在下（避免左欄下方大片空白）
+.auth-demo-case {
+  max-width: 34rem;
+
+  @include media-breakpoint-up(lg) { max-width: 32rem; }
+}

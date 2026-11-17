@@ -76,7 +76,6 @@ if (rewardForm) {
       update()
     })
   })
-  rewardForm.addEventListener('submit', (event) => event.preventDefault()) // 本次沒有結帳頁，不換頁
   update()
 }
 

@@ -1,0 +1,395 @@
+// ============================================================
+// 贊助結帳 checkout.html、贊助成功 order-result.html（class 前綴 co-；2026-11 補頁，WIREFRAME_SPEC §3.07、§3.08）
+// 兩頁的頁面標題區一樣：步驟條（取代麵包屑）→ H1 → 一句說明，換頁時位置不跳動
+// 結帳像雜誌的訂閱回函：左欄是兩段回函表單（上方 2px 粗線起頭），右欄是一張 sticky 的贊助摘要（雙線起頭，同專案頁儀表板）
+// 贊助成功像書末的版權頁：左欄兩份明細清單（.ledger），右欄預計出貨、提醒與按鈕，中間一道欄線
+// ============================================================
+.co-page {
+  padding-bottom: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-bottom: map-get($spacers, 7);
+  }
+}
+
+// ---------- 步驟條（CheckoutSteps）：一把 3 格的尺 ----------
+// 節點畫在尺的上方（已完成＝鉛字黑實心＋勾、目前＝深霧藍實心＋淡霧藍外圈、未到＝虛線空心），
+// 節點之間的連線：走過的是實線、還沒到的是虛線；下方是刻度（每步一道長刻度、四道短刻度），刻度下是步驟名稱
+// <nav class="co-steps" aria-label="贊助步驟"><ol>
+//   <li class="is-done"><a href="project.html#rewards"><span class="co-step-node" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+//     <span class="co-step-name">選擇方案<span class="visually-hidden">（已完成）</span></span></a></li>
+//   <li class="is-current" aria-current="step"><span class="co-step-node" aria-hidden="true">2</span><span class="co-step-name">填寫收件資訊</span></li>
+//   <li><span class="co-step-node" aria-hidden="true">3</span><span class="co-step-name">完成贊助</span></li>
+// </ol></nav>
+.co-steps {
+  --step-node: 1.75rem;
+  margin-bottom: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: map-get($spacers, 5);
+  }
+
+  ol {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 44rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    --step-ink: #{$rule-strong};
+    position: relative;
+    min-width: 0;
+
+    // 連線：節點右側到下一個節點左側（還沒走到：虛線）
+    &:not(:last-child)::before {
+      content: "";
+      position: absolute;
+      top: calc(var(--step-node) / 2 - 1px);
+      left: calc(var(--step-node) + .5rem);
+      right: .5rem;
+      border-top: 2px dashed $rule-strong;
+    }
+    // 刻度：每一步一段，從節點中心畫到下一個節點中心；開頭一道長刻度、四道短刻度
+    &::after {
+      content: "";
+      position: absolute;
+      top: calc(var(--step-node) + .5rem);
+      left: calc(var(--step-node) / 2);
+      right: calc(var(--step-node) / -2);
+      height: .625rem;
+      border-top: 1px solid var(--step-ink);
+      background:
+        linear-gradient(var(--step-ink), var(--step-ink)) 0 0 / 1px .625rem no-repeat,
+        repeating-linear-gradient(90deg, var(--step-ink) 0 1px, transparent 1px 25%) 0 0 / 100% .3125rem no-repeat;
+      pointer-events: none;
+    }
+    &:last-child::after {
+      right: 0;
+      background:
+        linear-gradient(var(--step-ink), var(--step-ink)) 0 0 / 1px .625rem no-repeat,
+        linear-gradient(var(--step-ink), var(--step-ink)) 100% 0 / 1px .625rem no-repeat,
+        repeating-linear-gradient(90deg, var(--step-ink) 0 1px, transparent 1px 25%) 0 0 / 100% .3125rem no-repeat;
+    }
+
+    &.is-done {
+      --step-ink: #{$ink};
+
+      &:not(:last-child)::before {
+        border-top-style: solid;
+        border-top-color: $ink;
+      }
+    }
+    &.is-current {
+      --step-ink: #{$slate-deep};
+    }
+  }
+  // 已完成而且可以點回去的步驟（結帳頁的「選擇方案」）
+  a {
+    display: inline-block;
+    color: inherit;
+    text-decoration: none;
+
+    &:hover .co-step-name {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: .3em;
+    }
+  }
+}
+.co-step-node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: var(--step-node);
+  height: var(--step-node);
+  border: 1.5px dashed $ink-muted;
+  border-radius: 50%;
+  background-color: $ivory;
+  font-family: $font-family-numeric;
+  font-size: .875rem;
+  font-weight: 600;
+  line-height: 1;
+  color: $ink-muted;
+
+  .is-done & {
+    border: 0;
+    background-color: $ink;
+    color: $ivory;
+  }
+  .is-current & {
+    border: 0;
+    background-color: $slate-deep;
+    color: $ivory;
+    box-shadow: 0 0 0 4px $slate-tint;
+  }
+}
+.co-step-name {
+  display: block;
+  margin-top: 1.5rem; // 讓出刻度的位置
+  padding-right: .5rem;
+  font-size: .875rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.4;
+  color: $ink-muted;
+
+  .is-done & { color: $ink; }
+  .is-current & {
+    color: $ink;
+    font-weight: $font-weight-bold;
+  }
+  @include media-breakpoint-up(md) {
+    font-size: .9375rem;
+  }
+}
+
+// ---------- 結帳：左欄兩段回函表單 ----------
+// 段落標題：上方 2px 鉛字黑粗線（同 .section-heading，字級縮一級）
+.co-heading {
+  margin-bottom: map-get($spacers, 4);
+  padding-top: map-get($spacers, 3);
+  border-top: $rule-heavy solid $ink;
+
+  h2 {
+    margin-bottom: 0;
+    font-size: 1.5rem;
+
+    @include media-breakpoint-up(xl) {
+      font-size: 1.75rem;
+    }
+  }
+  p {
+    margin: map-get($spacers, 2) 0 0;
+    color: $ink-muted;
+  }
+}
+.co-section + .co-section {
+  margin-top: map-get($spacers, 6);
+}
+.co-section fieldset {
+  min-width: 0;
+}
+.co-add {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-top: map-get($spacers, 3);
+}
+
+// 信用卡欄位：接在「信用卡」選擇卡下方，左側一道深霧藍線表示屬於上面那張卡
+// 選「行動支付」時隱藏（CSS :has()，不寫 JS；不支援 :has() 的瀏覽器維持顯示）
+.co-card-fields {
+  margin: map-get($spacers, 2) 0 0;
+  padding: map-get($spacers, 3) 0 map-get($spacers, 2) map-get($spacers, 4);
+  border-left: 2px solid $slate-deep;
+
+  @include media-breakpoint-up(md) {
+    padding-left: map-get($spacers, 4) + .5rem;
+  }
+}
+.co-pay:has(.co-pay-mobile:checked) .co-card-fields {
+  display: none;
+}
+.co-card-num {
+  font-family: $font-family-numeric;
+  font-size: 1.0625rem;
+  letter-spacing: .06em;
+}
+.co-pay-note {
+  display: flex;
+  gap: .5rem;
+  margin: map-get($spacers, 3) 0 0;
+
+  .bi { flex: 0 0 auto; }
+}
+
+// ---------- 結帳：右欄贊助摘要（PledgeSummary；≥ 992px sticky） ----------
+// 外框同專案頁的募資儀表板：白報紙、版線框、上緣粗細雙線；sticky 時加一層浮起的陰影
+.co-summary {
+  padding: map-get($spacers, 4);
+  border: 1px solid $rule;
+  border-top: $rule-double double $ink;
+  background-color: $paper;
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+    box-shadow: $box-shadow;
+  }
+
+  // 顏色說明、預計出貨列、扣款提示是 components/_pledge-summary.scss 的共用零件
+  .pledge-rows {
+    margin-top: map-get($spacers, 3);
+  }
+  .pledge-eta {
+    margin-bottom: map-get($spacers, 4); // 和下方「確認贊助並付款」之間
+  }
+}
+.co-summary-title {
+  margin-bottom: map-get($spacers, 3);
+  font-size: 1.375rem;
+}
+// 專案：縮圖＋名稱＋提案者
+.co-summary-project {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  align-items: start;
+  gap: map-get($spacers, 3);
+  padding-bottom: map-get($spacers, 3);
+  border-bottom: 1px solid $rule;
+}
+.co-summary-name {
+  margin-bottom: .125rem;
+  font-family: $font-family-serif;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+}
+.co-summary-by {
+  margin-bottom: 0;
+  font-size: .8125rem;
+  color: $ink-muted;
+}
+// 已選方案＋更換方案
+.co-plan {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 map-get($spacers, 3);
+  padding-top: map-get($spacers, 2);
+
+  .btn-text {
+    font-size: .875rem;
+  }
+}
+.co-plan-label {
+  display: block;
+  font-size: $small-font-size;
+  font-weight: $font-weight-medium;
+  color: $ink-muted;
+}
+.co-plan-name {
+  margin-bottom: 0;
+  font-family: $font-family-serif;
+  font-size: 1.25rem;
+  font-weight: $font-weight-bold;
+}
+.co-summary .tier-items {
+  margin: map-get($spacers, 2) 0 map-get($spacers, 3);
+}
+.co-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+}
+
+// ---------- 設計稿狀態示意：和左欄表單同寬 ----------
+.co-demo-stage {
+  .callout {
+    margin-bottom: map-get($spacers, 4);
+  }
+}
+
+// ---------- 贊助成功：標題列（ok 大圖示＋H1） ----------
+.co-result-title {
+  display: flex;
+  align-items: center;
+  gap: map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 2);
+
+  h1 {
+    margin-bottom: 0 !important;
+  }
+}
+.co-result-icon {
+  flex: 0 0 auto;
+  font-size: calc(1.6rem + 2vw);
+  line-height: 1;
+  color: $ok;
+
+  @include media-breakpoint-up(xl) {
+    font-size: $h1-font-size * 1.15;
+  }
+}
+.co-result-lead {
+  max-width: 34em;
+  overflow-wrap: anywhere;
+}
+
+// 版權頁：左欄明細、右欄出貨與按鈕，中間欄線（.column-rules）
+.co-result-block + .co-result-block {
+  margin-top: map-get($spacers, 5);
+}
+.co-block-title {
+  margin-bottom: map-get($spacers, 3);
+  font-size: 1.375rem;
+}
+// < 992px：欄線改成每欄上方的髮絲線，第一欄那條和標題區下緣重複，拿掉
+.co-result-cols > [class*="col"]:first-child {
+  @include media-breakpoint-down(lg) {
+    padding-top: 0;
+
+    &::before { content: none; }
+  }
+}
+.co-result-side {
+  @include media-breakpoint-up(lg) {
+    padding-left: map-get($spacers, 5) !important;
+  }
+}
+// 預計出貨：大字月份，像版權頁上的出版日期
+.co-eta {
+  padding-bottom: map-get($spacers, 4);
+  border-bottom: 1px solid $rule;
+
+  p {
+    margin-bottom: 0;
+    color: $ink-muted;
+  }
+}
+.co-eta-label {
+  margin-bottom: .25rem;
+  font-family: $font-family-base;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+  color: $ink-muted;
+}
+.co-eta-month {
+  display: block;
+  margin-bottom: map-get($spacers, 2);
+  font-family: $font-family-serif;
+  font-size: clamp(2rem, 1.6rem + 1.4vw, 2.75rem);
+  font-weight: $font-weight-black;
+  line-height: 1.2;
+  color: $ink;
+
+  .num {
+    font-family: $font-family-numeric;
+    font-weight: 600;
+  }
+}
+.co-result-note {
+  margin-top: map-get($spacers, 4);
+
+  p {
+    margin-bottom: 0;
+  }
+  p + p {
+    margin-top: map-get($spacers, 2);
+  }
+}
+// 按鈕列：≥ 576px 兩顆並排等寬，< 576px 上下排
+.co-result-actions {
+  display: grid;
+  gap: map-get($spacers, 2);
+  margin-top: map-get($spacers, 4);
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

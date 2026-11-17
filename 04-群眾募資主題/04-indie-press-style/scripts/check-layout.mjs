@@ -1,5 +1,5 @@
 // 檢查每個頁面的共用區塊（<head> 共用部分、頁首、頁尾、底部 script）是否與 templates/page.html 一致
-// 頁首頁尾在每頁都完整寫一份，改範本後可以用這支確認 5 個頁面都同步了
+// 頁首頁尾在每頁都完整寫一份，改範本後可以用這支確認 10 個頁面都同步了
 // 用法：npm run check
 import fs from 'node:fs'
 import path from 'node:path'
@@ -25,13 +25,24 @@ const blocks = {
 }
 const pick = (html, [re]) => normalize((html.match(re) || [''])[0])
 
-// 頁首導覽的目前頁：專案細節標「探索專案」（只加 active、不加 aria-current）；Guideline 不標示
+// 頁首導覽的目前頁：專案細節標「探索專案」、贊助紀錄詳情標「我的島造」（兩者是子頁，只加 active、不加 aria-current）；
+// Guideline 與登入、註冊、贊助結帳、贊助成功這類流程頁不標示
 const expectedNav = {
   'index.html': 'index.html',
   'projects.html': 'projects.html',
   'project.html': 'projects.html',
   'account.html': 'account.html',
+  'backing.html': 'account.html',
   'guideline.html': null,
+  'login.html': null,
+  'register.html': null,
+  'checkout.html': null,
+  'order-result.html': null,
+}
+// 子頁：目前頁只加 active，不加 aria-current
+const subPages = {
+  'project.html': '專案細節的「探索專案」',
+  'backing.html': '贊助紀錄詳情的「我的島造」',
 }
 
 const template = fs.readFileSync(path.join(root, 'templates/page.html'), 'utf8')
@@ -51,8 +62,8 @@ for (const page of pages) {
     const href = (tag.match(/href="([^"]+)"/) || [])[1]
     const current = tag.includes('aria-current="page"')
     if (href !== expected) problems.push(`頁首目前頁指向 ${href}，應為 ${expected}`)
-    if (page === 'project.html' && current) problems.push('專案細節的「探索專案」不加 aria-current')
-    if (page !== 'project.html' && !current) problems.push('目前頁要加 aria-current="page"')
+    if (page in subPages && current) problems.push(`${subPages[page]}不加 aria-current`)
+    if (!(page in subPages) && !current) problems.push('目前頁要加 aria-current="page"')
   }
   console.log(`${problems.length ? '✗' : '✓'} ${page}${problems.length ? '：' + problems.join('；') : ''}`)
   if (problems.length) failed++

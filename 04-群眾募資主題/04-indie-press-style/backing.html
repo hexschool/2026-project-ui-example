@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>贊助紀錄詳情｜島造 ISLANDMAKE 在地製造提案平台</title>
+  <meta name="description" content="一只走十年的台南帆布包 標準單入組的贊助紀錄：方案、付款、收件資訊與生產進度。">
+  <meta name="theme-color" content="#F5F2EA">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Noto Serif TC（標題 700／900、長文 400）、Noto Sans TC（介面 400／500／700）、Newsreader（英數、金額、刻度數字） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="navbar navbar-expand-lg" aria-label="主要導覽">
+        <div class="container">
+          <a class="navbar-brand site-brand" href="index.html" aria-label="島造 ISLANDMAKE 首頁">
+            <span class="site-brand-name">島造</span>
+            <span class="site-brand-sub">ISLANDMAKE</span>
+          </a>
+
+          <!-- 992px 以下的圖示列（桌機另一組放在導覽之後，讓 Tab 順序與畫面順序一致） -->
+          <div class="site-header-mobile d-flex d-lg-none">
+            <button class="btn btn-icon site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearchMobile" aria-controls="siteSearchMobile" aria-expanded="false" aria-label="搜尋專案或提案者">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <a class="site-avatar" href="account.html" aria-label="我的島造（陳柏宇）">
+              <span class="avatar"><img src="images/proposer-avatar.jpg" alt="" width="1200" height="1200"></span>
+            </a>
+            <button class="navbar-toggler btn btn-icon site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="projects.html">探索專案</a></li>
+              <li class="nav-item"><a class="nav-link active" href="account.html">我的島造</a></li>
+            </ul>
+            <!-- 992px 以下：「我要提案」放進選單 -->
+            <a class="btn btn-outline-secondary site-propose-mobile d-lg-none" href="index.html#propose">我要提案</a>
+            <!-- 桌機右側：搜尋 → 我要提案 → 頭像 -->
+            <div class="site-header-actions d-none d-lg-flex">
+              <form class="site-search" role="search" action="projects.html">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control" type="search" name="q" placeholder="搜尋專案或提案者" aria-label="搜尋專案或提案者">
+              </form>
+              <a class="btn btn-outline-secondary btn-sm" href="index.html#propose">我要提案</a>
+              <a class="site-avatar" href="account.html" aria-label="我的島造（陳柏宇）">
+                <span class="avatar"><img src="images/proposer-avatar.jpg" alt="" width="1200" height="1200"></span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- 992px 以下：點放大鏡展開的搜尋列 -->
+      <div id="siteSearchMobile" class="collapse d-lg-none site-search-mobile">
+        <div class="container">
+          <form class="site-search" role="search" action="projects.html">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input class="form-control" type="search" name="q" placeholder="搜尋專案或提案者" aria-label="搜尋專案或提案者">
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!--
+        贊助紀錄詳情（2026-11 補頁；WIREFRAME_SPEC §3.09，文案 CONTENT.md 附錄 B.12，示意資料 B.7、B.3）
+        - 入口：account.html 贊助紀錄卡的專案名稱（4 張都連到這頁）；以紀錄卡片 1（帆布包、募資中）示範
+        - 頁首「我的島造」只加 active、不加 aria-current（個人頁的子頁）；這是贊助者的功能，不做角色切換
+        - 像讀者帳本的一頁：專案摘要 → 三欄帳本（我的方案｜付款資訊｜收件資訊）→ 生產與交付進度 → 取消贊助 → 設計稿狀態示意
+          樣式在 scss/pages/_backing.scss；明細清單 .ledger、地址選擇卡 .choice-card、贊助摘要零件 .pledge-* 是 components/ 的共用元件
+        - 不寫 JS：修改收件資訊用 Collapse（#shippingEdit），取消贊助用 Modal（#cancelBackingModal）
+      -->
+      <div class="container">
+        <!-- ========== 頁面標題區：麵包屑 → H1 → 贊助編號與日期；右側回到贊助紀錄 ========== -->
+        <header class="page-head bk-head">
+          <nav aria-label="目前位置">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+              <li class="breadcrumb-item"><a href="account.html">我的島造</a></li>
+              <li class="breadcrumb-item active" aria-current="page">贊助紀錄詳情</li>
+            </ol>
+          </nav>
+          <div class="bk-head-row">
+            <div>
+              <h1>贊助紀錄詳情</h1>
+              <ul class="meta-line bk-head-meta">
+                <li>贊助編號 <span class="tnum">IM-20260918-0016</span></li>
+                <li>贊助於 <time datetime="2026-09-18">2026/09/18</time></li>
+              </ul>
+            </div>
+            <a class="btn btn-text bk-back" href="account.html#backings"><i class="bi bi-arrow-left" aria-hidden="true"></i>回到贊助紀錄</a>
+          </div>
+        </header>
+
+        <!-- ========== 專案摘要：雙線起頭的橫帶（縮圖 3：資訊 6：操作 3） ========== -->
+        <section id="summary" class="bk-summary" aria-labelledby="bkProjectTitle">
+          <div class="img-frame ratio-4x3 bk-summary-thumb">
+            <img src="images/project-01-canvas-bag.jpg" alt="原胚、墨綠、炭黑三色帆布通勤包" width="1600" height="1066">
+          </div>
+          <div class="bk-summary-info">
+            <h2 id="bkProjectTitle" class="bk-summary-title text-phrase"><a href="project.html">一只走十年的<wbr>台南帆布包</a></h2>
+            <p class="bk-summary-by">布作工房 第三代</p>
+            <div class="bk-state">
+              <span class="status is-live"><i class="bi bi-hourglass-split" aria-hidden="true"></i>募資中</span>
+              <ul class="meta-line">
+                <li>目前達成 <data value="247">247%</data></li>
+                <li>剩 12&nbsp;天</li>
+              </ul>
+            </div>
+            <!-- 超額達成：滿格，100% 目標刻度在 40.5%（CONTENT.md 附錄 B.5） -->
+            <div class="fund-bar fund-bar-sm is-over bk-summary-bar" style="--goal: 40.5%" aria-hidden="true"></div>
+          </div>
+          <div class="bk-summary-actions">
+            <a class="btn btn-outline-secondary" href="project.html">查看專案</a>
+          </div>
+        </section>
+
+        <!-- ========== 三欄帳本：我的方案｜付款資訊｜收件資訊（≥ 992px 欄線分隔；手機依序上下排） ========== -->
+        <div class="bk-ledger">
+          <div class="row gx-lg-5 column-rules">
+            <!-- 我的方案 -->
+            <section id="plan" class="col-lg-4 bk-col" aria-labelledby="bkPlanTitle">
+              <h2 id="bkPlanTitle" class="bk-col-title">我的方案</h2>
+              <p class="bk-plan-name">標準單入組</p>
+              <ul class="tier-items" aria-label="回饋內容">
+                <li>帆布包 × 1</li>
+                <li>專屬編號吊牌</li>
+                <li>保養布一條</li>
+                <li>終身維修服務</li>
+              </ul>
+              <p class="pledge-color"><span class="pledge-color-label">顏色</span>募資結束後會寄送填寫表單，屆時再選即可，不影響現在的贊助。</p>
+              <dl class="pledge-rows">
+                <div>
+                  <dt>方案金額</dt>
+                  <dd class="num"><data value="2280">NT$ 2,280</data></dd>
+                </div>
+                <div>
+                  <dt>額外支持</dt>
+                  <dd class="num"><data value="0">NT$ 0</data></dd>
+                </div>
+                <div class="pledge-total">
+                  <dt>總計</dt>
+                  <dd><data value="2280">NT$ 2,280</data></dd>
+                </div>
+              </dl>
+              <p class="pledge-eta"><span>預計出貨</span><strong><time datetime="2027-02">2027 年 2 月</time></strong></p>
+            </section>
+
+            <!-- 付款資訊 -->
+            <section id="payment" class="col-lg-4 bk-col" aria-labelledby="bkPaymentTitle">
+              <h2 id="bkPaymentTitle" class="bk-col-title">付款資訊</h2>
+              <dl class="ledger is-compact">
+                <div>
+                  <dt>贊助編號</dt>
+                  <dd>IM-20260918-0016</dd>
+                </div>
+                <div>
+                  <dt>付款時間</dt>
+                  <dd><time datetime="2026-09-18T21:47">2026/09/18 21:47</time></dd>
+                </div>
+                <div>
+                  <dt>付款方式</dt>
+                  <dd>信用卡<span class="text-nowrap">（末四碼 5038）</span></dd>
+                </div>
+                <div class="is-total">
+                  <dt>付款金額</dt>
+                  <dd><data value="2280">NT$ 2,280</data></dd>
+                </div>
+              </dl>
+              <div class="callout is-ok pledge-note">
+                <i class="bi bi-shield-check" aria-hidden="true"></i>
+                <p>若募資期滿未達標，款項會在 7 個工作天內全額原路退回。</p>
+              </div>
+            </section>
+
+            <!-- 收件資訊：可修改（Collapse 展開地址選擇） -->
+            <section id="shipping" class="col-lg-4 bk-col" aria-labelledby="bkShippingTitle">
+              <h2 id="bkShippingTitle" class="bk-col-title">收件資訊</h2>
+              <div class="bk-address">
+                <span class="status is-live"><span class="status-dot"></span>預設地址</span>
+                <p class="bk-address-name">陳柏宇</p>
+                <p class="bk-address-line">0912-345-678</p>
+                <p class="bk-address-line">70801 台南市安平區平通路 128 號 5 樓</p>
+              </div>
+              <button class="btn btn-outline-secondary btn-sm bk-ship-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#shippingEdit" aria-controls="shippingEdit" aria-expanded="false">修改收件資訊</button>
+              <p class="text-note bk-ship-note">出貨前會寄送通知，可更改收件地址。</p>
+
+              <div id="shippingEdit" class="collapse">
+                <!-- 靜態示意：儲存後重新載入本頁（網址只帶 address=home 這類代號，沒有個資） -->
+                <form class="bk-ship-form" action="backing.html#shipping">
+                  <fieldset>
+                    <legend class="bk-ship-legend">選擇這筆贊助的收件地址</legend>
+                    <label class="choice-card" for="bkAddressHome">
+                      <input class="form-check-input choice-input" type="radio" name="address" id="bkAddressHome" value="home" checked>
+                      <span class="choice-body">
+                        <span class="choice-head">
+                          <span class="choice-name">陳柏宇</span>
+                          <span class="status is-live"><span class="status-dot"></span>預設地址</span>
+                        </span>
+                        <span class="choice-line">0912-345-678</span>
+                        <span class="choice-line">70801 台南市安平區平通路 128 號 5 樓</span>
+                      </span>
+                    </label>
+                    <label class="choice-card" for="bkAddressOffice">
+                      <input class="form-check-input choice-input" type="radio" name="address" id="bkAddressOffice" value="office">
+                      <span class="choice-body">
+                        <span class="choice-head">
+                          <span class="choice-name">陳柏宇（公司）</span>
+                        </span>
+                        <span class="choice-line">0912-345-678</span>
+                        <span class="choice-line">10491 台北市中山區南京東路二段 100 號 8 樓</span>
+                      </span>
+                    </label>
+                  </fieldset>
+                  <p class="text-note bk-ship-note">這裡只改這筆贊助的收件地址。要新增或管理常用地址，到「我的島造」的<a href="account.html#shipping">收件資訊</a>。</p>
+                  <div class="bk-ship-actions">
+                    <button class="btn btn-primary btn-sm" type="submit">儲存收件資訊</button>
+                    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#shippingEdit" aria-controls="shippingEdit" aria-expanded="false">取消</button>
+                  </div>
+                </form>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== 生產與交付進度：白報紙底的排程表（4：8；重用專案頁 #timeline 的時間軸，不放照片與展開更新） ========== -->
+      <section id="progress" class="bk-progress" aria-labelledby="bkProgressTitle">
+        <div class="container">
+          <div class="row gx-lg-5 gy-4">
+            <div class="col-lg-4">
+              <div class="bk-intro">
+                <h2 id="bkProgressTitle" class="bk-intro-title">生產與交付進度</h2>
+                <p>以下是這個專案的生產里程碑。每完成一個階段我們都會更新，任一階段延遲超過 14 天，平台會主動通知你。</p>
+              </div>
+            </div>
+            <div class="col-lg-8">
+              <ol class="timeline">
+                <li class="timeline-item is-done">
+                  <span class="timeline-date" aria-hidden="true">2026/08</span>
+                  <span class="timeline-node" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+                  <div class="timeline-body">
+                    <div class="timeline-head">
+                      <h3 class="timeline-title">里程碑 1｜設計定版</h3>
+                      <span class="status is-ok"><i class="bi bi-check-lg" aria-hidden="true"></i>已完成</span>
+                      <span class="timeline-when"><time datetime="2026-08">2026/08</time></span>
+                    </div>
+                    <p class="timeline-update"><span class="timeline-update-date">更新 09/02：</span>第七版打樣通過，肩帶襯墊厚度從 3mm 調整為 5mm。</p>
+                  </div>
+                </li>
+                <li class="timeline-item is-done">
+                  <span class="timeline-date" aria-hidden="true">2026/10</span>
+                  <span class="timeline-node" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+                  <div class="timeline-body">
+                    <div class="timeline-head">
+                      <h3 class="timeline-title">里程碑 2｜樣品確認</h3>
+                      <span class="status is-ok"><i class="bi bi-check-lg" aria-hidden="true"></i>已完成</span>
+                      <span class="timeline-when"><time datetime="2026-10">2026/10</time></span>
+                    </div>
+                    <p class="timeline-update"><span class="timeline-update-date">更新 10/14：</span>三個顏色的量產樣已完成，墨綠色因染缸批次差異微調配方。</p>
+                  </div>
+                </li>
+                <li class="timeline-item is-live">
+                  <span class="timeline-date" aria-hidden="true">2026/12</span>
+                  <span class="timeline-node" aria-hidden="true"></span>
+                  <div class="timeline-body">
+                    <div class="timeline-head">
+                      <h3 class="timeline-title">里程碑 3｜量產備料</h3>
+                      <span class="status is-live"><i class="bi bi-hourglass-split" aria-hidden="true"></i>進行中</span>
+                      <span class="timeline-when">預計 <time datetime="2026-12">2026/12</time> 完成</span>
+                    </div>
+                    <p class="timeline-update"><span class="timeline-update-date">更新 11/08：</span>布料已進廠 2,400 碼，五金待 11/20 到貨。</p>
+                  </div>
+                </li>
+                <li class="timeline-item is-todo">
+                  <span class="timeline-date" aria-hidden="true">2027/02</span>
+                  <span class="timeline-node" aria-hidden="true"></span>
+                  <div class="timeline-body">
+                    <div class="timeline-head">
+                      <h3 class="timeline-title">里程碑 4｜出貨</h3>
+                      <span class="status is-idle is-dashed"><span class="status-dot"></span>未開始</span>
+                      <span class="timeline-when">預計 <time datetime="2027-02">2027/02</time></span>
+                    </div>
+                    <p class="timeline-update">依贊助順序分批出貨，出貨前會寄送通知信。</p>
+                  </div>
+                </li>
+              </ol>
+              <p class="bk-timeline-more"><a class="btn btn-text" href="project.html#timeline">查看完整生產排程<i class="bi bi-arrow-right" aria-hidden="true"></i></a></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="container bk-page-end">
+        <!-- ========== 取消贊助：規則（FAQ 原文）＋這筆的期限與退款 → 開啟確認對話框 ========== -->
+        <section id="cancel" class="bk-cancel" aria-labelledby="bkCancelTitle">
+          <div class="row gx-lg-5 gy-3">
+            <div class="col-lg-4">
+              <div class="bk-intro">
+                <h2 id="bkCancelTitle" class="bk-intro-title">取消贊助</h2>
+              </div>
+            </div>
+            <div class="col-lg-8">
+              <div class="bk-cancel-body">
+                <div class="callout is-idle">
+                  <i class="bi bi-info-circle" aria-hidden="true"></i>
+                  <div>
+                    <p>募資期間內可於「我的贊助」自行取消並全額退款；募資結束後因已進入備料，恕無法取消。</p>
+                    <p>這筆贊助可以在 <time datetime="2026-10-15T23:59">2026/10/15 23:59</time> 募資結束前取消，NT$ 2,280 會在 7 個工作天內原路退回你的信用卡（末四碼 5038）。</p>
+                  </div>
+                </div>
+                <!-- 危險樣式但視覺層級低：校對紅的文字按鈕（同個人頁卡片 1 的「取消贊助」） -->
+                <button class="btn btn-text is-danger" type="button" data-bs-toggle="modal" data-bs-target="#cancelBackingModal">取消贊助</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== 設計稿狀態示意：另外 4 種贊助狀態在這頁的差異＋確認對話框的靜態樣子（照狀態先後排列） ========== -->
+        <section class="demo-state" aria-labelledby="bkDemoTitle">
+          <p class="demo-state-tag">設計稿狀態示意</p>
+          <h2 id="bkDemoTitle" class="demo-state-title">其他 4 種贊助狀態在這頁的樣子</h2>
+          <!-- 卡片 2～4 的專案在專案列表裡仍是募資中，是 Notion 原文的不一致，照原文顯示 -->
+          <p class="text-note">正式畫面是帆布包這筆募資中的贊助；下面每種狀態只畫縮小版的專案摘要，加上這個狀態才有的內容。</p>
+
+          <div class="row g-4 gx-xl-5">
+            <!-- 已達標待生產（info）：Notion 沒有這種卡片，不編專案，只畫徽章與說明 -->
+            <div class="col-lg-6">
+              <div class="bk-demo-case">
+                <h3 class="bk-demo-title">已達標待生產</h3>
+                <p class="text-note">Notion 沒有這種狀態的贊助紀錄，這裡只示範徽章與說明，不編專案。收件資訊照樣可以修改。</p>
+                <div class="demo-state-stage">
+                  <div class="bk-mini is-plain">
+                    <div>
+                      <div class="bk-state">
+                        <span class="status is-info"><i class="bi bi-clipboard-check" aria-hidden="true"></i>已達標待生產</span>
+                      </div>
+                      <p class="bk-demo-text mt-3 mb-0">募資已結束並達標，提案者正在準備生產；開始生產後，進度會更新在生產與交付進度。</p>
+                    </div>
+                  </div>
+                  <div class="bk-demo-block">
+                    <h4 class="bk-demo-label">取消贊助</h4>
+                    <div class="callout is-idle">
+                      <i class="bi bi-info-circle" aria-hidden="true"></i>
+                      <p>募資結束後因已進入備料，恕無法取消。</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 生產中（warn）：卡片 2。不畫時間軸，只用目前進度那一句表示階段
+                 Notion 沒有這個專案的里程碑：不補節點日期與更新，也不沿用帆布包的里程碑 -->
+            <div class="col-lg-6">
+              <div class="bk-demo-case">
+                <h3 class="bk-demo-title">生產中</h3>
+                <p class="text-note">生產與交付進度不畫時間軸，只用「目前進度：量產備料 ‧ 預計 2027/04 出貨」這一句表示目前的階段（和徽章旁的目前進度放一處即可）；Notion 沒有這個專案的里程碑，不補節點日期與更新，也不沿用帆布包的里程碑。出貨前收件資訊都可以修改。</p>
+                <div class="demo-state-stage">
+                  <div class="bk-mini">
+                    <div class="img-frame ratio-4x3">
+                      <img src="images/project-02-orbitlight.jpg" alt="磁吸底座與多支燈管模組組成的桌上照明" width="1600" height="1066" loading="lazy">
+                    </div>
+                    <div>
+                      <h4 class="bk-mini-title text-phrase">OrbitLight 模組化<wbr>桌上照明系統</h4>
+                      <p class="bk-mini-by">微光製造所</p>
+                      <ul class="meta-line bk-mini-plan">
+                        <li>方案：雙燈管組</li>
+                        <li><data value="4280">NT$ 4,280</data></li>
+                        <li>贊助於 <time datetime="2026-07-02">2026/07/02</time></li>
+                      </ul>
+                      <div class="bk-state">
+                        <span class="status is-warn"><i class="bi bi-gear" aria-hidden="true"></i>生產中</span>
+                        <ul class="meta-line">
+                          <li>目前進度：<strong>量產備料</strong></li>
+                          <li>預計 <time datetime="2027-04">2027/04</time> 出貨</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bk-demo-block">
+                    <a class="btn btn-outline-secondary btn-sm" href="project.html#timeline">查看生產進度</a>
+                  </div>
+                  <div class="bk-demo-block">
+                    <h4 class="bk-demo-label">取消贊助</h4>
+                    <div class="callout is-idle">
+                      <i class="bi bi-info-circle" aria-hidden="true"></i>
+                      <p>募資結束後因已進入備料，恕無法取消。</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 已出貨（ok）：卡片 3。多一塊物流資訊；收件資訊鎖定；沒有取消贊助
+                 物流追蹤串接是 Notion「本次不包含」的項目，所以單號不做查詢連結 -->
+            <div class="col-lg-6">
+              <div class="bk-demo-case">
+                <h3 class="bk-demo-title">已出貨</h3>
+                <p class="text-note">只顯示物流單號，不做查詢連結（物流追蹤串接是 Notion「本次不包含」的項目）；不顯示取消贊助。</p>
+                <div class="demo-state-stage">
+                  <div class="bk-mini">
+                    <div class="img-frame ratio-4x3">
+                      <img src="images/project-06-island-boardgame.jpg" alt="手繪台灣原生動植物卡牌與棲地板塊的桌遊" width="1600" height="1066" loading="lazy">
+                    </div>
+                    <div>
+                      <h4 class="bk-mini-title text-phrase">島嶼生態｜<wbr>台灣原生種<wbr>策略桌遊</h4>
+                      <p class="bk-mini-by">山貓遊戲設計</p>
+                      <ul class="meta-line bk-mini-plan">
+                        <li>方案：標準版 × 1</li>
+                        <li><data value="1280">NT$ 1,280</data></li>
+                        <li>贊助於 <time datetime="2026-03-11">2026/03/11</time></li>
+                      </ul>
+                      <div class="bk-state">
+                        <span class="status is-ok"><i class="bi bi-truck" aria-hidden="true"></i>已出貨</span>
+                        <ul class="meta-line">
+                          <li><time datetime="2026-09-24">2026/09/24</time> 寄出</li>
+                          <li>宅配通 2714-8830-xxxx</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bk-demo-block">
+                    <h4 class="bk-demo-label">物流資訊</h4>
+                    <dl class="ledger is-compact">
+                      <div>
+                        <dt>寄出日期</dt>
+                        <dd><time datetime="2026-09-24">2026/09/24</time></dd>
+                      </div>
+                      <div>
+                        <dt>物流業者</dt>
+                        <dd>宅配通</dd>
+                      </div>
+                      <div>
+                        <dt>物流單號</dt>
+                        <dd>2714-8830-xxxx</dd>
+                      </div>
+                    </dl>
+                  </div>
+                  <div class="bk-demo-block">
+                    <h4 class="bk-demo-label">收件資訊</h4>
+                    <div class="callout is-idle">
+                      <i class="bi bi-lock" aria-hidden="true"></i>
+                      <p>已經寄出，收件資訊無法再修改。</p>
+                    </div>
+                  </div>
+                  <div class="bk-demo-block">
+                    <button class="btn btn-accent btn-sm" type="button">給予評價</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 募資失敗 ‧ 已退款（idle）：卡片 4。整塊降一階；只有退款一列，收件、進度、取消都不顯示 -->
+            <div class="col-lg-6">
+              <div class="bk-demo-case">
+                <h3 class="bk-demo-title">募資失敗 ‧ 已退款</h3>
+                <p class="text-note">收件資訊、生產與交付進度、取消贊助都不顯示；整塊降一階，和個人頁卡片 4 一樣。</p>
+                <div class="demo-state-stage">
+                  <div class="bk-demo-muted">
+                    <div class="bk-mini">
+                      <div class="img-frame ratio-4x3">
+                        <img src="images/project-07-coffee-cup.jpg" alt="咖啡渣壓製的隨行杯與一小堆咖啡渣" width="1600" height="1066" loading="lazy">
+                      </div>
+                      <div>
+                        <h4 class="bk-mini-title text-phrase">回到土裡的<wbr>咖啡渣杯</h4>
+                        <p class="bk-mini-by">循環物料實驗室</p>
+                        <ul class="meta-line bk-mini-plan">
+                          <li>方案：雙入組</li>
+                          <li><data value="1280">NT$ 1,280</data></li>
+                          <li>贊助於 <time datetime="2026-05-06">2026/05/06</time></li>
+                        </ul>
+                        <div class="bk-state">
+                          <span class="status is-idle"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>募資失敗 ‧ 已退款</span>
+                          <ul class="meta-line">
+                            <li>款項已於 <time datetime="2026-06-12">2026/06/12</time> 原路退回</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="bk-demo-block">
+                      <p class="bk-demo-text">這個專案未達成目標金額，所有款項已全額退回贊助者。</p>
+                    </div>
+                    <div class="bk-demo-block">
+                      <h4 class="bk-demo-label">付款資訊</h4>
+                      <dl class="ledger is-compact">
+                        <div>
+                          <dt>退款</dt>
+                          <dd><data value="1280">NT$ 1,280</data>，<time datetime="2026-06-12">2026/06/12</time> 原路退回</dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 取消贊助確認對話框的靜態樣子：不加 .modal，按鈕 type="button"、不放 data-bs-dismiss -->
+            <div class="col-lg-6">
+              <div class="bk-demo-case">
+                <h3 class="bk-demo-title">取消贊助確認對話框</h3>
+                <p class="text-note">按下「取消贊助」會出現的對話框，畫在這裡方便檢查。</p>
+                <div class="demo-state-stage bk-demo-dialog-stage">
+                  <div class="bk-modal bk-demo-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h4 class="modal-title text-phrase">確定要取消<wbr>這筆贊助嗎？</h4>
+                      </div>
+                      <div class="modal-body">
+                        <p class="mb-0">取消後，「一只走十年的台南帆布包」標準單入組的贊助就不再成立，NT$ 2,280 會在 7 個工作天內全額原路退回信用卡（末四碼 5038）。募資結束前想再支持，可以重新選擇方案。</p>
+                      </div>
+                      <div class="modal-footer">
+                        <button class="btn btn-outline-secondary" type="button">保留贊助</button>
+                        <button class="btn btn-danger" type="button">確定取消贊助</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ========== 取消贊助確認對話框（ConfirmDialog；本主題第一個 Modal，放在 main 的最後） ==========
+           兩顆按鈕都只關閉對話框：設計稿不做取消後的畫面 -->
+      <div class="modal fade bk-modal" id="cancelBackingModal" tabindex="-1" aria-labelledby="cancelBackingTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title text-phrase" id="cancelBackingTitle">確定要取消<wbr>這筆贊助嗎？</h2>
+            </div>
+            <div class="modal-body">
+              <p class="mb-0">取消後，「一只走十年的台南帆布包」標準單入組的贊助就不再成立，NT$ 2,280 會在 7 個工作天內全額原路退回信用卡（末四碼 5038）。募資結束前想再支持，可以重新選擇方案。</p>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">保留贊助</button>
+              <button class="btn btn-danger" type="button" data-bs-dismiss="modal">確定取消贊助</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="row gy-4 site-footer-cols">
+          <div class="col-lg-5 col-xl-4">
+            <a class="site-brand" href="index.html" aria-label="島造 ISLANDMAKE 首頁">
+              <span class="site-brand-name">島造</span>
+              <span class="site-brand-sub">ISLANDMAKE</span>
+            </a>
+            <p class="site-footer-lead">專注台灣在地設計與製造的群眾募資平台。不做快消、不做轉賣，只收「說得出材料從哪來、工廠在哪裡、什麼時候能交到你手上」的提案。</p>
+          </div>
+          <!-- 沒有 href 的是佔位連結（還沒有設計頁面） -->
+          <div class="col-6 col-md-4 col-lg-2 offset-xl-1">
+            <h2 class="site-footer-title">贊助者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="projects.html">探索專案</a></li>
+              <li><a href="account.html#backings">我的贊助紀錄</a></li>
+              <li><a>追蹤中的專案</a></li>
+              <li><a href="project.html#faq">贊助常見問題</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">提案者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="index.html#propose">我要提案</a></li>
+              <li><a href="account.html#my-projects">提案管理</a></li>
+              <li><a href="account.html#dashboard">募資數據</a></li>
+              <li><a>排程與出貨規範</a></li>
+            </ul>
+          </div>
+          <div class="col-md-4 col-lg-3">
+            <h2 class="site-footer-title">平台</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a>關於島造</a></li>
+              <li><a>審核標準</a></li>
+              <li><a>退款政策</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 島造 ISLANDMAKE 在地製造提案平台｜<wbr>本站為課程設計稿範例，專案與金額皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

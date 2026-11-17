@@ -97,5 +97,24 @@
 | `project.html` | `hero-canvas-bag`、`story-*`（4）、`update-color-samples`、`update-fabric-rolls`、`proposer-avatar`、`proposer-workshop` |
 | `account.html` | `proposer-avatar`（頁首頭像）、`project-01`、`project-02`、`project-06`、`project-07`（贊助紀錄縮圖） |
 | `guideline.html` | 視需要取用任一張做元件示範（例如專案卡、方案卡） |
+| `login.html`、`register.html`（2026-11 補） | `proposer-avatar`（頁首頭像）；版面需要時可加一張裝飾圖，見 §H |
+| `checkout.html`（2026-11 補） | `proposer-avatar`（頁首頭像）、`project-01`（贊助摘要縮圖） |
+| `order-result.html`（2026-11 補） | `proposer-avatar`（頁首頭像）、`project-01`（選用） |
+| `backing.html`（2026-11 補） | `proposer-avatar`（頁首頭像）、`project-01`（專案摘要）、`project-02`、`project-06`、`project-07`（狀態示意的縮圖，選用） |
 
 留言者（阿彥、Chloe、小日）與提案者回覆的頭像**不用照片**，用名字第一個字的文字頭像（圓形）。
+
+## H. 2026-11 補的 5 頁：沿用既有圖片，不新增
+
+登入、註冊、贊助結帳、贊助成功、贊助紀錄詳情是 2026-11 補的頁面（`_wireframe/WIREFRAME_SPEC.md` §3.05～3.09）。**這次不生新圖，總數維持 23 張**，3 套都用自己 `images/` 裡已有的檔案。
+
+| 頁面 | 用到的圖 | 說明 |
+|---|---|---|
+| `login.html` 登入 | 預設不放圖。選用：`proposer-workshop.jpg`（#19）當裝飾 | 表單頁以表單為主。風格的版面需要一張圖（例如左右分欄的一側）時，**只能用** `proposer-workshop.jpg`，`alt=""`（裝飾），不在圖上疊 H1 或說明；< lg 隱藏或縮成窄帶，不能把表單推到第二屏以下 |
+| `register.html` 註冊 | 同登入 | 登入用了裝飾圖，註冊就用同一張、同樣位置（兩頁是一組）；登入沒用，註冊也不用 |
+| `checkout.html` 贊助結帳 | `project-01-canvas-bag.jpg`（#6） | 贊助摘要的專案縮圖，顯示 4:3，alt 同個人頁贊助紀錄縮圖（#6 的 alt） |
+| `order-result.html` 贊助成功 | `project-01-canvas-bag.jpg`（#6，選用） | 成功訊息以圖示為主；明細旁要放專案縮圖時用這張。不用 `hero-canvas-bag.jpg` 這類大圖，避免搶過「贊助成功」 |
+| `backing.html` 贊助紀錄詳情 | `project-01-canvas-bag.jpg`（#6）；狀態示意選用 `project-02-orbitlight.jpg`（#7）、`project-06-island-boardgame.jpg`（#11）、`project-07-coffee-cup.jpg`（#12） | 專案摘要縮圖 4:3，和個人頁贊助紀錄卡用同一組圖與 alt。生產與交付進度**不放** `update-*.jpg` 照片（要看照片到專案頁，WIREFRAME_SPEC §3.09）。「已達標待生產」沒有對應的專案，不放縮圖 |
+
+- 頁首頭像 `proposer-avatar.jpg` 照範本，每頁都有。
+- 分享卡（`og:image`）非必要，新頁不放也可以；不要為新頁另外生圖。
