@@ -26,7 +26,7 @@ npm install        # 安裝 bootstrap、bootstrap-icons、sass，並把 Bootstra
 npm run watch      # 開發時：監看 scss/，存檔就重新編譯 css/style.css
 npm run css        # 編譯一次
 npm run build      # 交付前：重新複製 vendor 檔案＋編譯一次 CSS
-npm run check      # 檢查 6 個頁面的 head、頁首、頁尾是否與範本一致
+npm run check      # 檢查 10 個頁面的 head、頁首、頁尾是否與範本一致
 npm run vendor     # 只重新複製 Bootstrap JS 與圖示字型（npm install 時會自動執行）
 npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖時才用）
 ```
@@ -41,8 +41,12 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 | 文章內頁（以〈一間餐廳的成本結構〉示範，含付費預覽牆） | `article.html` | `scss/pages/_article.scss` |
 | 訂閱方案（方案卡、比較矩陣、結帳確認、FAQ） | `pricing.html` | `scss/pages/_pricing.scss` |
 | 個人頁面「我的現場筆記」（讀者／作者／管理員） | `account.html` | `scss/pages/_account.scss` |
+| 登入（2026-11 補） | `login.html` | `scss/pages/_auth.scss` |
+| 免費註冊（2026-11 補） | `register.html` | `scss/pages/_auth.scss` |
+| 作者個人頁（以陳柏諺示範，2026-11 補） | `author.html` | `scss/pages/_author.scss` |
+| 忘記密碼（2026-11 補） | `forgot-password.html` | `scss/pages/_auth.scss` |
 
-頁首與頁尾沒有列出所有頁面的導覽，也不連 Guideline：從首頁依讀者流程點進各頁即可，Guideline 直接開 `guideline.html`。所有文章卡都連到同一篇 `article.html`。
+頁首與頁尾沒有列出所有頁面的導覽，也不連 Guideline：從首頁依讀者流程點進各頁即可，Guideline 直接開 `guideline.html`。所有文章卡（含作者個人頁）都連到同一篇 `article.html`。2026-11 補的 4 頁從流程點進去：文章付費牆「已經是訂閱者了？登入」→ `login.html`（忘記密碼？→ `forgot-password.html`）；方案頁免費方案的「免費註冊」→ `register.html`；文章內頁作者卡「查看全部文章」→ `author.html`。
 
 兩個頁面有**設計稿切換器**（頁面頂部暮藍虛線框，標示「設計稿狀態示意（非產品介面）」），切換時會更新網址參數，重新整理後停在同一個狀態：
 
@@ -54,13 +58,13 @@ account.html?role=author        ← 作者：多「創作」群組（我的文�
 account.html?role=admin         ← 管理員：再多「平台管理」（作者申請審核、使用者管理、文章管理）
 ```
 
-其他狀態放在相關區塊下方的「設計稿狀態示意」（暮藍虛線分隔）：訂閱的其他 3 態與 2 種提醒、取消對話框的靜態版、付款三態與卡號錯誤、作者申請 4 態、編輯器的發布前檢查未通過／草稿未完成／自動儲存失敗／空白新文章、各種空狀態（S09–S22）。
+其他狀態放在相關區塊下方的「設計稿狀態示意」（暮藍虛線分隔）：訂閱的其他 3 態與 2 種提醒、取消對話框的靜態版、付款三態與卡號錯誤、作者申請 4 態、編輯器的發布前檢查未通過／草稿未完成／自動儲存失敗／空白新文章、各種空狀態（S09–S22）；2026-11 補的頁面：登入的帳號或密碼錯誤與 S01 情境提示、註冊的欄位錯誤、忘記密碼的重設信已寄出／設定新密碼／連結已失效、作者個人頁的「作者還沒有發表文章」。
 
 ## 檔案結構
 
 ```
 04-slow-reading-style/
-├─ *.html                    ← 6 個頁面，每頁完整包含頁首與頁尾
+├─ *.html                    ← 10 個頁面，每頁完整包含頁首與頁尾
 ├─ templates/page.html       ← 頁面骨架：新增頁面從這裡複製
 ├─ css/
 │  ├─ style.css              ← 編譯結果（Bootstrap＋Icons＋本風格樣式），要提交
@@ -83,7 +87,7 @@ account.html?role=admin         ← 管理員：再多「平台管理」（作�
 
 ## 沒有打包工具時的工作方式
 
-- **頁首、頁尾每頁一份**：沒有元件系統，所以 6 個頁面各自完整寫一份。要改頁首或頁尾時，先改 `templates/page.html`，再同步到每一頁，最後執行 `npm run check`。每頁只有一處不同：頁首的目前頁（`active` 與 `aria-current="page"`）。`article.html` 標示「文章列表」但只加 `active`；`account.html` 標示會員入口（桌機的 `.site-member` 與選單裡的「我的現場筆記」）；`guideline.html` 不標示。
+- **頁首、頁尾每頁一份**：沒有元件系統，所以 10 個頁面各自完整寫一份。要改頁首或頁尾時，先改 `templates/page.html`，再同步到每一頁，最後執行 `npm run check`。每頁只有一處不同：頁首的目前頁（`active` 與 `aria-current="page"`）。`article.html`、`author.html` 標示「文章列表」但只加 `active`；`account.html` 標示會員入口（桌機的 `.site-member` 與選單裡的「我的現場筆記」）；`guideline.html`、`login.html`、`register.html`、`forgot-password.html` 不標示。
 - **`<body>` 的屬性**：`article.html` 是 `data-view="unsubscribed"`，`account.html` 是 `data-role="reader"`；元素寫 `data-show-view="subscribed"`、`data-show-role="author admin"`，CSS（`_base.scss`）依 body 屬性隱藏不屬於目前狀態的元素。`account.html` 與 `guideline.html` 的 body 另有 Bootstrap ScrollSpy 設定（`data-bs-spy`，`data-bs-threshold="0,0.25"` 讓很長的區塊也標得到）。
 - **假資料直接寫在 HTML**：文章、作者、價格與數據都寫死在頁面裡（文案全部逐字取自主題層的 `CONTENT.md`），跨頁要一致的數字見 `_wireframe/WIREFRAME_SPEC.md` §2.9（438／127／142 篇、NT$ 180／1,800／150／360、6,800／2,200／4,600 字／32%、到期日 2027/10/02…）。
 - **JS**（`js/main.js`）：
@@ -95,7 +99,7 @@ account.html?role=admin         ← 管理員：再多「平台管理」（作�
   6. 其他小工具：搜尋列展開後聚焦、分頁籤橫向捲動時把目前項目捲進畫面、收藏／追蹤的 `aria-pressed` 切換、閱讀模式（`body.is-reading-mode`）。
   其餘互動（選單、搜尋列、Offcanvas 篩選、下拉、分頁、Accordion、取消對話框、設定面板收合）都是 Bootstrap 的 `data-bs-*`。
 - **換行與空白**：標題的詞組斷點用 `<wbr>` 標出並加 `.text-phrase`；數字與單位之間用 `&nbsp;`。
-- **表單**：設計稿沒有後端。搜尋用 `<form action="articles.html">`；「確認付款」「送出申請」都是 `type="button"`，不換頁。
+- **表單**：設計稿沒有後端。搜尋用 `<form action="articles.html">`；「確認付款」「送出申請」都是 `type="button"`，不換頁。2026-11 補的登入、註冊、忘記密碼用 `<form action="目的頁">` 以 GET 換頁（登入 → `article.html?view=subscribed`，只有 hidden 的 `view` 有 `name`；註冊 → `account.html`；寄出重設連結 → `forgot-password.html#reset-sent`；設定新密碼 → `login.html`）。密碼與 Email 欄位都不加 `name`，送出後網址看不到；串接後端時改用 POST 並補上 `name`。這幾頁沒有新增 JS。
 
 ## 樣式架構
 
@@ -136,6 +140,9 @@ account.html?role=admin         ← 管理員：再多「平台管理」（作�
 | `.sub-card`（`.is-active`、`.is-ending`、`.is-compact`）、`.cycle`（`.is-ending`、`.has-left-label`）、`.equal-actions`、`.cancel-dialog` | ★ 訂閱狀態卡、訂閱週期尺、等寬按鈕組、取消對話框 | `components/_subscription.scss` |
 | `.editor`、`.bubble-toolbar`、`.preview-divider`、`.insert-menu`、`.editor-settings`、`.publish-check`、`.autosave` | 編輯器元件集 | `components/_editor.scss` |
 | `.stat-tile`、`.data-table`、`.funnel-card`（`.is-dark`）、`.funnel` | 數據卡、資料表、閱讀漏斗圖（HTML＋CSS 等比例橫條） | `components/_data.scss` |
+| `.auth-page`、`.auth-shell`、`.auth-book`（`.has-aside`）、`.auth-cover`、`.auth-title`、`.auth-lead`、`.auth-ribbon`、`.auth-imprint`、`.auth-main`、`.auth-form`、`.auth-label-row`、`.auth-terms`、`.auth-switch`、`.auth-plan` | 2026-11 補：登入、註冊、忘記密碼共用的「攤開的書」表單卡（960px 置中）。≥ 992px 左頁燕麥殼是扉頁（H1＋說明，下緣品牌落款；註冊頁改放免費會員權益摘要 `.auth-plan`，沿用方案卡的 `.plan-price`、`.plan-features`），右頁燕麥奶是表單，底部是切換連結（註冊頁左頁較高，切換連結緊接在表單後面，不貼底）；< 992px 合成一張卡（標題區 → 表單 →（權益摘要）），768–991px 卡寬收到 520px 置中。書籤 `.auth-ribbon` 只用在登入頁（登入後回到剛才讀到的地方） | `pages/_auth.scss` |
+| `.auth-demo`、`.auth-demo-note`、`.auth-demo-view`、`.auth-resend`、`.auth-stage-title`、`.auth-stage-lead` | 2026-11 補：表單頁的設計稿狀態示意，沿用 `.demo-state` 的標籤與虛線，≥ 992px 排成和書同一組 5 : 7 欄（左欄狀態名稱與設計說明、右欄示意畫面對齊書的右頁），看得出提示出現在表單的哪個位置 | `pages/_auth.scss` |
+| `.author-crumbs`、`.author-layout`、`.author-profile`（`-avatar`、`-head`、`-name`、`-job`、`-body`、`-bio`）、`.author-articles-head`、`.author-articles-title`、`.author-pager-label` | 2026-11 補：作者個人頁。和文章列表頁同一套「側欄 : 列表」（≥ 1400px 3 : 9、992–1399px 4 : 8），作者資訊卡在側欄 sticky（頭像 96px），< 992px 移到列表上方（頭像 64px 和姓名橫排）；文章卡沿用 `.article-list`／`.article-item`（卡片標題用 h3），分頁沿用 `.articles-pager`，< 576px「上一頁」「下一頁」只留箭頭 | `pages/_author.scss` |
 
 ## Design token 摘要
 
@@ -151,7 +158,7 @@ account.html?role=admin         ← 管理員：再多「平台管理」（作�
 | 圓角 | 6px（權限徽章）、10px（按鈕、輸入框）、16px（卡片）、20px（付費牆卡、對話框、狀態卡）、膠囊（狀態徽章、頭像、分段控制） |
 | 陰影 | 可可色柔光陰影，只給浮起的層：`$box-shadow`（選單、工具列、訂閱摘要）、`$box-shadow-lg`（付費牆卡、取消對話框） |
 | 焦點 | 內圈燕麥奶 2px＋外圈焦糖 2px；一般元素焦糖 2px outline、外推 2px |
-| 動態 | 主題卡 hover 上移與展開、編輯器游標閃爍；`prefers-reduced-motion` 時關閉 |
+| 動態 | 主題卡 hover 換焦糖框（不上移、不展開，篇數常駐顯示）、編輯器游標閃爍；`prefers-reduced-motion` 時關閉 |
 
 完整規範請看 `guideline.html`（12 節：色彩、字級、長文排版、間距、圓角陰影、元件狀態、內文元素、主題專屬元件、數據圖表、S01–S22 狀態文案、RWD、Do／Don't）。改色時，Guideline 的色票 hex、對比度與 `images/favicon.svg` 的色碼也要一起改，清單見上一層 [`../README.md`](../README.md) 的「換色時同步檢查」。
 

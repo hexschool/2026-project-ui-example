@@ -18,35 +18,40 @@
   <!--
     ============================================================
     頁面骨架（所有頁面共用）
-    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，6 個 .html 要一起改，
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，10 個 .html 要一起改，
       改完執行 npm run check 確認都與這份範本一致。
-    - 頁首＝日期列（≥ 992px，不固定）＋固定在頂端的主列（品牌｜導覽｜搜尋｜會員入口），
-      主列底部是報頭雙線（2px 粗線＋1px 細線），這是本風格的招牌。
+    - 頁首是報刊的報頭（≥ 992px 兩層）：
+      報頭列 96px＝左右「報耳」（日期、刊物說明）＋置中大字品牌；髮絲線；
+      導覽列 68px＝導覽置中、搜尋與會員入口靠右；底部報頭雙線（2px 粗線＋1px 細線）是本風格的招牌。
+      整個頁首 sticky，top 是負的報頭列高度：捲動後報頭列收起，只剩導覽列＋雙線（73px）固定在頂端。
+      992px 以下：報耳隱藏，回到單列（品牌靠左，搜尋、頭像、選單靠右）。
+    - 頁尾是刊物的版權頁：品牌與說明置中 → 讀者｜作者｜平台三欄等寬（欄線分隔、置中）→ 版權列。
     - 每頁只需要調整「目前頁面」標示：目前頁的 <a class="nav-link"> 加 active 與 aria-current="page"
       index.html → 首頁；articles.html → 文章列表；pricing.html → 訂閱方案；
       account.html → 會員入口（選單內與桌機各一個，兩個都加）；
-      article.html → 文章列表（只加 active，不加 aria-current）；guideline.html 不標示。
+      article.html、author.html → 文章列表（只加 active，不加 aria-current）；
+      guideline.html、login.html、register.html、forgot-password.html 不標示。
+    - 示意使用者已登入（陳柏諺），所以頁首沒有「登入 / 註冊」；登入、註冊、忘記密碼頁的頁首也照這份範本。
     ============================================================
   -->
   <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
   <div class="d-flex flex-column min-vh-100">
     <a class="skip-link" href="#main">跳至主要內容</a>
 
-    <!-- 日期列：報刊報頭上方的日期與刊物說明；只在 ≥ 992px 顯示，捲動時不跟著固定 -->
-    <div class="site-dateline d-none d-lg-block">
-      <div class="container">
-        <time datetime="2026-10-06">2026/10/06 星期二</time>
-        <span>第一線工作者的知識訂閱</span>
-      </div>
-    </div>
-
     <header class="site-header">
       <nav class="navbar navbar-expand-lg" aria-label="主要導覽">
         <div class="container">
+          <!-- 報耳（≥ 992px）：報頭列左右兩端的日期與刊物說明，夾著置中的品牌字標 -->
+          <div class="site-ear site-ear-start d-none d-lg-flex">
+            <time datetime="2026-10-06">2026/10/06 星期二</time>
+          </div>
           <a class="navbar-brand site-brand" href="index.html">
             <span class="site-brand-name">現場筆記</span>
             <span class="site-brand-en">FieldNotes</span>
           </a>
+          <div class="site-ear site-ear-end d-none d-lg-flex">
+            <span>第一線工作者的知識訂閱</span>
+          </div>
 
           <!-- 992px 以下的圖示列：搜尋、會員入口、選單（桌機另一組放在導覽之後，Tab 順序與畫面一致） -->
           <div class="site-tools d-flex d-lg-none">
@@ -128,10 +133,64 @@
           </div>
         </div>
 
-        <div class="row gx-lg-5">
-          <!-- ========== 左 8 欄：文章（標題區 → 內文 → 付費牆 → 文末） ========== -->
-          <article class="col-lg-8 article-main" aria-labelledby="articleTitle">
-            <!-- 2. 文章標題區：分類標籤 → 大標題 → 導言 → 作者列＋工具列 → 分隔線（五層就結束） -->
+        <!-- 主體：≥ 992px 左欄（目錄）｜閱讀欄 700px（標題區 → 內文 → 付費牆 → 文末）｜≥ 1400px 右側頁邊（照片圖說） -->
+        <div class="article-layout">
+          <!-- ========== 左欄：目錄 → 閱讀進度（數據框）→ 字級（≥ 992px，sticky）。HTML 放在文章前面，閱讀與 Tab 順序和畫面一致 ========== -->
+          <aside class="article-aside d-none d-lg-block" aria-label="本篇目錄與閱讀進度">
+            <div class="article-aside-inner">
+              <nav id="articleToc" class="toc" aria-labelledby="tocTitle">
+                <h2 id="tocTitle" class="toc-title">本篇目錄</h2>
+                <!-- 未訂閱時後 3 項加鎖頭、改淡色（不是連結）；已訂閱時全部是連結 -->
+                <ol class="toc-list">
+                  <li><a class="toc-link" href="#sec-annual">先看去年整年的數字</a></li>
+                  <li><a class="toc-link" href="#sec-desk">真正吃掉利潤的，是那張你以為不用錢的桌子</a></li>
+                  <li>
+                    <a class="toc-link" href="#sec-monthly" data-show-view="subscribed">全年逐月的數字拆解</a>
+                    <span class="toc-link is-locked" data-show-view="unsubscribed"><i class="bi bi-lock-fill" aria-hidden="true"></i><span class="visually-hidden">訂閱限定：</span>全年逐月的數字拆解</span>
+                  </li>
+                  <li>
+                    <a class="toc-link" href="#sec-cashflow" data-show-view="subscribed">兩次現金流斷鏈的處理過程</a>
+                    <span class="toc-link is-locked" data-show-view="unsubscribed"><i class="bi bi-lock-fill" aria-hidden="true"></i><span class="visually-hidden">訂閱限定：</span>兩次現金流斷鏈的處理過程</span>
+                  </li>
+                  <li>
+                    <a class="toc-link" href="#sec-lease" data-show-view="subscribed">我重新談租約的方法</a>
+                    <span class="toc-link is-locked" data-show-view="unsubscribed"><i class="bi bi-lock-fill" aria-hidden="true"></i><span class="visually-hidden">訂閱限定：</span>我重新談租約的方法</span>
+                  </li>
+                </ol>
+              </nav>
+
+              <!-- 閱讀進度：數據框（頂端報頭雙線、32% 放大、字數與時間逐列） -->
+              <div class="aside-card aside-databox">
+                <div class="aside-card-head">
+                  <h2 class="aside-card-title">閱讀進度</h2>
+                  <span class="figure-num">32%</span>
+                </div>
+                <div class="progress" role="progressbar" aria-label="閱讀進度" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100">
+                  <div class="progress-bar" style="width: 32%"></div>
+                </div>
+                <ul class="meta">
+                  <li class="num">約 6,800&nbsp;字</li>
+                  <li>閱讀 18&nbsp;分鐘</li>
+                  <li data-show-view="unsubscribed">免費預覽前 2,200&nbsp;字</li>
+                </ul>
+              </div>
+
+              <!-- 字級調整：與工具列的 Aa 同步 -->
+              <div class="aside-card aside-size">
+                <h2 class="aside-card-title">字級調整</h2>
+                <div class="btn-group segmented w-100" role="group" aria-label="字級調整">
+                  <input class="btn-check" type="radio" name="proseSizeAside" id="sizeAsideSm" value="sm"><label class="btn" for="sizeAsideSm">17<span class="visually-hidden">px</span></label>
+                  <input class="btn-check" type="radio" name="proseSizeAside" id="sizeAsideMd" value="md" checked><label class="btn" for="sizeAsideMd">18<span class="visually-hidden">px</span></label>
+                  <input class="btn-check" type="radio" name="proseSizeAside" id="sizeAsideLg" value="lg"><label class="btn" for="sizeAsideLg">20<span class="visually-hidden">px</span></label>
+                </div>
+                <p class="text-note mb-0 mt-2">選擇記在本機，跨文章保留。</p>
+              </div>
+            </div>
+          </aside>
+
+          <!-- ========== 閱讀欄：文章（標題區 → 內文 → 付費牆 → 文末） ========== -->
+          <article class="article-main" aria-labelledby="articleTitle">
+            <!-- 2. 文章標題區（報刊版）：眉標列（上下髮絲線）→ 大標題 → 副標（導言，上方粗線）→ 作者權威列＋工具列 → 報頭雙線（五層就結束） -->
             <header class="article-header">
               <p class="kicker">
                 <span class="perm perm-premium"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
@@ -259,7 +318,7 @@
               <p>算法很笨但很有效：把全年營業額除以桌數、再除以營業天數與時數，我會得到「每張桌子每小時應該產出多少錢」。這個數字一算出來，菜單設計、出餐順序、甚至要不要接訂位，全部都有了判斷依據。</p>
               <figure>
                 <img src="images/figure-kitchen-pass.jpg" alt="週五晚間的出餐檯" width="1536" height="864" loading="lazy">
-                <figcaption>尖峰時段的出餐節奏決定翻桌率，這張照片是 19:40，當下有 14 張單在跑。</figcaption>
+                <figcaption class="np-margin-note">尖峰時段的出餐節奏決定翻桌率，這張照片是 19:40，當下有 14 張單在跑。</figcaption>
               </figure>
               <p>所以我重新做了一次成本拆解，這次把桌子的時間也放進去。結果讓我重新談了租約、砍掉三道菜、也終於看懂為什麼週二和週三永遠在虧。</p>
 
@@ -318,7 +377,7 @@
               </fieldset>
               <!-- ⑤ 主要 CTA（全卡唯一的主要按鈕）⑥ 登入入口 ⑦ 信任小字 ⑧ 替代入口（只能是小字連結） -->
               <a class="btn btn-primary btn-lg w-100" href="pricing.html#checkout">訂閱並繼續閱讀</a>
-              <p class="paywall-login">已經是訂閱者了？<a href="article.html?view=subscribed">登入</a></p>
+              <p class="paywall-login">已經是訂閱者了？<a href="login.html">登入</a></p>
               <p class="paywall-trust"><i class="bi bi-shield-check" aria-hidden="true"></i>七天內不滿意可全額退費 ‧ 線上一鍵取消 ‧ 訂閱期間全站 438&nbsp;篇付費文章任讀</p>
               <p class="paywall-alt">還沒想好？<a href="articles.html">先看看免費文章</a> ｜ <a href="account.html#library">把這篇加入收藏，之後再讀</a></p>
             </section>
@@ -337,7 +396,7 @@
                       <button class="btn btn-outline-primary" type="button" data-toggle-pressed data-label-on="已追蹤" data-icon-on="bi-person-check" aria-pressed="false">
                         <i class="bi bi-person-plus" aria-hidden="true"></i><span>追蹤作者</span>
                       </button>
-                      <a class="btn btn-text" href="articles.html">查看全部文章</a>
+                      <a class="btn btn-text" href="author.html">查看全部文章</a>
                     </div>
                   </div>
                 </div>
@@ -451,59 +510,6 @@
               </section>
             </footer>
           </article>
-
-          <!-- ========== 右 4 欄：浮動目錄（≥ 992px，sticky） ========== -->
-          <aside class="col-lg-4 article-aside d-none d-lg-block" aria-label="本篇目錄與閱讀進度">
-            <div class="article-aside-inner">
-              <nav id="articleToc" class="toc" aria-labelledby="tocTitle">
-                <h2 id="tocTitle" class="toc-title">本篇目錄</h2>
-                <!-- 未訂閱時後 3 項加鎖頭、改淡色（不是連結）；已訂閱時全部是連結 -->
-                <ol class="toc-list">
-                  <li><a class="toc-link" href="#sec-annual">先看去年整年的數字</a></li>
-                  <li><a class="toc-link" href="#sec-desk">真正吃掉利潤的，是那張你以為不用錢的桌子</a></li>
-                  <li>
-                    <a class="toc-link" href="#sec-monthly" data-show-view="subscribed">全年逐月的數字拆解</a>
-                    <span class="toc-link is-locked" data-show-view="unsubscribed"><i class="bi bi-lock-fill" aria-hidden="true"></i><span class="visually-hidden">訂閱限定：</span>全年逐月的數字拆解</span>
-                  </li>
-                  <li>
-                    <a class="toc-link" href="#sec-cashflow" data-show-view="subscribed">兩次現金流斷鏈的處理過程</a>
-                    <span class="toc-link is-locked" data-show-view="unsubscribed"><i class="bi bi-lock-fill" aria-hidden="true"></i><span class="visually-hidden">訂閱限定：</span>兩次現金流斷鏈的處理過程</span>
-                  </li>
-                  <li>
-                    <a class="toc-link" href="#sec-lease" data-show-view="subscribed">我重新談租約的方法</a>
-                    <span class="toc-link is-locked" data-show-view="unsubscribed"><i class="bi bi-lock-fill" aria-hidden="true"></i><span class="visually-hidden">訂閱限定：</span>我重新談租約的方法</span>
-                  </li>
-                </ol>
-              </nav>
-
-              <!-- 閱讀進度卡 -->
-              <div class="aside-card">
-                <div class="aside-card-head">
-                  <h2 class="aside-card-title">閱讀進度</h2>
-                  <span class="figure-num">32%</span>
-                </div>
-                <div class="progress" role="progressbar" aria-label="閱讀進度" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100">
-                  <div class="progress-bar" style="width: 32%"></div>
-                </div>
-                <ul class="meta">
-                  <li class="num">約 6,800&nbsp;字</li>
-                  <li>閱讀 18&nbsp;分鐘</li>
-                  <li data-show-view="unsubscribed">免費預覽前 2,200&nbsp;字</li>
-                </ul>
-              </div>
-
-              <!-- 字級調整卡：與工具列的 Aa 同步 -->
-              <div class="aside-card">
-                <h2 class="aside-card-title">字級調整</h2>
-                <div class="btn-group segmented w-100" role="group" aria-label="字級調整">
-                  <input class="btn-check" type="radio" name="proseSizeAside" id="sizeAsideSm" value="sm"><label class="btn" for="sizeAsideSm">17<span class="visually-hidden">px</span></label>
-                  <input class="btn-check" type="radio" name="proseSizeAside" id="sizeAsideMd" value="md" checked><label class="btn" for="sizeAsideMd">18<span class="visually-hidden">px</span></label>
-                  <input class="btn-check" type="radio" name="proseSizeAside" id="sizeAsideLg" value="lg"><label class="btn" for="sizeAsideLg">20<span class="visually-hidden">px</span></label>
-                </div>
-                <p class="text-note mb-0 mt-2">選擇記在本機，跨文章保留。</p>
-              </div>
-            </div>
-          </aside>
         </div>
       </div>
 
@@ -544,16 +550,17 @@
 
     <footer class="site-footer">
       <div class="container">
-        <div class="row gy-4">
-          <div class="col-lg-5">
-            <a class="site-brand" href="index.html">
-              <span class="site-brand-name">現場筆記</span>
-              <span class="site-brand-en">FieldNotes</span>
-            </a>
-            <p class="site-footer-lead">這裡不收二手整理、不收懶人包，只收第一線工作者親自寫的長文。每篇文章都可以免費讀前三分之一，讀到關鍵的那一段才需要訂閱。</p>
-          </div>
-          <!-- 沒有頁面的連結（關於現場筆記、作者審核標準、聯絡我們）用不帶 href 的 <a> -->
-          <div class="col-6 col-md-4 col-lg-2 offset-lg-1">
+        <div class="site-footer-head">
+          <a class="site-brand" href="index.html">
+            <span class="site-brand-name">現場筆記</span>
+            <span class="site-brand-en">FieldNotes</span>
+          </a>
+          <p class="site-footer-lead">這裡不收二手整理、不收懶人包，只收第一線工作者親自寫的長文。每篇文章都可以免費讀前三分之一，讀到關鍵的那一段才需要訂閱。</p>
+        </div>
+
+        <!-- 讀者｜作者｜平台：三欄等寬、欄線分隔；沒有頁面的連結（關於現場筆記、作者審核標準、聯絡我們）用不帶 href 的 <a> -->
+        <div class="site-footer-cols">
+          <div class="site-footer-col">
             <h2 class="site-footer-title">讀者</h2>
             <ul class="list-unstyled site-footer-links mb-0">
               <li><a href="articles.html">瀏覽文章</a></li>
@@ -562,7 +569,7 @@
               <li><a href="account.html#subscription">訂閱狀態</a></li>
             </ul>
           </div>
-          <div class="col-6 col-md-4 col-lg-2">
+          <div class="site-footer-col">
             <h2 class="site-footer-title">作者</h2>
             <ul class="list-unstyled site-footer-links mb-0">
               <li><a href="account.html?role=reader#apply">申請成為作者</a></li>
@@ -571,7 +578,7 @@
               <li><a href="account.html?role=author#analytics">內容數據</a></li>
             </ul>
           </div>
-          <div class="col-6 col-md-4 col-lg-2">
+          <div class="site-footer-col">
             <h2 class="site-footer-title">平台</h2>
             <ul class="list-unstyled site-footer-links mb-0">
               <li><a>關於現場筆記</a></li>

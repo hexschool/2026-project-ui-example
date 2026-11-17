@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>陳柏諺｜現場筆記 FieldNotes</title>
+  <meta name="description" content="台北某獨立餐酒館主廚兼老闆陳柏諺的現場筆記：寫餐飲現場的真實數字，不談夢想只談帳。已發表 18 篇。">
+  <meta name="theme-color" content="#F1ECE4">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：芫荽 Iansui（標題、長文、引言）、Literata（英數與大數字）、Noto Sans TC（介面文字） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Iansui&family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（10 個頁面共用）
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，10 個 .html 要一起改，
+      改完執行 npm run check 確認都與這份範本一致。
+    - 頁首由左至右：品牌（書籤標誌＋現場筆記）→ 主導覽（首頁、文章列表、訂閱方案）→ 搜尋 → 會員入口。
+      992px 以下：品牌靠左，右側是搜尋、會員圖示與選單按鈕；選單展開後是 3 個導覽連結＋會員入口。
+    - 每頁只需要調整一處「目前頁面」標示（加 active 與 aria-current="page"）：
+      index.html → 首頁；articles.html → 文章列表；pricing.html → 訂閱方案；
+      account.html → 會員入口（桌機的 .site-member 與選單裡的「我的現場筆記」）；
+      article.html、author.html → 文章列表只加 active，不加 aria-current；
+      guideline.html、login.html、register.html、forgot-password.html 不標示。
+    - 文章內頁（<body data-view>）與個人頁面（<body data-role>）的設計稿切換器說明見 js/main.js。
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="navbar navbar-expand-lg" aria-label="主要導覽">
+        <div class="container">
+          <a class="navbar-brand site-brand" href="index.html">
+            <svg class="site-brand-mark" viewBox="0 0 20 28" aria-hidden="true" focusable="false"><path d="M4 1h12a3 3 0 0 1 3 3v23l-9-6.2L1 27V4a3 3 0 0 1 3-3Z"/></svg>
+            <span class="site-brand-name">現場筆記</span>
+            <span class="site-brand-en">FieldNotes</span>
+          </a>
+
+          <!-- 992px 以下的圖示列：搜尋、會員、選單 -->
+          <div class="site-header-mobile d-flex d-lg-none">
+            <button class="site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋文章">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <a class="site-icon-btn" href="account.html" aria-label="我的現場筆記">
+              <i class="bi bi-person" aria-hidden="true"></i>
+            </a>
+            <button class="navbar-toggler site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link active" href="articles.html">文章列表</a></li>
+              <li class="nav-item"><a class="nav-link" href="pricing.html">訂閱方案</a></li>
+              <li class="nav-item d-lg-none"><a class="nav-link" href="account.html">我的現場筆記</a></li>
+            </ul>
+            <!-- 桌機右側：搜尋 → 會員入口（示意使用者陳柏諺已登入） -->
+            <div class="site-header-actions d-none d-lg-flex">
+              <button class="site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋文章">
+                <i class="bi bi-search" aria-hidden="true"></i>
+              </button>
+              <a class="site-member" href="account.html">
+                <img class="avatar avatar-sm" src="images/avatar-chen.jpg" alt="" width="32" height="32">
+                <span>我的現場筆記</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- 點放大鏡展開的搜尋列（所有寬度共用），送出到文章列表 -->
+      <div id="siteSearch" class="collapse site-search-panel">
+        <div class="container">
+          <form class="site-search" role="search" action="articles.html">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input class="form-control" type="search" name="q" placeholder="搜尋文章、作者或標籤" aria-label="搜尋文章">
+            <button class="btn btn-primary btn-sm" type="submit">搜尋</button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!-- ============ 頁面內容從這裡開始 ============ -->
+      <!--
+        作者個人頁（2026-11 補頁，以陳柏諺示範）：麵包屑 → 作者資訊卡（側欄）＋陳柏諺的文章（6 張文章卡＋分頁）→ 設計稿狀態示意
+        文案：CONTENT.md §10.12（姓名、職稱、簡介、追蹤按鈕照 §5 區塊四逐字）；入口是文章內頁作者卡的「查看全部文章」。
+        版型和文章列表頁同一套「側欄 : 列表」：≥ 1400px 3 : 9（列表欄和 articles.html 同寬）、992–1399px 4 : 8；
+        作者資訊卡在側欄 sticky，< 992px 移到列表上方。樣式在 scss/pages/_author.scss；
+        文章卡沿用 .article-list／.article-item，分頁沿用文章列表頁的 .articles-pager。
+      -->
+      <div class="container page-body">
+        <nav class="author-crumbs" aria-label="目前位置">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+            <li class="breadcrumb-item"><a href="articles.html">文章列表</a></li>
+            <li class="breadcrumb-item active" aria-current="page">陳柏諺</li>
+          </ol>
+        </nav>
+
+        <div class="row gx-lg-5 author-layout">
+          <div class="col-lg-4 col-xxl-3">
+            <!-- 作者資訊：≥ 992px 是側欄的直式卡片（頭像 96px）；< 992px 頭像縮到 64px，和姓名、徽章、職稱橫排，簡介與追蹤按鈕在下方 -->
+            <header id="author-profile" class="author-profile">
+              <img class="avatar author-profile-avatar" src="images/avatar-chen.jpg" alt="" width="96" height="96">
+              <div class="author-profile-head">
+                <h1 class="author-profile-name">陳柏諺</h1>
+                <span class="status-badge is-brand"><i class="bi bi-patch-check-fill" aria-hidden="true"></i>認證作者</span>
+                <p class="author-profile-job">台北某獨立餐酒館主廚兼老闆</p>
+              </div>
+              <div class="author-profile-body">
+                <!-- 簡介句末已經是「已發表 18 篇。」，不另做數字列；不放瀏覽數、訂閱貢獻等作者後台的數字 -->
+                <p class="author-profile-bio">開店第四年，前三年都在繳學費。在這裡寫餐飲現場的真實數字，不談夢想只談帳。已發表 18&nbsp;篇。</p>
+                <!-- 追蹤：和文章內頁作者卡同一組 class 與屬性，js/main.js 第 6 項切換 aria-pressed、文字與圖示 -->
+                <button class="btn btn-outline-secondary btn-sm" type="button" aria-pressed="false" data-toggle-pressed data-label-on="已追蹤" data-icon-on="bi-person-check" data-icon-off="bi-person-plus">
+                  <i class="bi bi-person-plus" aria-hidden="true"></i><span>追蹤作者</span>
+                </button>
+              </div>
+            </header>
+          </div>
+
+          <div class="col-lg-8 col-xxl-9">
+            <section id="author-articles" aria-labelledby="authorArticlesTitle">
+              <div class="author-articles-head">
+                <h2 id="authorArticlesTitle" class="author-articles-title">陳柏諺的文章</h2>
+                <p class="articles-count">顯示 1–6 篇，共 18 篇</p>
+              </div>
+
+              <!-- 只列已發布的文章，依發布日期新到舊；前兩篇就是 account.html「我的文章」裡的兩篇已發布文章。
+                   整頁都是同一位作者：不放作者列；這 6 篇只有第 1 篇有封面圖，所以不放縮圖。
+                   卡片標題用 h3（上一層是「陳柏諺的文章」），外觀和文章列表頁的 h2 相同 -->
+              <ol class="article-list" aria-label="陳柏諺的文章">
+                <li class="article-item">
+                  <div class="card-kicker">
+                    <span class="perm-badge is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                    <a class="card-kicker-link" href="articles.html">餐飲與零售</a>
+                  </div>
+                  <h3 class="article-item-title text-phrase"><a href="article.html">一間餐廳的成本結構：<wbr>從食材到翻桌率，<wbr>錢到底花到哪去</a></h3>
+                  <p class="article-item-lede">開店第三年我才真的看懂損益表。食材成本 32%、人事 28%、租金 15%——這些數字網路上都查得到，但沒人告訴你剩下的 25% 會被什麼吃掉。這篇我把去年整年的數字攤開，包含兩次差點關門的月份。</p>
+                  <ul class="tag-list" aria-label="標籤"><li><a class="tag" href="articles.html">#成本結構</a></li><li><a class="tag" href="articles.html">#開店</a></li><li><a class="tag" href="articles.html">#損益表</a></li></ul>
+                  <p class="meta-line"><span>約 6,800 字</span><span>閱讀 18 分鐘</span><span>發布於 <time datetime="2026-09-28">2026/09/28</time></span><span class="is-preview">免費預覽前 2,200 字</span></p>
+                </li>
+                <li class="article-item">
+                  <div class="card-kicker">
+                    <span class="perm-badge is-free"><i class="bi bi-unlock" aria-hidden="true"></i>免費閱讀</span>
+                    <a class="card-kicker-link" href="articles.html">餐飲與零售</a>
+                  </div>
+                  <h3 class="article-item-title text-phrase"><a href="article.html">為什麼我不做外送平台</a></h3>
+                  <p class="article-item-lede">我們上過外送平台八個月。單量看起來很漂亮，但扣掉三成抽成和包材，再加上尖峰時段被打亂的出餐節奏，每多接一張外送單，內用的客人就多等五分鐘。這篇算給你看我們為什麼退出，以及後來用什麼方式把那筆營業額補回來。</p>
+                  <ul class="tag-list" aria-label="標籤"><li><a class="tag" href="articles.html">#外送</a></li><li><a class="tag" href="articles.html">#通路</a></li><li><a class="tag" href="articles.html">#定價</a></li></ul>
+                  <p class="meta-line"><span>約 4,100 字</span><span>閱讀 11 分鐘</span><span>發布於 <time datetime="2026-08-14">2026/08/14</time></span></p>
+                </li>
+                <li class="article-item">
+                  <div class="card-kicker">
+                    <span class="perm-badge is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                    <a class="card-kicker-link" href="articles.html">餐飲與零售</a>
+                  </div>
+                  <h3 class="article-item-title text-phrase"><a href="article.html">菜單定價：<wbr>一道 380&nbsp;元的燉飯，<wbr>為什麼是我們最不賺錢的菜</a></h3>
+                  <p class="article-item-lede">這道燉飯的食材成本是 112 元，毛利看起來很漂亮。但把備料損耗、出餐多花的 6 分鐘，還有它佔掉的那張桌子一起算進去，它其實是菜單上最不賺錢的一道。這篇講我怎麼用這套算法，重新幫 24 道菜定價。</p>
+                  <ul class="tag-list" aria-label="標籤"><li><a class="tag" href="articles.html">#定價</a></li><li><a class="tag" href="articles.html">#成本結構</a></li><li><a class="tag" href="articles.html">#菜單</a></li></ul>
+                  <p class="meta-line"><span>約 5,200 字</span><span>閱讀 14 分鐘</span><span>發布於 <time datetime="2026-08-04">2026/08/04</time></span><span class="is-preview">免費預覽前 1,700 字</span></p>
+                </li>
+                <li class="article-item">
+                  <div class="card-kicker">
+                    <span class="perm-badge is-free"><i class="bi bi-unlock" aria-hidden="true"></i>免費閱讀</span>
+                    <a class="card-kicker-link" href="articles.html">餐飲與零售</a>
+                  </div>
+                  <h3 class="article-item-title text-phrase"><a href="article.html">廚房留不住人：<wbr>離職面談裡，<wbr>沒有人說是因為錢</a></h3>
+                  <p class="article-item-lede">開店到現在，廚房換過 11 個人。離職面談裡沒有人說是因為錢，說的都是排班：連上十天、週末永遠排不到休假、前一天晚上才知道隔天幾點進來。這篇是我重排班表的過程，以及改完之後這一年只走了一個人。</p>
+                  <ul class="tag-list" aria-label="標籤"><li><a class="tag" href="articles.html">#排班</a></li><li><a class="tag" href="articles.html">#離職潮</a></li><li><a class="tag" href="articles.html">#人事</a></li></ul>
+                  <p class="meta-line"><span>約 4,000 字</span><span>閱讀 11 分鐘</span><span>發布於 <time datetime="2026-07-23">2026/07/23</time></span></p>
+                </li>
+                <li class="article-item">
+                  <div class="card-kicker">
+                    <span class="perm-badge is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                    <a class="card-kicker-link" href="articles.html">餐飲與零售</a>
+                  </div>
+                  <h3 class="article-item-title text-phrase"><a href="article.html">平日晚上要不要公休：<wbr>我們試過的三種做法</a></h3>
+                  <p class="article-item-lede">平日晚上的營業額，常常付不起當晚的人事和水電。公休一天看起來比較省，但房租照樣在算，熟客也可能就此換到別家。這篇攤開我們試過的三種做法：每週公休一天、平日提早打烊、平日改成預約制，以及最後留下來的是哪一個。</p>
+                  <ul class="tag-list" aria-label="標籤"><li><a class="tag" href="articles.html">#營業時間</a></li><li><a class="tag" href="articles.html">#排班</a></li><li><a class="tag" href="articles.html">#成本結構</a></li></ul>
+                  <p class="meta-line"><span>約 4,500 字</span><span>閱讀 12 分鐘</span><span>發布於 <time datetime="2026-07-10">2026/07/10</time></span><span class="is-preview">免費預覽前 1,500 字</span></p>
+                </li>
+                <li class="article-item">
+                  <div class="card-kicker">
+                    <span class="perm-badge is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                    <a class="card-kicker-link" href="articles.html">餐飲與零售</a>
+                  </div>
+                  <h3 class="article-item-title text-phrase"><a href="article.html">跟供應商談帳期：<wbr>現金流比毛利更早讓你關門</a></h3>
+                  <p class="article-item-lede">肉商月結 30 天，海鮮要付現，酒商可以給 60 天；錢進來卻要等信用卡撥款兩到四週。帳面上有賺錢，戶頭裡卻付不出下週的貨款。這篇講我怎麼把每週要付的錢排成一張表，以及第一次開口跟供應商談延長帳期時說了什麼。</p>
+                  <ul class="tag-list" aria-label="標籤"><li><a class="tag" href="articles.html">#現金流</a></li><li><a class="tag" href="articles.html">#供應商</a></li><li><a class="tag" href="articles.html">#成本結構</a></li></ul>
+                  <p class="meta-line"><span>約 5,100 字</span><span>閱讀 14 分鐘</span><span>發布於 <time datetime="2026-06-30">2026/06/30</time></span><span class="is-preview">免費預覽前 1,700 字</span></p>
+                </li>
+              </ol>
+
+              <!-- 分頁：每頁 6 篇 × 3 頁＝ 18 篇；靜態頁碼，2、3、下一頁都連回本頁（寫法同文章列表頁）。
+                   < 576px「上一頁」「下一頁」只留箭頭（文字視覺隱藏，螢幕報讀器仍會讀），5 格排在同一行 -->
+              <nav class="articles-pager" aria-label="陳柏諺的文章分頁">
+                <ul class="pagination">
+                  <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left" aria-hidden="true"></i><span class="author-pager-label">上一頁</span></span></li>
+                  <li class="page-item active"><span class="page-link" aria-current="page">1</span></li>
+                  <li class="page-item"><a class="page-link" href="author.html">2</a></li>
+                  <li class="page-item"><a class="page-link" href="author.html">3</a></li>
+                  <li class="page-item"><a class="page-link" href="author.html"><span class="author-pager-label">下一頁</span><i class="bi bi-chevron-right" aria-hidden="true"></i></a></li>
+                </ul>
+              </nav>
+            </section>
+
+            <!-- 設計稿狀態示意：作者還沒有發表文章（讀者看到的版本；作者在自己後台看到的是 S18，不要混用） -->
+            <section class="demo-state" aria-labelledby="demoAuthorEmptyTitle">
+              <p class="demo-state-tag"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意</p>
+              <h2 id="demoAuthorEmptyTitle" class="demo-state-title">作者還沒有發表文章時</h2>
+              <p class="text-note">文章列表區換成這個空狀態，「顯示 1–6 篇，共 18 篇」與分頁一起隱藏，作者資訊區不變。</p>
+              <div class="empty-state">
+                <span class="empty-state-icon"><i class="bi bi-journal-text" aria-hidden="true"></i></span>
+                <p>這位作者還沒有發表文章，追蹤後新文章發布會通知你。</p>
+                <a class="btn btn-outline-secondary" href="articles.html">瀏覽其他文章</a>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+      <!-- ============ 頁面內容到這裡結束 ============ -->
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="row gy-5">
+          <div class="col-lg-5">
+            <a class="site-brand" href="index.html">
+              <svg class="site-brand-mark" viewBox="0 0 20 28" aria-hidden="true" focusable="false"><path d="M4 1h12a3 3 0 0 1 3 3v23l-9-6.2L1 27V4a3 3 0 0 1 3-3Z"/></svg>
+              <span class="site-brand-name">現場筆記</span>
+              <span class="site-brand-en">FieldNotes</span>
+            </a>
+            <p class="site-footer-lead">
+              這裡不收二手整理、不收懶人包，只收第一線工作者親自寫的長文。每篇文章都可以免費讀前三分之一，讀到關鍵的那一段才需要訂閱。
+            </p>
+          </div>
+          <!-- 沒有頁面的連結（關於現場筆記、作者審核標準、聯絡我們）用不帶 href 的佔位連結 -->
+          <div class="col-6 col-md-4 col-lg-2 offset-lg-1">
+            <h2 class="site-footer-title">讀者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="articles.html">瀏覽文章</a></li>
+              <li><a href="pricing.html">訂閱方案</a></li>
+              <li><a href="account.html#library">我的收藏</a></li>
+              <li><a href="account.html#subscription">訂閱狀態</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">作者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="account.html?role=reader#apply">申請成為作者</a></li>
+              <li><a href="account.html?role=author#my-articles">我的文章</a></li>
+              <li><a href="account.html?role=author#editor">撰寫新文章</a></li>
+              <li><a href="account.html?role=author#analytics">內容數據</a></li>
+            </ul>
+          </div>
+          <div class="col-md-4 col-lg-2">
+            <h2 class="site-footer-title">平台</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a>關於現場筆記</a></li>
+              <li><a>作者審核標準</a></li>
+              <li><a href="pricing.html#faq">退費與取消政策</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 現場筆記 FieldNotes｜<wbr>本站為課程設計稿範例，文章、作者與數據皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

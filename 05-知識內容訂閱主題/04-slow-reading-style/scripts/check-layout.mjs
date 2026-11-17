@@ -1,5 +1,5 @@
 // 檢查每個頁面的共用區塊（<head> 共用部分、頁首、頁尾、底部 script）是否與 templates/page.html 一致
-// 頁首頁尾在每頁都完整寫一份，改範本後可以用這支確認 6 個頁面都同步了
+// 頁首頁尾在每頁都完整寫一份，改範本後可以用這支確認 10 個頁面都同步了
 // 用法：npm run check
 import fs from 'node:fs'
 import path from 'node:path'
@@ -30,9 +30,13 @@ const expected = {
   'index.html': ['index.html', true],
   'articles.html': ['articles.html', true],
   'article.html': ['articles.html', false], // 文章內頁標示「文章列表」，只加 active
+  'author.html': ['articles.html', false],  // 作者個人頁（2026-11 補）同文章內頁：標示「文章列表」，只加 active
   'pricing.html': ['pricing.html', true],
   'account.html': ['account.html', true],   // 會員入口（桌機 .site-member＋選單裡的「我的現場筆記」）
   'guideline.html': null,
+  'login.html': null,           // 2026-11 補的 3 個表單頁不標示
+  'register.html': null,
+  'forgot-password.html': null,
 }
 
 const template = fs.readFileSync(path.join(root, 'templates/page.html'), 'utf8')

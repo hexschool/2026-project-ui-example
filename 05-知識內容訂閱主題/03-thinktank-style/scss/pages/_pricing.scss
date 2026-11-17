@@ -1,27 +1,74 @@
 // ============================================================
 // 訂閱方案（pricing.html）：class 加 pricing- 前綴（共用元件除外）
-// 方案首屏（標題區置中約 640px）→ 比較矩陣 → 結帳 7:5 → FAQ 4:8
-// 方案卡與比較矩陣在 components/_plans.scss（Guideline 共用）
+// 報刊排版（2026-11-17）：
+// - 方案首屏是一張價目表：麵包屑 → 報頭雙線 → ≥ 992px 標題欄｜免費｜月費｜年費，四欄等寬、欄線分隔
+// - 比較矩陣 ≥ 992px 也是四欄等寬，欄線和價目表上下對齊（方案欄就像矩陣的表頭）
+// - 結帳三欄、欄線分隔：付款方式｜信用卡欄位＋同意｜訂閱摘要
+// - FAQ 標題全寬，問答分左右兩欄
+// 每個區塊的 H2 用欄目標頭（np-flag）；不再用霧白紙色帶分區
+// 方案卡與比較矩陣的基本樣式在 components/_plans.scss（Guideline 共用）
 // ============================================================
-.pricing-hero {
-  padding-bottom: map-get($spacers, 6);
 
+// 價目表與矩陣：欄距 0，欄的左右內距 1.5rem；欄線落在 25%／50%／75%，和表格的欄線是同一條
+$pricing-col-pad: 1.5rem;
+
+// 價目表和比較矩陣之間只隔一般區塊留白（矩陣接在價目表下方，讀起來是同一組直欄）
+.pricing-hero {
   @include media-breakpoint-up(lg) {
-    padding-bottom: map-get($spacers, 7);
+    padding-bottom: map-get($spacers, 3);
   }
 }
-// 標題區：麵包屑靠左，其餘置中（開門見山）
-.pricing-head-main {
-  max-width: 40rem;
-  margin-inline: auto;
-  text-align: center;
+// 麵包屑：位置與間距同 .page-header（文章列表、個人頁面），切換頁面時不跳動
+.pricing-crumb {
+  padding-top: map-get($spacers, 3);
 
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 4);
+  }
+  .breadcrumb {
+    margin-bottom: map-get($spacers, 2);
+  }
+}
+
+// ---------- 價目表 ----------
+.pricing-ratecard {
+  padding-top: $rule-double-height;
+  @include rule-double(top);
+
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-bottom: 1px solid $rule;
+  }
+}
+// 標題欄：H1（頭條字級）→ 副標 → 月／年切換 → 省錢提示
+.pricing-head {
+  padding-top: map-get($spacers, 3);
+  padding-bottom: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    padding: map-get($spacers, 4) $pricing-col-pad map-get($spacers, 4) 0;
+  }
+
+  h1 {
+    @include np-hl-1;
+    margin-bottom: 0;
+
+    // 992～1199px 標題欄約 200px：「讀完所有現場」要放得下一行
+    @include media-breakpoint-only(lg) {
+      font-size: 1.75rem;
+    }
+  }
   .page-lead {
-    margin-inline: auto;
+    margin-top: map-get($spacers, 3);
   }
 }
 .pricing-billing {
   margin-top: map-get($spacers, 4);
+
+  @include media-breakpoint-only(lg) {
+    > .btn { --bs-btn-padding-x: .75rem; }
+  }
 }
 // 年繳提示：預設 visibility: hidden 但保留高度；切到年繳時出現
 .billing-hint {
@@ -39,22 +86,79 @@
   &.is-visible {
     visibility: visible;
   }
+  .pricing-head & {
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    .bi { margin-top: .1875rem; }
+  }
 }
+
+// ---------- 區塊標題：欄目標頭（報頭雙線 → H2 → 髮絲線） ----------
 .pricing-section-title {
-  margin-bottom: map-get($spacers, 4);
+  @include np-flag;
 }
-.plan-grid {
-  margin-top: map-get($spacers, 4);
+// 區塊之間靠欄目標頭的雙線分開，不再另加整條髮絲線
+#checkout,
+#faq {
+  border-top: 0;
 }
 
-// ---------- 結帳：付款方式卡 ----------
+// ---------- 完整權益比較：矩陣直接接在欄目標頭的髮絲線下 ----------
+#compare {
+  .pricing-section-title {
+    margin-bottom: 0;
+  }
+  .compare-hint {
+    margin: .75rem 0;
+  }
+  .compare {
+    padding-top: 0;
+    background-image: none;
+  }
+  // ≥ 992px：四欄等寬，和價目表對齊；方案欄的內容靠左，和上方方案名同一條起點
+  @include media-breakpoint-up(lg) {
+    .compare-table {
+      table-layout: fixed;
+
+      th,
+      td {
+        padding-inline: $pricing-col-pad;
+        text-align: left;
+      }
+      th:first-child {
+        min-width: 0;
+        padding-left: 0;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+// ---------- 確認你的訂閱：三欄 ----------
+// HTML 順序：付款表單（付款方式、信用卡欄位＋同意）→ 付款狀態示意 → 訂閱摘要
+// ≥ 992px：付款方式｜信用卡欄位｜訂閱摘要（3：4：5，≥ 1200px 4：4：4）；狀態示意在前兩欄下方；摘要的欄線貫通整欄
+.checkout-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 4fr) minmax(0, 5fr);
+    grid-template-areas:
+      "form   form   summary"
+      "states states summary";
+    column-gap: $np-col-gap;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
 .checkout-card {
-  padding: 1.5rem;
-  border: 1px solid $rule;
-  border-top: 2px solid $oxford;
-
-  @include media-breakpoint-up(md) {
-    padding: 2rem;
+  @include media-breakpoint-up(lg) {
+    grid-area: form;
+    display: grid;
+    grid-template-columns: subgrid;
   }
 }
 .checkout-card-title {
@@ -72,6 +176,10 @@
 
   @include media-breakpoint-up(md) {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  // ≥ 992px 付款方式自己一欄：四個選項直排
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 .pay-method {
@@ -94,8 +202,14 @@
     font-size: 1rem;
   }
 }
-.checkout-fields {
-  margin-top: 1.25rem;
+// 信用卡欄位＋同意：≥ 992px 在付款方式右邊，左側欄線
+.checkout-pay {
+  @include np-col-rule;
+
+  @include media-breakpoint-up(lg) {
+    // 標籤「卡號」和左欄的「付款方式」同一條基線起點
+    padding-top: .125rem;
+  }
 }
 .checkout-agree {
   margin: 1.5rem 0 0;
@@ -109,6 +223,14 @@
     height: 1.25rem;
   }
 }
+.checkout-states {
+  margin-top: 0;
+
+  @include media-breakpoint-up(lg) {
+    grid-area: states;
+  }
+}
+// 付款三態由上而下依序排（處理中 → 成功 → 失敗），欄位錯誤在最後
 .pay-states {
   display: grid;
   gap: .75rem;
@@ -123,24 +245,25 @@
   .btn { margin-top: 0; }
 }
 
-// ---------- 結帳：訂閱摘要（像一張帳單，頂端報頭雙線） ----------
+// ---------- 訂閱摘要：像一張帳單，頂端報頭雙線；不加外框、不浮起 ----------
+.checkout-summary {
+  @include np-col-rule($stacked: false);
+
+  @include media-breakpoint-up(lg) {
+    grid-area: summary;
+  }
+}
 .summary-card {
-  padding: calc(#{$rule-double-height} + 1.5rem) 1.5rem 1.5rem;
-  border: 1px solid $rule;
-  background-color: $paper;
+  padding-top: calc(#{$rule-double-height} + 1.25rem);
   @include rule-double(top);
 
   @include media-breakpoint-up(lg) {
     position: sticky;
     top: $sticky-top-offset;
-    box-shadow: $box-shadow;
-  }
-  @include media-breakpoint-up(md) {
-    padding-inline: 2rem;
   }
 }
 .summary-title {
-  margin-bottom: 1rem;
+  margin-bottom: .5rem;
   font-family: $font-family-sans-serif;
   font-size: 1rem;
   font-weight: $font-weight-bold;
@@ -166,12 +289,11 @@
     font-weight: $font-weight-medium;
   }
 }
-// 下次扣款：深藍淡底＋大字日期
+// 下次扣款：數據框（2px 深藍粗線 → 小字標籤 → Newsreader 大字日期 → 續訂金額）
 .summary-next {
-  margin-block: 1.25rem;
-  padding: 1rem 1.25rem;
-  background-color: $oxford-tint;
-  border-left: 3px solid $oxford;
+  margin-block: 1.5rem 1.25rem;
+  padding-top: .75rem;
+  border-top: 2px solid $oxford;
 
   p { margin: 0; }
 }
@@ -184,8 +306,12 @@
   color: $oxford;
 }
 .summary-next-date {
-  margin: .25rem 0 !important;
-  font-size: 2rem;
+  margin: .375rem 0 .25rem !important;
+  font-size: 2.25rem;
+
+  @include media-breakpoint-up(xl) {
+    font-size: 2.5rem;
+  }
 }
 .summary-next-note {
   font-size: $font-size-sm;
@@ -197,7 +323,7 @@
   justify-content: space-between;
   margin-bottom: 1rem;
   padding-top: .75rem;
-  border-top: 1px solid $oxford;
+  border-top: 1px solid $rule;
 
   span:first-child {
     font-weight: $font-weight-bold;
@@ -214,10 +340,21 @@
   .bi { color: $green; margin-right: .25rem; }
 }
 
-// ---------- FAQ ----------
+// ---------- FAQ：問答分左右兩欄（同一個 Accordion 父層，一次只開一題） ----------
+#faq .pricing-section-title {
+  margin-bottom: 0;
+}
 .faq {
-  border-top: 1px solid $oxford;
+  @include media-breakpoint-up(md) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: $np-col-gap;
+  }
 
+  .accordion-item {
+    border-inline: 0;
+    border-top: 0;
+  }
   .accordion-button {
     font-family: $font-family-serif;
     font-size: 1.125rem;
@@ -229,4 +366,8 @@
     color: $ink;
     max-width: 40em;
   }
+}
+// 第二欄：≥ 768px 左側欄線（欄高跟著較高的一欄，展開時欄線一起變長）
+.faq-col + .faq-col {
+  @include np-col-rule(md, $stacked: false);
 }

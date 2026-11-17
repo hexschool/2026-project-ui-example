@@ -1,7 +1,12 @@
 // ============================================================
-// 文章內頁（article.html）：class 加 article- 前綴（共用元件除外）
-// 閱讀進度條 → 麵包屑＋設計稿切換器 → 8（文章）：4（目錄）
+// 文章內頁（article.html）：報刊的專文版面。class 加 article- 前綴（共用元件除外）
+// 閱讀進度條 → 麵包屑＋設計稿切換器
+// → ≥ 992px 主體 .article-layout：左欄（目錄 → 閱讀進度數據框 → 字級，sticky）｜欄線｜閱讀欄 700px
+//   ≥ 1400px 閱讀欄右側留出頁邊，照片圖說移過去當頁邊註（.np-margin-note）
+// 標題區：眉標列（上下髮絲線）→ 大標題 → 副標（導言，上方 2px 粗線）→ 作者權威列＋工具列 → 報頭雙線
+// 內文：首字放大（第一段）、h2 上方 3rem 深藍短線；只寫在 #article-body 底下，編輯器與 Guideline 的 .prose 不受影響
 // 標題區、內文、付費牆卡、文末都對齊 700px 閱讀欄（$prose-max-width），容器變寬時不跟著變寬
+// 992px 以下：左欄隱藏，目錄改成標題區下方可展開的「本篇目錄」，工具列改成底部固定行動列
 // ============================================================
 
 // ---------- 0. 閱讀進度條：sticky 在頁首正下方 ----------
@@ -32,15 +37,46 @@
   }
 }
 
+// ---------- 主體配置：左欄｜閱讀欄 ----------
+// 左欄放在 HTML 前面（目錄先於內文），≥ 992px 才出現（.d-none .d-lg-block）
+.article-layout {
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: 13rem minmax(0, $prose-max-width);
+    column-gap: $np-col-gap;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: 15rem minmax(0, $prose-max-width);
+  }
+  // 1232px 內容寬：左欄 256＋欄距 32＋閱讀欄 700，右側剩 244px 給頁邊註（12rem＋欄距），左右大致平衡
+  @include media-breakpoint-up(xxl) {
+    grid-template-columns: 16rem minmax(0, $prose-max-width);
+  }
+}
+.article-main {
+  min-width: 0;
+  @include np-col-rule($stacked: false); // 左欄與閱讀欄之間一條貫通全文的欄線
+
+  #article-body,
+  .paywall,
+  .article-end {
+    max-width: $prose-max-width;
+  }
+}
+
 // ---------- 2. 文章標題區 ----------
 .article-header {
   max-width: $prose-max-width;
   margin-bottom: map-get($spacers, 5);
-  padding-bottom: map-get($spacers, 4);
-  border-bottom: 1px solid $oxford; // 五層的最後一層：分隔線
 
+  // 眉標列：權限徽章＋分類＋標籤，上下髮絲線
   .kicker {
-    margin-bottom: map-get($spacers, 3);
+    margin-bottom: 0;
+    padding-block: .5rem;
+    border-block: 1px solid $rule;
+  }
+  .article-title {
+    margin-block: map-get($spacers, 4);
   }
 }
 .article-header-tags {
@@ -59,17 +95,29 @@
     font-size: 2.625rem;
   }
 }
+// 副標（文章內頁版導言）：上方 2px 深藍粗線，和大標題分開
 .article-lede {
-  margin-bottom: map-get($spacers, 4);
+  margin-bottom: 0;
+  padding-top: map-get($spacers, 3);
+  border-top: 2px solid $oxford;
 }
+// 作者權威列：方形頭像 48、姓名襯線粗體、職稱｜日期｜閱讀時間；工具列靠右；上方髮絲線、下方報頭雙線收尾
 .article-byline {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-top: map-get($spacers, 3);
+  margin-top: map-get($spacers, 4);
+  padding-block: .875rem calc(#{$rule-double-height} + .875rem);
   border-top: 1px solid $rule;
+  @include rule-double(bottom);
+
+  .author-line-name {
+    font-family: $font-family-serif;
+    font-size: 1.125rem;
+    letter-spacing: $letter-spacing-heading;
+  }
 }
 // 工具列：小尺寸、細框，不和標題搶
 .article-tools {
@@ -124,51 +172,69 @@
 
   .toc-list {
     margin-top: .5rem;
-    padding: .5rem 1rem;
+    padding: 0 1rem;
     border: 1px solid $rule;
   }
 }
 
-// ---------- 3. 內文與付費牆 ----------
-.article-main {
-  #article-body,
-  .paywall,
-  .article-end {
-    max-width: $prose-max-width;
+// ---------- 3. 內文（只加報刊的兩個記號，數值照 .prose） ----------
+#article-body {
+  // 首字放大：第一段的第一個字，Noto Serif TC 900、深藍，佔兩行（第一段在桌機只有兩行，三行會壓到下一段）
+  // 用 em 計算，Aa 三段字級都跟著縮放；不影響行高
+  > p:first-child::first-letter {
+    float: left;
+    margin: .05em .14em 0 0;
+    font-family: $prose-font-family;
+    font-size: 3.05em;
+    font-weight: $font-weight-bolder;
+    line-height: 1;
+    color: $oxford;
+  }
+  // 小標上方的 3rem 深藍短線（報紙的小標記號）
+  h2::before {
+    content: "";
+    display: block;
+    width: 3rem;
+    margin-bottom: .55em;
+    border-top: 2px solid $oxford;
+  }
+  // 頁邊註：≥ 1400px 照片圖說移到閱讀欄右側（.np-margin-note），圖片外框當定位基準
+  figure:has(> .np-margin-note) {
+    position: relative;
   }
 }
 
-// ---------- 4. 文末 ----------
+// ---------- 4. 文末：每一段用欄目標頭起頭（報頭雙線 → H2 → 髮絲線） ----------
 .article-end {
   margin-top: map-get($spacers, 6);
 }
 .article-end-block {
-  padding-top: map-get($spacers, 4);
   margin-bottom: map-get($spacers, 6);
-  border-top: 1px solid $oxford;
 }
 .article-end-title {
   margin-bottom: map-get($spacers, 4);
+  padding-block: calc(#{$rule-double-height} + .875rem) .875rem;
+  border-bottom: 1px solid $rule;
+  @include rule-double(top);
   font-size: 1.5rem;
 }
+// 作者簡介：方形頭像 64｜姓名、職稱、簡介、按鈕；不加底色框
 .author-card {
-  display: flex;
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
   gap: 1.25rem;
-  align-items: flex-start;
-  padding: 1.5rem;
-  background-color: $mist;
-  border-left: 3px solid $oxford;
+  align-items: start;
 
   p { margin: 0; }
 }
 .author-card-body {
-  flex: 1 1 auto;
   min-width: 0;
 }
 .author-card-name {
   font-family: $font-family-serif;
   font-size: 1.25rem;
   font-weight: $font-weight-bold;
+  line-height: 1.4;
   color: $oxford;
 }
 .author-card-job {
@@ -191,6 +257,8 @@
   align-items: center;
   gap: .75rem 1rem;
   margin-top: map-get($spacers, 4);
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $rule;
 }
 .article-tags-title {
   margin: 0;
@@ -199,10 +267,28 @@
   font-weight: $font-weight-bold;
   color: $slate;
 }
-.related-list .story {
-  padding-block: map-get($spacers, 3);
+// 讀完這篇的人還讀了：短訊列（眉標 → 短訊標題 → 作者 ‧ 時間；縮圖靠右、列間髮絲線）
+// 縮圖連結是裝飾（tabindex="-1"、aria-hidden），可以用 order 排到右邊
+.related-list {
+  .story {
+    padding-block: map-get($spacers, 3);
 
-  &:first-child { padding-top: 0; }
+    &:first-child { padding-top: 0; }
+  }
+  .story-with-thumb {
+    grid-template-columns: minmax(0, 1fr) 6.5rem;
+    gap: map-get($spacers, 3) map-get($spacers, 4);
+
+    @include media-breakpoint-up(sm) {
+      grid-template-columns: minmax(0, 1fr) 9rem;
+    }
+    > .img-frame {
+      order: 2;
+    }
+  }
+  .story-title {
+    @include np-hl-3;
+  }
 }
 
 // 留言
@@ -284,24 +370,33 @@
   margin-top: .5rem;
 }
 
-// ---------- 右欄：浮動目錄 ----------
+// ---------- 左欄：目錄（編號索引）→ 閱讀進度（數據框）→ 字級 ----------
+.article-aside {
+  min-width: 0;
+}
 .article-aside-inner {
   position: sticky;
   top: calc(#{$sticky-top-offset} + 3px);
   display: grid;
-  gap: map-get($spacers, 4);
-}
-.toc {
-  padding-top: .75rem;
-  border-top: 2px solid $oxford;
+  gap: map-get($spacers, 5);
 }
 .toc-title,
 .aside-card-title {
-  margin-bottom: .5rem;
+  margin: 0;
   font-family: $font-family-sans-serif;
   font-size: $font-size-sm;
   font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
   color: $oxford;
+}
+// 目錄：頂端報頭雙線 → 標題 → 髮絲線分隔的編號列
+.toc {
+  padding-top: $rule-double-height;
+  @include rule-double(top);
+}
+.toc-title {
+  padding-block: .75rem;
+  border-bottom: 1px solid $rule;
 }
 .toc-list {
   margin: 0;
@@ -312,13 +407,16 @@
   li {
     counter-increment: toc;
   }
+  li + li {
+    border-top: 1px solid $rule;
+  }
 }
-// 目錄項目：一般、目前（深藍左線＋粗體）、鎖住（淡色＋鎖頭，不是連結）
+// 目錄項目：一般（編號＋標題）、目前（深藍、粗體）、鎖住（淡色＋鎖頭取代編號，不是連結）
+// 中文標題粗體和一般字寬相同，切換目前項目時不會重新換行
 .toc-link {
   display: flex;
-  gap: .5rem;
-  padding: .5rem 0 .5rem .875rem;
-  border-left: 2px solid $rule;
+  gap: .625rem;
+  padding-block: .625rem;
   color: $slate;
   font-size: $font-size-sm;
   line-height: 1.6;
@@ -326,48 +424,81 @@
 
   &::before {
     content: counter(toc);
-    flex: 0 0 auto;
-    min-width: 1em;
+    flex: 0 0 1rem;
     font-family: $font-family-serif;
-    font-variant-numeric: lining-nums;
+    font-size: 1rem;
+    font-weight: 600;
+    font-variant-numeric: lining-nums tabular-nums;
+    line-height: 1.4;
     color: $slate-light;
   }
   &:hover {
     color: $oxford;
-    border-left-color: $rule-strong;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .2em;
   }
   &.active {
     color: $oxford;
     font-weight: $font-weight-bold;
-    border-left-color: $oxford;
+
+    &::before { color: $oxford; }
   }
   &.is-locked {
     color: $slate-light;
+    text-decoration: none;
 
     &::before { display: none; }
     .bi {
-      flex: 0 0 auto;
-      margin-top: .1875rem;
+      flex: 0 0 1rem;
+      margin-top: .25rem;
       font-size: .75rem;
     }
   }
 }
-.aside-card {
-  padding: 1rem 1.125rem 1.125rem;
-  border: 1px solid $rule;
-  background-color: $paper;
+// 閱讀進度：數據框（頂端報頭雙線 → 標籤＋大數字 → 進度條 → 字數、時間逐列）
+.aside-databox {
+  padding-top: $rule-double-height;
+  @include rule-double(top);
 
   .progress {
-    margin-bottom: .625rem;
+    margin-bottom: .25rem;
+  }
+  .meta {
+    display: block;
+    margin-left: 0;
+    color: $slate;
+    clip-path: none;
+
+    > li {
+      padding-block: .5rem;
+      border-bottom: 1px solid $rule;
+      white-space: normal;
+    }
+    > li::before {
+      content: none;
+    }
   }
 }
 .aside-card-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  gap: 1rem;
+  padding-block: .75rem .625rem;
 
   .figure-num {
-    font-size: 1.5rem;
+    font-size: 2.5rem;
+    line-height: 1;
+  }
+}
+// 字級：髮絲線 → 標題 → 三段切換 → 說明
+.aside-size {
+  padding-top: .75rem;
+  border-top: 1px solid $rule;
+
+  .aside-card-title {
+    margin-bottom: .625rem;
   }
 }
 
@@ -405,14 +536,18 @@
   }
 }
 
-// ---------- 閱讀模式：隱藏目錄與日期列，閱讀欄置中 ----------
+// ---------- 閱讀模式：隱藏左欄、報耳與切換器，閱讀欄置中 ----------
 .is-reading-mode {
-  .site-dateline,
+  .site-ear,
   .article-aside,
   .article-topbar .demo-switch {
     display: none !important;
   }
-  .article-main {
-    margin-inline: auto;
+  .article-layout {
+    grid-template-columns: minmax(0, $prose-max-width);
+    justify-content: center;
+  }
+  .article-main::before {
+    content: none;
   }
 }

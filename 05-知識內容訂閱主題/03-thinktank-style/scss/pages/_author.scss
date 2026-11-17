@@ -1,0 +1,207 @@
+// ============================================================
+// 作者個人頁（author.html，2026-11 補頁）：報刊的「專欄作家版」。class 加 author- 前綴
+//
+// 麵包屑（位置與間距同文章列表頁）→ 2px 深藍粗線 → ≥ 992px 3｜9、欄線分隔：
+//   左欄 作者資訊（方形頭像 96 → H1 頭條字級 → 認證作者 → 職稱 → 髮絲線 → 簡介 → 追蹤），捲動時 sticky
+//   右欄 欄名「陳柏諺的文章」＋筆數 → 帳冊式文章列（沿用 .article-list.is-ledger；沒有縮圖、沒有作者列，
+//         眉標 2｜主文 10）→ 分頁（對齊主文欄）→ 設計稿狀態示意
+// 欄線畫在 .author-sheet 上（np-col-line），貫通整個版面
+// 768–991px：作者資訊「頭像 : 文字」兩欄，文章列在下方（欄名改用報頭雙線起頭）
+// 767px 以下：頭像 64 和姓名、徽章、職稱橫排，簡介與追蹤按鈕在下方
+// ============================================================
+
+// 麵包屑：同 .page-header 的上距與下距（文章列表頁的粗線也在同一個高度）
+.author-crumb {
+  padding-top: map-get($spacers, 3);
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 4);
+  }
+  .breadcrumb {
+    margin-bottom: map-get($spacers, 2);
+  }
+}
+
+.author-sheet {
+  position: relative;
+  border-top: 2px solid $oxford;
+
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: auto 1fr;
+    column-gap: $np-col-gap;
+
+    &::before {
+      @include np-col-line(3);
+    }
+  }
+}
+
+// ---------- 左欄：作者資訊 ----------
+.author-profile {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  grid-template-areas:
+    "avatar head"
+    "body body";
+  gap: map-get($spacers, 3);
+  align-items: center;
+  padding-top: map-get($spacers, 4);
+
+  p {
+    margin: 0;
+  }
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 6rem minmax(0, 1fr);
+    grid-template-areas:
+      "avatar head"
+      "avatar body";
+    column-gap: map-get($spacers, 4);
+    align-items: start;
+  }
+
+  @include media-breakpoint-up(lg) {
+    grid-column: 1 / span 3;
+    grid-row: 1 / span 2;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "avatar"
+      "head"
+      "body";
+    row-gap: 0;
+    align-self: start;
+    position: sticky;
+    top: $sticky-top-offset;
+    padding-top: map-get($spacers, 4) + .25rem;
+  }
+}
+.author-profile-avatar {
+  grid-area: avatar;
+  --avatar-size: 4rem;
+
+  @include media-breakpoint-up(md) {
+    --avatar-size: 6rem;
+  }
+}
+.author-profile-head {
+  grid-area: head;
+  min-width: 0;
+
+  @include media-breakpoint-up(lg) {
+    margin-top: map-get($spacers, 3);
+  }
+}
+// 姓名（頭條字級）＋認證作者：放得下就同一行，≥ 992px 窄欄裡徽章在姓名下方
+.author-profile-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .75rem;
+
+  h1 {
+    @include np-hl-1;
+    margin: 0;
+  }
+
+  @include media-breakpoint-up(lg) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .5rem;
+  }
+}
+.author-profile-job {
+  margin-top: .5rem !important;
+  font-size: $font-size-sm;
+  color: $slate;
+}
+.author-profile-body {
+  grid-area: body;
+  min-width: 0;
+
+  @include media-breakpoint-up(md) {
+    max-width: 36em;
+  }
+  @include media-breakpoint-up(lg) {
+    max-width: none;
+    margin-top: map-get($spacers, 3);
+    padding-top: map-get($spacers, 3);
+    border-top: 1px solid $rule;
+  }
+}
+// 簡介：長文的襯線字，像專欄作家的署名簡介
+.author-profile-bio {
+  margin-bottom: map-get($spacers, 3) !important;
+  font-family: $prose-font-family;
+  font-size: 1.0625rem;
+  line-height: 1.85;
+  color: $ink;
+}
+.author-profile-follow {
+  @include media-breakpoint-up(lg) {
+    width: 100%;
+  }
+}
+
+// ---------- 右欄：陳柏諺的文章 ----------
+.author-articles {
+  margin-top: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    grid-column: 4 / span 9;
+    grid-row: 1;
+    margin-top: 0;
+  }
+
+  // 帳冊列在 9 欄寬裡：992–1199px 眉標 2 欄太窄（放不下「訂閱限定」），改成 3｜9
+  @include media-breakpoint-only(lg) {
+    .article-list.is-ledger {
+      .kicker {
+        grid-column: 1 / span 3;
+      }
+      .article-item:not(:has(.article-item-thumb)) .article-item-main {
+        grid-column: 4 / -1;
+      }
+    }
+    .articles-pagination {
+      padding-left: calc((100% - #{11 * $np-col-gap}) / 4 + #{3 * $np-col-gap});
+    }
+  }
+}
+// 欄名列：左 H2、右筆數，下方直接接帳冊列的 2px 粗線（不另畫髮絲線）
+// 992px 以下作者資訊在上方，欄名用報頭雙線起頭；≥ 992px 頂端已經是整頁的粗線
+.author-articles-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .25rem 1.5rem;
+  padding-top: calc(#{$rule-double-height} + .875rem);
+  padding-bottom: .875rem;
+  @include rule-double(top);
+
+  h2 {
+    margin: 0;
+  }
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 4);
+    background-image: none;
+  }
+}
+.author-articles-count {
+  margin: 0;
+  font-size: $small-font-size;
+  color: $slate;
+  white-space: nowrap;
+}
+
+// 空狀態示意：右欄、分頁下方
+.author-demo {
+  @include media-breakpoint-up(lg) {
+    grid-column: 4 / span 9;
+    grid-row: 2;
+    align-self: start;
+  }
+}

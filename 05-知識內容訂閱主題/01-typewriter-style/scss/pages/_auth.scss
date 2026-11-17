@@ -1,0 +1,167 @@
+// ============================================================
+// 登入、註冊、忘記密碼 login.html／register.html／forgot-password.html（2026-11 補頁；class 前綴 auth-）
+// 表單卡 AuthCard：置中窄欄 512px，H1 → 說明 → 表單（欄位 → 滿寬主要按鈕）→ 卡片底部的切換連結
+// 表單卡是浮起層，用疊紙（paper-stack）；不放情境照或插畫。< 576px 拿掉外框與疊紙，寬度＝容器寬
+// 註冊頁 ≥ 992px 置中 960px、7 : 5（表單卡 : 免費會員權益摘要），以下單欄、表單在上
+// 不做垂直置中：表單卡下方還有設計稿狀態示意
+// ============================================================
+
+$auth-card-width: 32rem;  // 512px（規格 440–520px），3 頁同寬
+$auth-wide-width: 60rem;  // 960px：註冊頁的兩欄
+
+// 頁面上下留白：H1 的高度和其他頁的頁首（麵包屑 → H1）差不多
+.auth-page {
+  padding-block: map-get($spacers, 5) map-get($spacers, 7);   // 40／88px
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 6) map-get($spacers, 8); // 56／112px
+  }
+}
+.auth-shell {
+  max-width: $auth-card-width;
+  margin-inline: auto;
+
+  &.is-wide {
+    @include media-breakpoint-up(lg) {
+      max-width: $auth-wide-width;
+    }
+  }
+}
+
+// ---------- 表單卡 ----------
+.auth-card {
+  @include paper-stack;
+  max-width: $auth-card-width;
+  padding: map-get($spacers, 5) map-get($spacers, 5) map-get($spacers, 4);
+
+  @include media-breakpoint-down(sm) {
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+.auth-title {
+  margin-bottom: map-get($spacers, 2);
+}
+// 卡片的說明句：鉛灰；也用在設定新密碼示意的說明
+.auth-lead {
+  margin-bottom: map-get($spacers, 4);
+  color: $body-secondary-color;
+}
+// 設計稿狀態示意裡的小標（設定新密碼）
+.auth-stage-title {
+  margin-bottom: map-get($spacers, 2);
+  font-size: $h3-font-size;
+}
+
+// 密碼標籤與「忘記密碼？」同一列：標籤靠左、連結靠右，兩者對齊基線
+.auth-label-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 1rem;
+}
+// 「忘記密碼？」：小字連結；點擊範圍用 ::after 撐到 44px 高（不影響版面，也不蓋到下方的欄位）
+.auth-forgot {
+  position: relative;
+  font-size: $font-size-sm;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -.75rem -.5rem -.5rem;
+  }
+}
+
+// 卡片底部的切換連結（還沒有帳號？免費註冊／已經有帳號？登入／返回登入）：細線分隔、置中
+.auth-switch {
+  margin: map-get($spacers, 4) 0 0;
+  padding-top: map-get($spacers, 2);
+  border-top: 1px solid $rule;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+  text-align: center;
+
+  // 不另加左邊距：前面的「？」是全形標點，本身就有空隙
+  .btn-text { font-size: inherit; }
+}
+
+// 同意條款：方框和第一行文字對齊（Bootstrap .form-check 的預設），文字可換行
+// 「服務條款」「隱私權政策」還沒有頁面，用不帶 href 的 <a>，外觀照連結（色帶藍＋底線）
+.auth-terms {
+  font-size: $font-size-sm;
+
+  // 觸控目標 44px：label 本身就能勾選，用 ::after 往上下各撐 .625rem、往左蓋到方框（同「忘記密碼？」的做法，版面不變）
+  // label 自成一層（z-index: 0），::after 放在文字底下：文字與裡面的連結仍在最上層，之後補上 href 也點得到
+  .form-check-label {
+    position: relative;
+    z-index: 0;
+    display: inline-block;
+
+    &::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      inset: -.625rem 0 -.625rem (-$form-check-padding-start);
+    }
+  }
+
+  a:not([href]) {
+    color: $link-color;
+    text-decoration: underline;
+    text-underline-offset: $link-underline-offset;
+  }
+}
+
+// 註冊頁的欄位錯誤示意：寬度同左欄的表單卡
+.auth-demo {
+  max-width: $auth-card-width;
+}
+
+// 錯誤文字可能有兩行（Email 已經註冊過）：圖示對齊第一行
+.auth-card,
+.auth-demo {
+  .field-error { align-items: flex-start; }
+}
+
+// 「沒有收到？…或 重新寄送。」：行內的文字按鈕
+// .btn-text 預設 44px 高，放在句子裡會把那一行撐高（換行時像多出一段）；
+// 改成和文字同高的行內元素，點擊範圍比照「忘記密碼？」用 ::after 撐到 44px
+.auth-resend {
+  font-size: $font-size-sm;
+
+  .btn-text {
+    --bs-btn-padding-y: 0;
+    position: relative;
+    display: inline;
+    min-height: 0;
+    font-size: inherit;
+    line-height: inherit;
+    white-space: nowrap;
+    vertical-align: baseline;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: -.625rem -.5rem;
+    }
+  }
+}
+
+// ---------- 註冊頁：免費會員權益摘要 ----------
+// 沿用方案卡的內容樣式（.plan-card-name、.plan-card-price、.plan-card-fit、.check-list），不含底部按鈕
+// 視覺層級低於表單卡：稿紙灰底、不加框、不加疊紙；內容短，不做 sticky
+.auth-plan {
+  padding: map-get($spacers, 4);
+  background-color: $paper-gray;
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 5) map-get($spacers, 4) map-get($spacers, 4);
+  }
+  @include media-breakpoint-up(xl) {
+    padding-inline: map-get($spacers, 5);
+  }
+  .check-list { margin-bottom: map-get($spacers, 2); }
+}

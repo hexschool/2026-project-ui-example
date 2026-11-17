@@ -1,0 +1,354 @@
+// ============================================================
+// 登入、註冊、忘記密碼（login.html／register.html／forgot-password.html，2026-11 補頁）
+// 報刊式的表單版，class 加 auth- 前綴（3 頁共用這一個 partial）
+//
+// 01 是置中的窄卡片；03 照自己的報刊版面：沒有卡片框與陰影，用粗線、欄線分區
+// - 頂端一條 2px 深藍粗線（和文章列表、方案頁、個人頁 H1 上方的粗線同一個高度），下面是欄線分隔的欄
+// - 登入、忘記密碼（.auth-sheet）：左欄 H1＋說明（頭條區）｜右欄 表單 → 切換連結；≥ 1200px 7｜5，992–1199px 6｜6
+//   欄線只畫在這一列（.auth-card），下面一條髮絲線收尾；設計稿狀態示意在髮絲線下方橫排成一列（.auth-notes，放不下就換行）
+// - 註冊（.auth-sheet.is-register）：≥ 1200px 三欄 標題 3｜表單 5｜免費會員權益摘要 4（兩條欄線）
+//   992–1199px 標題＋表單 7｜摘要 5；欄位錯誤示意在表單那一欄的下方（欄線畫在 .auth-sheet，貫通到示意）
+// - 992px 以下單欄：標題 → 表單 →（摘要）→ 示意，內容最寬 34rem、靠左
+//
+// <div class="auth-sheet">
+//   <section id="login" class="auth-card">
+//     <header class="auth-head"><h1 class="auth-title">登入</h1><p class="auth-lead">說明</p></header>
+//     <div class="auth-body"><form>…</form><p class="auth-switch">還沒有帳號？<a class="btn btn-text">免費註冊</a></p></div>
+//   </section>
+//   <div class="auth-notes">設計稿狀態示意…</div>
+// </div>
+// ============================================================
+
+// 粗線的高度對齊其他頁：頁首下方 → 麵包屑那一列 → 粗線（表單頁不放麵包屑，用留白補上同樣的高度）
+.auth-page {
+  padding-top: 2.5rem;
+  padding-bottom: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-top: 4.75rem;
+    padding-bottom: map-get($spacers, 7);
+  }
+}
+
+// ---------- 版面：粗線＋欄 ----------
+.auth-sheet {
+  position: relative;
+  border-top: 2px solid $oxford;
+
+  @include media-breakpoint-down(lg) {
+    > * {
+      max-width: 34rem;
+    }
+  }
+
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: $np-col-gap;
+    align-items: start;
+  }
+}
+
+// 表單區塊（section）≥ 992px 用 subgrid，標題與表單直接放進外層的欄；欄線畫在這一列，底部留白後接髮絲線
+.auth-card {
+  @include media-breakpoint-up(lg) {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    align-items: start;
+    position: relative;
+    padding-bottom: map-get($spacers, 6);
+
+    &::before {
+      @include np-col-line(6);
+    }
+  }
+  @include media-breakpoint-up(xl) {
+    &::before {
+      left: np-col-line-x(7);
+    }
+  }
+}
+.auth-head {
+  padding-top: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    grid-column: 1 / span 6;
+    padding-top: map-get($spacers, 4) + .25rem;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-column: 1 / span 7;
+  }
+}
+.auth-body {
+  margin-top: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    grid-column: 7 / span 6;
+    margin-top: 0;
+    padding-top: map-get($spacers, 4) + .25rem;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-column: 8 / span 5;
+  }
+}
+
+// ---------- 標題欄：H1（比各頁 H1 大一階的頭條）→ 3rem 深藍短線 → 說明（導言字級） ----------
+.auth-title {
+  margin-bottom: 0;
+  font-size: $np-hl-1-size-sm;
+  line-height: 1.25;
+
+  @include media-breakpoint-up(lg) {
+    font-size: 3rem;
+  }
+  @include media-breakpoint-up(xxl) {
+    font-size: 3.5rem;
+  }
+}
+.auth-lead {
+  max-width: 24em;
+  margin: map-get($spacers, 3) 0 0;
+  padding-top: map-get($spacers, 3);
+  background: linear-gradient($oxford, $oxford) no-repeat 0 0 / 3rem 2px;
+  font-family: $font-family-serif;
+  font-size: $font-size-lg;
+  line-height: $lede-line-height;
+  color: $slate;
+
+  @include media-breakpoint-up(lg) {
+    font-size: $lede-font-size;
+  }
+}
+
+// ---------- 表單 ----------
+// 密碼標籤同一列靠右的「忘記密碼？」：點擊範圍 44px，但用負邊距不把這一列撐高
+.auth-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: $form-label-margin-bottom;
+
+  .form-label {
+    margin-bottom: 0;
+  }
+}
+.auth-forgot {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  margin-block: -.625rem;
+  font-size: $font-size-sm;
+  color: $oxford;
+  text-decoration: underline;
+  text-decoration-color: $rule-strong;
+  text-underline-offset: .3em;
+
+  &:hover {
+    color: $oxford-hover;
+    text-decoration-color: currentColor;
+  }
+}
+// 同意條款：方框和第一行文字對齊；「服務條款」「隱私權政策」沒有頁面（不帶 href 的 <a>），外觀做成連結
+.auth-terms {
+  font-size: $font-size-sm;
+  line-height: 1.6;
+
+  .form-check-input {
+    margin-top: .2em;
+  }
+  a:not([href]) {
+    color: $oxford;
+    text-decoration: underline;
+    text-decoration-color: $rule-strong;
+    text-underline-offset: .25em;
+    cursor: pointer;
+  }
+}
+// 切換連結（還沒有帳號？免費註冊／已經有帳號？登入／返回登入）：髮絲線下方、靠左的小字
+.auth-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 .25rem;
+  margin: map-get($spacers, 4) 0 0;
+  padding-top: .5rem;
+  border-top: 1px solid $rule;
+  font-size: $font-size-sm;
+  color: $slate;
+}
+
+// ---------- 設計稿狀態示意：≥ 992px 在髮絲線下方橫排（每格最窄 18rem，放不下就換行） ----------
+.auth-notes {
+  @include media-breakpoint-up(lg) {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: map-get($spacers, 4) $np-col-gap;
+    align-items: start;
+    padding-top: map-get($spacers, 5);
+    border-top: 1px solid $rule;
+
+    > .demo-state {
+      margin-top: 0;
+    }
+  }
+}
+// 忘記密碼的 3 個示意（.is-trio）：992–1199px 只放得下兩欄，「設定新密碼」最高，放右欄跨兩列，
+// 「連結已失效」補在「重設信已寄出」下方，不留大空洞；≥ 1200px 三欄一列
+.auth-notes.is-trio {
+  @include media-breakpoint-only(lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    > :nth-child(2) {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+    }
+  }
+}
+.auth-notes > .demo-state:first-child {
+  margin-top: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    margin-top: 0;
+  }
+}
+// 「沒有收到？…或 [重新寄送]。」：句中的文字按鈕，不撐高行距；點擊範圍用 ::after 往外加大
+.auth-resend {
+  margin-top: .5rem !important;
+  font-size: $font-size-sm;
+  color: $slate;
+
+  .btn-text {
+    position: relative;
+    display: inline;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    font-size: inherit;
+    letter-spacing: inherit;
+    vertical-align: baseline;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: -.75rem -.25rem;
+    }
+  }
+}
+// 設定新密碼示意：示意舞台裡的小標與說明
+.auth-stage-title {
+  margin-bottom: .5rem;
+  font-size: $h4-font-size;
+}
+.auth-stage-lead {
+  margin-bottom: map-get($spacers, 4);
+  font-size: $font-size-sm;
+  color: $slate;
+}
+// 欄位錯誤示意：錯誤文字可能換行，圖示對齊第一行；錯誤文字裡的連結跟著用錯誤色
+// （核取方塊的錯誤文字也要 flex：Bootstrap 的 .is-invalid ~ .invalid-feedback 會把它改回 block）
+.auth-demo .is-invalid ~ .invalid-feedback {
+  display: flex;
+}
+.auth-demo .invalid-feedback {
+  align-items: flex-start;
+
+  .bi {
+    margin-top: .2em;
+  }
+  a {
+    color: inherit;
+    text-underline-offset: .2em;
+  }
+}
+
+// ---------- 註冊：三欄（標題｜表單｜免費會員權益摘要） ----------
+.auth-sheet.is-register {
+  @include media-breakpoint-up(lg) {
+    &::before {
+      @include np-col-line(7);
+    }
+    .auth-card {
+      grid-column: 1 / span 7;
+      display: block;
+      padding-bottom: 0;
+
+      &::before {
+        content: none;
+      }
+    }
+    .auth-plan {
+      grid-column: 8 / span 5;
+      grid-row: 1;
+    }
+    .auth-demo {
+      grid-column: 1 / span 7;
+      grid-row: 2;
+    }
+  }
+  @include media-breakpoint-up(xl) {
+    &::before {
+      left: np-col-line-x(3);
+    }
+    &::after {
+      @include np-col-line(8);
+    }
+    .auth-card {
+      grid-column: 1 / span 8;
+      display: grid;
+      grid-template-columns: subgrid;
+    }
+    .auth-head {
+      grid-column: 1 / span 3;
+    }
+    .auth-title {
+      font-size: 3rem;
+    }
+    .auth-body {
+      grid-column: 4 / span 5;
+    }
+    .auth-plan {
+      grid-column: 9 / span 4;
+    }
+    .auth-demo {
+      grid-column: 4 / span 5;
+    }
+  }
+  // 992–1199px：標題疊在表單上方（同一欄）
+  @include media-breakpoint-only(lg) {
+    .auth-body {
+      margin-top: map-get($spacers, 4);
+      padding-top: 0;
+    }
+  }
+}
+
+// 免費會員權益摘要：和方案頁價目表同一組內容樣式（方案名、價格、適合、✓／✗ 清單），
+// 不加框、不加底色、沒有按鈕，價格比方案頁小一號，層級低於表單的「完成註冊」
+.auth-plan {
+  margin-top: map-get($spacers, 6);
+  padding-top: calc(#{$rule-double-height} + #{map-get($spacers, 4)});
+  @include rule-double(top);
+
+  @include media-breakpoint-up(lg) {
+    margin-top: 0;
+    padding-top: map-get($spacers, 4) + .25rem;
+    background-image: none; // 版面頂端已經有粗線
+  }
+
+  .plan-name {
+    margin-bottom: .5rem;
+  }
+  .plan-price .figure-num {
+    font-size: 2.5rem;
+  }
+  .plan-fit {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+  }
+  .benefit-list {
+    margin-bottom: 1rem;
+  }
+}

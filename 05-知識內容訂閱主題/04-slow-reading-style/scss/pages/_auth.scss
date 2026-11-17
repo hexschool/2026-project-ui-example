@@ -1,0 +1,283 @@
+// ============================================================
+// 登入、註冊、忘記密碼 login.html／register.html／forgot-password.html（2026-11 補頁，class 前綴 auth-）
+//
+// 三頁共用「攤開的書」：表單卡是一本翻開的書，置中、寬 960px
+//   ≥ 992px：左頁（燕麥殼）是扉頁：H1＋說明，下緣是品牌落款（註冊頁改放免費會員權益摘要）；
+//            右頁（燕麥奶）是表單，底部是切換連結（註冊頁的左頁較高，切換連結改成緊接在表單後面）；兩頁之間是一道書溝（細線＋淡淡的陰影）
+//   < 992px：合成一張卡：上方燕麥殼標題區 → 表單 → （註冊頁）權益摘要；
+//            768–991px 卡寬收到 520px 置中（SPEC 表單卡約 440–520px），欄寬和桌機右頁差不多，不跟著容器撐到 680px
+//   原始碼順序一律是 H1 → 表單 → 切換連結 →（權益摘要），左右頁只靠 grid 排位置
+// 設計稿狀態示意（.auth-demo）沿用同一組 5 : 7 欄：左欄寫狀態名稱與設計說明，
+//   右欄的示意畫面和書的右頁（表單頁）對齊，看得出提示會出現在表單的哪個位置
+// ============================================================
+$auth-width: 60rem; // 960px：三頁同寬
+$auth-card-width: 32.5rem; // 520px：576–991px 單張卡的寬度上限（576–767px 容器本來就比這窄）
+$auth-cols:  minmax(0, 5fr) minmax(0, 7fr); // 左頁 : 右頁（書與狀態示意共用）
+
+.auth-page {
+  padding-block: map-get($spacers, 5) map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 6) map-get($spacers, 7);
+  }
+}
+.auth-shell {
+  max-width: $auth-width;
+  margin-inline: auto;
+
+  // 書還沒攤開（單張卡）時不撐滿容器：Email／密碼欄寬約 440px，和 ≥ 992px 右頁的欄寬接近
+  // 設計稿狀態示意也在 .auth-shell 裡，跟著一起變窄，維持「表單卡下方，同寬」
+  @include media-breakpoint-between(sm, lg) {
+    max-width: $auth-card-width;
+  }
+}
+
+// ---------- 攤開的書 ----------
+// <section class="auth-book [has-aside]">
+//   <header class="auth-cover">H1、說明、落款</header>
+//   <div class="auth-main">表單、切換連結</div>
+//   <aside class="auth-plan">（註冊頁）免費會員權益摘要</aside>
+// </section>
+.auth-book {
+  position: relative;
+  display: grid;
+  border: 1px solid $hairline;
+  border-radius: $border-radius-xl;
+  background-color: $oat-milk;
+  box-shadow: $box-shadow; // 檯燈下的一本書：和訂閱摘要同一級的柔光陰影
+
+  // < 576px：寬度＝容器寬，拿掉陰影（規格允許），只留細框
+  @include media-breakpoint-down(sm) {
+    box-shadow: none;
+  }
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: $auth-cols;
+    grid-template-areas: "cover main";
+
+    // 左頁的紙：整欄燕麥殼，靠書溝那側有一道細線與淡淡的陰影
+    &::before {
+      content: "";
+      grid-column: 1;
+      grid-row: 1 / -1;
+      border-radius: $border-radius-xl 0 0 $border-radius-xl;
+      background:
+        linear-gradient(to left, rgba($cocoa, .07), rgba($cocoa, 0) 1.75rem),
+        $oat-husk;
+      box-shadow: inset -1px 0 0 $hairline-strong;
+    }
+  }
+}
+// 註冊頁：左頁上半是扉頁、下半是權益摘要
+.auth-book.has-aside {
+  @include media-breakpoint-up(lg) {
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "cover main"
+      "plan  main";
+  }
+}
+
+// 左頁：扉頁
+.auth-cover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: map-get($spacers, 5) map-get($spacers, 4) map-get($spacers, 4);
+  border-radius: $border-radius-xl $border-radius-xl 0 0;
+  background-color: $oat-husk;
+  border-bottom: 1px solid $hairline;
+
+  @include media-breakpoint-up(sm) {
+    padding-inline: map-get($spacers, 5);
+  }
+  @include media-breakpoint-up(lg) {
+    grid-area: cover; // 具名區域只在 ≥ 992px 存在，窄螢幕照原始碼順序排
+    padding: map-get($spacers, 6) map-get($spacers, 5) map-get($spacers, 5);
+    border-radius: 0;
+    border-bottom: 0;
+    background-color: transparent; // 紙由 .auth-book::before 鋪滿整欄
+  }
+}
+.auth-title {
+  margin-bottom: map-get($spacers, 3);
+  font-size: 2.25rem;
+  letter-spacing: .08em;
+
+  @include media-breakpoint-up(lg) {
+    font-size: 2.75rem;
+  }
+}
+// 說明：用閱讀字體、寬鬆行距，和長文同一種口氣
+.auth-lead {
+  max-width: 20em;
+  margin: 0;
+  font-family: $font-family-reading;
+  font-size: 1.0625rem;
+  line-height: 1.95;
+  letter-spacing: $letter-spacing-prose;
+  color: $ink;
+}
+// 書籤：從扉頁上緣垂下來（只用在登入頁：登入後回到剛才讀到的地方）
+.auth-ribbon {
+  position: absolute;
+  top: -1px;
+  right: map-get($spacers, 4);
+  width: 1.5rem;
+  height: 2.5rem;
+  fill: $bookmark-color;
+
+  @include media-breakpoint-up(lg) {
+    right: map-get($spacers, 5);
+    width: 1.75rem;
+    height: 3rem;
+  }
+}
+// 扉頁下緣的品牌落款（裝飾，≥ 992px 才顯示）
+.auth-imprint {
+  display: none;
+
+  @include media-breakpoint-up(lg) {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin: auto 0 0;
+    padding-top: map-get($spacers, 5);
+    color: $warm-gray;
+  }
+  .site-brand-mark { width: .75rem; height: 1.0625rem; }
+  .site-brand-name { font-size: 1.0625rem; color: $cocoa; }
+  .site-brand-en { font-size: .8125rem; }
+}
+
+// 右頁：表單＋切換連結
+.auth-main {
+  display: flex;
+  flex-direction: column;
+  padding: map-get($spacers, 4);
+
+  @include media-breakpoint-up(sm) {
+    padding: map-get($spacers, 5);
+  }
+  @include media-breakpoint-up(lg) {
+    grid-area: main;
+    padding: map-get($spacers, 6) map-get($spacers, 6) map-get($spacers, 4);
+  }
+}
+.auth-form {
+  margin-bottom: map-get($spacers, 4);
+}
+// 密碼標籤與「忘記密碼？」同一列（連結保留 44px 觸控高度）
+.auth-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: -.375rem;
+
+  .form-label { margin-bottom: 0; }
+}
+.auth-label-row + .form-control { margin-top: .125rem; }
+// 同意條款：方框和第一行文字對齊，文字可換行；條款連結沒有頁面（不帶 href），外觀做成連結
+.auth-terms {
+  .form-check-label { line-height: 1.7; }
+  .form-check-input { margin-top: .3em; }
+  // Bootstrap 會把沒有 href 的 <a> 還原成一般文字，這裡要寫同樣的權重才蓋得過
+  a:not([href]) {
+    color: $caramel-deep;
+    text-decoration: underline;
+    text-decoration-color: rgba($caramel, .45);
+    text-underline-offset: .3em;
+  }
+}
+// 卡片底部的切換連結：「還沒有帳號？免費註冊」「已經有帳號？登入」「返回登入」
+.auth-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0 .25rem;
+  margin: auto 0 0;
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $hairline;
+  font-size: .9375rem;
+  color: $warm-gray;
+}
+// 註冊頁 ≥ 992px：左頁（扉頁＋權益摘要）比右頁高，右頁會被撐高；切換連結不貼底，緊接在「完成註冊」後面，
+// 多出來的高度留在右頁底部當頁緣留白（登入、忘記密碼的切換連結仍貼底，和左頁下緣的品牌落款對齊）
+.auth-book.has-aside .auth-switch {
+  margin-top: 0;
+}
+
+// 註冊頁的免費會員權益摘要：放在左頁（燕麥殼）上，不另加卡片與陰影，層級低於右頁的表單
+// 內容沿用方案卡的 .plan-card-name、.plan-price、.plan-card-fit、.plan-features
+.auth-plan {
+  padding: map-get($spacers, 4);
+  border-top: 1px solid $hairline;
+  border-radius: 0 0 $border-radius-xl $border-radius-xl;
+  background-color: $oat-husk;
+
+  @include media-breakpoint-up(sm) {
+    padding: map-get($spacers, 4) map-get($spacers, 5) map-get($spacers, 5);
+  }
+  @include media-breakpoint-up(lg) {
+    grid-area: plan;
+    margin-inline: map-get($spacers, 5);
+    padding: map-get($spacers, 4) 0 map-get($spacers, 5);
+    border-top-color: $hairline-strong;
+    border-radius: 0;
+    background-color: transparent;
+  }
+
+  .plan-card-name { margin-bottom: .75rem; }
+  .plan-price-num { font-size: 2.5rem; }
+  .plan-card-fit { border-bottom-color: $hairline-strong; }
+  .plan-features { margin-bottom: map-get($spacers, 3); }
+}
+
+// ---------- 設計稿狀態示意：左欄說明、右欄示意畫面（對齊書的右頁） ----------
+.auth-demo {
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: $auth-cols;
+    align-items: start;
+  }
+  .demo-state-title { margin-bottom: .5rem; }
+}
+.auth-demo-note {
+  margin-bottom: map-get($spacers, 3);
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: 0;
+    padding-right: map-get($spacers, 5);
+  }
+}
+// 示意裡的表單（註冊錯誤、設定新密碼）：寬度和右頁的表單差不多
+.auth-demo-view .demo-state-stage {
+  @include media-breakpoint-up(md) {
+    padding-inline: map-get($spacers, 5);
+  }
+}
+// 錯誤文字裡的「登入」「忘記密碼？」：跟著錯誤色、加底線
+.auth-demo .invalid-feedback a {
+  color: inherit;
+  font-weight: $font-weight-medium;
+  text-decoration-color: currentColor;
+  text-underline-offset: .25em;
+}
+// 「沒有收到？…或 [重新寄送]」：句子裡的文字按鈕
+.auth-resend {
+  font-size: .875rem;
+  color: $warm-gray;
+
+  .btn { margin-top: 0; }
+}
+// 設定新密碼：示意畫面裡的小標與說明
+.auth-stage-title {
+  margin-bottom: .5rem;
+  font-size: 1.5rem;
+}
+.auth-stage-lead {
+  margin-bottom: map-get($spacers, 4);
+  color: $ink;
+}

@@ -108,25 +108,30 @@ $rule-double-height: $masthead-rule-thick + $masthead-rule-gap + $masthead-rule-
   color: $body-secondary-color;
 }
 // 中繼資料列（字數 ‧ 閱讀時間 ‧ 日期）：Notion 原文就用「‧」串接，照用；換行時不拆開單一項目
+// 每一項前面都畫一個固定寬度的「‧」，整列往左挪同樣的寬度，再用 clip-path 切掉最左邊那一條：
+// 第一項和換到行首的那一項，「‧」剛好落在切掉的範圍裡，所以分隔點不會出現在行首
 .meta {
+  --meta-sep: calc(1em + 1rem);
   display: flex;
   flex-wrap: wrap;
-  column-gap: .5rem;
-  margin: 0;
+  margin: 0 0 0 calc(-1 * var(--meta-sep));
   padding: 0;
   list-style: none;
   font-size: $small-font-size;
   color: $body-tertiary-color;
+  clip-path: inset(-.5rem -.5rem -.5rem var(--meta-sep));
 
   > li,
   > span {
     white-space: nowrap;
-  }
-  > li + li::before,
-  > span + span::before {
-    content: "‧";
-    margin-right: .5rem;
-    color: $rule-strong;
+
+    &::before {
+      content: "‧";
+      display: inline-block;
+      width: var(--meta-sep);
+      text-align: center;
+      color: $rule-strong;
+    }
   }
 }
 
@@ -157,32 +162,16 @@ $rule-double-height: $masthead-rule-thick + $masthead-rule-gap + $masthead-rule-
   border-top: 1px solid $rule;
 }
 
-// 區塊標題列：左側標題（＋副標）、右側動作；手機上下排
-// <div class="section-head">
-//   <div><h2>標題</h2><p class="section-sub">副標（只有 Notion 寫明的才放）</p></div>
-//   <a class="btn btn-outline-primary" href="…">動作</a>
-// </div>
-.section-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: map-get($spacers, 3) map-get($spacers, 4);
-  margin-bottom: map-get($spacers, 5);
-
-  h2,
-  .h2 {
-    margin-bottom: 0;
-  }
-}
+// 區塊標題列 .section-head（欄目標頭：頂端報頭雙線 → 標題＋副標 → 右側動作 → 髮絲線）
+// 樣式寫在 components/_newsprint.scss（用 np-flag mixin，需要在 rule-double 之後定義）
 .section-sub {
   margin: .5rem 0 0;
   max-width: 40em;
   color: $body-secondary-color;
 }
 
-// ---------- 頁面標題區（文章列表、訂閱方案、個人頁面） ----------
-// 麵包屑 → H1 → 說明或控制項，三頁同一組間距，切換頁面時標題位置不跳動
+// ---------- 頁面標題區（文章列表、訂閱方案、個人頁面）：報刊版頭 ----------
+// 麵包屑 → 2px 深藍粗線 → H1（頭條字級）→ 說明或控制項；三頁同一組間距與字級，切換頁面時標題位置不跳動
 .page-header {
   padding-top: map-get($spacers, 3);
   padding-bottom: map-get($spacers, 5);
@@ -193,11 +182,19 @@ $rule-double-height: $masthead-rule-thick + $masthead-rule-gap + $masthead-rule-
   }
 
   .breadcrumb {
-    margin-bottom: map-get($spacers, 3);
+    margin-bottom: map-get($spacers, 2);
   }
   h1,
   .h1 {
     margin-bottom: 0;
+    padding-top: map-get($spacers, 3);
+    border-top: 2px solid $oxford;
+    font-size: $np-hl-1-size-sm;
+    line-height: 1.3;
+
+    @include media-breakpoint-up(lg) {
+      font-size: $np-hl-1-size;
+    }
   }
 }
 .page-lead {

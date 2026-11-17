@@ -1,0 +1,229 @@
+// ============================================================
+// 報刊排版（2026-11-17）：整站像一份報紙的版面
+// 分區靠線（報頭雙線、粗線、髮絲線、欄線），不靠卡片框、底色與陰影；標題分頭條、次條、短訊三級；數字放進數據框
+//
+// - .np-grid：≥ 992px 的 12 欄網格（子元素的位置寫在各頁 partial，用 grid-column）
+// - np-col-rule：欄與欄之間的 1px 欄線（畫在欄距正中央，不佔寬度）；992px 以下堆疊時改成上方髮絲線
+// - np-flag／.section-head：欄目標頭（頂端報頭雙線 → H2＋副標 → 右側動作 → 髮絲線）
+// - .np-hl-1／-2／-3：頭條／次條／短訊
+// - np-databox／.np-databox：數據框（頂端雙線、項目之間髮絲線，沒有外框與底色）
+// - .np-margin-note：頁邊註（≥ 1400px 移到閱讀欄右側）
+// 線條規格：報頭雙線 2px＋2px 白隙＋1px（rule-double）；粗線 2px $oxford；髮絲線、欄線 1px $rule
+// ============================================================
+
+// ---------- 網格 ----------
+// <div class="np-grid">
+//   <div class="… (grid-column: 1 / span 5)">…</div>
+//   <div class="… (grid-column: 6 / span 3; @include np-col-rule)">…</div>
+// </div>
+// HTML 的先後＝閱讀與 Tab 順序：排在前面的放左邊或上面
+.np-grid {
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: $np-col-gap;
+  }
+}
+
+// ---------- 欄線 ----------
+// $bp 以上：左側欄距正中央一條直線；$bp 以下（上下堆疊）：上方一條髮絲線＋上距
+// $stacked: false 時，堆疊後不加髮絲線（例如下一欄本身就以欄目標頭的雙線起頭）
+// 用 ::before 畫，元素本身不要再用 ::before
+@mixin np-col-rule($bp: lg, $color: $rule, $stack-space: map-get($spacers, 4), $stacked: true) {
+  position: relative;
+
+  @if $stacked {
+    @include media-breakpoint-down($bp) {
+      margin-top: $stack-space;
+      padding-top: $stack-space;
+      border-top: 1px solid $color;
+    }
+  }
+  @include media-breakpoint-up($bp) {
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: $np-col-gap * -.5;
+      border-left: 1px solid $color;
+      pointer-events: none;
+    }
+  }
+}
+.np-col-rule {
+  @include np-col-rule;
+}
+
+// ---------- 貫通整個版面的欄線（2026-11 補頁：登入、註冊、忘記密碼、作者頁） ----------
+// np-col-rule 畫在「某一欄」上，欄比較短時線就跟著斷；這一組改畫在外層的 12 欄 grid 上：
+// 位置是第 $n 欄之後那個欄距的正中央，從外層頂端貫通到底端
+// 外層要 position: relative、左右沒有 padding（百分比以外層的內容寬計算），欄距同 $np-col-gap
+// .auth-sheet::before { @include np-col-line(5); }
+@function np-col-line-x($n) {
+  @return calc((100% - #{11 * $np-col-gap}) * #{$n} / 12 + #{($n - .5) * $np-col-gap});
+}
+@mixin np-col-line($n, $color: $rule) {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: np-col-line-x($n);
+  border-left: 1px solid $color;
+  pointer-events: none;
+}
+
+// ---------- 欄目標頭（每個區塊的 H2） ----------
+// <div class="section-head">
+//   <div><h2>標題</h2><p class="section-sub">副標（只有 Notion 寫明的才放）</p></div>
+//   <a class="btn btn-outline-primary" href="…">動作</a>
+// </div>
+@mixin np-flag($color: $oxford, $rule-color: $rule) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: .5rem map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 4);
+  padding-top: calc(#{$rule-double-height} + .875rem);
+  padding-bottom: .875rem;
+  border-bottom: 1px solid $rule-color;
+  @include rule-double(top, $color);
+
+  h2,
+  .h2 {
+    margin-bottom: 0;
+  }
+  // 標題與副標同一列（放不下才換行），副標是小字
+  > div:first-child {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .25rem 1.25rem;
+    min-width: 0;
+  }
+  .section-sub {
+    margin: 0;
+    max-width: none;
+    font-size: $font-size-sm;
+  }
+}
+
+// ---------- 標題階層：頭條／次條／短訊 ----------
+// 加在標題標籤上（:is() 讓這組類別蓋過元件自己的標題字級，例如 .story-title）
+@mixin np-hl-1 {
+  font-family: $headings-font-family;
+  font-size: $np-hl-1-size-sm;
+  font-weight: $font-weight-bolder;
+  line-height: 1.3;
+  letter-spacing: $letter-spacing-heading;
+
+  @include media-breakpoint-up(lg) {
+    font-size: $np-hl-1-size;
+  }
+}
+@mixin np-hl-2 {
+  font-family: $headings-font-family;
+  font-size: $np-hl-2-size-sm;
+  font-weight: $font-weight-bold;
+  line-height: 1.45;
+  letter-spacing: $letter-spacing-heading;
+
+  @include media-breakpoint-up(md) {
+    font-size: $np-hl-2-size;
+  }
+}
+@mixin np-hl-3 {
+  font-family: $headings-font-family;
+  font-size: $np-hl-3-size;
+  font-weight: $font-weight-bold;
+  line-height: 1.55;
+  letter-spacing: $letter-spacing-heading;
+}
+:is(h1, h2, h3, h4, h5, h6, p).np-hl-1 { @include np-hl-1; }
+:is(h1, h2, h3, h4, h5, h6, p).np-hl-2 { @include np-hl-2; }
+:is(h1, h2, h3, h4, h5, h6, p).np-hl-3 { @include np-hl-3; }
+
+// ---------- 數據框 ----------
+// 頂端報頭雙線 → 每一項「小字標籤＋大數字（.figure-num）＋單位」，項目之間髮絲線；沒有外框、沒有底色
+// 不加新的標題字，標籤用頁面上原本就有的字
+// <dl class="np-databox">
+//   <div><dt>付費文章</dt><dd><span class="figure-num">438</span><span class="np-databox-unit">篇</span></dd></div>
+// </dl>
+@mixin np-databox($color: $oxford) {
+  margin: 0;
+  padding-top: $rule-double-height;
+  @include rule-double(top, $color);
+
+  dt {
+    font-size: $small-font-size;
+    font-weight: $font-weight-normal;
+    color: $slate;
+  }
+  dd {
+    display: flex;
+    align-items: baseline;
+    gap: .25rem;
+    margin: 0;
+  }
+}
+// 直排：每一項一列，標籤靠左、數字靠右（右側窄欄、側欄）
+@mixin np-databox-rows($rule-color: $rule) {
+  > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: .75rem;
+    border-bottom: 1px solid $rule-color;
+  }
+}
+// 橫排：等寬欄、欄線分隔，數字在上、標籤在下（手機、數據列）
+@mixin np-databox-cols($n: 3, $rule-color: $rule) {
+  display: grid;
+  grid-template-columns: repeat($n, minmax(0, 1fr));
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    padding: .75rem 1rem .25rem;
+    border-left: 1px solid $rule-color;
+
+    &:first-child {
+      padding-left: 0;
+      border-left: 0;
+    }
+  }
+  dt {
+    order: 2;
+  }
+}
+.np-databox {
+  @include np-databox;
+  @include np-databox-rows;
+}
+.np-databox-unit {
+  font-size: $font-size-sm;
+  color: $slate;
+}
+
+// ---------- 頁邊註 ----------
+// ≥ 1400px：移到閱讀欄右側的頁邊、和父層底部對齊（父層要 position: relative）；以下回到原位
+// <figure class="… position-relative"><img …><figcaption class="np-margin-note">…</figcaption></figure>
+.np-margin-note {
+  @include media-breakpoint-up(xxl) {
+    position: absolute;
+    left: calc(100% + #{$np-col-gap});
+    bottom: 0;
+    width: 12rem;
+    margin: 0;
+    padding-top: .625rem;
+    border-top: 2px solid $oxford;
+    text-align: left;
+  }
+}
+
+// ---------- 欄目標頭套用到全站的 .section-head ----------
+.section-head {
+  @include np-flag;
+}

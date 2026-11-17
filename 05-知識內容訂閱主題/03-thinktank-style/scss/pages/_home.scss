@@ -1,105 +1,130 @@
 // ============================================================
-// 首頁（index.html）：class 一律加 home- 前綴（共用元件除外）
-// Hero 7:5 → 為什麼值得訂 4 欄 → 主題索引格 3×2 → 本週精選 7:5 → 作者群深藍帶
-// 欄與欄之間用 1px 欄線分開（報刊多欄格線），不用卡片陰影
+// 首頁（index.html）：報紙頭版。class 一律加 home- 前綴（共用元件除外）
+// ≥ 992px 用 12 欄 .np-grid，欄與欄之間 1px 欄線（np-col-rule），不用卡片陰影與色帶交替
+// 1. 頭版頭條：通欄大標 → 5（副標＋按鈕）｜3（數據框）｜4（引文）
+// 2＋3. 社論欄（為什麼值得訂）4｜主題索引 8（兩個欄目標頭用 subgrid 對齊）
+// 4. 本週精選：頭條 6｜次條 3｜短訊 3（992～1399px：頭條 7｜次條＋短訊 5）
+// 5. 深藍帶：版名置中 → 撰稿人名錄一整排 → 讀者來函 8｜訂閱保障 4 → CTA 8｜4
 // ============================================================
 
-// 區塊大標（沒有右側動作的區塊）
-.home-section-title {
-  margin-bottom: map-get($spacers, 5);
-}
-
-// ---------- 1. Hero ----------
+// ---------- 1. 頭版頭條 ----------
 .home-hero {
-  padding-block: map-get($spacers, 5) map-get($spacers, 6);
+  padding-top: map-get($spacers, 4);
 
   @include media-breakpoint-up(lg) {
-    padding-block: map-get($spacers, 7) map-get($spacers, 8);
+    padding-top: map-get($spacers, 5);
+  }
+}
+
+// 通欄大標的字體（Guideline 的字級示範也用這個 class，所以版面線條另外寫在 .home-hero-grid 裡）
+.home-hero-title {
+  font-size: map-get($np-banner-sizes, xs); // 390px 手機：剛好兩行，「最快。」不會落單
+  font-weight: $font-weight-bolder;
+  line-height: 1.22;
+  letter-spacing: 0;
+
+  @each $bp, $size in $np-banner-sizes {
+    @if $bp != xs {
+      @include media-breakpoint-up($bp) {
+        font-size: $size;
+      }
+    }
+  }
+  @include media-breakpoint-up(sm) {
+    letter-spacing: .01em;
+  }
+}
+
+.home-hero-grid {
+  // 大標：上方粗線、下方髮絲線，橫跨 12 欄
+  > .home-hero-title {
+    grid-column: 1 / -1;
+    margin: 0 0 map-get($spacers, 4);
+    padding-block: map-get($spacers, 3) map-get($spacers, 4);
+    border-top: 2px solid $oxford;
+    border-bottom: 1px solid $rule;
+
+    @include media-breakpoint-up(lg) {
+      margin-bottom: 0;
+      padding-block: map-get($spacers, 4) 2rem;
+    }
+  }
+
+  // 768～991px：副標＋按鈕滿寬，數據框｜引文兩欄
+  @include media-breakpoint-between(md, lg) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: $np-col-gap;
+
+    > .home-hero-title,
+    > .home-hero-main {
+      grid-column: 1 / -1;
+    }
   }
 }
 .home-hero-main {
   @include media-breakpoint-up(lg) {
-    padding-right: map-get($spacers, 6);
-  }
-}
-.home-hero-title {
-  margin-bottom: map-get($spacers, 4);
-  font-size: 1.95rem; // 390px 手機：剛好兩行，「最快。」不會落單
-  font-weight: $font-weight-bolder;
-  line-height: 1.3;
-  letter-spacing: 0;
-
-  @include media-breakpoint-up(sm) {
-    font-size: 2.5rem;
-    letter-spacing: .01em;
-  }
-
-  // 字級依欄寬調整，讓「問在裡面工作的人最快。」在 768px 與 1200px 以上排成一行
-  @include media-breakpoint-up(md) {
-    font-size: 3.25rem;
-  }
-  @include media-breakpoint-up(lg) {
-    font-size: 2.875rem;
-  }
-  @include media-breakpoint-up(xl) {
-    font-size: 3.25rem;
-  }
-  @include media-breakpoint-up(xxl) {
-    font-size: 3.5rem;
+    grid-column: 1 / span 5;
+    padding-top: map-get($spacers, 4);
   }
 }
 .home-hero-sub {
   max-width: 30em;
   margin-bottom: map-get($spacers, 4);
+  font-family: $font-family-serif;
   font-size: $font-size-lg;
-  line-height: 1.85;
-  color: $slate;
+  line-height: $lede-line-height;
+  color: $ink;
+
+  @include media-breakpoint-up(md) {
+    font-size: $lede-font-size;
+  }
 }
 .home-hero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: .75rem;
-  margin-bottom: map-get($spacers, 5);
 }
-// 數字列：上方深藍線，三格以欄線分開
+
+// 數據框欄
+.home-hero-figures {
+  margin-top: map-get($spacers, 5);
+
+  @include media-breakpoint-up(md) {
+    padding-top: map-get($spacers, 4);
+    border-top: 1px solid $rule;
+  }
+  @include media-breakpoint-up(lg) {
+    grid-column: 6 / span 3;
+    margin-top: 0;
+    border-top: 0;
+    @include np-col-rule($stacked: false);
+  }
+}
 .home-figures {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  max-width: 34rem;
-  margin: 0;
-  border-top: 1px solid $oxford;
+  @include np-databox;
+  @include np-databox-cols(3);
 
-  > div {
-    padding: .875rem 1rem 0;
-    border-left: 1px solid $rule;
-
-    &:first-child {
-      padding-left: 0;
-      border-left: 0;
-    }
-  }
-  dt {
-    order: 2;
-    font-size: $small-font-size;
-    font-weight: $font-weight-normal;
-    color: $slate;
-  }
-  dd {
-    display: flex;
-    align-items: baseline;
-    gap: .25rem;
-    margin: 0 0 .25rem;
-  }
   .figure-num {
     font-size: 2.25rem;
+  }
+  // ≥ 768px：直排，標籤靠左、數字靠右
+  @include media-breakpoint-up(md) {
+    display: block;
+    @include np-databox-rows;
 
-    @include media-breakpoint-up(md) {
+    > div {
+      flex-direction: row;
+      padding: .875rem 0 .75rem;
+      border-left: 0;
+    }
+    dt {
+      order: 0;
+      font-size: $font-size-sm;
+    }
+    .figure-num {
       font-size: 2.75rem;
     }
-  }
-  > div {
-    display: flex;
-    flex-direction: column;
   }
 }
 .home-figures-unit {
@@ -107,16 +132,20 @@
   color: $slate;
 }
 
-// 引文欄：≥ 992px 左側一條欄線，垂直置中
+// 引文欄
 .home-hero-aside {
-  display: flex;
-  align-items: center;
   margin-top: map-get($spacers, 5);
 
+  @include media-breakpoint-between(md, lg) {
+    padding-top: map-get($spacers, 4);
+    border-top: 1px solid $rule;
+    @include np-col-rule($bp: md, $stacked: false);
+  }
   @include media-breakpoint-up(lg) {
+    grid-column: 9 / span 4;
     margin-top: 0;
-    padding-left: map-get($spacers, 6);
-    border-left: 1px solid $rule;
+    padding-top: map-get($spacers, 4);
+    @include np-col-rule($stacked: false);
   }
 }
 .home-quote {
@@ -133,82 +162,126 @@
   }
 }
 
-// ---------- 2. 為什麼值得訂 ----------
-.home-why {
-  border-top: 1px solid $oxford;
-}
-.home-why-item {
-  padding: map-get($spacers, 4) 0;
+// ---------- 2＋3. 社論欄＋主題索引 ----------
+.home-index {
+  padding-top: 3.25rem;
 
-  @include media-breakpoint-down(md) {
-    & + & { border-top: 1px solid $rule; }
-  }
-  @include media-breakpoint-between(md, lg) {
-    &:nth-child(odd) { padding-right: map-get($spacers, 4); }
-    &:nth-child(even) { padding-left: map-get($spacers, 4); border-left: 1px solid $rule; }
-    &:nth-child(n + 3) { border-top: 1px solid $rule; }
-  }
   @include media-breakpoint-up(lg) {
-    padding: map-get($spacers, 4) map-get($spacers, 4) map-get($spacers, 2);
+    padding-top: map-get($spacers, 7);
 
-    & + & { border-left: 1px solid $rule; }
-    &:first-child { padding-left: 0; }
-    &:last-child { padding-right: 0; }
+    // 兩欄的欄目標頭同高（subgrid），下方的列表從同一條線開始
+    > .container > .np-grid {
+      grid-template-rows: auto 1fr;
+    }
   }
+}
+.home-why,
+.home-topics {
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    align-content: start;
+  }
+}
+.home-why {
+  @include media-breakpoint-up(lg) {
+    grid-column: 1 / span 4;
+  }
+}
+.home-topics {
+  margin-top: 3.25rem;
+
+  @include media-breakpoint-up(lg) {
+    grid-column: 5 / span 8;
+    margin-top: 0;
+    @include np-col-rule($stacked: false);
+  }
+}
+
+// 為什麼值得訂：圖示｜標題＋說明，項目之間髮絲線
+.home-why-item {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  column-gap: .875rem;
+  align-content: start;
+  padding-block: 1.125rem;
+
+  &:first-child { padding-top: .25rem; }
+  & + & { border-top: 1px solid $rule; }
 
   > .bi {
-    display: block;
-    margin-bottom: .75rem;
-    font-size: 1.5rem;
-    line-height: 1;
+    grid-row: 1 / span 2;
+    font-size: 1.25rem;
+    line-height: 1.45;
     color: $oxford;
   }
   h3 {
-    margin-bottom: .5rem;
+    margin-bottom: .375rem;
   }
   p {
     margin: 0;
     color: $slate;
   }
 }
+// 768～991px：2 × 2，中間欄線
+@include media-breakpoint-between(md, lg) {
+  .home-why-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .home-why-item {
+    &:nth-child(2) { padding-top: .25rem; border-top: 0; }
+    &:nth-child(odd) { padding-right: map-get($spacers, 4); }
+    &:nth-child(even) { padding-left: map-get($spacers, 4); border-left: 1px solid $rule; }
+  }
+}
 
-// ---------- 3. 主題索引格：3 × 2，格子共用細線 ----------
+// 主題索引：一個主題一列（圖示｜主題名＋描述｜篇數 ‧ 最新更新），整列是連結
+// 篇數與日期常駐顯示；hover／focus 只換底色與標題底線，不改變尺寸
 .topic-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid $oxford;
-  border-left: 1px solid $rule;
 
-  @include media-breakpoint-up(md) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  @include media-breakpoint-up(lg) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  > li {
-    border-right: 1px solid $rule;
-    border-bottom: 1px solid $rule;
+  > li + li {
+    border-top: 1px solid $rule;
   }
 }
 .topic-card {
-  position: relative;
-  display: block;
-  height: 100%;
-  padding: 1.5rem 1.5rem 1.375rem;
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  grid-template-areas:
+    "icon name"
+    "icon desc"
+    "icon meta";
+  column-gap: .875rem;
+  align-items: baseline;
+  margin-inline: -.75rem;
+  padding: 1rem .75rem;
   color: $ink;
   text-decoration: none;
-  transition: background-color .2s ease, box-shadow .2s ease;
+  transition: background-color .2s ease;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      "icon name meta"
+      "icon desc meta";
+    column-gap: 1rem;
+  }
 
   &:hover,
   &:focus-visible,
   &.is-hover { // .is-hover：Guideline 用來固定畫出 hover 狀態
     background-color: $mist;
-    box-shadow: inset 0 3px 0 $oxford; // 頂端加粗成深藍線
     color: $ink;
+
+    .topic-card-name {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: .2em;
+    }
   }
   &:focus-visible {
     outline: 2px solid $oxford;
@@ -216,78 +289,101 @@
   }
 }
 .topic-card-icon {
-  display: block;
-  margin-bottom: .75rem;
-  font-size: 1.5rem;
+  grid-area: icon;
+  font-size: 1.25rem;
   line-height: 1;
   color: $oxford;
 }
 .topic-card-name {
-  margin-bottom: .375rem;
-  font-size: 1.25rem;
+  grid-area: name;
+  margin: 0;
+  font-size: 1.1875rem;
+  line-height: 1.45;
+  color: $oxford;
 }
 .topic-card-desc {
-  margin: 0;
+  grid-area: desc;
+  margin: .125rem 0 0;
   color: $slate;
 }
-// 篇數與最新更新：觸控（< 992px）直接顯示；≥ 992px hover／focus 才展開
 .topic-card-meta {
-  margin: .75rem 0 0;
-  padding-top: .625rem;
-  border-top: 1px solid $rule;
+  grid-area: meta;
+  margin: .375rem 0 0;
   font-size: $small-font-size;
-  color: $oxford;
   font-weight: $font-weight-medium;
+  color: $oxford;
+  white-space: nowrap;
+
+  @include media-breakpoint-up(md) {
+    align-self: center;
+    margin: 0;
+    text-align: right;
+  }
 }
-@include media-breakpoint-up(lg) {
-  .topic-card-meta {
-    display: grid;
-    grid-template-rows: 0fr;
-    margin-top: 0;
-    padding-top: 0;
-    border-top-color: transparent;
-    opacity: 0;
-    transition: grid-template-rows .2s ease, margin-top .2s ease, padding-top .2s ease, opacity .2s ease;
+// ≥ 1400px：首頁的主題索引一列排完（圖示｜主題名｜描述｜篇數 ‧ 最新更新），像目錄
+@include media-breakpoint-up(xxl) {
+  .home-topics .topic-card {
+    grid-template-columns: 1.5rem 9.5rem minmax(0, 1fr) auto;
+    grid-template-areas: "icon name desc meta";
+    padding-block: 1.375rem;
   }
-  .topic-card-meta > span {
-    min-height: 0;
-    overflow: hidden;
-  }
-  .topic-card:hover .topic-card-meta,
-  .topic-card:focus-visible .topic-card-meta,
-  .topic-card.is-hover .topic-card-meta {
-    grid-template-rows: 1fr;
-    margin-top: .75rem;
-    padding-top: .625rem;
-    border-top-color: $rule-strong;
-    opacity: 1;
+  .home-topics .topic-card-desc {
+    margin: 0;
   }
 }
 
-// ---------- 4. 本週精選 ----------
-.home-featured {
-  border-top: 1px solid $oxford;
-}
-.lead-story {
-  padding-top: map-get($spacers, 4);
-
+// ---------- 4. 本週精選：頭條＋次條＋短訊 ----------
+.home-featured-section {
   @include media-breakpoint-up(lg) {
-    padding-right: map-get($spacers, 5);
+    padding-top: map-get($spacers, 7);
+  }
+}
+.home-featured {
+  @include media-breakpoint-up(lg) {
+    grid-template-rows: auto 1fr;
+  }
+  // 768～991px：頭條滿寬，次條｜短訊兩欄
+  @include media-breakpoint-between(md, lg) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: $np-col-gap;
+  }
+}
+
+// 頭條：眉標 → 大標 → 封面（裝飾連結，用 order 排到大標下方）→ 導言 → 作者列＋按鈕
+.lead-story {
+  display: flex;
+  flex-direction: column;
+
+  > * { order: 2; }
+  > .kicker,
+  > .lead-story-title { order: 0; }
+  > .lead-story-media { order: 1; }
+}
+.home-featured-lead {
+  padding-bottom: map-get($spacers, 4);
+  border-bottom: 1px solid $rule;
+
+  @include media-breakpoint-between(md, lg) {
+    grid-column: 1 / -1;
+  }
+  @include media-breakpoint-up(lg) {
+    grid-column: 1 / span 7;
+    grid-row: 1 / span 2;
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  @include media-breakpoint-up(xxl) {
+    grid-column: 1 / span 6;
   }
 }
 .lead-story-media {
   display: block;
   aspect-ratio: 1200 / 630;
-  margin-bottom: map-get($spacers, 4);
+  margin: .25rem 0 map-get($spacers, 4);
 }
 .lead-story-title {
-  margin-bottom: .75rem;
-  font-size: 1.75rem;
-  line-height: 1.4;
-
-  @include media-breakpoint-up(xl) {
-    font-size: 2.125rem;
-  }
+  margin-bottom: map-get($spacers, 3);
 
   a {
     color: $oxford;
@@ -295,8 +391,8 @@
 
     &:hover {
       text-decoration: underline;
-      text-decoration-thickness: 1px;
-      text-underline-offset: .2em;
+      text-decoration-thickness: 2px;
+      text-underline-offset: .18em;
     }
   }
 }
@@ -305,7 +401,7 @@
   font-family: $font-family-serif;
   font-size: $font-size-lg;
   line-height: 1.85;
-  color: $slate;
+  color: $ink;
 }
 .lead-story-foot {
   display: flex;
@@ -316,53 +412,128 @@
   padding-top: map-get($spacers, 3);
   border-top: 1px solid $rule;
 }
-.home-featured-side {
+
+// 次條：封面在上（16:9）→ 眉標 → 次條標題 → 作者＋職稱 ｜ 閱讀時間
+.home-featured-second {
+  display: flex;
+  flex-direction: column;
+  padding-block: map-get($spacers, 4) 0;
+
+  > .img-frame {
+    order: -1;
+    aspect-ratio: 16 / 9;
+    margin-bottom: map-get($spacers, 3);
+  }
+  .story-title {
+    margin-bottom: .5rem;
+  }
+  @include media-breakpoint-up(md) {
+    @include np-col-rule($stacked: false);
+  }
+  @include media-breakpoint-between(md, lg) {
+    &::before { display: none; } // 768～991px 次條在左欄，不需要左側欄線
+  }
+  @include media-breakpoint-up(lg) {
+    grid-column: 8 / span 5;
+    grid-row: 1;
+    padding-top: 0;
+    padding-bottom: map-get($spacers, 4);
+  }
+  @include media-breakpoint-up(xxl) {
+    grid-column: 7 / span 3;
+    grid-row: 1 / span 2;
+    padding-bottom: 0;
+
+    > .img-frame { aspect-ratio: 3 / 4; } // 窄欄的直式照片，三欄的深度才接近
+  }
+}
+
+// 短訊：文字在左、小縮圖在右；兩則之間髮絲線
+.home-featured-briefs {
   margin-top: map-get($spacers, 4);
+  padding-top: map-get($spacers, 2);
   border-top: 1px solid $rule;
 
-  @include media-breakpoint-up(lg) {
+  .story {
+    padding-block: map-get($spacers, 3);
+  }
+  @include media-breakpoint-up(md) {
+    @include np-col-rule($bp: md, $stacked: false);
+  }
+  @include media-breakpoint-between(md, lg) {
     margin-top: 0;
     padding-top: map-get($spacers, 2);
-    padding-left: map-get($spacers, 5);
     border-top: 0;
-    border-left: 1px solid $rule;
   }
-
-  .story {
-    padding-block: map-get($spacers, 4);
-  }
-
-  // ≥ 992px：三篇平均分配右欄高度，與左側主推等高（像報刊版面的等高欄）
   @include media-breakpoint-up(lg) {
-    display: flex;
-    flex-direction: column;
+    grid-column: 8 / span 5;
+    grid-row: 2;
+    margin-top: 0;
+  }
+  @include media-breakpoint-up(xxl) {
+    grid-column: 10 / span 3;
+    grid-row: 1 / span 2;
+    padding-top: 0;
+    border-top: 0;
 
-    .story { flex: 1 1 0; }
+    .story:first-child { padding-top: 0; }
+    // 窄欄：縮圖（裝飾連結）排到文字上方，文字才有完整欄寬
+    .story-thumb-end {
+      display: flex;
+      flex-direction: column;
+
+      > .img-frame {
+        order: -1;
+        aspect-ratio: 16 / 9;
+        margin: 0 0 map-get($spacers, 3);
+      }
+    }
   }
 }
 .story-author {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: .5rem;
+
+  .avatar { margin-top: .125rem; }
+  .story-byline {
+    word-break: keep-all; // 只在空白與「｜」處換行，職稱不從中間斷開
+    overflow-wrap: anywhere;
+  }
 }
-// 次要精選：文字在左、封面縮圖在右
+// 次條、短訊的署名列：姓名｜職稱｜閱讀時間，窄欄放不下時整段換到下一行，「｜」不會留在行首
+// <p class="story-byline"><strong>姓名</strong> <span class="byline-item"><span class="byline-sep">｜</span>職稱</span> …</p>
+// 每段前面的「｜」佔固定寬度；整列往左挪同樣的寬度，再用 clip-path 切掉最左邊那一條：
+// 換到行首的那一段，「｜」剛好落在切掉的範圍裡（姓名前面補同樣寬度的留白，所以第一行也對齊）
+.story-byline:has(> .byline-item) {
+  --byline-sep: 1.5em;
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: calc(-1 * var(--byline-sep));
+  clip-path: inset(-.25rem -.25rem -.25rem var(--byline-sep));
+
+  > strong {
+    padding-left: var(--byline-sep);
+  }
+}
+.byline-sep {
+  display: inline-block;
+  width: var(--byline-sep);
+  text-align: center;
+}
 .story-thumb-end {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 6.5rem;
+  grid-template-columns: minmax(0, 1fr) 5.5rem;
   gap: 1rem;
   align-items: start;
 
-  @include media-breakpoint-up(sm) {
-    grid-template-columns: minmax(0, 1fr) 8.5rem;
+  @include media-breakpoint-between(sm, md) {
+    grid-template-columns: minmax(0, 1fr) 7rem;
   }
 
   .img-frame {
     aspect-ratio: 1 / 1;
     margin-top: .25rem;
-
-    @include media-breakpoint-up(sm) {
-      aspect-ratio: 4 / 3;
-    }
   }
 }
 
@@ -373,22 +544,34 @@
 
   h2, h3, .h3, .h5 { color: $paper; }
 }
-.home-authors {
-  padding-top: map-get($spacers, 4);
-  border-top: 1px solid $on-oxford-muted;
-}
-.home-authors-main {
-  @include media-breakpoint-up(lg) {
-    padding-right: map-get($spacers, 6);
+// 版名：置中，≥ 768px 左右延伸雙線（像報紙的版名）
+.home-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 5);
+  text-align: center;
+
+  @include media-breakpoint-up(md) {
+    &::before,
+    &::after {
+      content: "";
+      flex: 1 1 0;
+      min-width: 2rem;
+      height: $rule-double-height;
+      @include rule-double(top, $on-oxford-muted);
+    }
   }
 }
-// 撰稿人名錄：方形頭像＋職稱；手機橫向捲動
+
+// 撰稿人名錄：方形頭像＋職稱；手機橫向捲動，≥ 992px 一整排（1200px 以上 11 格一排）、格與格之間欄線
 .contrib-grid {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 5.25rem;
   gap: 1.25rem 1rem;
-  margin: 0 0 map-get($spacers, 5);
+  margin: 0;
   padding: 0 0 .5rem;
   list-style: none;
   overflow-x: auto;
@@ -420,49 +603,112 @@
   min-height: 3.5rem;
   color: $paper !important;
 }
+.home-roster {
+  padding-bottom: map-get($spacers, 4);
+  border-bottom: 1px solid $on-oxford-rule;
+
+  @include media-breakpoint-up(lg) {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: map-get($spacers, 4) 0;
+
+    li {
+      align-items: center;
+      padding-inline: .5rem;
+      border-left: 1px solid $on-oxford-rule;
+      text-align: center;
+
+      &:nth-child(6n + 1) { border-left: 0; }
+    }
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(11, minmax(0, 1fr));
+
+    li:nth-child(6n + 1) { border-left: 1px solid $on-oxford-rule; }
+    li:first-child { border-left: 0; }
+  }
+}
+
+// 讀者來函：2 則評價並排（≥ 768px），欄線分隔
 .home-reviews {
-  padding-top: map-get($spacers, 4);
-  border-top: 1px solid $on-oxford-rule;
+  display: grid;
+  gap: map-get($spacers, 4) $np-col-gap;
+  padding-top: map-get($spacers, 5);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    .review + .review {
+      @include np-col-rule($bp: md, $color: $on-oxford-rule, $stacked: false);
+    }
+  }
+  @include media-breakpoint-up(lg) {
+    grid-column: 1 / span 8;
+  }
 }
 .review {
   margin: 0;
 
   blockquote {
+    position: relative;
     margin-bottom: .75rem;
-    padding-left: 1rem;
-    border-left: 2px solid $on-oxford-muted;
+    padding-top: 2.25rem;
     font-family: $font-family-serif;
-    font-size: 1.125rem;
+    font-size: 1.1875rem;
     line-height: 1.8;
     color: $paper;
 
+    @include media-breakpoint-up(lg) {
+      font-size: 1.3125rem;
+    }
+
+    // 裝飾引號（只用引號字元，不加其他字）
+    &::before {
+      content: "\201C";
+      position: absolute;
+      top: 0;
+      left: -.05em;
+      font-family: "Newsreader", serif;
+      font-size: 3.5rem;
+      font-weight: 600;
+      line-height: 1;
+      color: $on-oxford-muted;
+    }
     p { margin: 0; }
   }
   figcaption {
-    padding-left: 1rem;
     font-size: $small-font-size;
     color: $on-oxford-muted;
   }
 }
-.home-authors-side {
+.review + .review {
+  @include media-breakpoint-down(md) {
+    padding-top: map-get($spacers, 4);
+    border-top: 1px solid $on-oxford-rule;
+  }
+}
+
+// 訂閱保障：頂端白色雙線的告示欄
+.home-guarantee {
   margin-top: map-get($spacers, 5);
 
   @include media-breakpoint-up(lg) {
+    grid-column: 9 / span 4;
     margin-top: 0;
-    padding-left: map-get($spacers, 5);
-    border-left: 1px solid $on-oxford-rule;
+    padding-top: map-get($spacers, 5);
+    @include np-col-rule($color: $on-oxford-rule, $stacked: false);
   }
 }
 .guarantee-list {
   margin: 0;
-  padding: 0;
+  padding: $rule-double-height 0 0;
   list-style: none;
+  @include rule-double(top, $on-oxford);
 
   li {
-    padding-block: 1.125rem;
+    padding-block: 1rem;
     border-bottom: 1px solid $on-oxford-rule;
 
-    &:first-child { padding-top: 0; }
     &:last-child { border-bottom: 0; }
   }
   h3 {
@@ -477,33 +723,58 @@
     color: $on-oxford-muted;
   }
 }
+
+// 底部 CTA：訂閱在寬欄（主要，字大）、申請作者在窄欄（次要）
 .home-cta {
   margin-top: map-get($spacers, 6);
   border-top: 1px solid $on-oxford-muted;
+
+  @include media-breakpoint-between(md, lg) {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: $np-col-gap;
+  }
 }
 .home-cta-item {
   padding-top: map-get($spacers, 4);
 
-  @include media-breakpoint-up(md) {
-    &:last-child {
-      padding-left: map-get($spacers, 5);
-      border-left: 1px solid $on-oxford-rule;
-    }
-    &:first-child { padding-right: map-get($spacers, 5); }
+  p {
+    margin-bottom: 1.25rem;
+    color: $on-oxford-muted;
   }
-  @include media-breakpoint-down(md) {
-    & + & {
-      margin-top: map-get($spacers, 4);
-      border-top: 1px solid $on-oxford-rule;
-    }
+}
+.home-cta-main {
+  @include media-breakpoint-up(lg) {
+    grid-column: 1 / span 8;
+    padding-top: map-get($spacers, 5);
   }
 
   h3 {
     margin-bottom: .5rem;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
+    font-weight: $font-weight-bolder;
+
+    @include media-breakpoint-up(lg) {
+      font-size: 2.25rem;
+    }
   }
-  p {
-    margin-bottom: 1.25rem;
-    color: $on-oxford-muted;
+}
+.home-cta-side {
+  margin-top: map-get($spacers, 4);
+  border-top: 1px solid $on-oxford-rule;
+
+  @include media-breakpoint-up(md) {
+    margin-top: 0;
+    border-top: 0;
+    @include np-col-rule($bp: md, $color: $on-oxford-rule, $stacked: false);
+  }
+  @include media-breakpoint-up(lg) {
+    grid-column: 9 / span 4;
+    padding-top: map-get($spacers, 5);
+  }
+
+  h3 {
+    margin-bottom: .5rem;
+    font-size: 1.375rem;
   }
 }

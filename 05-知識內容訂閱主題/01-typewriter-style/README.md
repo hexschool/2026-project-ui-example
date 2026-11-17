@@ -26,7 +26,7 @@ npm install        # 安裝 bootstrap、bootstrap-icons、sass，並把 Bootstra
 npm run watch      # 開發時：監看 scss/，存檔就重新編譯 css/style.css
 npm run css        # 編譯一次
 npm run build      # 交付前：重新複製 vendor 檔案＋編譯一次 CSS
-npm run check      # 檢查 6 個頁面的 head、頁首、頁尾是否與範本一致
+npm run check      # 檢查 10 個頁面的 head、頁首、頁尾是否與範本一致
 npm run vendor     # 只重新複製 Bootstrap JS 與圖示字型（npm install 時會自動執行）
 npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖時才用）
 ```
@@ -41,8 +41,18 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 | 文章內頁（以〈一間餐廳的成本結構〉示範，含付費預覽牆） | `article.html` | `scss/pages/_article.scss` |
 | 訂閱方案（方案卡、比較矩陣、結帳確認、FAQ） | `pricing.html` | `scss/pages/_pricing.scss` |
 | 個人頁面「我的現場筆記」（讀者／作者／管理員） | `account.html` | `scss/pages/_account.scss` |
+| 登入（2026-11 補） | `login.html` | `scss/pages/_auth.scss` |
+| 免費註冊（2026-11 補） | `register.html` | `scss/pages/_auth.scss` |
+| 作者個人頁（以陳柏諺示範，2026-11 補） | `author.html` | `scss/pages/_author.scss` |
+| 忘記密碼（2026-11 補） | `forgot-password.html` | `scss/pages/_auth.scss` |
 
 頁面上沒有列出所有頁面的導覽：從首頁依讀者流程點進各頁即可，Guideline 直接開 `guideline.html`。所有文章卡都連到 `article.html`（只做一篇文章頁）。
+
+2026-11 補的 4 頁從這裡進去（示意使用者陳柏諺已登入，所以頁首沒有登入／註冊按鈕）：
+
+- 文章付費牆的「已經是訂閱者了？登入」→ `login.html` → 送出到 `article.html?view=subscribed`；「忘記密碼？」→ `forgot-password.html`（送出後捲到本頁的「重設信已寄出」示意）。
+- 方案頁免費方案卡的「免費註冊」、登入頁的「免費註冊」→ `register.html` → 送出到 `account.html`。
+- 文章內頁作者卡的「查看全部文章」→ `author.html`（作者的文章卡同樣連到 `article.html`）。
 
 兩個頁面有「設計稿切換器」（虛線框＋斜線底紋，和產品介面區隔），切換時網址會同步，重新整理後停在同一個狀態：
 
@@ -60,7 +70,7 @@ account.html?role=admin         ← 管理員（再多「平台管理」：作�
 
 ```
 01-typewriter-style/
-├─ *.html                    ← 6 個頁面，每頁完整包含頁首與頁尾
+├─ *.html                    ← 10 個頁面，每頁完整包含頁首與頁尾
 ├─ templates/page.html       ← 頁面骨架：新增頁面從這裡複製
 ├─ css/
 │  ├─ style.css              ← 編譯結果（Bootstrap＋Icons＋本風格樣式），要提交
@@ -83,14 +93,14 @@ account.html?role=admin         ← 管理員（再多「平台管理」：作�
 
 ## 沒有打包工具時的工作方式
 
-- **頁首、頁尾每頁一份**：沒有元件系統，所以 6 個頁面各自完整寫一份。要改頁首或頁尾時，先改 `templates/page.html`，再同步到每一頁，最後執行 `npm run check`。每頁只有一處不同：目前頁的標示——首頁、文章列表、訂閱方案加 `active`＋`aria-current="page"`；文章內頁標「文章列表」只加 `active`；個人頁面標會員入口（手機選單的「我的現場筆記」與桌機的 `.site-member.is-active`）；Guideline 不標示。
+- **頁首、頁尾每頁一份**：沒有元件系統，所以 10 個頁面各自完整寫一份。要改頁首或頁尾時，先改 `templates/page.html`，再同步到每一頁，最後執行 `npm run check`。每頁只有一處不同，就是目前頁的標示：首頁、文章列表、訂閱方案加 `active`＋`aria-current="page"`；文章內頁與作者個人頁標「文章列表」只加 `active`；個人頁面標會員入口（手機選單的「我的現場筆記」與桌機的 `.site-member.is-active`）；Guideline、登入、註冊、忘記密碼不標示。
 - **新增頁面**：複製範本成新頁，改 `<title>`、description 與目前頁標示。在 `scss/pages/` 新增 partial、在 `scss/main.scss` 加一行 `@import`，執行 `npm run check`。
 - **假資料直接寫在 HTML**：文案全部取自主題層的 `CONTENT.md`（Notion 原文）。跨頁要一致的數字：付費 438 篇／免費 127 篇／作者 142 位；月費 NT$ 180、年費 NT$ 1,800（省 NT$ 360，平均每月 NT$ 150）；〈一間餐廳的成本結構〉約 6,800 字、免費預覽前 2,200 字、剩下 4,600 字、已免費讀完 32%；到期日 2027/10/02、剩餘 364 天；收藏 38 篇；已發布 18 篇；漏斗 18,420 → 6,208 → 892 → 214。改動時要多頁同步（Guideline 也有）。
 - **設計稿狀態**：`<body data-view="unsubscribed|subscribed">`、`<body data-role="reader|author|admin">`；元素用 `data-show-view="subscribed"`、`data-show-role="author admin"` 標記，CSS（`components/_switcher.scss`）依 body 屬性隱藏不屬於目前狀態的元素。沒有 JS 時停在預設狀態（未訂閱、讀者），畫面照樣完整。
 - **JS**：`js/main.js` 只做 5 件事：① 設計稿切換器（讀網址參數、更新 `aria-pressed`、`history.replaceState`，有 `#錨點` 時套用後再捲過去，並重新計算目錄的 ScrollSpy）② 閱讀進度條（未訂閱時讀到付費牆＝32%）③ 字級 Aa 三段（切換 `.prose.is-size-*`，存在 localStorage）④ 月／年切換（省錢提示＋兩張付費卡的按鈕強調交換，★ 標籤固定在月費）⑤ 作者文章狀態篩選（`data-filter` → `data-status`）。選用：搜尋列展開後自動聚焦、收藏／追蹤的 `aria-pressed`、閱讀模式、確認付款的「處理中 → 訂閱成功」示意。目錄與側欄的目前位置用 Bootstrap ScrollSpy（`<body data-bs-spy="scroll">`）。
-- **純 CSS 的互動**：主題卡 hover／focus 展開篇數（`grid-template-rows`）、結帳只有選「信用卡」才顯示卡號欄位（`:has()`）、篩選與排序的選中狀態（`.btn-check`）。
+- **純 CSS 的互動**：結帳只有選「信用卡」才顯示卡號欄位（`:has()`）、篩選與排序的選中狀態（`.btn-check`）。主題卡的篇數與最新更新常駐顯示，hover／focus 只換淡藍底與主題名顏色，不改變卡片高度（2026-11-17 起，hover 不撐開版面）。
 - **換行與空白**：標題、短說明用 `.text-phrase`（`word-break: keep-all`）＋`<wbr>` 標出詞組斷點；數字與單位之間用 `&nbsp;`。
-- **表單**：設計稿沒有後端，表單都不送出（按鈕是 `type="button"`）；各表單上方的註解寫了串接後端時要怎麼改。
+- **表單**：設計稿沒有後端，原有 6 頁的表單都不送出（按鈕是 `type="button"`）；各表單上方的註解寫了串接後端時要怎麼改。2026-11 補的登入、註冊、忘記密碼用 `<form action="目的頁">` 以 GET 換頁（同 01 電商）：密碼欄一律不加 `name`，密碼才不會出現在網址列；登入表單只有 hidden 的 `view=subscribed` 有 `name`，送出後是 `article.html?view=subscribed`。串接後端時改用 POST 並補上 `name`。這 4 頁沒有新增 JS，作者頁的追蹤按鈕沿用 `data-toggle-pressed`。
 
 ## 樣式架構
 
@@ -138,6 +148,10 @@ account.html?role=admin         ← 管理員（再多「平台管理」：作�
 | `.sub-card`、`.sub-state` | 訂閱狀態卡（訂閱中＝墨塊＋大字到期日）與其他三態 | `components/_subscription.scss` |
 | `.editor`、`.editor-toolbar`、`.editor-selection`、`.preview-divider`、`.editor-plus`、`.editor-insert-menu`、`.editor-settings`、`.publish-check` | 編輯器元件集 | `components/_editor.scss` |
 | `.stat-tile`（`.is-key`）、`.funnel`（`.is-dark`）、`.chart-panel` | 數據卡、閱讀漏斗（等比例橫條、CSS 畫） | `components/_stats.scss` |
+| `.auth-page`、`.auth-shell`（`.is-wide`）、`.auth-card`、`.auth-title`、`.auth-lead`、`.auth-label-row`／`.auth-forgot`、`.auth-switch`、`.auth-terms`、`.auth-resend`、`.auth-stage-title`、`.auth-demo` | 表單卡 AuthCard（2026-11 補，Guideline 沒有）：置中 512px、疊紙浮起（< 576px 拿掉外框與疊紙）；H1 → 說明 → 表單 → 卡片底部的切換連結。`.is-wide` 是註冊頁的 960px 兩欄（7 : 5） | `pages/_auth.scss`（登入、註冊、忘記密碼共用） |
+| `.auth-plan` | 註冊頁的免費會員權益摘要：稿紙灰底、不加框，內容沿用方案卡的 `.plan-card-name`、`.plan-card-price`、`.plan-card-fit`、`.check-list`（不含底部按鈕） | `pages/_auth.scss` |
+| `.author-shell`、`.author-profile`（`-avatar`、`-title`、`-job`、`-bio`）、`.author-articles-head` | 作者個人頁（2026-11 補，Guideline 沒有）：主體欄 920px；作者資訊（頭像 88px : 文字，< 768px 頭像 64px 橫排）；文章列表標題列（左 H2、右筆數，筆數沿用 `.articles-count`）。文章卡沿用 `.article-list`／`.article-item`（不放作者列與縮圖，卡片標題用 h3） | `pages/_author.scss` |
+| `.articles-count`、`.articles-pagination` | 列表筆數（小字鉛灰、不換行）、文章分頁（44px 方格、目前頁墨塊）；作者個人頁沿用這兩個 class | `pages/_articles.scss` |
 
 ## Design token 摘要
 
@@ -154,7 +168,7 @@ account.html?role=admin         ← 管理員（再多「平台管理」：作�
 | 圓角 | 0；只有 radio、狀態圓點、編輯器＋插入鈕是圓的 |
 | 陰影 | 無模糊陰影；浮起層用疊紙（1px 炭黑框＋右下 6px 第二張紙） |
 | 焦點 | 色帶藍 2px＋2px 白紙間隙 |
-| 動態 | 只有藍色游標閃爍與主題卡展開；`prefers-reduced-motion` 時關閉 |
+| 動態 | 只有藍色游標閃爍與主題卡的底色漸變；`prefers-reduced-motion` 時關閉 |
 
 完整規範請看 `guideline.html`。改色時，Guideline 的色票 hex、對比度與其他寫死色碼的地方也要一起改，清單見上一層 [`../README.md`](../README.md) 的「換色時同步檢查」。
 

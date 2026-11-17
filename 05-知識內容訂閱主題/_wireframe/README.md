@@ -1,6 +1,6 @@
 # _wireframe：共用的線框圖參考
 
-這個資料夾是「現場筆記 FieldNotes」設計稿的**資訊架構與版型依據**：所有風格（`01-typewriter-style`、`03-thinktank-style`、`04-slow-reading-style` 以及之後的各套）的頁面組成、區塊順序與欄數都以這裡為準。
+這個資料夾是「現場筆記 FieldNotes」設計稿的**資訊架構與版型依據**：所有風格（`01-typewriter-style`、`03-thinktank-style`、`04-slow-reading-style` 以及之後的各套）的頁面組成、區塊與內容都以這裡為準；桌機欄數與區塊的排列構圖是建議，各風格可以依自己的排版語言調整（2026-11-17 起，見 `WIREFRAME_SPEC.md` §0）。
 
 - 來源：Notion「05-知識內容訂閱主題：現場筆記 FieldNotes」頁面內嵌的 `index.html`（<https://app.notion.com/p/3ef6ab47eb4880deba15e50c5092ec08>）
 - 下載日期：2026-10-06（Notion 頁面最後編輯 2026-10-04）；`index.html` 是**原樣保存**，沒有改過任何一個字元
@@ -8,9 +8,9 @@
 
 ## 範圍與資料來源
 
-1. **wireframe 只提供資訊架構與版型**：頁面有哪些、區塊順序、桌機欄數、元件與互動狀態。它雖然已經上了色（奶油底、磚紅、襯線標題），**但那不是任何一套風格的視覺規格**，各風格的配色、字體要依 Notion 風格表自己定義（見 `WIREFRAME_SPEC.md` §0.1）。
+1. **wireframe 只提供資訊架構與版型**：頁面有哪些、區塊順序、元件與互動狀態照做；桌機欄數與構圖是建議（`WIREFRAME_SPEC.md` §0）。它雖然已經上了色（奶油底、磚紅、襯線標題），**但那不是任何一套風格的視覺規格**，各風格的配色、字體要依 Notion 風格表自己定義（見 `WIREFRAME_SPEC.md` §0.1）。
 2. **文案以 Notion 為唯一來源**，已逐字整理在上一層的 [`../CONTENT.md`](../CONTENT.md)。wireframe 有幾處把 Notion 的「配置理念」當成副標、補了自己的文字或資料，差異與決定列在 `WIREFRAME_SPEC.md` §8。
-3. **本次的頁面與檔名**：`guideline.html`、`index.html`、`articles.html`、`article.html`、`pricing.html`、`account.html`（Notion 的「知識內容說明」拆成列表與內頁兩個檔案）。
+3. **本次的頁面與檔名**（共 10 頁）：`guideline.html`、`index.html`、`articles.html`、`article.html`、`pricing.html`、`account.html`（Notion 的「知識內容說明」拆成列表與內頁兩個檔案），以及 2026-11 補的 `login.html`、`register.html`、`author.html`、`forgot-password.html`。後 4 頁 wireframe 沒有，規格見 `WIREFRAME_SPEC.md` §3.06～3.09。
 4. wireframe 裡的設計稿工具列、頁首的頁面清單、頁尾的「設計稿」欄、「設計註」、英文眉標、emoji 圖示都是線框圖的標記，**不要照搬**（`WIREFRAME_SPEC.md` §0.1）。
 
 ## 怎麼瀏覽
@@ -56,9 +56,9 @@ _wireframe/
 
 | 項目 | wireframe | 各風格的正式頁面 |
 |---|---|---|
-| 檔案 | 1 個 HTML，hash 切換 5 個區塊 | 6 個獨立 HTML（多頁靜態網站） |
+| 檔案 | 1 個 HTML，hash 切換 5 個區塊 | 10 個獨立 HTML（多頁靜態網站；其中登入、註冊、作者個人頁、忘記密碼是 2026-11 補的，wireframe 沒有） |
 | 樣式 | `<style>` 內嵌＋ CDN 的 Bootstrap 預設樣式 | Bootstrap 5 Sass 變數客製，sass CLI 編譯成 `css/style.css` |
-| 頁首 | 列出所有設計稿頁面＋「登入 / 註冊」 | 首頁、文章列表、訂閱方案＋搜尋＋會員入口 |
+| 頁首 | 列出所有設計稿頁面＋「登入 / 註冊」 | 首頁、文章列表、訂閱方案＋搜尋＋會員入口（不放登入／註冊，示意使用者已登入） |
 | 頁尾 | 第 5 欄「設計稿」 | 不放設計稿頁面導覽 |
 | 圖片 | 漸層佔位框、字首頭像 | `IMAGES.md` 的 17 張照片＋字首頭像 |
 | 圖示 | emoji 與文字元 | Bootstrap Icons |

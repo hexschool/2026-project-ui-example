@@ -211,3 +211,68 @@
   font-size: $small-font-size;
   color: $slate;
 }
+
+// ---------- 價目欄（報刊排版，2026-11-17）：方案頁的價目表 ----------
+// 方案卡不加外框、不加底色，靠左側欄線分開；推薦欄（月費）保留 2px 深藍外框＋霧白紙淡底，「★ 最多人選」從頂端的報頭雙線垂下
+// 只在 ≥ 992px 的 .pricing-ratecard 裡套用；992px 以下回到上面的一般方案卡（上下堆疊、各自細框）
+// 其他頁要用同一組外觀（例如註冊頁的權益摘要），@include plan-col 即可（不含欄線與推薦外框）
+@mixin plan-col {
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  box-shadow: none;
+}
+.pricing-ratecard {
+  @include media-breakpoint-up(lg) {
+    .plan-grid {
+      grid-column: 2 / span 3;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-rows: auto auto auto 1fr auto; // 方案名｜價格｜適合｜權益清單｜按鈕，三欄各自對齊
+      gap: 0;
+      margin-top: 0;
+    }
+    .plan-card {
+      @include plan-col;
+      grid-row: span 5;
+      display: grid;
+      grid-template-rows: subgrid;
+      padding: 3rem 1.5rem 1.75rem;
+      border-left: 1px solid $rule;
+
+      & + .plan-card { margin-left: 0; }
+    }
+    .plan-card.is-featured {
+      margin-bottom: -1px; // 外框蓋住價目表底部的髮絲線
+      border-left-color: transparent;
+      background-color: $mist; // 和比較矩陣月費欄的淡底同色
+      box-shadow: inset 2px 0 0 $oxford, inset -2px 0 0 $oxford, inset 0 -2px 0 $oxford;
+
+      + .plan-card { border-left-color: transparent; }
+    }
+    .plan-flag {
+      top: 0;
+      bottom: auto;
+      left: 0;
+    }
+    .plan-name {
+      margin-bottom: .75rem;
+    }
+    // 992～1199px 欄寬較窄：數字縮到 2.25rem，年費欄的「NT$ 1,800 ／年」才排得下一行
+    .plan-price .figure-num {
+      font-size: 2.25rem;
+
+      @include media-breakpoint-up(xl) {
+        font-size: 3rem;
+      }
+    }
+    // 「省 NT$ 360」一律自己一行，價格和「／年」不拆開（空的 ::after 佔滿一行當作換行）
+    .plan-price:has(.save-tag)::after {
+      content: "";
+      flex-basis: 100%;
+      order: 1;
+    }
+    .plan-price .save-tag {
+      order: 2;
+    }
+  }
+}

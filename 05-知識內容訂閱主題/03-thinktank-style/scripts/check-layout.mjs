@@ -1,5 +1,5 @@
-// 檢查每個頁面的共用區塊（<head> 共用部分、日期列＋頁首、頁尾、底部 script）是否與 templates/page.html 一致
-// 頁首頁尾在每頁都完整寫一份，改範本後可以用這支確認 6 個頁面都同步了
+// 檢查每個頁面的共用區塊（<head> 共用部分、頁首（報頭列＋導覽列）、頁尾、底部 script）是否與 templates/page.html 一致
+// 頁首頁尾在每頁都完整寫一份，改範本後可以用這支確認所有頁面（10 頁）都同步了
 // 用法：npm run check
 import fs from 'node:fs'
 import path from 'node:path'
@@ -21,12 +21,13 @@ const normalize = (html) =>
 
 const blocks = {
   'head': [/<head>[\s\S]*?<\/head>/],
-  '日期列＋頁首': [/<a class="skip-link"[\s\S]*?<\/header>/],
+  '頁首': [/<a class="skip-link"[\s\S]*?<\/header>/],
   '頁尾＋script': [/<footer class="site-footer">[\s\S]*<\/html>/],
 }
 const pick = (html, [re]) => normalize((html.match(re) || [''])[0])
 
-// 每頁的目前頁標示：文章內頁標「文章列表」（只加 active，不加 aria-current）；Guideline 不標示
+// 每頁的目前頁標示：文章內頁與作者個人頁標「文章列表」（只加 active，不加 aria-current）；
+// Guideline 與登入、註冊、忘記密碼（2026-11 補頁）不標示
 const expected = {
   'index.html': { href: 'index.html', current: true },
   'articles.html': { href: 'articles.html', current: true },
@@ -34,6 +35,10 @@ const expected = {
   'pricing.html': { href: 'pricing.html', current: true },
   'account.html': { href: 'account.html', current: true },
   'guideline.html': null,
+  'login.html': null,
+  'register.html': null,
+  'author.html': { href: 'articles.html', current: false },
+  'forgot-password.html': null,
 }
 
 const template = fs.readFileSync(path.join(root, 'templates/page.html'), 'utf8')
@@ -47,12 +52,12 @@ for (const page of pages) {
     current: /aria-current="page"/.test(m[1]),
   }))
   const want = expected[page]
-  if (want === null && actives.length) problems.push('Guideline 不應標示目前頁')
+  if (want === null && actives.length) problems.push('這一頁不應標示目前頁（Guideline、登入、註冊、忘記密碼）')
   if (want) {
     if (!actives.length) problems.push(`頁首沒有標示目前頁（應為 ${want.href}）`)
     actives.forEach((a) => {
       if (a.href !== want.href) problems.push(`頁首目前頁指向 ${a.href}，應為 ${want.href}`)
-      if (a.current !== want.current) problems.push(want.current ? '目前頁缺少 aria-current="page"' : '文章內頁不加 aria-current')
+      if (a.current !== want.current) problems.push(want.current ? '目前頁缺少 aria-current="page"' : '文章內頁與作者個人頁的目前頁只加 active，不加 aria-current')
     })
   }
   console.log(`${problems.length ? '✗' : '✓'} ${page}${problems.length ? '：' + problems.join('；') : ''}`)

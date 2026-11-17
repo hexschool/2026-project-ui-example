@@ -3,26 +3,25 @@
 // 訂閱狀態卡、其他訂閱狀態小卡、收藏卡、取消確認對話框、申請審核卡
 // ============================================================
 
-// ---------- 訂閱狀態卡（訂閱中）：5：7，到期日用大字級（每頁唯一的主數字等級） ----------
-// 像一份正式的訂閱證明：頂端報頭雙線＋細框
+// ---------- 訂閱狀態卡（訂閱中）：≥ 992px 4：8，到期日用大字級（每頁唯一的主數字等級） ----------
+// 像報紙上的一則公告：頂端報頭雙線、底部髮絲線，左右兩欄以欄線分開；不加外框與底色（報刊排版，2026-11-17）
 .sub-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  border: 1px solid $rule;
+  border-bottom: 1px solid $rule;
   background-color: $paper;
   @include rule-double(top);
   padding-top: $rule-double-height;
 
   @include media-breakpoint-up(lg) {
-    grid-template-columns: 5fr 7fr;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
   }
 }
 .sub-card-main {
-  padding: 1.5rem;
-  background-color: $mist;
+  padding: 1.5rem 0;
 
-  @include media-breakpoint-up(md) {
-    padding: 1.75rem 2rem;
+  @include media-breakpoint-up(lg) {
+    padding: 1.75rem 2rem 1.75rem 0;
   }
 
   p { margin: 0; }
@@ -48,10 +47,13 @@
 .sub-card-detail {
   display: flex;
   flex-direction: column;
-  padding: 1.25rem 1.5rem 1.5rem;
+  padding: 1.25rem 0 1.5rem;
+  border-top: 1px solid $rule;
 
-  @include media-breakpoint-up(md) {
-    padding: 1.5rem 2rem 1.75rem;
+  @include media-breakpoint-up(lg) {
+    padding: 1.25rem 0 1.75rem 2rem;
+    border-top: 0;
+    border-left: 1px solid $rule; // 欄線
   }
 }
 .sub-card-list {
@@ -80,10 +82,10 @@
     }
   }
 }
-// 兩顆同樣大小的次要按鈕
+// 兩顆同樣大小的次要按鈕（欄很寬時每顆最寬 14rem，不拉成長條）
 .sub-card-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 14rem));
   gap: .75rem;
   margin-top: auto;
 
@@ -120,21 +122,149 @@
   color: $oxford;
 }
 
-// ---------- 收藏卡 LibraryCard ----------
+// ---------- 收藏卡 LibraryCard：帳冊列（報刊排版，和文章列表的帳冊列同一套） ----------
+// 不加外框、不並排成卡片，一篇一列，列與列之間髮絲線
+// <div class="library-list">
+//   <article class="library-card">
+//     <a class="img-frame ratio-cover" href="…" tabindex="-1" aria-hidden="true">縮圖（裝飾連結）</a>
+//     <div class="library-card-body">
+//       <p class="kicker">權限徽章＋進度狀態</p>
+//       <div class="library-card-main">標題 → 作者 ‧ 閱讀時間</div>
+//       <div class="library-card-side">進度條＋文字 → 按鈕</div>
+//     </div>
+//   </article>
+// </div>
+// - ≥ 992px：12 欄，眉標 2｜標題 5｜進度與按鈕 3｜縮圖 2，三條欄線（畫在標題欄左右與進度欄右側，兩欄都撐滿整列高度）
+// - 768–991px：眉標一整列在上，下面「標題 → 進度與按鈕（同一列）」2｜縮圖 1（同文章列表的帳冊列）
+// - 767px 以下：眉標與標題在左、小縮圖在右，進度與按鈕在下方滿寬
+// .library-card-body 用 display: contents，眉標、標題、進度直接當 article 的格子；HTML 順序不變
+// 縮圖是裝飾連結（tabindex="-1"＋aria-hidden），畫面上排在最右邊
 .library-card {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  border: 1px solid $rule;
-  background-color: $paper;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 6.5rem;
+  grid-template-areas:
+    "kicker thumb"
+    "main   thumb"
+    "side   side";
+  align-content: start;
+  column-gap: 1rem;
+  padding-block: map-get($spacers, 4);
+  border-bottom: 1px solid $rule;
+
+  > .img-frame {
+    grid-area: thumb;
+    align-self: start;
+    margin-top: .25rem;
+  }
+  .kicker {
+    grid-area: kicker;
+  }
 }
 .library-card-body {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  padding: 1rem 1.125rem 1.125rem;
+  display: contents;
+}
+.library-card-main {
+  grid-area: main;
+  min-width: 0;
+}
+.library-card-side {
+  grid-area: side;
+  margin-top: .875rem;
 
-  .btn { margin-top: auto; }
+  .library-progress { margin-bottom: .875rem; }
+  .btn { width: 100%; }
+}
+
+@include media-breakpoint-up(md) {
+  .library-card {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-areas:
+      "kicker kicker"
+      "main   thumb"
+      "side   thumb";
+    column-gap: $np-col-gap;
+
+    > .img-frame { margin-top: .375rem; }
+  }
+  // 進度與按鈕同一列：進度條填滿，按鈕照文字寬度
+  .library-card-side {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+
+    .library-progress {
+      flex: 1 1 auto;
+      margin-bottom: 0;
+    }
+    .btn {
+      flex: 0 0 auto;
+      width: auto;
+    }
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  .library-card {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-areas: none;
+    padding-block: map-get($spacers, 4) + .25rem;
+
+    > .img-frame {
+      grid-column: 11 / span 2;
+      grid-row: 1;
+      margin-top: .25rem;
+    }
+    // 眉標：權限徽章疊在進度狀態上方
+    .kicker {
+      grid-column: 1 / span 2;
+      grid-row: 1;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: .5rem;
+      margin: .25rem 0 0;
+    }
+  }
+  .library-card-main,
+  .library-card-side {
+    position: relative;
+
+    &::before,
+    &::after {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      border-left: 1px solid $rule;
+      pointer-events: none;
+    }
+  }
+  .library-card-main {
+    grid-column: 3 / span 5;
+    grid-row: 1;
+
+    &::before {
+      content: "";
+      left: $np-col-gap * -.5;
+    }
+    &::after {
+      content: "";
+      right: $np-col-gap * -.5;
+    }
+  }
+  // 進度欄：進度條在上、按鈕在下（按鈕滿欄寬）
+  .library-card-side {
+    grid-column: 8 / span 3;
+    grid-row: 1;
+    display: block;
+    margin-top: 0;
+
+    .library-progress { margin: .375rem 0 1rem; }
+    .btn { width: 100%; }
+
+    &::after {
+      content: "";
+      right: $np-col-gap * -.5;
+    }
+  }
 }
 .library-card-title {
   margin-bottom: .25rem;
@@ -148,7 +278,7 @@
   }
 }
 .library-card-meta {
-  margin-bottom: .875rem;
+  margin-bottom: 0;
   font-size: $small-font-size;
   color: $slate;
 }
@@ -279,6 +409,8 @@
 .review-card-reject {
   padding-top: 1rem;
   border-top: 1px solid $rule;
+
+  .form-control { max-width: 48rem; } // 個人頁內容滿版時，輸入框不拉成整條
 }
 // 未通過原因：全文引言樣式
 .reject-quote {

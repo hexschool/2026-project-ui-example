@@ -1,29 +1,13 @@
 // ============================================================
-// 頁首：日期列＋報頭主列
-// - 日期列（≥ 992px）：左側日期、右側刊物說明，髮絲線收尾；不固定
-// - 主列（sticky）：品牌字標「現場筆記｜FieldNotes」→ 主導覽 → 搜尋、會員入口；底部報頭雙線
-// - 992px 以下：品牌靠左，右側搜尋、會員頭像、選單按鈕；選單展開為直列連結
+// 頁首：報刊的報頭
+// - ≥ 992px 兩層：
+//   報頭列（$masthead-height 96px）＝左報耳（日期）｜置中大字品牌｜右報耳（刊物說明）
+//   1px 髮絲線
+//   導覽列（68px）＝導覽置中、搜尋與會員入口靠右；底部報頭雙線
+//   整個頁首 sticky、top 是負的報頭列高度：捲動後報頭列收起，只剩導覽列＋雙線（$site-header-height 73px）
+// - 992px 以下：報耳隱藏，單列（品牌靠左，右側搜尋、會員頭像、選單按鈕）；選單展開為直列連結
 // ============================================================
 
-// ---------- 日期列 ----------
-.site-dateline {
-  border-bottom: 1px solid $rule;
-  font-size: .75rem;
-  color: $slate;
-  letter-spacing: $letter-spacing-label;
-
-  .container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    min-height: 2rem;
-  }
-  time {
-    font-variant-numeric: tabular-nums;
-  }
-}
-
-// ---------- 主列 ----------
 .site-header {
   position: sticky;
   top: 0;
@@ -37,7 +21,7 @@
   }
 }
 
-// 品牌字標：中文 Noto Serif TC 900＋英文 Newsreader，中間一條細欄線
+// 品牌字標：中文 Noto Serif TC 900＋英文 Newsreader，中間一條細欄線（992px 以下、Guideline 示範）
 .site-brand {
   display: inline-flex;
   align-items: center;
@@ -69,6 +53,22 @@
   color: $slate;
 }
 
+// 報耳：日期與刊物說明（≥ 992px 才顯示，d-none d-lg-flex）
+.site-ear {
+  align-items: center;
+  min-height: 2rem;
+  padding-block: .25rem;
+  border-block: 1px solid $rule;
+  font-size: .75rem;
+  color: $slate;
+  letter-spacing: $letter-spacing-label;
+  white-space: nowrap;
+
+  time {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
 // 主導覽
 .site-nav .nav-link {
   color: $slate;
@@ -76,24 +76,6 @@
 
   &:hover { color: $oxford; }
   &.active { color: $oxford; font-weight: $font-weight-bold; }
-}
-
-@include media-breakpoint-up(lg) {
-  .site-nav {
-    margin-left: map-get($spacers, 5);
-
-    .nav-link {
-      display: flex;
-      align-items: center;
-      min-height: 2.75rem;
-    }
-    // 目前頁：文字下方 2px 深藍線（與報頭粗線同粗）
-    .nav-link.active {
-      text-decoration: underline;
-      text-decoration-thickness: 2px;
-      text-underline-offset: .55em;
-    }
-  }
 }
 
 // 右側工具：搜尋、會員入口
@@ -140,6 +122,98 @@
   &.active {
     color: $oxford;
     box-shadow: inset 0 0 0 1px $oxford;
+  }
+}
+
+// ---------- ≥ 992px：報頭列＋導覽列 ----------
+@include media-breakpoint-up(lg) {
+  .site-header {
+    // 捲動 97px（報頭列＋髮絲線）後黏住，只剩導覽列與雙線
+    top: calc(-1 * (#{$masthead-height} + 1px));
+    // 背景三條線：報頭列下方的髮絲線（滿版）、底部報頭雙線
+    background-image:
+      linear-gradient($rule, $rule),
+      linear-gradient($oxford, $oxford),
+      linear-gradient($oxford, $oxford);
+    background-size: 100% 1px, 100% $masthead-rule-thick, 100% $masthead-rule-thin;
+    background-position: 0 $masthead-height, 0 100%, 0 calc(100% - #{$masthead-rule-thick + $masthead-rule-gap});
+    background-repeat: no-repeat;
+
+    .navbar {
+      --bs-navbar-padding-y: 0;
+    }
+    .navbar > .container {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      grid-template-rows: $masthead-height auto;
+      row-gap: 1px; // 髮絲線的位置
+      align-items: center;
+    }
+    .site-ear-start { grid-column: 1; grid-row: 1; justify-self: start; }
+    .site-ear-end   { grid-column: 3; grid-row: 1; justify-self: end; }
+
+    // 置中的大字品牌：中文在上、FieldNotes 在下，兩側短線
+    .site-brand {
+      grid-column: 2;
+      grid-row: 1;
+      flex-direction: column;
+      gap: .5rem;
+      padding: .5rem map-get($spacers, 4) 0; // 中文字形偏上，往下補 4px 讓字標在報頭列裡視覺置中
+    }
+    .site-brand-name {
+      margin-right: -.08em; // 抵銷最後一個字的字距，視覺置中
+      font-size: 2.75rem;
+      letter-spacing: .08em;
+    }
+    .site-brand-en {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding-left: 0;
+      border-left: 0;
+      font-size: 1.125rem;
+      line-height: 1;
+
+      &::before,
+      &::after {
+        content: "";
+        width: 1.75rem;
+        border-top: 1px solid $rule-strong;
+      }
+    }
+
+    // 導覽列：左格空、中格導覽（真正置中）、右格搜尋＋會員入口
+    .navbar-expand-lg .navbar-collapse {
+      display: grid !important;
+      grid-column: 1 / -1;
+      grid-row: 2;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+      min-height: $site-header-height - .3125rem; // 68px（扣掉底部雙線）
+    }
+    .site-nav {
+      grid-column: 2;
+      gap: .5rem;
+    }
+    .site-actions {
+      grid-column: 3;
+      justify-self: end;
+      margin-left: 0;
+    }
+  }
+
+  .site-nav {
+    .nav-link {
+      display: flex;
+      align-items: center;
+      min-height: 2.75rem;
+    }
+    // 目前頁：文字下方 2px 深藍線（與報頭粗線同粗）
+    .nav-link.active {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: .55em;
+    }
   }
 }
 

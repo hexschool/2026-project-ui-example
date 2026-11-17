@@ -98,6 +98,103 @@
   }
 }
 
+// ---------- 帳冊式文章列 .article-list.is-ledger（報刊分類版：文章列表、作者頁） ----------
+// 基本的 .article-item 不變（Guideline 的文章卡示範用它）；加上 .is-ledger 才拆成三格
+// <ol class="article-list is-ledger">
+//   <li class="article-item">
+//     <div class="article-item-body">
+//       <p class="kicker">權限徽章＋分類</p>
+//       <div class="article-item-main">標題 → 作者 → 導言 → 標籤 → 中繼資料</div>
+//     </div>
+//     <a class="article-item-thumb img-frame" href="…" tabindex="-1" aria-hidden="true">…</a>（選用）
+//   </li>
+// </ol>
+// - ≥ 992px：12 欄，眉標 2｜主文 7｜縮圖 3，兩條欄線畫在主文左右（主文最高，線才會貫通整列）
+//   沒有縮圖（作者頁）時自動變成 眉標 2｜主文 10，只有左側一條欄線
+// - 768–991px：眉標一整列在上，下面 主文 2｜縮圖 1
+// - 767px 以下：單欄、不放縮圖（同 .article-item）
+// .article-item-body 用 display: contents，眉標與主文直接當 li 的格子；HTML 順序不變
+.article-list.is-ledger {
+  border-top: 2px solid $oxford; // 粗線：分類版的起點
+
+  .article-item-title {
+    @include np-hl-2;
+    margin-bottom: .625rem;
+  }
+
+  @include media-breakpoint-up(md) {
+    .article-item {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      column-gap: $np-col-gap;
+      row-gap: .75rem;
+    }
+    .article-item-body {
+      display: contents;
+    }
+    .kicker {
+      grid-column: 1 / -1;
+      margin-bottom: 0;
+    }
+    .article-item-main {
+      grid-column: 1;
+      min-width: 0;
+    }
+    .article-item-thumb {
+      grid-column: 2;
+      margin-top: .375rem;
+    }
+    .article-item:not(:has(.article-item-thumb)) .article-item-main {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @include media-breakpoint-up(lg) {
+    .article-item {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      row-gap: 0;
+      padding-block: map-get($spacers, 4) + .25rem map-get($spacers, 4) + .5rem;
+    }
+    // 眉標：權限徽章疊在分類上方
+    .kicker {
+      grid-column: 1 / span 2;
+      grid-row: 1;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: .5rem;
+      margin-top: .3125rem; // 徽章頂端對齊標題第一行的字頂
+    }
+    .article-item-main {
+      grid-column: 3 / span 7;
+      grid-row: 1;
+      position: relative;
+
+      &::before,
+      &::after {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        border-left: 1px solid $rule;
+        pointer-events: none;
+      }
+      &::before {
+        content: "";
+        left: $np-col-gap * -.5;
+      }
+    }
+    .article-item:has(.article-item-thumb) .article-item-main::after {
+      content: "";
+      right: $np-col-gap * -.5;
+    }
+    .article-item:not(:has(.article-item-thumb)) .article-item-main {
+      grid-column: 3 / -1;
+    }
+    .article-item-thumb {
+      grid-column: 10 / span 3;
+      grid-row: 1;
+    }
+  }
+}
+
 // ---------- 精簡文章卡 ----------
 .story {
   position: relative;

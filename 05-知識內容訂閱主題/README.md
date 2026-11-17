@@ -16,11 +16,11 @@
 
 | 角色 | 核心流程（Notion） | 設計稿上的頁面 |
 |---|---|---|
-| **讀者** | 註冊登入 → 瀏覽文章 → 免費預覽付費文章 → 訂閱 → 查看訂閱狀態 | 首頁 → 文章列表 → 文章內頁（付費牆）→ 訂閱方案（結帳）→ 個人頁面（訂閱狀態） |
+| **讀者** | 註冊登入 → 瀏覽文章 → 免費預覽付費文章 → 訂閱 → 查看訂閱狀態 | 註冊 `register.html`／登入 `login.html`（忘記密碼 `forgot-password.html`）→ 首頁 → 文章列表 → 文章內頁（付費牆；作者卡 → 作者個人頁 `author.html`）→ 訂閱方案（結帳）→ 個人頁面（訂閱狀態） |
 | **作者** | 註冊申請成為作者 → 發布文章 → 管理自己的文章 | 個人頁面：成為作者 → 撰寫新文章（編輯器）→ 我的文章 → 內容數據 |
 | **管理員** | 審核作者申請 → 管理使用者 | 個人頁面：作者申請審核 → 使用者管理 → 文章管理 |
 
-- **前台頁面**：首頁、知識內容說明（文章列表＋文章內頁，含付費預覽牆）、訂閱方案頁面、個人頁面（讀者訂閱管理 ／ 作者文章後台與編輯器）。
+- **前台頁面**：首頁、知識內容說明（文章列表＋文章內頁，含付費預覽牆）、訂閱方案頁面、個人頁面（讀者訂閱管理 ／ 作者文章後台與編輯器）。2026-11 另補登入、註冊、作者個人頁、忘記密碼 4 頁（Notion 沒有），每套共 10 頁，見下方「頁面」。
 - **本次不包含**（Notion）：作者分潤與稿酬結算、電子報寄送、留言即時通知、多人共筆與協作編輯、文章版本回溯、企業團體訂閱。
 - 完整的使用者故事見 [`CONTENT.md`](./CONTENT.md) §2。
 
@@ -57,14 +57,16 @@
 
 風格說明逐字取自 Notion 風格表。規劃中的資料夾名稱是暫定。
 
+「已完成」是指 2026-10 的 6 頁。2026-11 起每套要補到 10 頁（新增登入、註冊、作者個人頁、忘記密碼），補頁進度以各風格 README 的頁面表為準。
+
 ### 各風格的招牌落點
 
-Notion 的「UI 視覺特點」指出每套風格最該下功夫的地方。版型 3 套一樣，差異集中在這些元件：
+Notion 的「UI 視覺特點」指出每套風格最該下功夫的地方。每頁的區塊與內容 3 套一樣；桌機欄數與區塊的排列構圖可以依風格不同（2026-11-17 起，SPEC §0），以下是各風格最該做出差異的地方：
 
 | 風格 | 最該做出差異的地方 | 提醒 |
 |---|---|---|
 | 01 純粹打字機 | 所見即所得編輯器（零干擾、浮動工具列隨選隨現）、方案卡與比較矩陣（黑白分明） | 藍色只有一個，留給可以按的東西與「訂閱限定」；黑白之外的狀態色仍要通過三重編碼與對比 |
-| 03 高端政經智庫 | 比較矩陣（細線分隔）、內容數據的漏斗圖與數據表、作者身分與權威感（作者列、作者卡、作者牆） | 報刊排版不等於縮小行高：長文行高仍 ≥ 1.8 |
+| 03 高端政經智庫 | 比較矩陣（細線分隔）、內容數據的漏斗圖與數據表、作者身分與權威感（作者列、作者卡、作者牆）；整站採**報刊排版**（2026-11-17 使用者要求 01、03 排版要有落差）：報頭式頁首（品牌置中、導覽在報頭下方）、12 欄網格與欄線、頭條／次條／短訊的標題階層，首頁像報紙頭版、方案頁以比較矩陣為主角，細節見該風格 README 的「排版語言」 | 報刊排版不等於縮小行高：長文行高仍 ≥ 1.8 |
 | 04 溫暖心靈慢讀 | 長文排版（行距寬鬆、柔光護眼）、個人頁面的訂閱週期與取消路徑（溫和而清晰） | wireframe 本身是暖色調，但**不要整組沿用 wireframe 的色票**（磚紅不是焦糖駝色），依 Notion 色系重新定義。中文楷體不要用 Google Fonts 的霞鶩文楷 TC：它會把「為」「真」顯示成「爲」「眞」的舊字形，可改用以教育部標準字形為準的芫荽（Iansui） |
 
 ## 每套風格的共同規範
@@ -73,15 +75,15 @@ Notion 的「UI 視覺特點」指出每套風格最該下功夫的地方。版�
 
   | 項目 | 規範 |
   |---|---|
-  | 頁面 | 6 個 HTML，每頁完整包含頁首與頁尾 |
+  | 頁面 | 10 個 HTML（Notion 的 5 頁拆成 6 個檔案，2026-11 再補 4 頁），每頁完整包含頁首與頁尾 |
   | 樣式 | `scss/_variables.scss` 是 design token；`main.scss` 載入順序同 01 電商（functions → variables → bootstrap → icons → base → components → pages） |
-  | JS | `js/main.js` 只做 `WIREFRAME_SPEC.md` §2.8 列的 5 件事（設計稿切換器、閱讀進度條、字級調整、月／年切換、作者文章篩選），其餘互動用 Bootstrap 的 `data-bs-*` |
+  | JS | `js/main.js` 只做 `WIREFRAME_SPEC.md` §2.8 列的 5 件事（設計稿切換器、閱讀進度條、字級調整、月／年切換、作者文章篩選），其餘互動用 Bootstrap 的 `data-bs-*`；2026-11 補的 4 頁不新增 JS |
   | 圖表 | 閱讀漏斗等圖表用 inline SVG 或 CSS 畫，不用圖表套件 |
   | 編輯器 | 靜態的介面設計：浮動工具列、＋插入選單、免費預覽分隔線、設定面板直接畫在畫面上，不需要真的能編輯 |
   | 字體 | 可用 Google Fonts（中文字型要確認有載入），寫進 Guideline |
   | 主題 | 單一主題（淺色或深色由風格決定），不跟著作業系統切換深色模式 |
 
-- **頁面**（Notion 規定的 5 頁，「知識內容說明」拆成 2 個檔案）：
+- **頁面**（共 10 頁：Notion 規定的 5 頁，「知識內容說明」拆成 2 個檔案；後 4 頁是 2026-11 補的，Notion 沒有，版型見 SPEC §3.06～3.09、文案見 CONTENT §10.10～10.13）：
 
   | 頁面 | 檔名 |
   |---|---|
@@ -91,6 +93,13 @@ Notion 的「UI 視覺特點」指出每套風格最該下功夫的地方。版�
   | 文章內頁（含付費預覽牆，未訂閱／已訂閱兩種狀態） | `article.html` |
   | 訂閱方案（方案卡、比較矩陣、結帳確認、FAQ） | `pricing.html` |
   | 個人頁面（訂閱狀態、收藏與閱讀紀錄、我的文章、編輯器、內容數據、作者申請、平台管理；讀者／作者／管理員三種角色） | `account.html` |
+  | 登入（2026-11 補；從付費牆「已經是訂閱者了？登入」進入） | `login.html` |
+  | 註冊（2026-11 補；從方案頁「免費註冊」與登入頁進入，旁邊放免費會員權益摘要） | `register.html` |
+  | 作者個人頁（2026-11 補；以陳柏諺示範，從文章內頁作者卡「查看全部文章」進入） | `author.html` |
+  | 忘記密碼（2026-11 補；從登入頁進入，含已寄出、設定新密碼、連結已失效的狀態示意） | `forgot-password.html` |
+
+  - 結帳與付款結果不另做頁，都在 `pricing.html#checkout`。頁首仍不放登入／註冊按鈕（示意使用者已登入）。
+  - 補頁時原頁只改 3 條連結（付費牆登入、作者卡查看全部文章、方案頁免費註冊，SPEC §1.1），`guideline.html` 不動；新頁用到 Guideline 沒有的元件，寫在風格 README 的「共用類別」。
 
 - **文案與假資料**：全部取自 [`CONTENT.md`](./CONTENT.md)，直接寫在各頁 HTML，**逐字使用**。Notion 沒有的介面文字、示意內文、留言與管理員資料也統一在 CONTENT.md §10，3 套用同一份，不要各自發明。跨頁要一致的數字列在 SPEC §2.9。
 - **圖片**：照 [`IMAGES.md`](./IMAGES.md) 的 17 張（檔名一致），每套在自己的 `images/` 用自己的 `STYLE` 生成；沒有照片的人用字首頭像。不要額外加 Hero 大圖或插畫。
@@ -107,13 +116,13 @@ Notion 的「UI 視覺特點」指出每套風格最該下功夫的地方。版�
 
 1. **複製骨架**：把 `../01-電商主題/01-luxury-style/` 複製成新資料夾（例如 `03-thinktank-style/`），刪掉 `node_modules/`、`images/` 裡的電商圖片、10 個電商 `.html`、`scss/pages/` 與 `scss/components/` 裡電商專用的 partial（購物車、結帳、商品卡、訂單摘要等）。保留 `package.json`、`scripts/`、`templates/`、`scss/main.scss`、`scss/_base.scss` 的架構與 `js/vendor/`。
 2. **改專案資訊**：`package.json` 的 `name`、`description`；`templates/page.html` 的 `<title>`、description、字體、`theme-color`、favicon，以及**整個頁首與頁尾**（照 SPEC §2.2、§2.3：首頁、文章列表、訂閱方案＋搜尋＋會員入口；頁尾讀者／作者／平台 3 欄，沒有設計稿頁面導覽）。
-3. **改檢查腳本**：`scripts/check-layout.mjs` 的區塊名稱（沒有公告列）與目前頁對應：`article.html` 的目前頁是 `articles.html`（只加 `active`），`guideline.html` 不標示。
+3. **改檢查腳本**：`scripts/check-layout.mjs` 的區塊名稱（沒有公告列）與目前頁對應：`article.html`、`author.html` 的目前頁是 `articles.html`（只加 `active`），`guideline.html`、`login.html`、`register.html`、`forgot-password.html` 不標示。
 4. **重寫 `scss/_variables.scss`**：整套風格的 design token（色彩、權限色與狀態色、字體、長文字級與行高、圓角、陰影、元件變數）。
-5. **建立 6 個頁面**：從 `templates/page.html` 複製，依 `_wireframe/WIREFRAME_SPEC.md` 的區塊順序與欄數實作，文案貼 `CONTENT.md`。`scss/pages/` 每頁一個 partial（例如 `_guideline`、`_home`、`_articles`、`_article`、`_pricing`、`_account`），共用元件放 `scss/components/`（例如頁首、頁尾、文章卡、權限徽章、付費牆、方案卡、編輯器、設計稿狀態示意）。
+5. **建立 10 個頁面**：從 `templates/page.html` 複製，依 `_wireframe/WIREFRAME_SPEC.md` 的區塊與內容實作（欄數與構圖是建議，照這套風格自己的排版語言，SPEC §0），文案貼 `CONTENT.md`。`scss/pages/` 每頁一個 partial（例如 `_guideline`、`_home`、`_articles`、`_article`、`_pricing`、`_account`、`_author`；登入、註冊、忘記密碼版型相近，共用一個 `_auth`），共用元件放 `scss/components/`（例如頁首、頁尾、文章卡、權限徽章、付費牆、方案卡、編輯器、設計稿狀態示意）。
 6. **重寫 `js/main.js`**：只做 SPEC §2.8 的 5 件事。
 7. **生成圖片**：改 `scripts/generate-images.mjs`，`JOBS` 換成 `IMAGES.md` 的 17 張、`STYLE` 換成本風格的調性，`sips` 改成「先裁切再縮放」（封面 1200 × 630、配圖 16:9、頭像 600 × 600）；執行 `npm run images`。另外畫一個 `images/favicon.svg`。
 8. **寫 Guideline**：12 節照 SPEC §7，示範都用頁面真的在用的 class。
-9. **寫風格 README**：概念、頁面清單（6 個檔名、兩個設計稿切換器的網址參數）、檔案結構、共用類別、Design token 摘要、圖片說明（格式同 `01-luxury-style/README.md`）。
+9. **寫風格 README**：概念、頁面清單（10 個檔名、兩個設計稿切換器的網址參數）、檔案結構、共用類別、Design token 摘要、圖片說明（格式同 `01-luxury-style/README.md`）。
 10. **驗收**：跑 `npm run check`，照 SPEC §10 的驗收清單逐項確認，每頁截 390 與 1920 看過。
 11. 回到本檔，更新「風格清單」的狀態。
 
@@ -149,6 +158,15 @@ article.html?view=subscribed    ← 已訂閱（沒有付費牆）
 account.html                    ← 讀者
 account.html?role=author        ← 作者
 account.html?role=admin         ← 管理員
+```
+
+2026-11 補的 4 頁（狀態都用頁面下方的「設計稿狀態示意」呈現，沒有網址參數）：
+
+```
+login.html              ← 登入（送出 → article.html?view=subscribed）
+register.html           ← 註冊（送出 → account.html）
+forgot-password.html    ← 忘記密碼（送出 → 本頁的「重設信已寄出」示意）
+author.html             ← 作者個人頁（陳柏諺）
 ```
 
 wireframe 參考：直接開 `_wireframe/index.html`（需要網路載入 Bootstrap CDN），或看 `_wireframe/screenshots/`。
