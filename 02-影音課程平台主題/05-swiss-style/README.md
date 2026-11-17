@@ -129,7 +129,7 @@ npm run images     # 重新生成圖片（需要已登入的 codex CLI，換圖�
 
 | 類別 | 用途 | 位置 |
 |---|---|---|
-| `.grid-guides`、`.grid-guides-dark` | **可見的網格**：加在 `.container` 上，背景畫出 12 條欄線（768px 以上）；用在課程列表頁首、首頁學得完的理由、Guideline、頁尾 | `_base.scss` |
+| `.grid-guides`、`.grid-guides-dark` | **可見的網格**：加在 `.container` 上，背景畫出 12 條欄線（768px 以上）；用在各頁的頁首（課程列表、註冊、購買課程、付款結果、我的課程、購買紀錄）、首頁學得完的理由、Guideline、頁尾 | `_base.scss` |
 | `.section`、`.section-head`（`-lead`、`-aside`） | 區塊上下留白 64／96px；區塊標題列（上緣 2px 墨黑線，左標題、右說明或連結） | `_base.scss` |
 | `.page-header`、`.page-lead` | 內頁頁首：麵包屑 →（標題）→ 一句說明 | `_base.scss` |
 | `.rule-heavy`、`.rule-thin` | 2px 墨黑結構線、1px 細線 | `_base.scss` |
