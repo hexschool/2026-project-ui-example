@@ -1,0 +1,156 @@
+// ============================================================
+// 票券卡（TicketCard）＝直式行李吊牌：頂端牛皮紙窄帶＋鉚釘孔，帆布本體
+// 我的票券的列表（掛在營繩上，繩子畫在 pages/_tickets.scss）與狀態示意共用
+// 順序：4:3 縮圖（左上一枚牛皮紙郵戳日期，裝飾）→ 狀態標籤 → 活動名（h2，.stretched-link 整張可點）→
+//       日期、場地、票種張數（手繪小圖示）→ 訂單編號 → 附註 → 查看票券
+// 狀態（加在 .ticket-tag）：
+//   有效         預設（.tag-success）
+//   已使用、已過期 .is-used／.is-expired：整張換牛皮紙、窄帶換石色、縮圖 grayscale(.6)；字只用樹皮與次要字（牛皮紙上 9.42／4.99）
+//   活動已取消    .is-cancelled：虛線框（狀態示意用）
+// hover／focus：框線換炭橘＋紙張浮起陰影；不位移、不放大、不展開
+// <article class="ticket-tag tag-card tag-card-strip stitch" aria-labelledby="t1">
+//   <div class="tag-card-body">
+//     <div class="ticket-tag-media"><img class="inset-photo" src="…" alt=""><span class="postmark" aria-hidden="true">…</span></div>
+//     <p class="ticket-tag-state"><span class="tag tag-success"><i class="bi bi-ticket-perforated"></i>有效</span></p>
+//     <h2 id="t1" class="ticket-tag-title"><a class="stretched-link" href="ticket.html">午夜噪音祭 Vol.7</a></h2>
+//     <ul class="ticket-tag-meta">…</ul>
+//     <div class="ticket-tag-foot">
+//       <p class="ticket-tag-order num">訂單 #SO-20261018-4471</p>
+//       <p class="ticket-tag-note">附註（選用）</p>
+//       <a class="btn btn-outline-dark btn-sm ticket-tag-btn" href="ticket.html">查看票券</a>
+//     </div>
+//   </div>
+// </article>
+// ============================================================
+.ticket-tag {
+  height: 100%;
+  transition: border-color .15s ease, box-shadow .15s ease;
+
+  .tag-card-body {
+    display: flex;
+    flex-direction: column;
+    padding-inline: 1.25rem;
+  }
+  &:hover,
+  &:focus-within {
+    border-color: $ember;
+    box-shadow: $shadow-paper-lg;
+  }
+}
+.ticket-tag-media {
+  position: relative;
+  margin-bottom: 1rem;
+
+  .inset-photo { aspect-ratio: 4 / 3; }
+  .postmark {
+    position: absolute;
+    top: -.5rem;
+    left: -.5rem;
+    width: 3.5rem;
+    height: 3.5rem;
+
+    @include media-breakpoint-up(md) { transform: rotate(-3deg); }
+  }
+  .postmark-day { font-size: 1.3125rem; }
+}
+.ticket-tag-state {
+  margin: 0 0 .5rem;
+}
+.ticket-tag-title {
+  margin-bottom: .625rem;
+  font-family: $font-family-base;
+  font-size: 1.125rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.45;
+  letter-spacing: $letter-spacing-body;
+
+  @include media-breakpoint-up(lg) { font-size: 1.25rem; }
+
+  a {
+    color: $bark;
+    text-decoration: none;
+  }
+}
+.ticket-tag:hover .ticket-tag-title a {
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: $flare;
+  text-underline-offset: .25em;
+}
+// 日期、場地、票種：每列前一個 20px 手繪小圖示
+.ticket-tag-meta {
+  margin: 0 0 .75rem;
+  padding: 0;
+  list-style: none;
+  font-size: .9375rem;
+  line-height: 1.6;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+
+    + li { margin-top: .3125rem; }
+  }
+  .hand-icon {
+    --hand-size: 1.25rem;
+    margin-top: .125rem;
+  }
+}
+// 底部：訂單編號 → 附註 → 查看票券；整段貼在卡片底部，同一列的按鈕對齊
+.ticket-tag-foot {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  padding-top: .75rem;
+  background: $wave-line-faint left top / $wave-tile repeat-x;
+}
+.ticket-tag-order {
+  margin: 0;
+  color: var(--bs-secondary-color);
+  font-size: .875rem;
+}
+.ticket-tag-note {
+  display: flex;
+  align-items: flex-start;
+  gap: .375rem;
+  margin: .375rem 0 0;
+  font-size: .875rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.6;
+
+  .bi { flex-shrink: 0; line-height: inherit; }
+}
+// 查看票券：疊在 stretched-link 之上（自己也是一個可以按的連結）
+.ticket-tag-btn {
+  position: relative;
+  z-index: 2;
+  align-self: flex-start;
+  margin-top: 1rem;
+
+  @include media-breakpoint-down(sm) { align-self: stretch; }
+}
+
+// 已使用、已過期：牛皮紙整張、石色窄帶、縮圖去色
+.ticket-tag.is-used,
+.ticket-tag.is-expired {
+  background-color: $kraft;
+  background-image: linear-gradient($stone 0 2.5rem, transparent 2.5rem);
+
+  .inset-photo { filter: grayscale(.6); }
+  .ticket-tag-meta,
+  .ticket-tag-title a { color: $bark; }
+  .ticket-tag-order,
+  .ticket-tag-note { color: $bark-muted; }
+  .ticket-tag-foot { background-image: $wave-line; }
+  .postmark { background-color: $canvas; }
+}
+.ticket-tag.is-cancelled {
+  border-style: dashed;
+
+  .alert {
+    margin: .25rem 0 0;
+    padding: .75rem .875rem;
+    font-size: .875rem;
+  }
+}

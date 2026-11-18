@@ -1,0 +1,168 @@
+// ============================================================
+// 票種卡（TicketTypeCard）＝裝備清單的一列：左邊一個 28px 手繪勾選圈、中間名稱價格附註剩餘、右邊數量或按鈕
+// 數量加減器（QuantityStepper）.qty
+// 狀態（勾選圈＋文字＋框線三者並用，不只靠顏色）：
+//   可購買（未選）     預設：帆布底、空圈
+//   已選（數量 ≥ 1）   .is-selected：橘淡底＋2px 樹皮框（外加 .5px 陰影，不改尺寸）＋橘底打勾 .check-mark.is-done
+//   即將完售（≤ 25%）  卡片不變，剩餘列換 .remaining.is-scarce（火光橘條＋火焰＋粗體）
+//   已售罄             .is-sold-out：牛皮紙底＋虛線框、名稱與價格刪除線、.check-mark.is-soldout、按鈕停用「已售完」
+//   尚未開賣           .is-upcoming：虛線框、.check-mark.is-pending、沒有加減器，改「開賣前提醒我」
+// js/main.js 第 4 項：數量改變時切換 .is-selected、.check-mark 的 is-done、[data-picked-count] 與「−／＋」停用
+// <article class="ticket-type is-selected" aria-labelledby="ttPresale" data-ticket="預售全票" data-price="1500" data-stock="112">
+//   <span class="check-mark is-done" aria-hidden="true"></span>
+//   <div class="ticket-type-main">
+//     <h3 id="ttPresale" class="ticket-type-name">預售全票</h3>
+//     <p class="ticket-type-price price">NT$ 1,500</p>
+//     <p class="ticket-type-note">含限量螢光手環</p>
+//     <div class="remaining">…</div>
+//   </div>
+//   <div class="ticket-type-control">
+//     <div class="qty" role="group" aria-label="預售全票數量">
+//       <button class="qty-btn" type="button" data-qty-step="-1" aria-label="減少預售全票數量">…</button>
+//       <output class="qty-value">2</output>
+//       <button class="qty-btn" type="button" data-qty-step="1" aria-label="增加預售全票數量">…</button>
+//     </div>
+//     <p class="ticket-type-picked">已選 <span data-picked-count>2</span> 張</p>
+//   </div>
+// </article>
+// ============================================================
+.ticket-types {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ticket-type {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "mark main" ". control";
+  column-gap: .875rem;
+  row-gap: .875rem;
+  padding: 1.25rem;
+  border: 1.5px solid $bark;
+  border-radius: $border-radius-lg;
+  background-color: $canvas;
+  color: $bark;
+  transition: background-color .15s ease, box-shadow .15s ease;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "mark main control";
+    column-gap: 1rem;
+    padding: 1.25rem 1.375rem;
+  }
+
+  > .check-mark {
+    grid-area: mark;
+    margin-top: .125rem;
+  }
+
+  &.is-selected {
+    background-color: $selected-bg;
+    box-shadow: 0 0 0 .5px $selected-border;
+  }
+  &.is-sold-out {
+    border-style: dashed;
+    background-color: $soldout-bg;
+
+    s { text-decoration-thickness: 1.5px; }
+  }
+  &.is-upcoming {
+    border-style: dashed;
+  }
+}
+.ticket-type-main {
+  grid-area: main;
+  min-width: 0;
+
+  .remaining { margin-top: .75rem; }
+}
+.ticket-type-name {
+  margin-bottom: .125rem;
+  font-family: $font-family-base;
+  font-size: 1.125rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.45;
+}
+.ticket-type-price {
+  margin-bottom: .25rem;
+  font-size: 1.375rem;
+}
+.ticket-type-note,
+.ticket-type-status {
+  margin: 0;
+  font-size: .875rem;
+  line-height: 1.6;
+}
+.ticket-type-note { color: var(--bs-secondary-color); }
+.ticket-type.is-sold-out .ticket-type-note { color: $bark-muted; } // 牛皮紙上 4.99
+.ticket-type-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .5rem;
+  margin-bottom: .25rem;
+  font-weight: $font-weight-bold;
+}
+.ticket-type-control {
+  grid-area: control;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: .5rem;
+
+  @include media-breakpoint-up(sm) { min-width: 8.75rem; }
+}
+.ticket-type-picked {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  margin: 0;
+  color: $ember;
+  font-size: .8125rem;
+  font-weight: $font-weight-bold;
+
+  &[hidden] { display: none; }
+}
+
+// ---------- 數量加減器：12px 圓角、樹皮框；每顆按鈕 44 × 44px ----------
+.qty {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1.5px solid $bark;
+  border-radius: $border-radius;
+  background-color: $canvas;
+}
+.qty-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: $bark;
+  font-size: 1.125rem;
+  transition: background-color .15s ease, color .15s ease;
+
+  &:first-child { border-radius: calc(#{$border-radius} - 1.5px) 0 0 calc(#{$border-radius} - 1.5px); }
+  &:last-child { border-radius: 0 calc(#{$border-radius} - 1.5px) calc(#{$border-radius} - 1.5px) 0; }
+  &:hover:not(:disabled) { background-color: $orange-soft; color: $ember; }
+  &:focus-visible { outline-offset: -4px; }
+  &:disabled {
+    background-color: $mud;
+    color: $bark-muted;
+    cursor: not-allowed;
+  }
+}
+.qty-value {
+  display: grid;
+  place-items: center;
+  min-width: 2.75rem;
+  border-inline: 1.5px solid $bark;
+  font-family: $font-family-slab;
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums;
+}

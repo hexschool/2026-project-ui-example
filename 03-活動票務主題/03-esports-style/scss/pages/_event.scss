@@ -1,0 +1,556 @@
+// ============================================================
+// 活動細節 event.html（class 前綴 ev-）
+// 構圖（和既有 3 套的差別：多一條情報分頁列；票種區 5 : 7；已選票券是底部出擊列；座位是六角磚）：
+// 1. 麵包屑 → 情報分頁列（sticky top 84px、高 48px，錨點到各區 H2，ScrollSpy 標目前段）
+// 2. 8 : 4：左主視覺 16:9（手機 4:3）→ 標籤列 → H1 → 副標 → 活動介紹；右參戰面板（sticky，top 148px）＋快速資訊
+//    < 992px：主視覺 → 標題 → 參戰面板 → 快速資訊 → 活動介紹（CSS Grid 區域，不複製內容）
+// 3. 票種與選位：$carbon 滿寬帶，≥ 992px 5 : 7（票種卡直列｜座位圖），區塊底部 sticky 出擊列
+// 4. 場地 7 : 5：戰術地圖 SVG｜交通卡
+// 5. 主辦方：HUD 面板內 5 : 7（六角字母章｜Oxanium 戰績＋括角縮圖）
+// 6. FAQ 4 : 8：退票題 $arc-tint 底＋左側 4px 金屬藍條＋盾牌
+// 7. 設計稿狀態示意：4 張縮小版參戰面板
+// ============================================================
+
+$ev-anchor-offset: $sticky-bar-top + $sticky-bar-height + 1rem; // 148px：頁首＋情報分頁列＋16px
+
+.ev-breadcrumb {
+  padding-block: map-get($spacers, 4) map-get($spacers, 3);
+}
+// 錨點（含頁尾「購票須知」連到 #faq）捲動後，H2 不被頁首與情報分頁列蓋住
+// <html> 已經有 scroll-padding-top: $sticky-top-offset（96px），scroll-margin 會再加上去，所以這裡只補差額（52px）
+.ev-anchor {
+  scroll-margin-top: $ev-anchor-offset - $sticky-top-offset;
+}
+
+// ---------- 1. 情報分頁列 ----------
+.ev-intel {
+  position: sticky;
+  top: $sticky-bar-top;
+  z-index: $zindex-sticky;
+  margin-bottom: map-get($spacers, 4);
+}
+.ev-intel-bar {
+  @include brackets-on(after, 0);
+  --bracket: #{$bracket-lit};
+  height: $sticky-bar-height;
+  border: 1px solid $gunmetal;
+  background-color: rgba($carbon, .94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.ev-intel-nav {
+  flex-wrap: nowrap;
+  height: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+
+  .nav-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding-inline: 1.125rem;
+    color: $text-muted;
+    font-size: .9375rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out;
+
+    // 段與段之間的斜分隔
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 30%;
+      bottom: 30%;
+      width: 1px;
+      background: $gunmetal;
+      transform: skewX($skew);
+    }
+    // 目前段：底部金屬藍光線
+    &::after {
+      content: "";
+      position: absolute;
+      inset: auto .75rem -1px;
+      height: 2px;
+      background: transparent;
+      transition: background-color .15s ease-in-out;
+    }
+    &:hover {
+      background-color: $carbon-hi;
+      color: $text;
+    }
+    &:focus-visible {
+      outline-offset: -2px;
+    }
+    &.active {
+      color: $text;
+
+      &::after {
+        background-color: $arc;
+        box-shadow: 0 0 10px rgba($arc, .8);
+      }
+    }
+  }
+  .nav-item:first-child .nav-link::before { display: none; }
+
+  @include media-breakpoint-up(lg) {
+    padding-left: .5rem;
+
+    .nav-link { padding-inline: 1.5rem; }
+  }
+}
+
+// ---------- 2. 主視覺＋參戰面板＋活動介紹 ----------
+.ev-top {
+  display: grid;
+  grid-template-areas:
+    "overview"
+    "aside"
+    "about";
+  gap: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: auto 1fr;
+    grid-template-areas: none;
+    column-gap: 1.5rem;
+    row-gap: 0;
+  }
+}
+.ev-overview {
+  grid-area: overview;
+
+  @include media-breakpoint-up(lg) {
+    grid-area: 1 / 1 / 2 / 9;
+  }
+}
+.ev-aside {
+  grid-area: aside;
+
+  @include media-breakpoint-up(lg) {
+    grid-area: 1 / 9 / 3 / 13;
+  }
+}
+.ev-about {
+  grid-area: about;
+
+  @include media-breakpoint-up(lg) {
+    grid-area: 2 / 1 / 3 / 9;
+    padding-top: map-get($spacers, 7);
+  }
+}
+// ≥ 992px 只讓參戰面板 sticky：參戰面板＋快速資訊一起有 800px 高，放不進 900px 高的視窗（扣掉 148px）
+// 外層撐滿右欄整個高度當 sticky 的範圍；快速資訊照常捲動，滑進參戰面板下面
+// 參戰面板上緣往上 16px 用頁面底色蓋住（box-shadow），快速資訊不會從情報分頁列與面板之間的縫露出來
+.ev-aside-stack {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+
+  @include media-breakpoint-up(lg) {
+    height: 100%;
+
+    > .buy-card {
+      position: sticky;
+      top: $ev-anchor-offset;
+      z-index: 2;
+      box-shadow: 0 -1rem 0 $obsidian;
+    }
+  }
+}
+
+.ev-hero-media {
+  aspect-ratio: 4 / 3;
+
+  @include media-breakpoint-up(lg) {
+    aspect-ratio: 16 / 9;
+  }
+  img { object-position: 50% 40%; }
+}
+.ev-tags {
+  margin-top: map-get($spacers, 4);
+}
+.ev-title {
+  margin: map-get($spacers, 3) 0 map-get($spacers, 2);
+}
+.ev-subtitle {
+  margin: 0;
+  color: $text-muted;
+  font-size: $lead-font-size;
+  line-height: 1.7;
+}
+
+.ev-about {
+  padding-bottom: $section-space-sm;
+
+  @include media-breakpoint-up(lg) {
+    padding-bottom: $section-space-lg;
+  }
+  .hud-heading { margin-bottom: map-get($spacers, 4); }
+}
+.ev-about-text {
+  max-width: 42em;
+  margin-bottom: map-get($spacers, 4);
+  font-size: 1.0625rem;
+  line-height: 1.85;
+}
+.ev-about-figure {
+  aspect-ratio: 21 / 9;
+  margin: 0 0 map-get($spacers, 5);
+}
+.ev-about-sub {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: map-get($spacers, 3);
+  font-family: $font-family-base;
+  font-size: 1.125rem;
+
+  &::before {
+    content: "";
+    width: .5rem;
+    height: .5rem;
+    background: $arc;
+  }
+}
+// 演出陣容：8 個平行四邊形名牌
+.ev-lineup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem .375rem;
+  margin: 0;
+  padding: 0 .25rem;
+  list-style: none;
+
+  li {
+    @include parallelogram(.25rem);
+    --para-border: #{$control};
+    --para-bg: #{$carbon};
+    padding: .5rem 1.125rem;
+    font-family: $font-family-display;
+    font-size: .9375rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: .03em;
+  }
+}
+// 時間流程：左側直線＋方形節點，Oxanium 時間
+.ev-timeline {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: .75rem;
+    bottom: .75rem;
+    left: .3125rem;
+    width: 1px;
+    background: linear-gradient($arc, $gunmetal);
+  }
+  li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 4.75rem 1fr;
+    align-items: baseline;
+    padding: .5rem 0 .5rem 1.75rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 1.0625rem;
+      left: 0;
+      width: .6875rem;
+      height: .6875rem;
+      border: 1px solid $arc;
+      background: $obsidian;
+      transform: rotate(45deg);
+    }
+    &:first-child::before {
+      background: $arc;
+      box-shadow: 0 0 8px rgba($arc, .7);
+    }
+  }
+  time {
+    color: $arc-hi;
+    font-family: $font-family-display;
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// ---------- 3. 票種與選位 ----------
+.ev-tickets {
+  .hud-heading { margin-bottom: map-get($spacers, 4); }
+}
+.ev-order-max {
+  @include parallelogram(.25rem);
+  --para-border: #{$control};
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  padding: .375rem 1rem;
+  color: $text-muted;
+  font-size: .875rem;
+  font-weight: 500;
+
+  .bi { color: $arc; }
+}
+.ev-seat-demo {
+  margin-top: map-get($spacers, 4);
+  padding: map-get($spacers, 4);
+}
+// .ev-sortie-range 只包票種卡、座位圖與出擊列：出擊列的 sticky 範圍從這裡開始，不會蓋住區塊標題（不需要樣式）
+
+// ---------- 4. 場地 ----------
+// 地圖 4:3；場地照片 ≥ 768px 疊在地圖右上角（SVG 右上角只有街廓），< 768px 接在地圖下方
+.ev-map {
+  position: relative;
+}
+.ev-map-img {
+  aspect-ratio: 4 / 3;
+}
+.ev-venue-photo {
+  aspect-ratio: 16 / 9;
+  margin-top: 1rem;
+
+  @include media-breakpoint-up(md) {
+    @include brackets-on(after, 0);
+    --bracket: #{$bracket-lit};
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 40%;
+    margin: 0;
+    border-color: $arc;
+    box-shadow: 0 16px 32px -8px rgba(#000, .7);
+  }
+}
+.ev-venue {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+}
+// 卡片比地圖高時，「開啟導航」貼齊卡片底部
+.ev-venue-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: map-get($spacers, 4);
+
+  ul {
+    margin-bottom: 0;
+    padding-left: 1.125rem;
+    font-size: .9375rem;
+
+    li::marker { color: $arc; }
+  }
+  > p {
+    margin-bottom: 0;
+    font-size: .9375rem;
+  }
+  .btn {
+    margin-top: auto;
+  }
+  > :nth-last-child(2) {
+    margin-bottom: map-get($spacers, 4);
+  }
+}
+.ev-venue-name {
+  margin-bottom: .25rem;
+  font-size: 1.375rem;
+}
+.ev-venue-address {
+  margin-bottom: 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid $gunmetal;
+  color: $text-muted;
+  font-size: .9375rem;
+}
+.ev-venue-label {
+  margin: 1.125rem 0 .375rem;
+  color: $arc-hi;
+  font-family: $font-family-base;
+  font-size: .875rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+// ---------- 5. 主辦方 ----------
+.ev-org {
+  padding: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    padding: 2.5rem;
+  }
+}
+.ev-org-id {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.ev-org-logo {
+  font-family: $font-family-display;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+.ev-org-name {
+  margin: 0;
+  font-size: 1.375rem;
+  line-height: 1.4;
+}
+.ev-org-bio {
+  margin-bottom: 1.5rem;
+  color: $text-muted;
+}
+.ev-org-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+// 戰績：3 張 StatCard，Oxanium 大數字（其餘文字照 Notion）
+.ev-stats {
+  display: grid;
+  gap: .75rem;
+  margin: 0 0 .75rem;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.ev-stat {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: .375rem;
+  height: 100%;
+  margin: 0;
+  padding: .875rem 1rem 1rem;
+  border: 1px solid $gunmetal;
+  border-top: 2px solid $arc;
+  background-color: $carbon;
+  color: $text-muted;
+  font-size: .8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+
+  // ≥ 576px：第一段（已舉辦）自成一行當標籤，數字與單位（38 場活動）在第二行
+  // < 576px：三張直排，每張一列（標籤靠左、數字與單位靠右）；DOM 順序都不變
+  span:first-child {
+    margin-right: auto;
+
+    @include media-breakpoint-up(sm) {
+      flex-basis: 100%;
+      margin: 0 0 .375rem;
+    }
+  }
+  @include media-breakpoint-down(sm) {
+    align-items: center;
+    padding-block: .75rem;
+    border-top-width: 1px;
+    border-left: 2px solid $arc;
+  }
+  b {
+    color: $text;
+    font-family: $font-family-display;
+    font-size: clamp(1.5rem, 1rem + 1.4vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+}
+.ev-org-thumbs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+// ---------- 6. FAQ ----------
+.ev-faq-heading {
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset + 3.5rem;
+  }
+}
+.ev-faq {
+  border-top: 1px solid $gunmetal;
+
+  .accordion-item {
+    border-width: 0 0 1px;
+  }
+  .accordion-button {
+    gap: .875rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+  .accordion-body {
+    color: $text-muted;
+    line-height: 1.85;
+
+    // 答案和題目文字對齊（跳過編號格）
+    @include media-breakpoint-up(sm) {
+      padding-left: 3.75rem;
+    }
+  }
+  // 退票題：強調樣式（底色＋左邊框＋盾牌圖示），答案與其他題同字級
+  .is-emphasis {
+    border-left: 4px solid $arc;
+    background-color: $arc-tint;
+
+    .accordion-button {
+      background-color: transparent;
+      color: $text;
+    }
+    .accordion-body { color: $text; }
+    .ev-faq-num {
+      border-color: $arc;
+      background-color: $arc;
+      color: $void;
+    }
+  }
+}
+.ev-faq-num {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid $control;
+  color: $arc-hi;
+  font-family: $font-family-display;
+  font-size: .8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- 7. 設計稿狀態示意 ----------
+.ev-demo-grid > * {
+  display: flex;
+  flex-direction: column;
+}
+.ev-demo {
+  padding-bottom: $section-space-sm;
+
+  @include media-breakpoint-up(lg) {
+    padding-bottom: $section-space-lg;
+  }
+}

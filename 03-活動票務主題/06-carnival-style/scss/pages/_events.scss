@@ -1,0 +1,376 @@
+// ============================================================
+// events.html 活動列表（class 前綴 ev-list-）
+// 1 頁首區：奶油黃帶、全部置中：麵包屑 → H1「探索活動」（鮮黃貼紙）→ 膠囊搜尋列；下緣奶油扇形
+// 2 設施代幣列（活動類型）：8 顆 72px 圓代幣＋下方標籤，一列置中；放不下時在自己的容器內橫向捲動
+//   js/main.js #2 的 data-type-filter／data-filter／aria-pressed 綁在這裡（必做的篩選）
+// 3 工具列（不 sticky，香草膠囊托盤）：左「共 8 場活動」＋已套用標籤；右「篩選與排序」→ Offcanvas（由右滑出，所有寬度都用）
+// 4 結果：≥ 1200px 每列 3 張、768～1199px 2 張、手機 1 張直式入場票（.admit，$shadow-ticket）
+// 5 狀態示意：篩選後沒有活動時
+// 不用左側篩選欄（01、02、04 都是 3 : 9 側欄＋橫式卡）
+// ============================================================
+
+// ---------- 1. 頁首區 ----------
+.ev-list-head {
+  position: relative;
+  padding-block: 2.25rem 3.75rem;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: 3rem 4.5rem;
+  }
+
+  // 下緣奶油扇形：從頁面底色往上鼓
+  &::after {
+    @include scallop(bottom, $cream, $scallop-r-sm);
+  }
+  .page-head {
+    padding-block: 0 2rem;
+  }
+  .search-bar {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.ev-list-body {
+  padding-bottom: $section-padding-y-sm;
+  @include media-breakpoint-up(lg) { padding-bottom: $section-padding-y-lg; }
+}
+
+// ---------- 2. 設施代幣列（活動類型） ----------
+.ev-list-types {
+  padding-top: 2.5rem;
+
+  @include media-breakpoint-up(lg) {
+    padding-top: 3rem;
+  }
+}
+.ev-list-types-title {
+  margin-bottom: 1rem;
+  color: $navy-muted;
+  font-size: .9375rem;
+  font-weight: 700;
+  text-align: center;
+}
+// 橫向捲動的外框：裡面的列寬度剛好包住代幣，放得下時置中、放不下時從左邊開始捲
+.ev-list-types-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: .5rem .25rem 1rem;
+  scrollbar-color: $control transparent;
+  @include bleed-x;
+}
+.ev-list-types-list {
+  display: flex;
+  gap: .5rem;
+  width: max-content;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(lg) {
+    gap: 1rem;
+  }
+}
+// 一顆代幣＝一個 <button>（圓代幣＋下方標籤）
+.ev-list-type {
+  display: grid;
+  justify-items: center;
+  gap: .5rem;
+  width: 5.5rem;
+  padding: .375rem .125rem .5rem;
+  border: 0;
+  border-radius: 1.25rem;
+  background: none;
+  color: $navy;
+  font-size: .875rem;
+  font-weight: 700;
+  line-height: 1.35;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 3px solid $navy;
+    outline-offset: 2px;
+  }
+}
+.ev-list-type-coin {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border: 2px solid $navy;
+  border-radius: 50%;
+  background-color: $vanilla;
+  color: $navy;
+  font-size: 1.75rem;
+  line-height: 1;
+  box-shadow: inset 0 0 0 4px $vanilla, inset 0 0 0 5.5px rgba($navy, .22), inset 0 -5px 0 2px rgba($navy, .07), 0 4px 0 rgba($navy, .12);
+  transition: background-color .15s ease, box-shadow .15s ease;
+
+  // 選中時右上角的小勾（鮮黃代幣）
+  &::after {
+    content: "\F633"; // bi-check-lg
+    position: absolute;
+    top: -.25rem;
+    right: -.375rem;
+    display: none;
+    place-items: center;
+    width: 1.625rem;
+    height: 1.625rem;
+    border: 2px solid $navy;
+    border-radius: 50%;
+    background-color: $sunny;
+    color: $navy;
+    font-family: bootstrap-icons;
+    font-size: .875rem;
+    font-weight: 400;
+  }
+}
+.ev-list-type:hover .ev-list-type-coin {
+  background-color: $butter;
+  box-shadow: inset 0 0 0 4px $butter, inset 0 0 0 5.5px rgba($navy, .3), inset 0 -5px 0 2px rgba($navy, .07), 0 4px 0 rgba($navy, .12);
+}
+.ev-list-type[aria-pressed="true"] {
+  color: $candy-deep;
+
+  .ev-list-type-coin {
+    border-color: $candy-deep;
+    background-color: $candy;
+    color: $white;
+    box-shadow: inset 0 0 0 4px $candy, inset 0 0 0 5.5px rgba($white, .7), inset 0 -5px 0 2px rgba($navy, .16), 0 4px 0 rgba($navy, .18);
+
+    &::after { display: grid; }
+  }
+}
+
+// ---------- 3. 工具列 ----------
+.ev-list-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  margin: 1.5rem 0 2.25rem;
+  padding: .75rem;
+  border-radius: $border-radius-lg;
+  background-color: $vanilla;
+  box-shadow: $shadow-soft;
+
+  @include media-breakpoint-up(md) {
+    padding: .625rem .625rem .625rem 1.75rem;
+    border-radius: $border-radius-pill;
+  }
+}
+.ev-list-toolbar-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1rem;
+  padding-left: .5rem;
+
+  @include media-breakpoint-up(md) { padding-left: 0; }
+}
+.ev-list-count {
+  margin: 0;
+  font-weight: 700;
+
+  .num {
+    margin-inline: .125rem;
+    font-size: 1.625rem;
+    font-weight: 800;
+    color: $candy-deep;
+    vertical-align: -.125rem;
+  }
+}
+.ev-list-applied {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.ev-list-filter-btn {
+  @include media-breakpoint-down(md) {
+    width: 100%;
+  }
+}
+
+// 篩選 Offcanvas（所有寬度都由右滑出）
+.ev-list-filters {
+  --bs-offcanvas-width: 26rem;
+
+  .offcanvas-header {
+    gap: .75rem;
+    padding: 1.25rem 1.5rem .75rem;
+    border-bottom: 2px dashed rgba($navy, .14);
+  }
+  .offcanvas-title {
+    margin: 0 auto 0 0;
+    font-size: 1.5rem;
+    font-weight: 900;
+  }
+  .btn-close { margin: 0; }
+  .offcanvas-body { padding: .5rem 1.5rem 1.5rem; }
+}
+.ev-list-filter-group {
+  padding-block: 1.25rem;
+
+  + .ev-list-filter-group { border-top: 2px dashed rgba($navy, .14); }
+
+  h3 {
+    margin-bottom: .75rem;
+    font-size: 1.0625rem;
+    font-weight: 900;
+  }
+}
+.ev-list-filters-apply {
+  padding: 1rem 1.5rem calc(1rem + env(safe-area-inset-bottom));
+  background-color: $vanilla;
+  box-shadow: 0 -10px 24px -14px rgba($navy, .35);
+
+  .btn { width: 100%; }
+}
+
+// ---------- 4. 結果：直式入場票 ----------
+.ev-list-card {
+  height: 100%;
+
+  .admit-paper {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 1rem 1.5rem;
+  }
+}
+.ev-list-card-media {
+  display: block;
+  margin-bottom: 1.125rem;
+  border-radius: $border-radius;
+}
+.ev-list-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  padding-inline: .625rem;
+}
+.ev-list-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .375rem;
+  margin-bottom: .75rem;
+}
+.ev-list-card-title {
+  margin-bottom: .75rem;
+  font-family: $font-family-round;
+  font-size: 1.375rem; // 22px
+  font-weight: 900;
+  line-height: 1.4;
+
+  a {
+    color: $navy;
+    text-decoration: none;
+
+    &:hover {
+      color: $navy;
+      text-decoration: underline;
+      text-decoration-color: $candy;
+      text-decoration-thickness: 3px;
+      text-underline-offset: .3em;
+    }
+  }
+}
+.ev-list-card-facts {
+  display: grid;
+  gap: .375rem;
+  margin-bottom: 1rem;
+  color: $navy-muted;
+  font-size: .9375rem;
+  line-height: 1.6;
+
+  li {
+    display: grid;
+    grid-template-columns: 1.25rem minmax(0, 1fr);
+    gap: .5rem;
+  }
+  .bi {
+    color: $candy;
+    line-height: 1.6;
+  }
+}
+// 票價：價格標籤（奶油黃小牌子＋Baloo 2）
+.ev-list-card-price {
+  display: flex;
+  align-items: baseline;
+  gap: .625rem;
+  margin-bottom: 1rem;
+
+  .price {
+    color: $candy-deep;
+    font-size: 1.5rem;
+  }
+}
+.ev-list-card-intro {
+  margin-bottom: 1rem;
+  font-size: .9375rem;
+  line-height: 1.8;
+}
+.ev-list-card-tickets {
+  margin-bottom: 0;
+  padding: .875rem 1rem;
+  border-radius: $border-radius;
+  background-color: $cream;
+  font-size: .875rem;
+
+  dt {
+    margin-bottom: .25rem;
+    color: $navy-muted;
+    font-size: .8125rem;
+  }
+  dd { margin: 0; }
+  ul {
+    display: grid;
+    gap: .25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    position: relative;
+    padding-left: 1rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: .125rem;
+      top: .6em;
+      width: .4375rem;
+      height: .4375rem;
+      border: 1.5px solid $navy;
+      border-radius: 50%;
+      background-color: $sunny;
+    }
+  }
+  s { color: $navy-faint; }
+}
+// 虛線分隔＋票根一起貼底：介紹長短不同的卡片，票根仍對齊
+.ev-list-card .admit-divider {
+  margin-block: auto 1.125rem;
+  padding-top: 1.25rem;
+  border-top: 0;
+  background: linear-gradient(90deg, rgba($candy, .6) 50%, transparent 0) 0 100% / 10px 2px repeat-x;
+  height: calc(1.25rem + 2px);
+}
+.ev-list-card-stub {
+  display: grid;
+  gap: 1rem;
+
+  .remain .remain-head { font-size: .875rem; }
+}
+.ev-list-card-actions {
+  display: flex;
+  gap: .5rem;
+
+  .btn-primary { flex: 1 1 auto; }
+}
+
+// ---------- 5. 狀態示意 ----------
+.ev-list-demo {
+  .token { font-size: 2.25rem; }
+}

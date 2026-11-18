@@ -1,0 +1,497 @@
+// ============================================================
+// StageOne｜03 電競競技場 — Bootstrap 5 變數覆寫（design token）
+// 規則：只在這裡改 Bootstrap 變數；元件與頁面樣式一律引用變數，不寫死色碼
+//
+// 這是「單一深色主題」：不使用 data-bs-theme，直接把 Bootstrap 原本給淺色用的變數
+// （$body-bg、$input-bg、$dropdown-bg、$offcanvas-*…）設成深色系，整套元件編譯出來就是深色。
+// 對比度皆以 WCAG 2.x 公式計算，括號內是對「曜石灰」頁面底色的比值（另有標示的除外）
+// ============================================================
+
+// ---------- 1. 色彩：曜石灰、碳纖維、炫光金屬藍 ----------
+// 概念：電競聯賽的選手入場系統。碳纖維機殼上只亮一種光（金屬藍），琥珀只在「快沒了」時出現
+
+// 面：曜石灰（不是純黑）→ 碳纖維 → 浮起面，一層比一層亮一點
+$obsidian:   #0B0E13; // 曜石灰：頁面底、theme-color（鋼白 16.38:1）
+$carbon:     #12171E; // 碳纖維：卡片、面板、頁首玻璃底、頁尾、交替區塊（鋼白 15.25、次要 8.25）
+$carbon-hi:  #1A212A; // 浮起面：輸入框、hover 底、進度條軌道、展開的明細（鋼白 13.74、次要 7.43、faint 5.24）
+
+// 線：槍灰只當裝飾；表單控制項的框線要達非文字 3:1
+$gunmetal:   #253040; // 槍灰：分隔線、已售出座位底、碳纖維紋的亮絲（裝飾，不承載資訊）
+$control:    #5E7088; // 控制項框線：輸入框、膠囊、分段鈕（碳纖維 3.56、$carbon-hi 3.20、曜石灰 3.82）
+
+// 文字：鋼白、次要、最弱一階
+$text:       #E6EDF5; // 鋼白：內文、標題、QR 淺底（16.38；照片上 70% 曜石灰遮罩最差 6.23）
+$text-muted: #A3B1C2; // 次要文字（8.86；碳纖維 8.25、$carbon-hi 7.43、槍灰 6.11）
+$text-faint: #8494A8; // placeholder、停用文字、最小說明（6.24；碳纖維 5.81、$carbon-hi 5.24）
+
+// 唯一的品牌光：炫光金屬藍
+$arc:        #3D9BFF; // 主色：連結、目前頁、選中、焦點環、已選座位（當字：曜石灰 6.75、碳纖維 6.28、$carbon-hi 5.66）
+$arc-hi:     #8CCBFF; // 亮端：主要按鈕漸層亮端、光暈、連結 hover、焦點外框（11.14）
+$arc-deep:   #2F80F0; // 暗端：主要按鈕漸層暗端（上面放 $void 字 4.94，漸層最差點仍過 AA）
+$void:       #05111F; // 實心色塊上的字：藍、琥珀、薄荷、紅上都用它；QR 深色模組（$arc 上 6.63、$arc-hi 上 10.94）
+
+// 狀態色：一律配圖示與文字（深色底上琥珀與紅容易混）
+$amber:      #FFB224; // 警示琥珀：即將完售（低血量）、倒數警示（碳纖維上當字 9.98）
+$amber-ink:  #1A1200; // 琥珀實心上的字（10.30）
+$mint:       #34D9A5; // 薄荷：成功、有效票、已付款、驗票成功（碳纖維 9.95）
+$mint-ink:   #03140E; // 薄荷實心上的字（10.46）
+$alert:      #FF5468; // 警報紅：錯誤、付款失敗、驗票失敗（實心）
+$alert-ink:  #1A0006; // 警報紅實心上的字（6.42）
+$alert-text: #FF6B7C; // 錯誤文字（碳纖維 6.55、紅色淡底 5.74）
+$qr-light:   #E6EDF5; // QR 底與外框內側（$void 模組 16.09）
+
+// 淡底（狀態色疊在碳纖維上）
+$arc-tint:   #1A2F46; // 選中卡、退票強調題（鋼白 11.56）
+$amber-tint: #2E2A1F; // 琥珀淡底（琥珀字 7.94）
+$mint-tint:  #162E2E; // 薄荷淡底（薄荷字 7.93）
+$alert-tint: #2E1E27; // 紅色淡底（$alert-text 5.74）
+
+$primary:   $arc;
+$secondary: $text-muted;
+$success:   $mint;
+$info:      $arc-hi;
+$warning:   $amber;
+$danger:    $alert;
+$light:     $carbon-hi; // 深色主題裡「亮一階的面」：.bg-light 是浮起面
+$dark:      $obsidian;  // 最深的面
+
+$theme-colors: (
+  "primary":   $primary,
+  "secondary": $secondary,
+  "success":   $success,
+  "info":      $info,
+  "warning":   $warning,
+  "danger":    $danger,
+  "light":     $light,
+  "dark":      $dark,
+);
+
+// 按鈕、標籤上的文字色：Bootstrap 的 color-contrast() 依序試「淺色 → 深色」，取第一個達 4.5:1 的。
+// 藍、琥珀、薄荷、紅上放鋼白都不到 4.5:1，所以會選到 $void 深色字
+$color-contrast-light: $text;
+$color-contrast-dark:  $void;
+$min-contrast-ratio:   4.5;
+
+// 只有一套深色主題，不輸出 [data-bs-theme="dark"] 那一份變數
+$enable-dark-mode: false;
+
+// ---------- 票務專用語意色（Guideline「色彩」章節的票務語意） ----------
+// 規則：剩餘票數、售罄、即將完售一律「顏色＋文字＋血條」三者並用；琥珀、紅、薄荷、藍四色一律配圖示與文字
+$ticket-scarce:         $amber;      // 即將完售（剩餘 ≤ 25%）：琥珀實心標籤＋火焰圖示＋文字＋琥珀血條
+$ticket-sold-out:       $text-faint; // 售罄：槍灰底＋斜線紋＋刪除線＋「已售完」
+$ticket-selected:       $arc;        // 選中：金屬藍 1px 框＋$arc-tint 底＋勾＋外光暈
+$ticket-countdown-warn: $amber;      // 倒數警示（剩 2 分鐘）：整列琥珀框＋三角警示圖示，不閃爍
+$ticket-expired:        $text-faint; // 逾時：faint 字＋斜線紋＋✕
+$ticket-scan-ok:        $mint;       // 驗票成功：大面積薄荷＋$mint-ink 字＋✓
+$ticket-scan-fail:      $alert;      // 驗票失敗：大面積警報紅＋$alert-ink 字＋✕
+
+// ---------- 招牌：碳纖維紋、掃描線、括角、光暈 ----------
+// 碳纖維紋的幾條絲色（最亮的一條是 $weave-2 #1B2129：鋼白 13.73、次要 7.43，都過 AA）。只鋪在大面積：
+// 頁首、頁尾、Hero 左半遮罩、註冊右側面板、票券詳情的票券帶（見 _base.scss 的 carbon-weave()）
+$weave-1: #151A21;
+$weave-2: #1B2129;
+$weave-3: #171C23;
+$weave-4: #181E25;
+$weave-5: #161B22;
+$weave-6: #1A2028;
+
+// 掃描線：3px 間距、4% 鋼白的水平細線（Hero、票券帶、主辦方轉換帶）
+$scanlines: repeating-linear-gradient(0deg, rgba($text, .04) 0 1px, transparent 1px 3px);
+
+// 面板外框：1px 金屬漸層（border-image）
+$metal-edge: linear-gradient(135deg, rgba($arc-hi, .2), $gunmetal 40%, $gunmetal 60%, rgba($arc, .4));
+
+// L 形括角：12px × 12px、2px 粗。平常 50% 透明，hover／focus-within 變 100%（只改顏色）
+$bracket-size:   12px;
+$bracket-weight: 2px;
+$bracket-dim:    rgba($arc, .5);
+$bracket-lit:    $arc;
+
+// 平行四邊形：按鈕、標籤、篩選膠囊、分頁、步驟段的斜度（只斜底與框，文字不斜）
+$skew: -12deg;
+
+// 光暈：只給主要按鈕、選中、焦點與倒數框；卡片平常不發光
+$glow-btn:       0 0 0 1px rgba($arc, .4), 0 8px 24px -6px rgba($arc, .45);
+$glow-btn-hover: 0 0 0 1px rgba($arc, .7), 0 10px 28px -6px rgba($arc, .7);
+$glow-selected:  0 0 0 1px $arc, 0 0 20px -4px rgba($arc, .35);
+$shadow-float:   0 -12px 32px rgba(#000, .67); // 對話框、底部固定列
+
+// 斜線紋：售罄、逾時、不可選座位、活動已取消
+$stripes: repeating-linear-gradient(-45deg, rgba($text, .07) 0 2px, transparent 2px 8px);
+
+// ---------- 全站底色與文字（Bootstrap 的 --bs-body-* 等 CSS 變數由這裡產生） ----------
+$body-bg:               $obsidian;
+$body-color:            $text;
+$body-secondary-color:  $text-muted;
+$body-secondary-bg:     $carbon-hi;
+$body-tertiary-color:   $text-faint;
+$body-tertiary-bg:      $carbon;
+$body-emphasis-color:   $text;
+$border-color:          $gunmetal;
+$border-color-translucent: rgba($text, .12);
+$headings-color:        $text;
+
+// 連結：金屬藍（曜石灰 6.75），hover 變亮端
+$link-color:            $arc;
+$link-hover-color:      $arc-hi;
+$link-decoration:       none;
+$link-hover-decoration: underline;
+$link-underline-offset: .25em;
+
+// 各狀態色的「文字、淡底、淡框」三件組（alert、.text-*-emphasis、.bg-*-subtle 共用）
+$primary-text-emphasis:   $arc-hi;
+$secondary-text-emphasis: $text;
+$success-text-emphasis:   $mint;
+$info-text-emphasis:      $arc-hi;
+$warning-text-emphasis:   $amber;
+$danger-text-emphasis:    $alert-text;
+$light-text-emphasis:     $text;
+$dark-text-emphasis:      $text;
+
+$primary-bg-subtle:       $arc-tint;
+$secondary-bg-subtle:     $carbon-hi;
+$success-bg-subtle:       $mint-tint;
+$info-bg-subtle:          $arc-tint;
+$warning-bg-subtle:       $amber-tint;
+$danger-bg-subtle:        $alert-tint;
+$light-bg-subtle:         $carbon-hi;
+$dark-bg-subtle:          $obsidian;
+
+$primary-border-subtle:   mix($arc, $carbon, 55%);
+$secondary-border-subtle: $control;
+$success-border-subtle:   mix($mint, $carbon, 55%);
+$info-border-subtle:      mix($arc-hi, $carbon, 45%);
+$warning-border-subtle:   mix($amber, $carbon, 60%);
+$danger-border-subtle:    mix($alert, $carbon, 60%);
+$light-border-subtle:     $gunmetal;
+$dark-border-subtle:      $gunmetal;
+
+// 元件的「選中」：金屬藍底＋$void 字（下拉選單、列表群組、nav-pills 共用）
+$component-active-bg:    $arc;
+$component-active-color: $void;
+
+// 焦點環：2px 亮端藍外框＋4px 金屬藍光暈，offset 2px（_base.scss 用 outline 畫，不會被平行四邊形切掉）
+$focus-ring-width:   2px;
+$focus-ring-opacity: 1;
+$focus-ring-blur:    0;
+$focus-ring-color:   $arc-hi;
+$focus-ring-glow:    0 0 0 4px rgba($arc, .35); // 自訂：焦點外光暈
+$focus-ring-box-shadow: 0 0 0 2px $arc-hi, $focus-ring-glow;
+
+$code-color: $arc-hi;
+$mark-bg:    rgba($arc, .3);
+$mark-color: $text;
+$kbd-bg:     $text;
+$kbd-color:  $void;
+
+$hr-color:   $gunmetal;
+$hr-opacity: 1;
+
+// ---------- 2. 字體與字級 ----------
+// Oxanium：方角科技體，像遊戲 HUD 的讀數。負責品牌字、英數、價格、倒數、票號、HUD 英文標。
+//          數字本身就等寬（0–9 同寬），倒數、票號不會跳動；沒有中文，中文自動落到 Noto Sans TC
+// Noto Sans TC：中文。標題 700（不用 900，900 是 rave 與 biennale 的質地）、內文 400、強調 500
+$font-family-display:    "Oxanium", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; // 自訂：.font-display、.price、.countdown-num
+$font-family-sans-serif: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+$font-family-base:       $font-family-sans-serif;
+$headings-font-family:   $font-family-display;
+$display-font-family:    $font-family-display;
+
+$font-size-base:   1rem;     // 16px
+$font-size-sm:     .875rem;  // 14px
+$font-size-lg:     1.125rem; // 18px
+$small-font-size:  .8125rem; // 13px：Caption
+
+$font-weight-light:    400;
+$font-weight-normal:   400;
+$font-weight-medium:   500;
+$font-weight-semibold: 600;
+$font-weight-bold:     700;
+$font-weight-bolder:   700;
+
+$line-height-base: 1.75; // 中文內文的行高
+$line-height-sm:   1.5;
+$line-height-lg:   1.7;
+
+// 字級階層（桌機／手機由 Bootstrap RFS 自動縮小）：H1 52／約 34、H2 34／約 26、H3 20／18
+$h1-font-size: 3.25rem;  // 52px：頁面標題、活動名
+$h2-font-size: 2.125rem; // 34px：區塊標題
+$h3-font-size: 1.25rem;  // 20px：卡片、票種名
+$h4-font-size: 1.125rem; // 18px
+$h5-font-size: 1rem;     // 16px
+$h6-font-size: .875rem;  // 14px
+
+$headings-font-weight:   700;
+$headings-line-height:   1.3;
+$headings-margin-bottom: .75rem;
+
+// 首頁 Display：72／40px（見 _base.scss 的 .display-hud，用 clamp 不用 RFS）
+$display-font-sizes: (
+  1: 4.5rem,
+  2: 3.75rem,
+  3: 3.25rem,
+  4: 2.75rem,
+  5: 2.25rem,
+  6: 2rem,
+);
+$display-font-weight: 700;
+$display-line-height: 1.12;
+
+$lead-font-size:   1.125rem; // 18px
+$lead-font-weight: 400;
+
+// 自訂：字距（非 Bootstrap 變數，於 _base.scss 使用）
+$letter-spacing-body:    .02em;
+$letter-spacing-heading: .01em;
+$letter-spacing-hud:     .16em; // HUD 英文標（Oxanium 600、大寫、12px）
+$letter-spacing-code:    .06em; // 票號
+$letter-spacing-brand:   .02em;
+
+// ---------- 3. 間距：基準 8px，擴充 6–8 階 ----------
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * .25,  // 4px
+  2: $spacer * .5,   // 8px
+  3: $spacer,        // 16px
+  4: $spacer * 1.5,  // 24px
+  5: $spacer * 3,    // 48px
+  6: $spacer * 3.5,  // 56px：手機區塊上下
+  7: $spacer * 5.5,  // 88px：桌機區塊上下
+  8: $spacer * 8,    // 128px
+);
+$section-space-sm: 3.5rem;  // 56px
+$section-space-lg: 5.5rem;  // 88px
+
+// 容器：全站 .container-xl（< 1200 滿寬、xl 1140、xxl 1400：比既有 3 套的 1320 寬，像寬螢幕 HUD）
+// 左右留白 24px，≥ lg 32px（_base.scss）；$container-padding-x 要 ≥ $grid-gutter-width，.row 的負邊距才不會溢出
+$grid-gutter-width: 1.5rem;
+$container-padding-x: 3rem;
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  xxl: 1400px,
+);
+// RWD 斷點沿用 Bootstrap 預設：sm 576 / md 768 / lg 992 / xl 1200 / xxl 1400
+
+// ---------- 4. 圓角與陰影：2px 圓角、0 圓角 HUD 框、沒有切角 ----------
+// 卡片、輸入框 2px；HUD 框、面板 0；圓形只給 radio、頭像外框以外的狀態點
+$border-width:       1px;
+$border-radius-sm:   2px;
+$border-radius:      2px;
+$border-radius-lg:   2px;
+$border-radius-xl:   2px;
+$border-radius-xxl:  2px;
+$border-radius-pill: 50rem;
+
+$enable-shadows:   false;
+// 不用灰黑陰影分層，浮起的面靠「金屬漸層框＋括角」；對話框與底部固定列才用深陰影
+$box-shadow-sm:    0 0 0 1px $gunmetal;
+$box-shadow:       0 0 0 1px $gunmetal, 0 16px 40px rgba(#000, .6);
+$box-shadow-lg:    0 0 0 1px $control, $shadow-float;
+$box-shadow-inset: inset 0 1px 2px rgba(#000, .5);
+
+$enable-negative-margins: true;
+
+// ---------- 5. 元件 ----------
+// 按鈕：主要＝金屬藍漸層平行四邊形＋光暈（上面放 $void 字）；次要＝透明底＋控制項框平行四邊形（components/_buttons.scss）
+$btn-padding-y:        .75rem;   // 高 48px
+$btn-padding-x:        1.75rem;  // 平行四邊形斜邊會吃掉左右內距，至少 20px
+$btn-font-size:        1rem;
+$btn-padding-y-sm:     .5625rem; // 高 44px，符合觸控目標
+$btn-padding-x-sm:     1.25rem;
+$btn-font-size-sm:     .875rem;
+$btn-padding-y-lg:     .9375rem; // 高 56px：付款按鈕
+$btn-padding-x-lg:     2.25rem;
+$btn-font-size-lg:     1.0625rem;
+$btn-font-weight:      700;
+$btn-line-height:      1.5;
+$btn-border-radius:    0;
+$btn-border-radius-sm: 0;
+$btn-border-radius-lg: 0;
+$btn-disabled-opacity: 1; // 停用色在 _buttons.scss 直接換色，不疊透明度
+$btn-focus-width:      $focus-ring-width;
+$btn-link-disabled-color: $text-faint;
+$btn-transition:       color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+
+// 表單：$carbon-hi 底、控制項框線（3.20:1）、placeholder faint（5.24:1）
+$input-bg:                    $carbon-hi;
+$input-color:                 $text;
+$input-border-color:          $control;
+$input-placeholder-color:     $text-faint;
+$input-plaintext-color:       $text;
+$input-padding-y:             .75rem; // 高 48px
+$input-padding-x:             1rem;
+$input-font-size:             1rem;
+$input-border-radius:         2px;
+$input-focus-bg:              $carbon-hi;
+$input-focus-color:           $text;
+$input-focus-border-color:    $arc;
+$input-focus-box-shadow:      0 0 0 1px $arc, $focus-ring-glow; // 與 1px 邊框合成 2px 金屬藍＋光暈
+$input-disabled-bg:           $carbon;
+$input-disabled-color:        $text-faint;
+$input-disabled-border-color: $gunmetal;
+$input-group-addon-bg:        $carbon;
+$input-group-addon-color:     $text-muted;
+$input-group-addon-border-color: $control;
+$form-label-font-size:        .875rem;
+$form-label-font-weight:      500;
+$form-label-color:            $text;
+$form-label-margin-bottom:    .5rem;
+$form-text-color:             $text-muted;
+
+$form-select-indicator-color: $text-muted;
+$form-select-focus-box-shadow: $input-focus-box-shadow;
+
+// 核取方塊、radio：$carbon-hi 底＋控制項框線；選中為金屬藍底＋$void 勾勾
+$form-check-input-width:                1.25em;
+$form-check-input-bg:                   $carbon-hi;
+$form-check-input-border:               1px solid $control;
+$form-check-input-border-radius:        2px;
+$form-check-input-checked-color:        $void;
+$form-check-input-checked-bg-color:     $arc;
+$form-check-input-checked-border-color: $arc;
+$form-check-input-focus-border:         $arc;
+$form-check-input-focus-box-shadow:     $focus-ring-box-shadow;
+$form-check-input-disabled-opacity:     .45;
+$form-check-label-disabled-opacity:     .6;
+
+$form-feedback-valid-color:   $mint;
+$form-feedback-invalid-color: $alert-text;
+$form-feedback-icon-invalid-color: $alert-text;
+
+// 關閉鈕 X：鋼白（Bootstrap 預設是黑色，在深色底上看不到）
+$btn-close-color:         $text;
+$btn-close-opacity:       .85;
+$btn-close-hover-opacity: 1;
+$btn-close-focus-shadow:  $focus-ring-box-shadow;
+
+// 卡片
+$card-bg:            $carbon;
+$card-color:         $text;
+$card-border-color:  $gunmetal;
+$card-border-radius: 2px;
+$card-cap-bg:        transparent;
+$card-spacer-y:      1.5rem;
+$card-spacer-x:      1.5rem;
+
+// 頁首：懸浮 HUD 列。離視窗上緣 12px、高 64px，下方再留 12px
+// sticky 位移：購票卡、訂單明細的 top＝12＋64＋20＝96px
+// 活動細節的情報分頁列與結帳步驟列 sticky 在 top: 84px（12＋64＋8），該頁購票卡 top: 148px（84＋48＋16）
+$site-header-inset:  .75rem; // 12px
+$site-header-height: 4rem;   // 64px
+$site-header-space:  $site-header-inset * 2 + $site-header-height; // 88px：頁首在版面上佔的高度（Hero 用 100svh 扣掉它）
+$sticky-top-offset:  6rem;   // 96px
+$sticky-bar-top:     5.25rem; // 84px：情報分頁列、結帳任務進度條
+$sticky-bar-height:  3rem;    // 48px：情報分頁列高度
+
+// 導覽列
+$navbar-padding-y:             0;
+$navbar-padding-x:             0;
+$navbar-brand-padding-y:       0;
+$navbar-nav-link-padding-x:    1.25rem;
+$navbar-light-color:           $text-muted;
+$navbar-light-hover-color:     $text;
+$navbar-light-active-color:    $void;
+$navbar-light-brand-color:     $text;
+$navbar-light-brand-hover-color: $text;
+$navbar-toggler-border-radius: 0;
+$nav-link-font-size:           .9375rem;
+$nav-link-font-weight:         500;
+$nav-link-color:               $text-muted;
+$nav-link-hover-color:         $text;
+$nav-link-disabled-color:      $text-faint;
+$nav-pills-link-active-bg:     $arc;
+$nav-pills-link-active-color:  $void;
+
+// 下拉選單
+$dropdown-bg:                 $carbon;
+$dropdown-color:              $text;
+$dropdown-border-color:       $control;
+$dropdown-divider-bg:         $gunmetal;
+$dropdown-box-shadow:         $box-shadow;
+$dropdown-link-color:         $text;
+$dropdown-link-hover-color:   $text;
+$dropdown-link-hover-bg:      $carbon-hi;
+$dropdown-link-active-color:  $void;
+$dropdown-link-active-bg:     $arc;
+
+// 對話框、側邊抽屜（Offcanvas 選單由右滑出、碳纖維底，見 components/_header.scss）
+$modal-content-bg:            $carbon;
+$modal-content-color:         $text;
+$modal-content-border-color:  $gunmetal;
+$modal-content-border-radius: 0;
+$modal-content-box-shadow-xs: $shadow-float;
+$modal-header-border-color:   $gunmetal;
+$modal-footer-border-color:   $gunmetal;
+$modal-backdrop-bg:           #000;
+$modal-backdrop-opacity:      .75;
+$offcanvas-bg-color:          $carbon;
+$offcanvas-color:             $text;
+$offcanvas-border-color:      $gunmetal;
+$offcanvas-horizontal-width:  20rem;
+$offcanvas-backdrop-bg:       #000;
+$offcanvas-backdrop-opacity:  .75;
+
+// Accordion：透明底、槍灰分隔；退票題另有 $arc-tint 強調（pages/_event.scss）
+$accordion-color:               $text;
+$accordion-bg:                  transparent;
+$accordion-border-color:        $gunmetal;
+$accordion-border-radius:       0;
+$accordion-inner-border-radius: 0;
+$accordion-button-padding-y:    1.25rem;
+$accordion-button-padding-x:    1.25rem;
+$accordion-body-padding-x:      1.25rem;
+$accordion-button-color:        $text;
+$accordion-button-active-bg:    $carbon;
+$accordion-button-active-color: $text;
+$accordion-icon-color:          $text-muted;
+$accordion-icon-active-color:   $arc;
+$accordion-button-focus-box-shadow: inset 0 0 0 2px $arc-hi;
+
+// 標籤
+$badge-color:         $void;
+$badge-font-weight:   600;
+$badge-border-radius: 0;
+
+// 麵包屑：連結次要色、分隔線 faint、目前頁鋼白
+$breadcrumb-divider:        quote("/");
+$breadcrumb-font-size:      .8125rem;
+$breadcrumb-divider-color:  $text-faint;
+$breadcrumb-active-color:   $text;
+$breadcrumb-margin-bottom:  0;
+
+// 提示框
+$tooltip-bg:                 $text;
+$tooltip-color:              $void;
+$tooltip-opacity:            1;
+$tooltip-border-radius:      2px;
+
+// 表格：透明底、槍灰分隔
+$table-color:          $text;
+$table-bg:             transparent;
+$table-border-color:   $gunmetal;
+$table-striped-bg:     rgba($text, .03);
+$table-hover-bg:       $carbon-hi;
+$table-cell-padding-y: .875rem;
+$table-cell-padding-x: 1rem;
+$table-th-font-weight: 600;
+
+// 提示（alert 顏色由上面的「文字、淡底、淡框」三件組決定）
+$alert-border-radius: 2px;
+$alert-padding-y:     1rem;
+$alert-padding-x:     1.25rem;
+
+// 進度條＝血條（剩餘票數）：$carbon-hi 軌道＋金屬藍，用 mask 切成 10 格；≤ 25% 換琥珀（components/_status.scss）
+$progress-height:        .5rem;
+$progress-bg:            $carbon-hi;
+$progress-bar-bg:        $arc;
+$progress-bar-color:     $void;
+$progress-border-radius: 0;
+
+// 頁內 spinner（付款中）
+$spinner-width-sm:        1.125rem;
+$spinner-height-sm:       1.125rem;
+$spinner-border-width-sm: .15em;

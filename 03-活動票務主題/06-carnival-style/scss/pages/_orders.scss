@@ -1,0 +1,343 @@
+// ============================================================
+// orders.html 購票紀錄（2026-11 補；class 前綴 ord-）
+// 1 頁首區（components/_member-head.scss）：奶油黃帶、置中＋「共 6 筆訂單」數量貼紙
+// 2 #orders：≥ 992px 每列 2 張鋸齒收據（components/_receipt.scss 的 .receipt.has-top-teeth：上下緣都是鋸齒、drop-shadow）
+//   卡頭（訂單編號＋下單時間｜狀態膠囊）→ 活動（拱頂縮圖、名稱、日期場地）→ 票種明細（點點引導線）→ 平台服務費
+//   → 總額（收據上最大的數字＋鮮黃螢光筆）→ 付款方式、電子發票 → 說明 → 按鈕（推到收據最下面，同一列對齊）
+// 3 #refund：奶油黃帶（上下緣奶油扇形）裡的售票亭窗口（components/_booth.scss），置中最寬 960px
+//   亭身 6 : 6：左＝表單（訂單、退票規則糖粉底、要退的票券整列可點、原因），右＝退款試算（預估退款遊樂綠大字）＋送出
+// 4 狀態示意 2 個（≥ 992px 並排）：還沒有購票紀錄、退款處理中（O1 的收據）
+// 不做分頁籤或狀態篩選（6 筆一頁放完），不做訂單詳情頁
+// ============================================================
+
+// ---------- 2. 訂單收據 ----------
+// < 992px 一欄時收據最寬 640px 置中，不拉成一整條
+.ord-receipt {
+  max-width: 40rem;
+  height: 100%;
+  margin-inline: auto;
+
+  .receipt-paper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+}
+.ord-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  margin: .75rem 0 1.25rem;
+}
+.ord-no {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.3;
+
+  .num { font-weight: 800; }
+}
+.ord-caption {
+  display: block;
+  color: $navy-muted;
+  font-family: $font-family-round;
+  font-size: .8125rem;
+  font-weight: 700;
+  letter-spacing: $letter-spacing-label;
+}
+.ord-time {
+  margin: .125rem 0 0;
+  color: $navy-muted;
+  font-size: .875rem;
+}
+// 活動：拱頂縮圖＋名稱、日期、場地
+.ord-event {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: .875rem;
+  border-radius: 1.25rem;
+  background-color: $cream;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 5.5rem 1fr;
+  }
+
+  p {
+    margin: 0;
+    color: $navy-muted;
+    font-size: .9375rem;
+    line-height: 1.6;
+  }
+  .ord-event-name {
+    margin-bottom: .125rem;
+    color: $navy;
+    font-size: 1.0625rem;
+    font-weight: 900;
+    line-height: 1.4;
+  }
+}
+.ord-lines {
+  margin-top: 1.25rem;
+
+  .receipt-items small {
+    margin-top: .125rem;
+  }
+}
+// 平台服務費：和票種同一種點點引導線，字小一級
+.receipt-items li.is-fee {
+  color: $navy-muted;
+  font-size: .9375rem;
+
+  small { display: inline; margin-left: .125rem; }
+}
+.ord-total {
+  margin-top: .25rem;
+
+  .price { font-size: 2rem; }
+}
+.ord-meta {
+  margin-top: 1rem;
+
+  dt {
+    flex: none;
+    white-space: nowrap;
+  }
+  dd {
+    font-size: .9375rem;
+    text-align: right;
+  }
+}
+// 電子發票：號碼＋「下載」文字按鈕
+.ord-invoice {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0 .5rem;
+
+  .btn-text {
+    --bs-btn-font-size: .9375rem;
+    gap: .25rem;
+  }
+}
+.ord-note {
+  display: flex;
+  gap: .5rem;
+  margin: 1rem 0 0;
+  padding: .75rem 1rem;
+  border-radius: $border-radius;
+  background-color: $cream;
+  font-size: .9375rem;
+  line-height: 1.7;
+
+  .bi { flex: none; margin-top: .1875rem; color: $navy-muted; }
+}
+.ord-receipt .alert {
+  margin: 1rem 0 0;
+  font-size: .9375rem;
+  line-height: 1.7;
+}
+// 按鈕：推到收據最下面；手機滿寬上下排
+.ord-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .625rem;
+  margin-top: auto;
+  padding-top: 1.25rem;
+
+  @include media-breakpoint-down(sm) {
+    flex-direction: column;
+    .btn { width: 100%; }
+  }
+}
+
+// ---------- 3. 申請退票：奶油黃帶裡的售票亭窗口 ----------
+// 黃帶上下緣都是奶油扇形，和上面的收據區、下面的狀態示意柔和接起來
+.ord-refund {
+  &::before {
+    @include scallop(top, $cream, $scallop-r-sm);
+  }
+  &::after {
+    @include scallop(bottom, $cream, $scallop-r-sm);
+  }
+}
+.ord-booth {
+  max-width: 60rem; // 960px
+  margin-inline: auto;
+
+  .booth-body {
+    padding: 2.5rem 1.25rem 1.5rem;
+
+    @include media-breakpoint-up(md) {
+      padding: 2.75rem 2.25rem 2.25rem;
+    }
+  }
+}
+.ord-form-col {
+  @include media-breakpoint-up(lg) {
+    padding-right: 2rem;
+    border-right: 2px dashed rgba($candy, .45);
+  }
+}
+.ord-field {
+  margin-bottom: 1.25rem;
+}
+// 這場活動的退票規則：糖粉底＋左側糖果紅條＋盾牌
+.ord-rule {
+  margin-bottom: 1.5rem;
+  padding: .875rem 1rem .875rem 1.125rem;
+  border-left: 6px solid $candy;
+  border-radius: $border-radius;
+  background-color: $candy-wash;
+  font-size: .9375rem;
+  line-height: 1.75;
+
+  p { margin: 0; }
+  .ord-rule-title {
+    display: flex;
+    align-items: center;
+    gap: .375rem;
+    margin-bottom: .25rem;
+    color: $candy-deep;
+    font-weight: 900;
+  }
+}
+// 要退的票券：每一列整列可點（label 包住整列）；勾選的那列換糖粉底＋海軍藍框
+.ord-tickets {
+  margin: 0 0 1.25rem;
+  padding: 0;
+  border: 0;
+
+  legend {
+    margin-bottom: .375rem;
+  }
+}
+.ord-ticket {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 3.25rem;
+  margin-bottom: .5rem;
+  padding: .625rem 1rem;
+  border: 2px solid $control;
+  border-radius: $border-radius;
+  background-color: $vanilla;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+
+  .form-check-input {
+    flex: none;
+    margin: 0;
+  }
+  .ord-ticket-name {
+    flex: 1 1 auto;
+    line-height: 1.5;
+  }
+  .price {
+    flex: none;
+    font-size: 1.0625rem;
+  }
+
+  &:hover {
+    border-color: $navy;
+  }
+  &:has(.form-check-input:checked) {
+    border-color: $navy;
+    background-color: $candy-wash;
+  }
+  &:has(.form-check-input:focus-visible) {
+    box-shadow: $focus-ring-double;
+  }
+}
+.ord-tickets .ord-ticket:last-child { margin-bottom: 0; }
+
+// 退款試算：奶油底的小窗口，預估退款是遊樂綠大字
+.ord-calc {
+  margin-top: 2rem;
+
+  @include media-breakpoint-up(lg) {
+    margin-top: 0;
+    padding-left: .5rem;
+  }
+}
+.ord-calc-panel {
+  margin-bottom: 1.25rem;
+  padding: 1.25rem 1.25rem 1rem;
+  border-radius: 1.25rem;
+  background-color: $cream;
+}
+.ord-calc-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: 1rem;
+  font-size: 1.125rem;
+  font-weight: 900;
+}
+.ord-calc-rows {
+  display: grid;
+  gap: .5rem;
+  margin: 0;
+
+  > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .75rem;
+  }
+  dd {
+    margin: 0;
+    font-size: 1.0625rem;
+  }
+  .is-total {
+    flex-wrap: wrap;
+    margin-top: .5rem;
+    padding-top: .875rem;
+    border-top: 2px dashed rgba($navy, .22);
+
+    dt { font-weight: 900; }
+    dd {
+      color: $ride-green; // 奶油底 6.08
+      font-size: 2.5rem;
+    }
+  }
+}
+.ord-calc-note {
+  margin: .75rem 0 0;
+  color: $navy-muted;
+  font-size: .875rem;
+  line-height: 1.7;
+}
+.ord-refund-foot {
+  display: flex;
+  gap: .375rem;
+  margin: 1rem 0 0;
+  color: $navy-muted;
+  font-size: .875rem;
+  line-height: 1.7;
+
+  .bi { flex: none; margin-top: .125rem; color: $ride-green; }
+}
+
+// ---------- 4. 狀態示意（並排與同高的規則在 components/_member-head.scss 的 .member-demos） ----------
+.ord-demo-receipt {
+  max-width: 34rem;
+  margin-inline: auto;
+}
+// 手機：收據左右貼齊舞台（舞台只留上下內距），明細、退款金額、發票號碼不會被擠成一字一行
+.ord-demos .demo-state-stage {
+  @include media-breakpoint-down(sm) {
+    padding-inline: 0;
+  }
+}
+.ord-demos {
+  padding-bottom: $section-padding-y-sm;
+
+  @include media-breakpoint-up(lg) {
+    padding-bottom: $section-padding-y-lg;
+  }
+}

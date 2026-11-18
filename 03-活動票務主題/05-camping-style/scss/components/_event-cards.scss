@@ -1,0 +1,290 @@
+// ============================================================
+// 活動卡
+// - .featured-tag：首頁「本週最多人在看」的直式吊牌卡（卡寬 300px，≥ xl 四張剛好一列）
+// - 活動列表的橫式吊牌卡（.event-tag）由 events.html 的製作者接著寫在這個檔案
+// ============================================================
+
+// ---------- 熱門吊牌卡 ----------
+// <article class="featured-tag tag-card tag-card-strip stitch" style="--hole-bg: …">
+//   <div class="tag-card-body">
+//     <a class="featured-tag-media" href="event.html" tabindex="-1">img＋.postmark＋.tag-scarce</a>
+//     <h3 class="featured-tag-title"><a href="event.html">名稱</a></h3>
+//     <p class="featured-tag-meta">日期｜城市 ‧ 場地</p>
+//     <div class="remaining">…</div>
+//     <div class="featured-tag-foot"><p class="price price-md">NT$ 1,200 起</p><a class="btn btn-primary btn-sm">立即購票</a></div>
+//   </div>
+// </article>
+.featured-tag {
+  height: 100%;
+  transition: border-color .15s ease, box-shadow .15s ease;
+
+  &:hover {
+    border-color: $ember;
+    box-shadow: $shadow-paper;
+  }
+  .tag-card-body {
+    display: flex;
+    flex-direction: column;
+  }
+  .remaining { margin-top: auto; }
+}
+.featured-tag-media {
+  position: relative;
+  display: block;
+  margin-bottom: 1rem;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+    border: 1.5px solid $bark;
+    border-radius: $radius-photo;
+    object-fit: cover;
+  }
+  .postmark {
+    position: absolute;
+    top: -.625rem;
+    left: -.625rem;
+    transform: rotate(-6deg);
+  }
+  .tag-scarce {
+    position: absolute;
+    top: .625rem;
+    right: .625rem;
+  }
+}
+.featured-tag-title {
+  margin-bottom: .375rem;
+  font-family: $font-family-base;
+  font-size: 1.125rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.45;
+
+  a {
+    color: $bark;
+    text-decoration: none;
+    &:hover { color: $ember; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: .25em; }
+  }
+}
+.featured-tag-meta {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.25rem;
+  color: var(--bs-secondary-color);
+  font-size: .875rem;
+  line-height: 1.6;
+
+  .num { color: $bark; font-size: .9375rem; }
+}
+.featured-tag-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  margin-top: 1.125rem;
+  padding-top: 1rem;
+  background: $wave-line-faint left top / $wave-tile repeat-x;
+
+  // 價格不斷行（「NT$ 1,200 起」的「起」不掉到下一行）；只有「免費入場 ‧ 工作坊另計」這種長句可以換行
+  .price { margin: 0; }
+  .price.text-phrase { white-space: normal; }
+  .btn {
+    --bs-btn-padding-x: .75rem;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}
+
+// ---------- 活動列表的橫式吊牌卡（EventCard） ----------
+// 掛在活動列表的步道時間軸上（pages/_events.scss 畫步道、日期旗與接到步道的麻繩）
+// ≥ 768px：橫式吊牌，鉚釘孔在左上（和日期旗同高，麻繩從步道接過來）；卡內 圖 5 : 文 7
+//   992～1199px 有側欄、結果欄較窄，改成圖在上（5 : 7 會把文字擠成一長條）
+// < 768px：直式吊牌（孔在上），圖在上、文字在下
+// 介紹、票種、底列在所有寬度都跨整張卡，避免圖片旁邊留下一大塊空白
+// <article class="event-tag tag-card stitch">
+//   <a class="event-tag-media" href="event.html" tabindex="-1"><img …></a>
+//   <div class="event-tag-head">
+//     <ul class="tag-list">類別＋狀態</ul>
+//     <h2 class="event-tag-title"><a href="event.html">名稱</a></h2>
+//     <ul class="event-tag-meta">主辦、時間、地點（每列一個手繪小圖示）</ul>
+//     <p class="event-tag-price"><span>票價</span><span class="price">NT$ 1,500 起</span></p>
+//   </div>
+//   <p class="event-tag-intro">介紹全文</p>
+//   <ul class="event-tag-types">票種（已售罄的用 <s>）</ul>
+//   <div class="event-tag-foot">.remaining＋追蹤＋主按鈕</div>
+// </article>
+.event-tag {
+  --hole-top: 1.125rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "media" "head" "intro" "types" "foot";
+  gap: 1.125rem;
+  padding: 2.75rem 1.25rem 1.375rem;
+  transition: border-color .15s ease, box-shadow .15s ease;
+
+  &:hover {
+    border-color: $ember;
+    box-shadow: $shadow-paper;
+  }
+
+  @include media-breakpoint-up(md) {
+    --hole-y: 3.25rem; // 孔心離上緣：和日期旗、麻繩同高
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-areas: "media head" "intro intro" "types types" "foot foot";
+    column-gap: 1.5rem;
+    padding: 1.5rem 1.5rem 1.5rem 3rem;
+
+    &::before {
+      top: var(--hole-y);
+      left: 1rem;
+      margin: -.4375rem 0 0;
+    }
+  }
+  @include media-breakpoint-only(lg) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "media" "head" "intro" "types" "foot";
+  }
+}
+.event-tag-media {
+  grid-area: media;
+  display: block;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+    border: 1.5px solid $bark;
+    border-radius: $radius-photo;
+    object-fit: cover;
+  }
+  // ≥ 768px 圖和標題區並排：圖片高度跟著標題區（至少 4:3），不留白
+  @include media-breakpoint-up(md) {
+    img {
+      height: 100%;
+      min-height: 12rem;
+      aspect-ratio: 4 / 3;
+    }
+  }
+  @include media-breakpoint-only(lg) {
+    img {
+      height: auto;
+      min-height: 0;
+      aspect-ratio: 16 / 9;
+    }
+  }
+}
+.event-tag-head {
+  grid-area: head;
+  min-width: 0;
+
+  .tag-list { margin-bottom: .75rem; }
+}
+.event-tag-title {
+  margin-bottom: .75rem;
+  font-family: $font-family-base;
+  font-size: 1.25rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.45;
+  letter-spacing: $letter-spacing-body;
+
+  @include media-breakpoint-up(lg) { font-size: 1.375rem; }
+
+  a {
+    color: $bark;
+    text-decoration: none;
+    &:hover { color: $ember; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: .25em; }
+  }
+}
+// 主辦、時間、地點：每列前一個 20px 手繪小圖示
+.event-tag-meta {
+  margin: 0 0 .875rem;
+  padding: 0;
+  list-style: none;
+  font-size: .9375rem;
+  line-height: 1.6;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+
+    + li { margin-top: .375rem; }
+  }
+  .hand-icon {
+    --hand-size: 1.25rem;
+    margin-top: .125rem;
+  }
+}
+.event-tag-price {
+  display: flex;
+  align-items: baseline;
+  gap: .625rem;
+  margin: 0;
+
+  > span:first-child {
+    color: var(--bs-secondary-color);
+    font-size: .8125rem;
+    font-weight: $font-weight-bold;
+    letter-spacing: $letter-spacing-label;
+  }
+  .price { font-size: $price-size-card; }
+}
+.event-tag-intro {
+  grid-area: intro;
+  margin: 0;
+  color: $bark;
+  font-size: .9375rem;
+}
+// 票種：「票種」小標＋每一種一顆帆布小籤；已售罄的刪除線＋虛線框（不隱藏）
+.event-tag-types {
+  grid-area: types;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: .875rem;
+
+  li {
+    padding: .125rem .625rem;
+    border: 1.5px solid $stone;
+    border-radius: $border-radius-sm;
+    background-color: $canvas;
+  }
+  .event-tag-types-label {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--bs-secondary-color);
+    font-weight: $font-weight-bold;
+    letter-spacing: $letter-spacing-label;
+  }
+  .is-sold-out {
+    border-style: dashed;
+    border-color: $bark-muted;
+    background-color: $kraft;
+    color: $bark;
+  }
+}
+// 底列：剩餘票數撐滿＋追蹤＋主按鈕；< 576px 進度條一列、按鈕一列
+.event-tag-foot {
+  grid-area: foot;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: .75rem;
+  padding-top: 1.125rem;
+  background: $wave-line-faint left top / $wave-tile repeat-x;
+
+  .remaining { flex: 1 1 100%; }
+  .btn { flex: 1 1 0; white-space: nowrap; }
+
+  @include media-breakpoint-up(sm) {
+    .remaining { flex: 1 1 12rem; }
+    .btn { flex: 0 0 auto; }
+  }
+}

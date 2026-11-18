@@ -1,0 +1,131 @@
+// ============================================================
+// ★ 招牌一：四角內凹的經典入場票＋立體微陰影（Soft Shadow）
+//
+// mask 會切掉 box-shadow，所以分成兩層：
+//   .admit        外層：只負責陰影（filter: drop-shadow 串三層，海軍藍帶色）與定位入場章
+//   .admit-paper  內層：四角內凹（mask）、香草紙、內側上緣高光＋下緣厚度、8px 內縮的糖果紅虛線框
+//
+// <article class="admit">
+//   <div class="admit-paper">…票面內容…</div>
+//   <span class="stamp is-valid" aria-hidden="true">…</span>   ← 入場章放在外層，不會被 mask 切掉
+// </article>
+//
+// 變體：
+//   .admit.is-flat     深色帶上：不放陰影（陰影只在淺底上成立）
+//   .admit.is-sm       層級較低的小票（註冊頁的保障票根）：較淺的陰影
+//   .admit.is-link     整張是連結時 hover 只把陰影加深一階（不位移、不放大）
+//   .admit-paper.is-faded   已使用、已過期：票面換淺灰米色
+//   .admit-paper.has-band   上段海軍藍帶（.admit-band）＋下段香草
+//   .admit-paper.no-frame   不畫內縮虛線框
+// 不要做側邊半圓缺口與撕線圓點（那是 02 古典藝文沙龍的票根）
+// ============================================================
+
+@mixin admit-mask($r: $admit-notch) {
+  -webkit-mask:
+    radial-gradient(circle $r at 0 0, #0000 98%, #000) top left / 51% 51% no-repeat,
+    radial-gradient(circle $r at 100% 0, #0000 98%, #000) top right / 51% 51% no-repeat,
+    radial-gradient(circle $r at 0 100%, #0000 98%, #000) bottom left / 51% 51% no-repeat,
+    radial-gradient(circle $r at 100% 100%, #0000 98%, #000) bottom right / 51% 51% no-repeat;
+  mask:
+    radial-gradient(circle $r at 0 0, #0000 98%, #000) top left / 51% 51% no-repeat,
+    radial-gradient(circle $r at 100% 0, #0000 98%, #000) top right / 51% 51% no-repeat,
+    radial-gradient(circle $r at 0 100%, #0000 98%, #000) bottom left / 51% 51% no-repeat,
+    radial-gradient(circle $r at 100% 100%, #0000 98%, #000) bottom right / 51% 51% no-repeat;
+}
+
+.admit {
+  position: relative;
+  filter: $shadow-ticket;
+  transition: filter .2s ease;
+
+  &.is-flat { filter: none; }
+  &.is-sm { filter: $shadow-ticket-sm; }
+  &.is-link:hover,
+  &.is-link:focus-within,
+  &:has(.admit-hit:hover) { filter: $shadow-ticket-hover; }
+  &.is-flat.is-link:hover { filter: none; }
+}
+
+.admit-paper {
+  @include admit-mask;
+  position: relative;
+  height: 100%;
+  padding: 1.375rem; // 內容和 8px 內縮的虛線框之間留 12px
+  --bs-heading-color: #{$navy}; // 放在海軍藍帶裡時，標題仍是海軍藍
+  background-color: $vanilla;
+  color: $navy;
+  box-shadow: $bevel;
+
+  // 8px 內縮的 2px 糖果紅虛線框（裝飾）：圓角 22px 才能避開四角的內凹
+  &::before {
+    content: "";
+    position: absolute;
+    inset: $admit-frame-inset;
+    border: 2px dashed rgba($candy, .45);
+    border-radius: 1.375rem;
+    pointer-events: none;
+  }
+  &.no-frame::before { content: none; }
+
+  > * { position: relative; } // 內容疊在虛線框上面
+
+  &.is-faded {
+    background-color: $ticket-faded;
+    &::before { border-color: rgba($navy-faint, .4); }
+  }
+}
+
+// 上段海軍藍帶（倒數票、電子票券）：活動名奶油字＋一排鮮黃小星
+// <div class="admit-paper has-band"><div class="admit-band">…</div><div class="admit-body">…</div></div>
+.admit-paper.has-band {
+  padding: 0;
+}
+.admit-band {
+  position: relative;
+  padding: 1.25rem 1.25rem 1.5rem;
+  background-color: $navy;
+  color: $cream;
+
+  // 帶子下緣一排鮮黃小星點（靜態）
+  &::after {
+    content: "";
+    position: absolute;
+    left: 1.25rem;
+    right: 1.25rem;
+    bottom: .5rem;
+    height: 6px;
+    background: radial-gradient(circle, $sunny 0 2px, transparent 2.5px) 0 50% / 14px 6px repeat-x;
+    opacity: .9;
+  }
+  h2, h3, .h2, .h3 { color: $cream; }
+  :focus-visible { outline-color: $sunny; }
+}
+.admit-body {
+  padding: 1.375rem;
+}
+// 有海軍藍帶時，虛線框改成只圍住下段：交給 .admit-body 自己畫
+.admit-paper.has-band::before {
+  content: none;
+}
+.admit-paper.has-band .admit-body {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: .5rem .5rem $admit-frame-inset;
+    border: 2px dashed rgba($candy, .45);
+    border-radius: .75rem .75rem 1.375rem 1.375rem;
+    pointer-events: none;
+  }
+  > * { position: relative; }
+}
+
+// 票內的分隔：一條 2px 糖果紅虛線（票根與票面的分界）
+.admit-divider {
+  height: 0;
+  margin: 1rem 0;
+  border: 0;
+  border-top: 2px dashed rgba($candy, .6);
+  opacity: 1;
+}

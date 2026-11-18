@@ -1,0 +1,517 @@
+// ============================================================
+// 首頁 index.html（class 前綴 home-、hero-）
+// 構圖：
+// 1. Hero 滿版（高 min(100svh − 88px, 760px)，至少 600px，用 min-height）：藍調照片＋左半碳纖維遮罩＋掃描線；
+//    H1、副標、兩顆按鈕在左側 6 欄「垂直置中」，外面套只有四角括角的 HUD 框；
+//    倒數「對戰卡」≥ 1200px 在右側、底部離指令列 24px，< 1200px 在按鈕下方
+// 2. 搜尋列＝Hero 底部的指令列（≥ 992px 是 Hero 最下方 96px 的半透明碳纖維帶，不浮出、不壓到下一區；
+//    < 992px 是 Hero 下面的一塊碳纖維面板）
+// 3. 價值主張：4 欄狀態格，格與格之間 1px 槍灰線，不包卡片
+// 4. 情境入口：4 張平行四邊形選角卡並排、間距 8px；城市列是平行四邊形膠囊
+// 5. 本週熱門：$carbon 滿寬帶＋對戰卡橫向軌道（≥ 1400px 4 張剛好一列）
+// 6. 評價與保障 7 : 5：玩家留言（六角頭像）｜入場保障面板（薄荷勾）
+// 7. 主辦方轉換帶：照片＋左側 85% 曜石灰漸層＋掃描線
+// ============================================================
+
+// ---------- 1. Hero ----------
+$home-command-height: 6rem; // 96px
+
+.home-hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: $obsidian;
+
+  @include media-breakpoint-up(lg) {
+    min-height: max(37.5rem, min(calc(100svh - #{$site-header-space}), 47.5rem));
+  }
+}
+.home-hero-img {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 62% 30%;
+
+  @include media-breakpoint-down(lg) {
+    height: 30rem;
+    object-position: 60% 20%;
+  }
+}
+// 遮罩：左半碳纖維（由左 95% 漸到 55% 處 0%）＋整體壓暗＋掃描線
+.home-hero-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    @include carbon-weave;
+    -webkit-mask-image: linear-gradient(90deg, rgba(#000, .95) 0%, rgba(#000, .95) 22%, transparent 55%);
+    mask-image: linear-gradient(90deg, rgba(#000, .95) 0%, rgba(#000, .95) 22%, transparent 55%);
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      $scanlines,
+      linear-gradient(90deg, rgba($obsidian, .55) 0%, rgba($obsidian, .2) 50%, transparent 70%),
+      linear-gradient(180deg, transparent 55%, rgba($obsidian, .7) 100%);
+  }
+
+  // 手機：照片在上方露出舞台，往下逐漸壓成曜石灰（文字壓在 70% 以上的位置）
+  @include media-breakpoint-down(lg) {
+    &::before {
+      -webkit-mask-image: linear-gradient(180deg, transparent 12rem, rgba(#000, .95) 30rem);
+      mask-image: linear-gradient(180deg, transparent 12rem, rgba(#000, .95) 30rem);
+    }
+    &::after {
+      background-image:
+        $scanlines,
+        linear-gradient(180deg, rgba($obsidian, .15) 0, rgba($obsidian, .75) 11rem, rgba($obsidian, .92) 18rem, $obsidian 30rem);
+    }
+  }
+}
+
+.home-hero-inner {
+  display: grid;
+  flex: 1;
+  align-content: center;
+  gap: map-get($spacers, 5);
+  padding-block: 11rem map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--bs-gutter-x);
+    padding-block: map-get($spacers, 5);
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-rows: 1fr auto;
+    align-content: stretch;
+    row-gap: 0;
+    padding-block: map-get($spacers, 5) map-get($spacers, 4); // 倒數卡底部離指令列 24px
+  }
+}
+
+// H1 外面只有四角括角的 HUD 框（不填色）
+.home-hero-copy {
+  @include brackets-on(after, 0);
+  --bracket: #{rgba($arc-hi, .85)};
+  padding: map-get($spacers, 4) map-get($spacers, 4) map-get($spacers, 4);
+
+  &::after {
+    @include bracket-layers(1.5rem, 2px);
+  }
+  @include media-breakpoint-up(sm) {
+    padding: map-get($spacers, 5);
+  }
+  @include media-breakpoint-up(lg) {
+    grid-column: 1 / span 7;
+    margin-left: -2rem; // 括角框往外推 32px，文字仍對齊版心
+    padding-left: 2rem;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-column: 1 / span 6;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+}
+.home-hero-title {
+  margin-bottom: map-get($spacers, 3);
+  font-family: $font-family-display;
+  font-size: clamp(2.5rem, 1.6rem + 3.7vw, 4.5rem); // 40 → 72px
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: .02em;
+  text-shadow: 0 0 2rem rgba($arc, .35);
+}
+.home-hero-lead {
+  max-width: 30em;
+  margin-bottom: map-get($spacers, 4);
+  color: $text;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+
+  @include media-breakpoint-up(lg) {
+    font-size: $lead-font-size;
+  }
+}
+.home-hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+
+  @include media-breakpoint-up(sm) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+}
+
+// 倒數「對戰卡」
+.hero-ticket {
+  position: relative;
+  max-width: 24rem;
+  padding: 0;
+  overflow: visible;
+
+  @include media-breakpoint-up(lg) {
+    grid-column: 1 / span 6;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-column: 9 / span 4;
+    grid-row: 2;
+    justify-self: end;
+    align-self: end;
+    width: 100%;
+    max-width: 23rem;
+  }
+}
+.hero-ticket-head {
+  position: relative;
+  padding: 1.125rem 1.375rem 1rem;
+  border-bottom: 1px solid $gunmetal;
+  background: linear-gradient(100deg, rgba($arc, .22), rgba($arc, 0) 70%);
+
+  // 上緣金屬藍光線
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px 0 auto;
+    height: 2px;
+    background: linear-gradient(90deg, $arc-hi, $arc 50%, transparent);
+  }
+}
+.hero-ticket-title {
+  margin-bottom: .25rem;
+  font-family: $font-family-display;
+  font-size: 1.375rem;
+  line-height: 1.3;
+}
+.hero-ticket-meta {
+  display: grid;
+  gap: .125rem;
+  margin: 0;
+  padding: 0;
+  color: $text-muted;
+  font-size: .875rem;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .bi { color: $arc; }
+}
+.hero-ticket-body {
+  display: grid;
+  gap: 1rem;
+  padding: 1.125rem 1.375rem 1.375rem;
+}
+
+// ---------- 2. 指令列（搜尋列嵌在 Hero 底部） ----------
+.home-command {
+  position: relative;
+  padding-block: map-get($spacers, 4);
+  border-top: 1px solid $arc;
+
+  // 半透明碳纖維帶
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    @include carbon-weave;
+    opacity: .9;
+  }
+  @include media-breakpoint-up(lg) {
+    display: flex;
+    flex: none;
+    align-items: center;
+    height: $home-command-height;
+    padding-block: 0;
+
+    > .container-xl { width: 100%; }
+
+    &::before {
+      opacity: .86;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+  }
+}
+// 指令列內的標籤：≥ 992px 放在欄位左側一起排成一列（帶高只有 96px）
+.home-command .search-bar {
+  @include media-breakpoint-up(lg) {
+    .form-label {
+      margin-bottom: .25rem;
+      font-size: .75rem;
+    }
+  }
+}
+
+// ---------- 3. 價值主張：4 欄狀態格 ----------
+// 格線用「容器底色＋1px 間隙」畫：lg 4 欄只有直線，sm 2 × 2 是十字線，xs 是橫線
+.home-why-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  background-color: $gunmetal;
+  list-style: none;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.home-why-item {
+  position: relative;
+  padding: map-get($spacers, 4) 0;
+  background-color: $obsidian;
+
+  @include media-breakpoint-up(sm) {
+    padding: map-get($spacers, 4);
+  }
+  @include media-breakpoint-up(lg) {
+    padding: map-get($spacers, 2) map-get($spacers, 4) map-get($spacers, 3);
+
+    &:first-child { padding-left: 0; }
+    &:last-child { padding-right: 0; }
+  }
+
+  .hex { margin-bottom: map-get($spacers, 3); }
+  h3 {
+    margin-bottom: map-get($spacers, 2);
+    font-family: $font-family-base;
+  }
+  p {
+    margin: 0;
+    color: $text-muted;
+  }
+}
+// 每格右上的 Oxanium 編號（裝飾）
+.home-why-num {
+  position: absolute;
+  top: map-get($spacers, 4);
+  right: 0;
+  color: $text-faint;
+  font-family: $font-family-display;
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+
+  @include media-breakpoint-up(sm) {
+    right: map-get($spacers, 4);
+  }
+  @include media-breakpoint-up(lg) {
+    top: map-get($spacers, 2);
+  }
+}
+.home-why-item:last-child .home-why-num {
+  @include media-breakpoint-up(lg) { right: 0; }
+}
+
+// ---------- 4. 情境入口 ----------
+.home-scene-list {
+  --bs-gutter-x: .5rem;
+  --bs-gutter-y: .5rem;
+}
+.home-cities {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1.25rem;
+  margin-top: map-get($spacers, 5);
+  padding-top: map-get($spacers, 4);
+  border-top: 1px solid $gunmetal;
+}
+.home-cities-label {
+  margin: 0;
+  color: $text-muted;
+  font-size: .875rem;
+  font-weight: 500;
+}
+
+// ---------- 5. 本週熱門：橫向軌道 ----------
+.home-rail {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: .25rem 0 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 0;
+  list-style: none;
+  scrollbar-color: $control transparent;
+  @include bleed-x;
+
+  > li {
+    flex: 0 0 min(85%, 19rem);
+    scroll-snap-align: start;
+  }
+  @include media-breakpoint-up(xxl) {
+    overflow-x: visible;
+
+    > li { flex: 1 1 0; }
+  }
+}
+.home-rail-nav {
+  @include media-breakpoint-up(xxl) {
+    display: none !important; // ≥ 1400px 4 張剛好一列，箭頭不需要
+  }
+}
+
+// ---------- 6. 評價與保障 ----------
+.home-reviews {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+}
+.home-review {
+  display: grid;
+  flex: 1;
+  grid-template-columns: auto 1fr;
+  align-content: center;
+  gap: 1rem 1.25rem;
+  margin: 0;
+  padding: map-get($spacers, 4);
+
+  + .home-review { border-top: 1px solid $gunmetal; }
+
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 4) map-get($spacers, 5) map-get($spacers, 4) map-get($spacers, 4);
+  }
+  blockquote {
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.8;
+
+    &::before { content: "「"; }
+    &::after { content: "」"; }
+  }
+  figcaption {
+    grid-column: 2;
+    color: $arc;
+    font-family: $font-family-display;
+    font-size: .9375rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+  }
+}
+.home-review-avatar {
+  grid-row: span 2;
+}
+.home-guarantee {
+  height: 100%;
+}
+.home-guarantee-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: map-get($spacers, 2);
+  font-family: $font-family-base;
+  font-size: 1.125rem;
+  font-weight: 700;
+
+  .bi { color: $arc; font-size: 1.25rem; }
+}
+.home-guarantee-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .25rem .875rem;
+    padding-block: map-get($spacers, 3);
+
+    + li { border-top: 1px solid $gunmetal; }
+  }
+  .bi {
+    grid-row: span 2;
+    margin-top: .1em;
+    color: $mint;
+    font-size: 1.25rem;
+  }
+  h3 {
+    margin: 0;
+    font-family: $font-family-base;
+    font-size: 1.0625rem;
+  }
+  p {
+    margin: 0;
+    color: $text-muted;
+  }
+}
+
+// ---------- 7. 主辦方轉換帶 ----------
+.home-organizer {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-block: map-get($spacers, 6);
+  border-top: 1px solid $gunmetal;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7);
+  }
+  > img {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 70% 50%;
+  }
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      $scanlines,
+      linear-gradient(90deg, rgba($obsidian, .92) 0%, rgba($obsidian, .85) 45%, rgba($obsidian, .35) 85%);
+  }
+  @include media-breakpoint-down(lg) {
+    &::before {
+      background-image:
+        $scanlines,
+        linear-gradient(90deg, rgba($obsidian, .9), rgba($obsidian, .8));
+    }
+  }
+}
+.home-organizer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: map-get($spacers, 4);
+
+  h2 { margin-bottom: map-get($spacers, 2); }
+  p {
+    max-width: 34em;
+    margin: 0;
+    color: $text;
+  }
+  .btn { align-self: stretch; }
+
+  @include media-breakpoint-up(sm) {
+    .btn { align-self: flex-start; }
+  }
+}

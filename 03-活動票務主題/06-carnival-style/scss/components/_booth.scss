@@ -1,0 +1,81 @@
+// ============================================================
+// 售票亭 Booth：頂著紅白條紋遮陽棚（下緣扇形）的香草亭身，$shadow-float
+// 用在：活動細節的購票卡（右欄 sticky）、購票卡狀態示意的迷你售票亭、購票紀錄的退票窗口
+//
+// <div class="booth">
+//   <div class="booth-roof" aria-hidden="true"></div>   ← 裝飾：海軍藍屋簷＋鮮黃燈泡＋紅白條紋＋扇形
+//   <div class="booth-body">…</div>
+// </div>
+//
+// 變體：.booth.is-mini（狀態示意的小售票亭：棚子矮一點、內距小一點）
+// 屋簷比亭身左右各寬 8px；扇形垂到亭身上面，扇形之間透出香草亭身
+// ============================================================
+
+// 遮陽棚拼貼：48px 寬、彩色與香草各一條，條紋下端是半圓扇形＋海軍藍描邊
+// 用 background-repeat: round 讓扇形整片排滿（兩端不會切一半），條紋與扇形在同一張圖裡一起縮放
+// $stripe：彩色條紋（預設糖果紅亮）；$seam：條紋之間那條海軍藍細線的不透明度（鮮黃條紋和香草分不太開時加深）
+// 追蹤的主辦方的攤位卡用不同顏色的遮陽棚（糖果紅、鮮黃、海軍藍、糖果紅亮）
+@function booth-awning($h, $stripe: $candy-bright, $seam: .18) {
+  $body: $h - 13;
+  $edge: $h - 1;
+  @return url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='#{$h}' viewBox='0 0 48 #{$h}'%3E%3Cpath fill='#{svg-color($stripe)}' d='M0 0h24v#{$body}a12 12 0 0 1-24 0z'/%3E%3Cpath fill='#{svg-color($vanilla)}' d='M24 0h24v#{$body}a12 12 0 0 1-24 0z'/%3E%3Cpath fill='none' stroke='#{svg-color($navy)}' stroke-width='2' d='M1 #{$body}a11 11 0 0 0 22 0M25 #{$body}a11 11 0 0 0 22 0'/%3E%3Cpath fill='none' stroke='#{svg-color($navy)}' stroke-opacity='#{$seam}' stroke-width='1' d='M24 0v#{$body}'/%3E%3C/svg%3E");
+}
+
+$booth-fascia: .75rem;  // 12px 海軍藍屋簷
+$booth-awning: 44px;    // 條紋＋扇形
+
+.booth {
+  position: relative;
+}
+.booth-roof {
+  position: relative;
+  z-index: 1;
+  height: calc(#{$booth-fascia} + #{$booth-awning});
+  margin-inline: -.5rem;
+  border-radius: 1.125rem 1.125rem 0 0;
+  background:
+    radial-gradient(circle, $sunny 0 2.5px, rgba($sunny, .3) 3px 4.5px, transparent 5px) 9px 0 / 18px #{$booth-fascia} repeat-x,
+    linear-gradient($navy, $navy) 0 0 / 100% #{$booth-fascia} no-repeat,
+    booth-awning(44) 0 #{$booth-fascia} / 48px #{$booth-awning} round no-repeat;
+  filter: drop-shadow(0 3px 2px rgba($navy, .16));
+  pointer-events: none;
+}
+.booth-body {
+  --bs-heading-color: #{$navy};
+  position: relative;
+  margin-top: -.75rem; // 扇形垂到亭身上
+  padding: 2.125rem 1.5rem 1.5rem;
+  border-radius: 0 0 $border-radius-xl $border-radius-xl;
+  background-color: $vanilla;
+  color: $navy;
+  box-shadow: $shadow-float, $bevel;
+
+  @include media-breakpoint-up(xl) {
+    padding-inline: 1.75rem;
+  }
+}
+
+// 迷你售票亭（狀態示意）
+.booth.is-mini {
+  .booth-roof {
+    height: calc(#{$booth-fascia} + 34px);
+    margin-inline: -.375rem;
+    background:
+      radial-gradient(circle, $sunny 0 2.5px, rgba($sunny, .3) 3px 4.5px, transparent 5px) 9px 0 / 18px #{$booth-fascia} repeat-x,
+      linear-gradient($navy, $navy) 0 0 / 100% #{$booth-fascia} no-repeat,
+      booth-awning(34) 0 #{$booth-fascia} / 48px 34px round no-repeat;
+  }
+  .booth-body {
+    padding: 1.75rem 1.125rem 1.25rem;
+    box-shadow: $shadow-soft, $bevel;
+  }
+}
+
+// 亭身裡的小分隔：2px 糖果紅虛線（和入場票的 .admit-divider 同一種線）
+.booth-divider {
+  height: 0;
+  margin: 1.125rem 0;
+  border: 0;
+  border-top: 2px dashed rgba($candy, .45);
+  opacity: 1;
+}

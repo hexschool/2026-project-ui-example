@@ -1,0 +1,312 @@
+// ============================================================
+// 狀態小元件：狀態標籤、血條（剩餘票數）、倒數、HUD 日期框、篩選膠囊
+// 琥珀、紅、薄荷、藍四色一律配圖示與文字（深色底上紅與琥珀容易混）
+// ============================================================
+
+// ---------- 狀態標籤（平行四邊形） ----------
+// <span class="tag">音樂演出</span>                                        類別：控制項框＋曜石灰底（壓在照片上也讀得到）
+// <span class="tag tag-hot"><i class="bi bi-graph-up-arrow"></i>熱賣中</span>    熱賣中：金屬藍框＋亮端藍字
+// <span class="tag tag-free"><i class="bi bi-gift"></i>含免費票種</span>         含免費票種：薄荷框＋薄荷字
+// <span class="tag tag-scarce"><i class="bi bi-fire"></i>即將完售</span>         即將完售／剩 8%：琥珀實心＋深字（10.30:1）
+// <span class="tag tag-soon"><i class="bi bi-clock"></i>即將開賣</span>          即將開賣、尚未開賣：虛線框
+// <span class="tag tag-sold-out">已售罄</span>                                    售罄：槍灰底＋斜線紋
+// <span class="tag tag-ok"><i class="bi bi-check-lg"></i>有效</span>             成功、已付款、有效票、已購票：薄荷實心
+// <span class="tag tag-danger"><i class="bi bi-x-lg"></i>付款失敗</span>         錯誤：警報紅實心
+// <span class="tag tag-info"><i class="bi bi-arrow-repeat"></i>退款處理中</span>  處理中、資訊：金屬藍實心
+// <span class="tag tag-dim"><i class="bi bi-check2-circle"></i>已使用</span>     已使用、已過期、已退款：浮起面底＋槍灰框＋次要字（2026-11 補頁）
+.tag {
+  @include parallelogram(.25rem);
+  --para-bg: #{rgba($obsidian, .85)};
+  --para-border: #{$control};
+  display: inline-flex;
+  align-items: center;
+  gap: .3125rem;
+  padding: .25rem .875rem;
+  color: $text;
+  font-size: .8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: .04em;
+  white-space: nowrap;
+
+  .bi { font-size: .9em; }
+}
+.tag-hot {
+  --para-border: #{$arc};
+  color: $arc-hi;
+}
+.tag-free {
+  --para-border: #{$mint};
+  color: $mint;
+}
+.tag-scarce {
+  --para-bg: #{$amber};
+  --para-border: #{$amber};
+  color: $amber-ink;
+  font-weight: 700;
+}
+.tag-soon {
+  --para-border: #{$control};
+  color: $text-muted;
+
+  &::before { border-style: dashed; }
+}
+.tag-sold-out {
+  --para-border: #{$gunmetal};
+  color: $text-muted;
+
+  &::before {
+    background-color: $gunmetal;
+    background-image: $stripes;
+  }
+}
+.tag-ok {
+  --para-bg: #{$mint};
+  --para-border: #{$mint};
+  color: $mint-ink;
+  font-weight: 600;
+}
+.tag-danger {
+  --para-bg: #{$alert};
+  --para-border: #{$alert};
+  color: $alert-ink;
+  font-weight: 600;
+}
+.tag-info {
+  --para-bg: #{$arc};
+  --para-border: #{$arc};
+  color: $void;
+  font-weight: 600;
+}
+.tag-dim {
+  --para-bg: #{$carbon-hi};
+  --para-border: #{$gunmetal};
+  color: $text-muted;
+}
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------- 血條：剩餘票數 ----------
+// 規則：顏色＋文字＋血條三者並用。整條用 mask 切成 10 格；一般金屬藍、≤ 25% 琥珀、0% 只剩槍灰格＋斜線紋
+// <div class="remain is-scarce">
+//   <p class="remain-meta"><span class="remain-value">剩餘 8%</span><span class="remain-note"><i class="bi bi-fire" aria-hidden="true"></i>即將完售</span></p>
+//   <div class="progress" role="progressbar" aria-label="剩餘票數 8%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: 8%"></div></div>
+// </div>
+$remain-mask: repeating-linear-gradient(90deg, #000 0 calc(10% - 3px), transparent calc(10% - 3px) 10%);
+.remain {
+  min-width: 0;
+}
+.remain-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: .25rem .75rem;
+  margin-bottom: .375rem;
+  font-size: $small-font-size;
+}
+.remain-value {
+  color: $text;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.remain-note {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  color: $text-muted;
+}
+.remain .progress {
+  -webkit-mask-image: $remain-mask;
+  mask-image: $remain-mask;
+  overflow: visible;
+}
+.remain.is-scarce {
+  .remain-value,
+  .remain-note { color: $amber; font-weight: 600; }
+  .progress-bar { background-color: $amber; }
+}
+.remain.is-sold-out {
+  .remain-value { color: $text-muted; }
+  .progress {
+    background-color: $gunmetal;
+    @include hatch(rgba($text, .12), 6px);
+  }
+  .progress-bar { width: 0 !important; }
+}
+
+// ---------- 倒數 ----------
+// 數字固定 Notion 值，不閃爍、不脈衝、不放大。role="timer"，不加 aria-live
+// 行內：<p class="countdown" role="timer"><i class="bi bi-stopwatch" aria-hidden="true"></i><span>距離票價調漲還有 <b class="countdown-num">05</b> 時 …</span></p>
+// HUD 三格數字框（首頁倒數卡、購票卡）：
+// <p class="countdown countdown-hud" role="timer">
+//   <span class="countdown-label"><i class="bi bi-stopwatch" aria-hidden="true"></i>距離票價調漲還有</span>
+//   <span class="countdown-digits"><b class="countdown-box">05</b><span>時</span><b class="countdown-box">12</b><span>分</span><b class="countdown-box">48</b><span>秒</span></span>
+// </p>
+// 狀態：.is-warn（剩 2 分鐘：整組琥珀框＋三角警示圖示）、.is-expired（逾時：faint 字＋斜線紋＋✕）
+.countdown {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  margin: 0;
+  color: $text;
+
+  > .bi { margin-top: .2em; color: $arc; }
+}
+.countdown-num {
+  font-family: $font-family-display;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.countdown-hud {
+  flex-direction: column;
+  gap: .625rem;
+}
+.countdown-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  color: $text-muted;
+  font-size: $small-font-size;
+  font-weight: 500;
+
+  .bi { color: $arc; }
+}
+.countdown-digits {
+  display: flex;
+  align-items: flex-end;
+  gap: .375rem;
+  color: $text-muted;
+  font-size: .875rem;
+  font-weight: 500;
+}
+.countdown-box {
+  @include brackets-on(after, -1px);
+  --bracket: #{$bracket-lit};
+  display: inline-grid;
+  place-items: center;
+  min-width: 3.25rem;
+  height: 3.25rem;
+  padding-inline: .25rem;
+  border: 1px solid $gunmetal;
+  background-color: $obsidian;
+  color: $text;
+  font-family: $font-family-display;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 0 12px rgba($arc, .18);
+}
+.countdown.is-warn {
+  color: $amber;
+
+  > .bi,
+  .countdown-label .bi { color: $amber; }
+  .countdown-box {
+    --bracket: #{$amber};
+    border-color: rgba($amber, .6);
+    color: $amber;
+    box-shadow: none;
+  }
+}
+.countdown.is-expired {
+  color: $text-faint;
+
+  > .bi,
+  .countdown-label .bi { color: $text-faint; }
+  .countdown-box {
+    --bracket: #{$gunmetal};
+    color: $text-faint;
+    box-shadow: none;
+    @include hatch;
+  }
+}
+
+// ---------- HUD 日期框（首頁熱門卡左上） ----------
+// <p class="date-chip"><span class="date-chip-month">10月</span><span class="date-chip-day">18</span></p>
+.date-chip {
+  @include brackets-on(after, -1px);
+  --bracket: #{$bracket-lit};
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 3.5rem;
+  margin: 0;
+  padding: .375rem .5rem .4375rem;
+  border: 1px solid $gunmetal;
+  background-color: rgba($obsidian, .88);
+  line-height: 1;
+}
+.date-chip-month {
+  color: $text-muted;
+  font-size: .75rem;
+  font-weight: 500;
+}
+.date-chip-day {
+  margin-top: .25rem;
+  color: $text;
+  font-family: $font-family-display;
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- 篩選膠囊（平行四邊形） ----------
+// <button class="chip" type="button" aria-pressed="false">台北</button>；連結也可以用（首頁城市列）
+// 未選：控制項框＋鋼白字；hover：框線變金屬藍、底變浮起面；已選（aria-pressed="true"）：金屬藍實心＋$void 字
+.chip {
+  @include parallelogram(.3125rem);
+  --para-border: #{$control};
+  --para-bg: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  padding: .375rem 1.25rem;
+  border: 0;
+  background: none;
+  color: $text;
+  font-size: .9375rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+
+  // 文字顏色與底色同時切換（不轉場），已選與未選之間不會閃一下深字配透明底；只留框線與光暈的轉場
+  &::before {
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+  }
+  &:hover {
+    --para-border: #{$arc};
+    --para-bg: #{$carbon-hi};
+    color: $text;
+  }
+  &[aria-pressed="true"] {
+    --para-border: #{$arc};
+    --para-bg: #{$arc};
+    --para-shadow: #{$glow-selected};
+    color: $void;
+    font-weight: 700;
+  }
+  &:focus-visible {
+    outline: 2px solid $arc-hi;
+    outline-offset: 2px;
+  }
+}
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem .25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

@@ -1,0 +1,281 @@
+// ============================================================
+// 頁首：懸浮 HUD 列
+// - sticky、離視窗上緣 12px（$site-header-inset），收在版心內（1920 寬時左右露出曜石灰）
+// - 碳纖維紋 92% 不透明＋backdrop-filter 模糊（畫在 ::before，不放在 Offcanvas 的祖先上，
+//   否則 position: fixed 的 Offcanvas 會被困在頁首裡），四角 L 形括角（::after）
+// - 中間導覽是兩格分段控制鈕「首頁｜活動列表」，目前頁是金屬藍實心段＋$void 字
+// - < 992px：品牌＋搜尋圖示＋選單鈕，選單是 Bootstrap Offcanvas（由右滑出、碳纖維底，Esc 可關）
+//   ≥ 992px 同一個 Offcanvas 由 Bootstrap 的 .navbar-expand-lg 變回頁首裡的一般區塊
+// - 頁首 z-index 1046：高於 Offcanvas 的遮罩（1040），低於 Modal 的遮罩（1050）
+// ============================================================
+
+.site-header {
+  position: sticky;
+  top: $site-header-inset;
+  z-index: $zindex-offcanvas + 1;
+  margin-block: $site-header-inset;
+}
+
+.site-hud {
+  @include brackets-on(after, 0);
+  --bs-navbar-padding-x: 0;
+  --bs-navbar-padding-y: 0;
+  isolation: isolate;
+  flex-wrap: nowrap;
+  height: $site-header-height;
+  padding: 0 .5rem 0 .875rem;
+
+  @include media-breakpoint-up(sm) {
+    padding-inline: 1.25rem .75rem;
+  }
+
+  // 玻璃底：碳纖維紋＋模糊
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    @include carbon-weave;
+    border: 1px solid $gunmetal;
+    opacity: .92;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
+// ---------- 品牌：六角徽章＋StageOne（Oxanium 700）＋城市現場 ----------
+.site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin-right: 0;
+  color: $text;
+  text-decoration: none;
+
+  &:hover {
+    color: $text;
+  }
+}
+.site-brand-mark {
+  flex-shrink: 0;
+  width: 2.125rem;
+  height: auto;
+}
+.site-brand-name {
+  font-family: $font-family-display;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: $letter-spacing-brand;
+}
+.site-brand-sub {
+  padding-left: .5rem;
+  border-left: 1px solid $gunmetal;
+  color: $text-muted;
+  font-size: .8125rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: .12em;
+}
+
+// ---------- < 992px 右側：搜尋圖示＋選單鈕 ----------
+.site-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: $text;
+  font-size: 1.375rem;
+  transition: border-color .15s ease-in-out, background-color .15s ease-in-out, color .15s ease-in-out;
+
+  &:hover {
+    border-color: $gunmetal;
+    background-color: $carbon-hi;
+    color: $arc-hi;
+  }
+  &:focus { box-shadow: none; }
+  &:focus-visible {
+    outline: 2px solid $arc-hi;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 6px rgba($arc, .35);
+  }
+}
+.navbar-toggler.site-icon-btn {
+  padding: 0;
+  border-color: transparent;
+}
+
+// ---------- 選單（< 992px 是 Offcanvas，≥ 992px 是頁首中間＋右側） ----------
+.site-offcanvas {
+  @include media-breakpoint-down(lg) {
+    @include carbon-weave;
+    border-left: 1px solid $gunmetal !important;
+    box-shadow: $shadow-float;
+
+    // 上緣一條金屬藍光線
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, $arc, transparent);
+    }
+
+    .offcanvas-header {
+      border-bottom: 1px solid $gunmetal;
+    }
+    .offcanvas-body {
+      display: flex;
+      flex-direction: column;
+      gap: map-get($spacers, 4);
+    }
+  }
+
+  @include media-breakpoint-up(lg) {
+    .offcanvas-body {
+      flex-grow: 1;
+      align-items: center;
+    }
+  }
+}
+.site-offcanvas-title {
+  margin: 0;
+  color: $arc;
+  font-family: $font-family-display;
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: $letter-spacing-hud;
+}
+
+// 主導覽：≥ 992px 分段控制鈕；< 992px 直列清單
+.site-nav {
+  .nav-link {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: $text-muted;
+    font-weight: 500;
+    transition: color .15s ease-in-out;
+
+    &:hover { color: $text; }
+    &.active { color: $text; }
+  }
+
+  @include media-breakpoint-down(lg) {
+    .nav-item + .nav-item { border-top: 1px solid $gunmetal; }
+
+    .nav-link {
+      position: relative;
+      min-height: 3rem;
+      padding-inline: 1rem;
+      font-size: 1.0625rem;
+
+      &.active {
+        color: $arc-hi;
+
+        &::before {
+          content: "";
+          position: absolute;
+          inset: .625rem auto .625rem 0;
+          width: 4px;
+          background: $arc;
+        }
+      }
+    }
+  }
+
+  @include media-breakpoint-up(lg) {
+    @include parallelogram(.375rem);
+    --para-border: #{$control};
+    --para-bg: #{rgba($obsidian, .55)};
+    margin-inline: auto;
+    padding: 3px .5rem;
+
+    .nav-link {
+      @include parallelogram(.375rem);
+      justify-content: center;
+      min-width: 7.5rem;
+      padding-inline: 1.5rem;
+      // 段與段之間的斜分隔線（目前頁、hover 時被底色蓋過）
+      --para-bg: transparent;
+
+      &:hover {
+        --para-bg: #{$carbon-hi};
+      }
+      &.active {
+        --para-bg: linear-gradient(100deg, #{$arc-hi}, #{$arc} 50%, #{$arc-deep});
+        --para-shadow: #{$glow-btn};
+        color: $void;
+        font-weight: 700;
+      }
+    }
+    .nav-item + .nav-item {
+      margin-left: -.25rem; // 兩段的斜邊貼在一起
+    }
+  }
+}
+
+// 右側動作：搜尋、登入／註冊、我要辦活動
+.site-header-actions {
+  display: flex;
+  flex-direction: column;
+  gap: map-get($spacers, 2);
+
+  @include media-breakpoint-up(lg) {
+    flex-direction: row;
+    align-items: center;
+    gap: map-get($spacers, 1);
+
+    .btn-primary { margin-left: map-get($spacers, 2); }
+  }
+  @include media-breakpoint-down(lg) {
+    padding-top: map-get($spacers, 3);
+    border-top: 1px solid $gunmetal;
+
+    .btn {
+      width: 100%;
+      min-height: 3rem;
+      font-size: 1rem;
+    }
+  }
+}
+
+// ---------- 搜尋列：接在 HUD 列正下方、同寬 ----------
+.site-search {
+  margin-top: .5rem;
+}
+.site-search-form {
+  @include brackets-on(after, 0);
+  --bracket: #{$bracket-lit};
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .625rem;
+  border: 1px solid $gunmetal;
+  @include carbon-weave;
+
+  > .bi {
+    flex-shrink: 0;
+    padding-left: .5rem;
+    color: $arc;
+    font-size: 1.125rem;
+  }
+  .form-control {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .btn {
+    flex-shrink: 0;
+  }
+  @include media-breakpoint-down(sm) {
+    flex-wrap: wrap;
+
+    > .bi { display: none; }
+    .form-control { flex-basis: 100%; }
+    .btn { width: 100%; }
+  }
+}

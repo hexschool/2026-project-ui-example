@@ -1,0 +1,299 @@
+// ============================================================
+// 購票確認與快速支付 checkout.html
+// 0 H1 視覺隱藏
+// 1 #stepper：打包清單步驟列（components/_pack-steps.scss）sticky 在頁首下方；帆布通欄、下緣手繪波浪
+// 2 設計稿狀態示意：步驟列的警示（芥末黃）與逾時（牛皮紙＋虛線）兩種整列狀態
+// 3 主體 7 : 5：左兩個「收納袋」（帆布營地卡＋縫線，左上一片牛皮紙布標放 H2）＝購票人資訊、付款；
+//   右「牛皮紙裝箱單」訂單明細（components/_order-summary.scss）≥ 992px sticky；< 992px 收成「查看明細」列放在最上面
+// 4 #result：鼠尾草通欄＋等高線；成功（電子票券吊牌輪播）／失敗兩種結果
+// < 992px：底部固定列（應付總額＋確認付款）
+// ============================================================
+
+// ---------- 1. 步驟列 ----------
+// 黏在頁首本體（76px）正下方；頁首底緣的波浪（10px）蓋在步驟列上緣，上內距多留 10px
+.checkout-stepper {
+  position: sticky;
+  top: $site-header-height;
+  z-index: $zindex-sticky - 1;
+  padding-block: calc(.875rem + #{$site-header-wave}) .875rem;
+  background-color: $canvas;
+
+  // 下緣手繪波浪
+  &::after {
+    content: "";
+    position: absolute;
+    top: calc(100% - 1px);
+    left: 0;
+    right: 0;
+    height: $site-header-wave;
+    pointer-events: none;
+    background: $wave-header left top / 480px 100% repeat-x;
+  }
+  @include media-breakpoint-up(lg) { padding-block: calc(1rem + #{$site-header-wave}) 1rem; }
+}
+// 付款成功（#result 是目前錨點）時，終點換成裝滿的背包
+:root:has(#result:target) .checkout-stepper .pack-steps-bag-icon {
+  img:first-child { opacity: 0; }
+  .is-full { opacity: 1; }
+}
+
+// ---------- 2～3. 主體 ----------
+.checkout-body {
+  padding-block: 2.5rem 4rem;
+
+  @include media-breakpoint-up(lg) { padding-block: 3.25rem 7.5rem; }
+}
+.checkout-timer-demo {
+  margin-bottom: 3rem;
+
+  @include media-breakpoint-up(lg) { margin-bottom: 4.5rem; }
+}
+
+// 右欄：訂單明細（≥ 992px sticky，上方讓出麻繩）
+.checkout-summary {
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: calc(#{$sticky-top-offset} + 6.5rem); // 步驟列（約 70px）＋麻繩
+    padding-top: .5rem;
+  }
+  @include media-breakpoint-down(lg) {
+    #orderSummary .packing-slip { margin-top: 3rem; }
+  }
+}
+// < 992px：「查看明細」列（牛皮紙小條；收合時只顯示應付總額）
+.checkout-summary-toggle {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: .625rem 1rem;
+  border: 1.5px solid $bark;
+  border-radius: $border-radius-lg;
+  background-color: $kraft;
+  color: $bark;
+  text-align: left;
+  transition: background-color .15s ease;
+
+  &:hover { background-color: mix($kraft, $canvas, 70%); }
+}
+.checkout-summary-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  font-weight: $font-weight-bold;
+}
+.checkout-summary-toggle-total {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .5rem;
+  margin-left: auto;
+  font-size: .875rem;
+
+  .price { font-size: 1.25rem; }
+}
+.checkout-summary-toggle-icon {
+  transition: transform .2s ease;
+
+  [aria-expanded="true"] > & { transform: rotate(180deg); }
+}
+
+// 左欄：收納袋
+// 上方留 1rem：布標凸出收納袋上緣，不要貼到「查看明細」列
+.checkout-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  padding-top: 1rem;
+}
+.pouch {
+  padding-top: 1.25rem;
+
+  @include media-breakpoint-up(md) { padding: 1.5rem 2rem 2rem; }
+
+  // 布標：H2 芫荽，貼在左上角（往外凸出一點，像縫上去的標籤）
+  // inline-block 的負上邊界拉不出卡片，改成 block＋fit-content
+  .cloth-label {
+    display: block;
+    width: fit-content;
+    margin: -2.5rem 0 1.5rem -.5rem;
+    font-size: 1.625rem;
+    line-height: 1.3;
+
+    @include media-breakpoint-up(md) { margin: -2.75rem 0 1.75rem -1rem; font-size: 1.75rem; }
+  }
+}
+.pouch-note {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 1rem 0 0;
+  color: var(--bs-secondary-color);
+  font-size: .875rem;
+
+  .hand-icon { --hand-size: 1.5rem; }
+}
+.pouch-demo {
+  margin-top: 2.25rem;
+  background-color: $mud;
+}
+
+// 快速支付：3 顆帆布小吊牌鈕（圖示＋文字）；hover 換炭橘框與橘淡底；< 768px 上下排
+.quick-pay {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  background: $wave-line-faint left bottom / $wave-tile repeat-x;
+}
+.quick-pay-title {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: .75rem;
+  font-weight: $font-weight-bold;
+
+  .bi { color: $ember; }
+}
+.quick-pay-list {
+  display: grid;
+  gap: .75rem;
+
+  // ≥ 768px 一列三顆；欄寬不夠（992px 左欄較窄）時自動換成兩欄，不讓「Apple Pay」斷成兩行
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
+}
+.quick-pay-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 3.25rem;
+  padding: .5rem .75rem .5rem 1.625rem;
+  white-space: nowrap;
+  border: 1.5px solid $bark;
+  border-radius: $border-radius;
+  background-color: $canvas;
+  color: $bark;
+  font-weight: $font-weight-bold;
+  text-decoration: none;
+  transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+
+  // 左端一個小鉚釘孔（吊牌）
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: .75rem;
+    width: .5rem;
+    height: .5rem;
+    margin-top: -.25rem;
+    border: 1.5px solid $bark;
+    border-radius: 50%;
+    background-color: $mud;
+    box-shadow: 0 0 0 2px $stone;
+  }
+  .bi { font-size: 1.125rem; }
+
+  &:hover {
+    border-color: $ember;
+    background-color: $orange-soft;
+    box-shadow: 0 0 0 .5px $ember;
+    color: $bark;
+  }
+}
+
+// 其他付款方式：radio＋收合面板（選了才展開；:has()）
+.pay-options {
+  margin: 0 0 1.5rem;
+  padding: 0;
+  border: 0;
+}
+.pay-option {
+  border: 1.5px solid $bark;
+  border-radius: $border-radius;
+  background-color: $canvas;
+  transition: background-color .15s ease;
+
+  + .pay-option { margin-top: .75rem; }
+
+  &:has(.pay-option-head input:checked) {
+    background-color: $selected-bg;
+    box-shadow: 0 0 0 .5px $bark;
+
+    .pay-option-panel { display: block; }
+  }
+}
+.pay-option-head {
+  min-height: 3.5rem;
+  margin: 0;
+  padding: .375rem 1rem;
+
+  .form-check-label {
+    flex: 1 1 auto;
+    align-self: stretch;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-weight: $font-weight-bold;
+    cursor: pointer;
+  }
+}
+.pay-option-panel {
+  display: none;
+  padding: 1rem 1rem 1.25rem;
+  background: $wave-line-faint left top / $wave-tile repeat-x;
+
+  @include media-breakpoint-up(md) { padding-inline: 1.25rem; }
+}
+
+.checkout-agree {
+  margin-bottom: 1.25rem;
+
+  a { color: $ember; font-weight: $font-weight-bold; }
+}
+// 付款按鈕：野營橘貼紙，高 56px
+.pay-button {
+  min-height: 3.5rem;
+  gap: .5rem;
+
+  .num { font-size: 1.125em; }
+}
+.checkout-secure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .375rem;
+  margin: .875rem 0 0;
+  color: var(--bs-secondary-color);
+  font-size: .8125rem;
+  text-align: center;
+}
+
+// ---------- 4. 付款結果 ----------
+// 鼠尾草通欄延伸到頁尾山稜線底下（頁尾上方 3rem 留白原本透出泥灰）
+.checkout-result {
+  margin-bottom: -3rem;
+  padding-bottom: calc(#{$section-space} + 3rem);
+  @include media-breakpoint-up(lg) { padding-bottom: calc(#{$section-space-lg} + 3rem); }
+
+  .result-panel { --hole-bg: #{$canvas}; }
+  .eticket { --hole-bg: #{$canvas}; }
+  .eticket-carousel {
+    margin-inline: auto;
+    max-width: 26rem;
+
+    .carousel-item { padding: 2.25rem .25rem .5rem; }
+  }
+  .result-panel.is-failed .result-text { max-width: 26rem; }
+}
+
+// ---------- 底部固定列 ----------
+.mobile-bar-total {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-size: .8125rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.3;
+
+  .price { font-size: 1.375rem; }
+}

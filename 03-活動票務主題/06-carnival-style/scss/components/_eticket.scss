@@ -1,0 +1,163 @@
+// ============================================================
+// 電子票券 ETicket：直式四角內凹入場票（.admit），最寬 380px
+// 上段海軍藍帶（活動名奶油字、票種｜入場時間、日期場地＋一排鮮黃小星）→ 下段香草：白底 QR（圓角 16px 白框、四角四顆小代幣）
+// → 說明與票號；入場章放在 .admit 外層的票身右側，壓住票緣一半（不蓋到 QR 的定位方塊）
+// 用在：結帳 #result、電子票券詳情、Guideline 的元件狀態
+//
+// <article class="admit eticket" aria-label="電子票券 T-4471-01">
+//   <div class="admit-paper has-band">
+//     <div class="admit-band eticket-band">
+//       <h4 class="eticket-title">午夜噪音祭 Vol.7</h4>
+//       <p class="eticket-meta"><span>預售全票</span><span class="num">入場時間 19:30</span></p>
+//       <p class="eticket-meta">…</p>
+//     </div>
+//     <div class="admit-body eticket-body">
+//       <div class="qr-frame"><svg class="qr" …>…</svg></div>
+//       <p class="eticket-note">…</p>
+//       <p class="eticket-no">票號 <span class="num">T-4471-01</span></p>
+//     </div>
+//   </div>
+//   <span class="stamp is-valid eticket-stamp" aria-hidden="true"><i class="bi bi-check-lg"></i><span class="stamp-text">有效</span></span>
+// </article>
+//
+// 4 態：有效（遊樂綠章）、.is-used（海軍藍章「已使用」＋QR 上 60% 香草遮罩）、
+//       .is-expired（灰章＋整張 $navy-faint 字＋QR 模糊）、.is-cancelled（莓果紅章；提示框放在票券旁邊）
+// ============================================================
+
+.eticket {
+  width: 100%;
+  max-width: 23.75rem; // 380px
+  margin-inline: auto;
+  text-align: center;
+
+  .admit-paper { padding: 0; }
+}
+.eticket-band {
+  padding: 1.5rem 1.5rem 1.75rem;
+}
+.eticket-title {
+  margin-bottom: .5rem;
+  color: $cream;
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1.3;
+}
+.eticket-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 .375rem;
+  margin-bottom: .125rem;
+  color: rgba($cream, .92);
+  font-size: .9375rem;
+  line-height: 1.6;
+
+  // 「預售全票 ｜ 入場時間 19:30」：兩段之間一條鮮黃短直線
+  > span + span::before {
+    content: "";
+    display: inline-block;
+    width: 2px;
+    height: .875em;
+    margin-right: .5rem;
+    background-color: $sunny;
+    vertical-align: -.0625em;
+  }
+}
+// 日期與場地：≥ 576px 一行、用「‧」分隔；手機拆成兩行，不留分隔點
+.eticket-meta.is-plain {
+  display: block;
+
+  > span + span::before { content: none; }
+
+  @include media-breakpoint-down(sm) {
+    > span { display: block; }
+    > .eticket-sep { display: none; }
+  }
+}
+.eticket-body {
+  padding: 1.5rem 1.5rem 1.375rem;
+}
+
+// QR：白底圓角框＋四角四顆小代幣（在框的留白裡，不會蓋到 QR 的定位方塊）
+.qr-frame {
+  position: relative;
+  width: 100%;
+  max-width: 12.5rem; // 200px
+  margin: 0 auto 1rem;
+  padding: .75rem;
+  border: 2px solid $navy;
+  border-radius: $border-radius;
+  background:
+    radial-gradient(circle, $sunny 0 3px, $navy 3.5px 4.5px, transparent 5px) top .25rem left .25rem / 10px 10px no-repeat,
+    radial-gradient(circle, $sunny 0 3px, $navy 3.5px 4.5px, transparent 5px) top .25rem right .25rem / 10px 10px no-repeat,
+    radial-gradient(circle, $sunny 0 3px, $navy 3.5px 4.5px, transparent 5px) bottom .25rem left .25rem / 10px 10px no-repeat,
+    radial-gradient(circle, $sunny 0 3px, $navy 3.5px 4.5px, transparent 5px) bottom .25rem right .25rem / 10px 10px no-repeat,
+    $white;
+}
+.qr {
+  display: block;
+  width: 100%;
+  height: auto;
+
+  .qr-bg { fill: $white; }
+  .qr-modules { fill: $navy; }
+}
+.eticket-note {
+  margin-bottom: .5rem;
+  color: $navy-muted;
+  font-size: .875rem;
+  font-weight: 700;
+
+  .bi { margin-right: .25rem; color: $candy; }
+}
+.eticket-no {
+  margin-bottom: 0;
+  font-weight: 700;
+
+  .num {
+    font-size: 1.125rem;
+    letter-spacing: .04em;
+    white-space: nowrap; // 票號不從「T-」後面斷開
+  }
+}
+
+// 入場章：票身右側、QR 框的旁邊（從下緣量，海軍藍帶換行變高也不會壓到帶子），一半壓出票緣
+// QR 框最寬 200px 置中，章在框外側，不會蓋到 QR 的定位方塊
+// 票面變窄、「每 60 秒自動更新」換成兩行時，用 --eticket-stamp-bottom 把章往上移（Guideline 的 4 態用 7.5rem），章不能蓋到這行
+.eticket-stamp {
+  top: auto;
+  bottom: var(--eticket-stamp-bottom, 6.5rem);
+  right: calc(var(--stamp-size) * -.42);
+
+  // 手機票面較窄，QR 框兩側沒有空間：章改到右下角（票號那一列的右邊），一樣不碰 QR 框
+  @include media-breakpoint-down(sm) {
+    --stamp-size: 4.5rem;
+    bottom: .75rem;
+    right: -.25rem;
+  }
+}
+// 手機：票號往左讓出章的位置
+.eticket-no {
+  @include media-breakpoint-down(sm) { padding-right: 3.5rem; }
+}
+
+// 已使用：QR 上 60% 香草遮罩
+.eticket.is-used .qr-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: rgba($vanilla, .6);
+}
+// 已過期：整張降成 $navy-faint，QR 模糊
+.eticket.is-expired {
+  filter: $shadow-ticket-sm;
+
+  .admit-paper { background-color: $ticket-faded; }
+  .admit-band { background-color: $navy-faint; }
+  .admit-band::after { opacity: .5; }
+  .eticket-body,
+  .eticket-note,
+  .eticket-note .bi { color: $navy-faint; }
+  .qr { filter: blur(3px); opacity: .55; }
+}

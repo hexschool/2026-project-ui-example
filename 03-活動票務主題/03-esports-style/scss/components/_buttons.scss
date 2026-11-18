@@ -1,0 +1,196 @@
+// ============================================================
+// 按鈕：平行四邊形（-12° 斜切，只斜底與框，文字不斜）
+// - .btn-primary：金屬藍漸層＋光暈，上面放 $void 字（漸層最差點 4.94:1）
+// - .btn-primary.btn-sweep：高能動態發光按鈕，一道斜向光帶每 4 秒從左掃到右一次（0.9 秒走完）
+//   只給主流程按鈕：首頁「找本週活動」與倒數卡「立即購票」、活動細節「選擇票種」與出擊列「下一步：確認訂單」、
+//   結帳「確認付款 NT$ 5,974」、註冊「完成註冊」。同一個視窗內最多一顆在掃光：
+//   同一屏有兩顆時，第二顆加 .btn-sweep-late（延後 2 秒），兩顆永遠不會同時在掃
+// - .btn-secondary：透明底＋控制項框線（3.56:1）平行四邊形；hover 框線變金屬藍、底變浮起面
+// - .btn-text：文字按鈕（44px 觸控高度），hover 變鋼白＋底線
+// - .btn-icon：方形括角鈕（44 × 44，熱門列左右箭頭、分享）
+// hover 只換顏色、框線、底色與光暈；不改尺寸、不位移
+// ============================================================
+
+.btn {
+  --para-bg: transparent;
+  --para-border: transparent;
+  --para-shadow: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  letter-spacing: .04em;
+  white-space: nowrap;
+
+  .bi {
+    font-size: 1.05em;
+    line-height: 1;
+  }
+
+  // 焦點環畫在按鈕本身（矩形），不會被平行四邊形的斜邊切掉
+  &:focus-visible {
+    outline: 2px solid $arc-hi;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 6px rgba($arc, .35);
+  }
+}
+
+// ---------- 主要按鈕 ----------
+.btn-primary,
+.btn-secondary {
+  @include parallelogram(.3125rem);
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-bg: transparent;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-bg: transparent;
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+}
+.btn-lg.btn-primary,
+.btn-lg.btn-secondary {
+  &::before { inset: 0 .375rem; } // 高 56px：斜邊突出 6px
+}
+
+.btn-primary {
+  --para-bg: linear-gradient(100deg, #{$arc-hi} 0%, #{$arc} 42%, #{$arc-deep} 100%);
+  --para-shadow: #{$glow-btn};
+  --bs-btn-color: #{$void};
+  --bs-btn-hover-color: #{$void};
+  --bs-btn-active-color: #{$void};
+  --bs-btn-disabled-color: #{$text-faint};
+
+  &:hover {
+    --para-bg: linear-gradient(100deg, #{$arc-hi} 0%, #{mix($arc-hi, $arc, 40%)} 50%, #{$arc} 100%);
+    --para-shadow: #{$glow-btn-hover};
+  }
+  &:active {
+    --para-bg: linear-gradient(100deg, #{$arc} 0%, #{$arc-deep} 100%);
+    --para-shadow: 0 0 0 1px #{rgba($arc, .7)};
+  }
+  &:disabled,
+  &.disabled {
+    --para-bg: #{$carbon-hi};
+    --para-border: #{$gunmetal};
+    --para-shadow: none;
+  }
+}
+
+// 掃光：::after 是一道斜向光帶，只動背景位置（偽元素已經用同一個 -12° 斜切，光帶不會跑出平行四邊形）
+.btn-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0 .3125rem;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 0%, rgba(#fff, .5) 50%, transparent 100%) no-repeat;
+  background-size: 40% 100%;
+  background-position: -70% 0;
+  transform: skewX($skew);
+  animation: btn-sweep 4s cubic-bezier(.4, 0, .2, 1) infinite;
+}
+.btn-lg.btn-sweep::after {
+  inset: 0 .375rem;
+}
+.btn-sweep-late::after {
+  animation-delay: 2s;
+}
+.btn-sweep:disabled::after,
+.btn-sweep.disabled::after {
+  display: none;
+}
+@keyframes btn-sweep {
+  0% { background-position: -70% 0; }
+  22.5% { background-position: 170% 0; } // 0.9 秒走完
+  100% { background-position: 170% 0; }  // 停 3.1 秒
+}
+
+// ---------- 次要按鈕 ----------
+.btn-secondary {
+  --para-bg: transparent;
+  --para-border: #{$control};
+  --bs-btn-color: #{$text};
+  --bs-btn-hover-color: #{$text};
+  --bs-btn-active-color: #{$text};
+  --bs-btn-disabled-color: #{$text-faint};
+
+  &:hover {
+    --para-bg: #{$carbon-hi};
+    --para-border: #{$arc};
+  }
+  &:active,
+  &[aria-pressed="true"] {
+    --para-bg: #{$arc-tint};
+    --para-border: #{$arc};
+  }
+  &[aria-pressed="true"] {
+    --bs-btn-color: #{$arc-hi};
+    --bs-btn-hover-color: #{$arc-hi};
+  }
+  &:disabled,
+  &.disabled {
+    --para-bg: transparent;
+    --para-border: #{$gunmetal};
+  }
+}
+
+// ---------- 文字按鈕 ----------
+.btn-text {
+  --bs-btn-color: #{$text-muted};
+  --bs-btn-hover-color: #{$text};
+  --bs-btn-active-color: #{$text};
+  --bs-btn-padding-x: .75rem;
+  --bs-btn-border-width: 0;
+  min-height: 2.75rem;
+  font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+    text-decoration-color: $arc;
+    text-underline-offset: .35em;
+  }
+}
+
+// ---------- 方形括角圖示鈕 ----------
+.btn-icon {
+  @include brackets-on(after, 0);
+  --bs-btn-color: #{$text};
+  --bs-btn-hover-color: #{$arc-hi};
+  --bs-btn-active-color: #{$arc-hi};
+  --bs-btn-bg: #{$carbon};
+  --bs-btn-hover-bg: #{$carbon-hi};
+  --bs-btn-active-bg: #{$carbon-hi};
+  --bs-btn-border-color: #{$gunmetal};
+  --bs-btn-hover-border-color: #{$control};
+  --bs-btn-active-border-color: #{$arc};
+  --bs-btn-disabled-color: #{$text-faint};
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: #{$gunmetal};
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+
+  &:hover { --bracket: #{$bracket-lit}; }
+  &:disabled { --bracket: transparent; }
+}
+
+// ---------- 載入中（鎖定） ----------
+// <button class="btn btn-primary btn-lg w-100 is-loading" type="button" disabled>
+//   <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>付款處理中…
+// </button>
+.btn.is-loading {
+  cursor: progress;
+  line-height: 1.4;
+  white-space: normal; // 「付款處理中，請勿關閉或重新整理頁面…」在窄螢幕換行，不撐出按鈕
+  text-wrap: balance;  // 換行時兩行平均，不會最後一行只剩一兩個字
+
+  &::after { display: none; } // 鎖定時不掃光
+
+  // < 576px：縮小字級與左右內距（仍保留 20px 給斜邊），讓文字剛好分成平均的兩行
+  @include media-breakpoint-down(sm) {
+    --bs-btn-padding-x: 1.25rem;
+    --bs-btn-font-size: 1rem;
+    gap: .375rem;
+  }
+}

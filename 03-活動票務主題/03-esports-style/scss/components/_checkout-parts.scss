@@ -1,0 +1,550 @@
+// ============================================================
+// 結帳共用元件：任務進度條（Stepper）、耗盡計時條、任務面板、戰利品面板（訂單明細）、快速支付、付款結果
+// Guideline 的「任務進度條 3 態」也用這一組 class
+// ============================================================
+
+// ---------- 任務進度條（Stepper） ----------
+// 滿版碳纖維帶（.mission-bar，sticky 在頁首下方 84px）裡放 .mission：
+// <div class="mission-bar"><div class="container-xl"><div id="stepper" class="mission">
+//   <p class="hud-label mission-label" aria-hidden="true">Stepper</p>
+//   <ol class="mission-steps"><li class="is-done">…</li><li class="is-current" aria-current="step">…</li><li>…</li></ol>
+//   <div class="mission-timer"><p class="countdown" role="timer">…</p><span class="drain" style="--drain: 92%" aria-hidden="true"></span></div>
+// </div></div></div>
+// 步驟段是平行四邊形：已完成＝薄荷框＋勾、目前＝金屬藍框＋光暈＋粗體、未到＝槍灰框（編號與文字都不只靠顏色）
+// 狀態：.is-warn（剩 2 分鐘：整條琥珀、計時條剩 2 格）、.is-expired（逾時：整條停用、計時條斜線紋）
+// 狀態示意裡單獨擺一條時加 .mission-boxed（自己帶碳纖維底與框）
+// < 768px：未到與已完成的步驟只留編號（文字 visually-hidden），倒數換到第二行滿寬
+$mission-height: 4.25rem; // 68px：≥ 1200px 一列的高度（sticky 位移與錨點都用它算）
+
+.mission-bar {
+  position: sticky;
+  top: $sticky-bar-top;
+  z-index: $zindex-sticky;
+  border-block: 1px solid $gunmetal;
+  @include carbon-weave;
+  box-shadow: 0 12px 24px -12px rgba(#000, .8);
+
+  // 上緣一條金屬藍細光線
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px 0 auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, $arc 30%, $arc-hi 50%, $arc 70%, transparent);
+  }
+}
+.mission {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .625rem 1.5rem;
+  padding-block: .625rem;
+
+  @include media-breakpoint-up(xl) {
+    flex-wrap: nowrap;
+    min-height: calc(#{$mission-height} - 2px);
+  }
+}
+.mission-label {
+  flex-shrink: 0;
+  margin: 0;
+
+  @include media-breakpoint-down(xl) {
+    display: none;
+  }
+}
+.mission-steps {
+  display: flex;
+  flex-shrink: 0;
+  gap: .5rem;
+  margin: 0;
+  padding: 0 .3125rem; // 斜邊突出的空間
+  list-style: none;
+
+  li {
+    @include parallelogram(.3125rem);
+    --para-bg: #{$obsidian};
+    --para-border: #{$gunmetal};
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    min-height: 2.75rem;
+    padding: .375rem 1.375rem;
+    color: $text-muted;
+    font-size: .9375rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .is-done {
+    --para-bg: #{$mint-tint};
+    --para-border: #{rgba($mint, .7)};
+    color: $text;
+
+    .mission-num { color: $mint; }
+  }
+  .is-current {
+    --para-bg: #{$arc-tint};
+    --para-border: #{$arc};
+    --para-shadow: #{$glow-selected};
+    color: $text;
+    font-weight: 700;
+
+    .mission-num { color: $arc-hi; }
+  }
+  // < 768px：只有目前步驟顯示文字，其他步驟只留編號或勾
+  @include media-breakpoint-down(md) {
+    gap: .375rem;
+
+    li { padding-inline: 1rem; }
+    li:not(.is-current) .mission-text { @include visually-hidden; }
+  }
+}
+.mission-num {
+  font-family: $font-family-display;
+  font-size: .9375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: $text-faint;
+}
+.mission-timer {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  min-width: 0;
+
+  .countdown {
+    align-items: center;
+    font-size: .9375rem;
+    line-height: 1.5;
+
+    > .bi { margin-top: 0; }
+  }
+  .countdown-num {
+    color: $arc-hi;
+    font-size: 1.125rem;
+  }
+  // < 992px：換到第二行滿寬，倒數文字靠左、計時條靠右
+  @include media-breakpoint-down(lg) {
+    flex-basis: 100%;
+    justify-content: space-between;
+  }
+  @include media-breakpoint-down(md) {
+    gap: .75rem;
+
+    .countdown { font-size: .875rem; }
+  }
+}
+
+// 10 格耗盡計時條：--drain 是還剩多少（09:12／10:00 ≈ 92%），亮的格子由左往右排
+// 一般金屬藍、.is-warn 琥珀、.is-expired 0 格＋斜線紋。整條 aria-hidden（倒數文字已經寫出時間）
+$drain-mask: repeating-linear-gradient(90deg, #000 0 calc(10% - 3px), transparent calc(10% - 3px) 10%);
+.drain {
+  --drain: 100%;
+  --drain-on: #{$arc};
+  display: block;
+  flex-shrink: 0;
+  width: 7.5rem;
+  height: .5rem;
+  background: linear-gradient(90deg, var(--drain-on) 0 var(--drain), $gunmetal var(--drain) 100%);
+  -webkit-mask-image: $drain-mask;
+  mask-image: $drain-mask;
+
+  @include media-breakpoint-down(md) {
+    width: 5rem;
+  }
+}
+
+// 剩 2 分鐘：整條琥珀
+.mission.is-warn {
+  .is-current {
+    --para-bg: #{$amber-tint};
+    --para-border: #{$amber};
+    --para-shadow: 0 0 0 1px #{$amber};
+
+    .mission-num { color: $amber; }
+  }
+  .countdown-num { color: $amber; }
+  .drain { --drain-on: #{$amber}; }
+}
+// 逾時：整條停用（字變 faint、步驟框槍灰、計時條斜線紋）
+.mission.is-expired {
+  .mission-steps li {
+    --para-bg: #{$obsidian};
+    --para-border: #{$gunmetal};
+    --para-shadow: none;
+    color: $text-faint;
+    font-weight: 500;
+
+    .mission-num { color: $text-faint; }
+  }
+  .countdown-num { color: $text-faint; }
+  .drain {
+    background: $gunmetal;
+    -webkit-mask-image: none;
+    mask-image: none;
+    @include hatch(rgba($text, .3), 5px);
+  }
+}
+// 狀態示意裡單獨擺一條（不 sticky、沒有滿版帶）
+.mission-boxed {
+  padding: .75rem 1rem;
+  border: 1px solid $gunmetal;
+  @include carbon-weave;
+
+  &.is-warn { border-color: rgba($amber, .7); }
+  &.is-expired { @include hatch(rgba($text, .03), 10px); background-color: $carbon; }
+
+  // < 576px：框比真正的任務進度條窄，倒數文字獨佔一行、計時條換到下方撐滿寬，文字才不會被擠成 3 段
+  @include media-breakpoint-down(sm) {
+    .mission-timer {
+      flex-direction: column;
+      align-items: stretch;
+      gap: .625rem;
+    }
+    .drain { width: 100%; }
+  }
+  // 狀態示意的欄位比較窄：一律兩列（步驟｜倒數）
+  @include media-breakpoint-up(xl) {
+    flex-wrap: wrap;
+
+    .mission-timer {
+      flex-basis: 100%;
+      justify-content: space-between;
+    }
+  }
+}
+
+// ---------- 任務面板（結帳左欄的兩塊：02-A 購票人資訊、02-B 快速支付） ----------
+// <section class="task-panel hud-panel"><div class="task-panel-head"><span class="task-panel-code" aria-hidden="true">02-A</span>
+//   <div><p class="hud-label" aria-hidden="true">Attendee Info</p><h2 class="task-panel-title">購票人資訊</h2></div></div>…</section>
+.task-panel {
+  @include media-breakpoint-up(md) {
+    padding: 2rem;
+  }
+  & + & { margin-top: map-get($spacers, 4); }
+
+  .demo-state { margin-top: map-get($spacers, 4); }
+  .invalid-feedback { margin-bottom: 0; }
+}
+.task-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid $gunmetal;
+
+  .hud-label { margin-bottom: .25rem; }
+}
+// 任務代號：Oxanium 大字＋金屬藍底線（裝飾，aria-hidden）
+.task-panel-code {
+  flex-shrink: 0;
+  padding: .25rem .625rem;
+  border: 1px solid $control;
+  border-bottom: 2px solid $arc;
+  background-color: $obsidian;
+  color: $arc-hi;
+  font-family: $font-family-display;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.task-panel-title {
+  margin: 0;
+  font-family: $font-family-base;
+  font-size: 1.375rem;
+}
+.task-panel-check {
+  margin-bottom: 1.25rem;
+}
+.task-panel-note {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  margin: 1rem 0 0;
+  color: $text-muted;
+  font-size: .875rem;
+
+  .bi { margin-top: .15em; color: $arc; }
+}
+
+// ---------- 戰利品面板（訂單明細 OrderSummary） ----------
+// 縮圖括角常亮；明細列 Oxanium 金額靠右；應付總額 44px 鋼白＋下方 2px 金屬藍光線（全頁最大的數字）
+.order-summary {
+  @include media-breakpoint-up(md) {
+    padding: 1.75rem;
+  }
+  .hud-label { margin-bottom: .25rem; }
+}
+.order-summary-title {
+  margin-bottom: 1.25rem;
+  font-family: $font-family-base;
+  font-size: 1.25rem;
+}
+.order-summary-event {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid $gunmetal;
+
+  p {
+    margin: 0;
+    color: $text-muted;
+    font-size: .875rem;
+  }
+}
+.order-summary-thumb {
+  flex-shrink: 0;
+  width: 5.25rem;
+  height: 3.875rem;
+}
+.order-summary-name {
+  margin-bottom: .25rem;
+  font-family: $font-family-base;
+  font-size: 1.0625rem;
+}
+.order-summary-label {
+  margin: 1.25rem 0 .5rem;
+  color: $text-muted;
+  font-size: .8125rem;
+  font-weight: 500;
+  letter-spacing: .06em;
+}
+.order-summary-rows {
+  display: grid;
+  gap: .75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: .9375rem;
+  }
+  small {
+    display: block;
+    margin-top: .125rem;
+    color: $text-muted;
+    font-size: .8125rem;
+  }
+  .price {
+    flex-shrink: 0;
+    font-size: 1.0625rem;
+  }
+}
+.order-summary-calc {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed $gunmetal;
+  color: $text-muted;
+
+  .price { color: $text; }
+}
+.order-summary-total {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  margin: 1.25rem 0 0;
+  padding: 1.25rem 0 1rem;
+  border-top: 1px solid $gunmetal;
+  font-weight: 700;
+
+  .price {
+    color: $text;
+    font-size: 2.75rem;
+    line-height: 1;
+  }
+  // 總額下方 2px 金屬藍光線
+  &::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 2px;
+    background: linear-gradient(90deg, $arc-deep, $arc 40%, $arc-hi);
+    box-shadow: 0 0 12px rgba($arc, .6);
+  }
+}
+.order-summary-note {
+  margin: 1rem 0 0;
+  color: $text-muted;
+  font-size: .875rem;
+}
+// < 992px 的「查看明細」列：收合時只看到應付總額與展開箭頭
+.order-summary-toggle {
+  @include brackets-on(after, -1px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: .75rem 1.25rem;
+  border: 1px solid $gunmetal;
+  background-color: $carbon;
+  color: $text;
+  font-weight: 700;
+  text-align: left;
+  transition: border-color .15s ease-in-out, background-color .15s ease-in-out;
+
+  &:hover { border-color: $control; background-color: $carbon-hi; }
+  &:focus-visible {
+    outline: 2px solid $arc-hi;
+    outline-offset: 2px;
+  }
+  &[aria-expanded="true"] {
+    --bracket: #{$bracket-lit};
+    margin-bottom: .75rem;
+
+    .bi { transform: rotate(180deg); }
+  }
+  .bi {
+    color: $arc;
+    transition: transform .2s ease-in-out;
+  }
+}
+.order-summary-toggle-label small {
+  display: block;
+  color: $text-muted;
+  font-size: .8125rem;
+  font-weight: 500;
+}
+.order-summary-toggle-total {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+
+  .price { font-size: 1.375rem; }
+}
+
+// ---------- 快速支付 ----------
+// 一行說明＋ 3 顆平行四邊形快速支付鈕（≥ 768px 一列 3 顆，< 768px 上下排）
+.pay-quick {
+  margin-bottom: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid $gunmetal;
+  border-left: 3px solid $arc;
+  background-color: $obsidian;
+}
+.pay-quick-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+
+  .bi { color: $arc; }
+}
+.pay-quick-buttons {
+  display: grid;
+  gap: .75rem;
+  padding-inline: .375rem; // 斜邊突出的空間
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .btn { width: 100%; }
+}
+
+// 其他付款方式（收合清單）
+.pay-methods {
+  .accordion-item {
+    background-color: $obsidian;
+  }
+  .accordion-button {
+    gap: .75rem;
+    font-weight: 700;
+
+    > .bi {
+      color: $arc;
+      font-size: 1.125rem;
+    }
+    small {
+      color: $text-muted;
+      font-size: .8125rem;
+      font-weight: 500;
+    }
+  }
+}
+.co-terms {
+  margin: 1.5rem 0 1.25rem;
+}
+.co-secure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .375rem;
+  margin: .875rem 0 0;
+  color: $text-muted;
+  font-size: .875rem;
+  text-align: center;
+
+  .bi { color: $mint; }
+}
+
+// ---------- 付款結果（ResultPanel） ----------
+// 六角圖示（成功薄荷勾、失敗警報紅 ✕）→ 標題 → 說明 →（成功）通行證輪播 → 按鈕組；置中
+.result-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  @include media-breakpoint-down(sm) {
+    padding-inline: .75rem;
+  }
+  @include media-breakpoint-up(md) {
+    padding: 2.5rem 2rem;
+  }
+}
+.result-icon {
+  margin-bottom: 1.25rem;
+}
+.result-title {
+  margin-bottom: .75rem;
+  font-family: $font-family-base;
+  font-size: 1.5rem;
+  line-height: 1.4;
+}
+.result-text {
+  max-width: 34em;
+  margin-bottom: 1.5rem;
+  color: $text-muted;
+
+  .countdown-num { color: $text; font-size: 1.125em; }
+}
+.result-order {
+  display: block;
+  margin-bottom: .25rem;
+  color: $text;
+  font-weight: 600;
+}
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .75rem;
+  margin-top: 1.75rem;
+  padding-inline: .375rem;
+}
+// 失敗：括角改警報紅、上緣一條 2px 警報紅（.hud-panel 的框是 border-image，所以線畫在 ::before）
+.result-panel-fail {
+  --bracket: #{rgba($alert, .6)};
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px -1px auto;
+    height: 2px;
+    background-color: $alert;
+  }
+}

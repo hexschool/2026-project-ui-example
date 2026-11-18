@@ -1,0 +1,397 @@
+// ============================================================
+// 電子票券詳情 ticket.html（class 前綴 tkd-）
+// 構圖（和其他 5 套不同：rave 票在右 sticky、salon 票在左直式、biennale 置中）：
+// 1. 頁首區：麵包屑 → 眉標「電子票券」→ H1（連到活動細節）→ 訂單編號 ‧ 共 3 張
+// 2. 碳纖維票券帶（.tkd-band，碳纖維紋＋掃描線）：
+//    ≥ 992px 左 3 欄是直排的「票券插槽」（Bootstrap pill）＋操作，右 9 欄是橫式通行證＋票券資訊 2 × 2 讀數格
+//    < 992px：插槽（在自己的容器內橫向捲動）→ 票券（< 768px 直式）→ 票券資訊 → 操作
+// 3. 入場資訊 #entry：3 欄簡報格（日期時間地點＋小型戰術地圖｜怎麼去？｜入場須知）
+// 4. 設計稿狀態示意 3 個並排：已使用、已過期、活動已取消
+// 本頁沒有 Notion 英文區塊名，所以不放 HUD 英文標，只用 Oxanium 編號 // 01、// 02 與簡報代號 02-A～C
+// ============================================================
+
+// ---------- 1. 頁首區 ----------
+.tkd-header {
+  padding-bottom: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    padding-bottom: map-get($spacers, 5);
+  }
+}
+.tkd-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: map-get($spacers, 2);
+  color: $arc;
+  font-size: .875rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+.tkd-title a {
+  color: $text;
+  text-decoration: none;
+
+  &:hover {
+    color: $arc-hi;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .2em;
+  }
+}
+.tkd-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem .75rem;
+  margin: 0;
+  color: $text-muted;
+
+  a { font-weight: 600; letter-spacing: .04em; }
+}
+.tkd-meta-sep { color: $text-faint; }
+
+// ---------- 2. 碳纖維票券帶 ----------
+.tkd-band {
+  position: relative;
+  isolation: isolate;
+  padding-block: map-get($spacers, 5);
+  border-block: 1px solid $gunmetal;
+  @include carbon-weave;
+
+  &::before {
+    @include scanlines-layer;
+    z-index: -1;
+  }
+  @include media-breakpoint-up(lg) {
+    padding-block: 4rem;
+  }
+}
+.tkd-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "slots" "tickets" "ops";
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas: "slots tickets" "ops tickets";
+    column-gap: 2rem;
+  }
+  @include media-breakpoint-up(xl) {
+    column-gap: map-get($spacers, 5);
+  }
+}
+
+// 票券插槽
+.tkd-slots-area {
+  grid-area: slots;
+  min-width: 0;
+}
+.tkd-slots-head {
+  display: flex;
+  align-items: baseline;
+  gap: .75rem;
+  margin-bottom: .75rem;
+  color: $text-muted;
+  font-size: .875rem;
+
+  .hud-index { margin: 0; }
+  .num { color: $text; font-weight: 700; }
+}
+.tkd-slots {
+  display: flex;
+  gap: .5rem;
+  overflow-x: auto;
+  @include bleed-x;
+  padding-block: .375rem; // 選中的光暈不被捲動容器切掉
+  scrollbar-width: thin;
+
+  @include media-breakpoint-up(lg) {
+    flex-direction: column;
+    gap: .625rem;
+    overflow: visible;
+    padding-block: 0;
+  }
+}
+.tkd-slot {
+  @include brackets-on(after, -1px);
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .125rem;
+  min-width: 10.5rem;
+  padding: .75rem 1rem .75rem 1.25rem;
+  border: 1px solid $gunmetal;
+  background-color: rgba($obsidian, .88);
+  color: $text-muted;
+  text-align: left;
+  transition: border-color .15s ease-in-out, background-color .15s ease-in-out, box-shadow .15s ease-in-out, color .15s ease-in-out;
+
+  // 左側亮條（選中時亮起）
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px auto -1px -1px;
+    width: 3px;
+    background: transparent;
+    transition: background-color .15s ease-in-out;
+  }
+  &:hover {
+    --bracket: #{$bracket-lit};
+    border-color: $control;
+    color: $text;
+  }
+  &.active {
+    --bracket: #{$bracket-lit};
+    border-color: $arc;
+    background-color: $arc-tint;
+    box-shadow: $glow-selected;
+    color: $arc-hi;
+
+    &::before {
+      background-color: $arc-hi;
+      box-shadow: 0 0 10px $arc;
+    }
+    .tkd-slot-no { color: $text; }
+  }
+  &:focus-visible {
+    outline: 2px solid $arc-hi;
+    outline-offset: 2px;
+  }
+
+  @include media-breakpoint-up(lg) {
+    min-width: 0;
+    padding: 1rem 1.25rem 1rem 1.5rem;
+  }
+}
+.tkd-slot-no {
+  color: $text;
+  font-family: $font-family-display;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  line-height: 1.3;
+}
+.tkd-slot-type {
+  font-size: .875rem;
+  font-weight: 500;
+}
+
+// 票券＋票券資訊
+.tkd-tickets {
+  grid-area: tickets;
+  min-width: 0;
+}
+.tkd-pass.eticket.is-landscape {
+  @include media-breakpoint-up(md) {
+    max-width: none; // 撐滿右側 9 欄，像一張橫式通行證
+    grid-template-columns: minmax(0, 1fr) 19rem;
+
+    .eticket-head { padding: 2.25rem 2.5rem 2.25rem 3rem; }
+    .eticket-title { font-size: 2.25rem; }
+  }
+  @include media-breakpoint-only(md) {
+    grid-template-columns: minmax(0, 1fr) 17rem;
+  }
+}
+// 票券資訊：2 × 2 讀數格（格與格之間 1px 槍灰線）
+.tkd-facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1px;
+  max-width: $eticket-max;
+  margin: map-get($spacers, 3) auto 0;
+  border: 1px solid $gunmetal;
+  background-color: $gunmetal;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @include media-breakpoint-up(md) {
+    max-width: none;
+  }
+
+  > div {
+    padding: .875rem 1.25rem;
+    background-color: rgba($obsidian, .92);
+  }
+  dt {
+    margin-bottom: .25rem;
+    color: $text-muted;
+    font-size: $small-font-size;
+    font-weight: 500;
+    letter-spacing: .06em;
+  }
+  dd {
+    margin: 0;
+    font-weight: 500;
+    line-height: 1.5;
+
+    &.num {
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+    }
+  }
+  small {
+    display: block;
+    margin-top: .125rem;
+    color: $text-muted;
+    font-size: $small-font-size;
+    font-weight: 400;
+  }
+}
+
+// 操作
+.tkd-ops {
+  grid-area: ops;
+  min-width: 0;
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 3);
+    border-top: 1px solid $gunmetal;
+  }
+}
+.tkd-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+
+  @include media-breakpoint-down(sm) {
+    flex-direction: column;
+  }
+  @include media-breakpoint-up(lg) {
+    flex-direction: column;
+  }
+  .btn {
+    justify-content: flex-start;
+
+    @include media-breakpoint-down(sm) { justify-content: center; }
+  }
+}
+.tkd-actions-demo {
+  margin-top: map-get($spacers, 3);
+  flex-direction: column;
+
+  .btn { justify-content: center; }
+}
+.tkd-refund-note {
+  display: flex;
+  gap: .5rem;
+  margin: map-get($spacers, 3) 0 0;
+  color: $text-muted;
+  font-size: .875rem;
+  line-height: 1.7;
+
+  .bi { flex-shrink: 0; color: $arc; }
+}
+
+// ---------- 3. 入場資訊：3 欄簡報格 ----------
+.tkd-brief {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  @include media-breakpoint-up(xl) {
+    padding: 1.75rem;
+  }
+  .info-list { padding-block: 0; }
+}
+.tkd-brief-code {
+  margin-bottom: .75rem;
+  color: $arc;
+  font-family: $font-family-display;
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: $letter-spacing-hud;
+}
+.tkd-brief-title {
+  margin-bottom: map-get($spacers, 3);
+  font-family: $font-family-base;
+  font-size: 1.25rem;
+}
+.tkd-brief-label {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0 0 .5rem;
+  color: $text-muted;
+  font-family: $font-family-base;
+  font-size: .875rem;
+  font-weight: 500;
+  letter-spacing: .06em;
+
+  .bi { color: $arc; }
+}
+.tkd-brief-list,
+.tkd-brief-text {
+  margin-bottom: 1.25rem;
+  font-size: .9375rem;
+  line-height: 1.7;
+}
+.tkd-brief-list {
+  padding-left: 1.25rem;
+
+  li::marker { color: $arc; }
+}
+.tkd-address {
+  display: block;
+  color: $text-muted;
+  font-size: .875rem;
+}
+.tkd-map {
+  margin-top: map-get($spacers, 3);
+
+  img {
+    display: block;
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+}
+// 入場須知：每項前一個 Oxanium 編號 01～06
+.tkd-rules {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: tkd-rule;
+  font-size: .9375rem;
+  line-height: 1.7;
+
+  li {
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    padding-block: .625rem;
+    counter-increment: tkd-rule;
+
+    + li { border-top: 1px solid $gunmetal; }
+    &:first-child { padding-top: 0; }
+    &:last-child { padding-bottom: 0; }
+
+    &::before {
+      content: counter(tkd-rule, decimal-leading-zero);
+      color: $arc;
+      font-family: $font-family-display;
+      font-size: .8125rem;
+      font-weight: 700;
+      line-height: 2.1;
+      letter-spacing: .06em;
+    }
+  }
+  b { font-weight: 700; }
+}
+
+// ---------- 4. 設計稿狀態示意 ----------
+.tkd-demos {
+  .demo-state {
+    @include media-breakpoint-up(md) {
+      padding: map-get($spacers, 4);
+    }
+  }
+  .alert { font-size: .9375rem; }
+}
+.eticket .tkd-state-note {
+  color: $text;
+  font-weight: 500;
+}

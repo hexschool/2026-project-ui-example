@@ -1,0 +1,301 @@
+// ============================================================
+// 狀態語法：狀態標籤、剩餘票數、倒數、提示框、設計稿狀態示意、空狀態、QR Code
+// 規則：狀態一律「顏色＋圖示＋文字」，不只靠顏色（規格 §2.11）
+// ============================================================
+
+// ---------- 狀態標籤（StatusTag）：不規則手繪圓角的小膠囊 ----------
+// <span class="tag">音樂演出</span>                                        類別：帆布底＋樹皮框
+// <span class="tag tag-hot">熱賣中</span>                                   熱賣中：鼠尾草底＋橄欖框＋深橄欖字（6.07）
+// <span class="tag tag-scarce"><i class="bi bi-fire"></i>即將完售</span>       即將完售：野營橘實心＋深色字＋火焰（5.44）
+// <span class="tag tag-free">含免費票種</span>                               含免費：帆布底＋湖水藍框與字（6.34）
+// <span class="tag tag-soldout">已售完</span>                               售罄：牛皮紙底＋虛線框
+// 2026-11 補頁的票券、訂單狀態也用這組（圖示＋文字）：
+// .tag-success（有效、已付款：橄欖底白字）、.tag-danger（付款失敗：磚紅底白字）、
+// .tag-info（退款處理中、尚未開賣：湖水藍底白字）、.tag-warning（芥末黃底樹皮字）、.tag-muted（已使用、已過期：牛皮紙底樹皮次要字 4.99）
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .3125rem;
+  padding: .1875rem .625rem;
+  border: 1.5px solid $bark;
+  border-radius: $radius-hand;
+  background-color: $canvas;
+  color: $bark;
+  font-size: .8125rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.45;
+  letter-spacing: $letter-spacing-label;
+  white-space: nowrap;
+
+  .bi { font-size: .9em; }
+}
+.tag-hot     { border-color: $olive; background-color: $sage; color: $olive-deep; }
+.tag-scarce  { border-color: $bark; background-color: $scarce-bg; color: $scarce-color; }
+.tag-free    { border-color: $lake; color: $lake; }
+.tag-soldout { border-style: dashed; background-color: $soldout-bg; color: $bark; }
+.tag-success { border-color: $bark; background-color: $olive; color: $white; }
+.tag-danger  { border-color: $bark; background-color: $brick; color: $white; }
+.tag-info    { border-color: $bark; background-color: $lake; color: $white; }
+.tag-warning { border-color: $bark; background-color: $mustard; color: $bark; }
+.tag-muted   { border-color: $bark-muted; background-color: $kraft; color: $bark-muted; }
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------- 剩餘票數（RemainingBar） ----------
+// 顏色＋文字＋進度條三者並用：
+// <div class="remaining [is-scarce | is-soldout]">
+//   <p class="remaining-head"><span>剩餘 34%</span><span>熱賣中</span></p>
+//   <div class="progress" role="progressbar" aria-label="剩餘票數 34%" aria-valuenow="34" aria-valuemin="0" aria-valuemax="100">
+//     <div class="progress-bar" style="width: 34%"></div>
+//   </div>
+// </div>
+// 熱賣中：橄欖條；即將完售（≤ 25%）：野營橘條＋粗體＋火焰；已完售：牛皮紙虛線軌道
+.remaining { min-width: 0; }
+.remaining-head {
+  display: flex;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: .375rem;
+  font-size: .8125rem;
+  font-weight: $font-weight-medium;
+  font-variant-numeric: tabular-nums;
+
+  > :last-child { text-align: right; }
+  .bi { color: $ember; }
+}
+.remaining .progress {
+  border: 1.5px solid $bark;
+  background-color: $canvas;
+  // 軌道高 10px（含框）
+  height: $progress-height;
+  box-sizing: content-box;
+}
+.remaining .progress-bar {
+  border-radius: 50rem;
+}
+.remaining.is-scarce {
+  .remaining-head { font-weight: $font-weight-bold; }
+  .progress-bar { background-color: $scarce-bar; }
+}
+.remaining.is-soldout {
+  .progress {
+    border-style: dashed;
+    background-color: $kraft;
+  }
+  .remaining-head { font-weight: $font-weight-bold; }
+}
+
+// ---------- 倒數（Countdown） ----------
+// 只更新數字，不閃爍、不跳動、不放大；role="timer"，不加 aria-live（規格 §2.5）
+// 行內版（購票卡、結帳步驟列、底部購票列）：
+// <p class="countdown" role="timer"><i class="bi bi-clock"></i><span>距離票價調漲還有 <b class="num">05 時 12 分 48 秒</b></span></p>
+// 三種狀態：一般（牛皮紙小吊牌樣式）／.is-warning（芥末黃底＋三角圖示＋樹皮字）／.is-expired（牛皮紙＋虛線框＋✕，字用次要色）
+.countdown {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  margin: 0;
+  padding: .625rem .875rem;
+  border: 1.5px solid $bark;
+  border-radius: $border-radius;
+  background-color: $kraft;
+  color: $bark;
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-sm;
+
+  > .bi { flex-shrink: 0; line-height: inherit; }
+  b,
+  strong {
+    font-family: $font-family-slab;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  &.is-warning {
+    background-color: $warning-bg;
+  }
+  &.is-expired {
+    border-style: dashed;
+    color: $bark-muted;
+  }
+}
+
+// 方格版（首頁倒數吊牌）：數字放在三個帆布小方格裡，單位與說明照 Notion 全文
+// <div class="countdown-boxes" role="timer">
+//   <p class="countdown-boxes-label"><i class="bi bi-clock"></i>距離票價調漲還有</p>
+//   <p class="countdown-boxes-row"><span class="countdown-box">05</span>時<span class="countdown-box">12</span>分<span class="countdown-box">48</span>秒</p>
+// </div>
+.countdown-boxes {
+  margin: 0;
+}
+.countdown-boxes-label {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0 0 .5rem;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+}
+.countdown-boxes-row {
+  display: flex;
+  align-items: flex-end;
+  gap: .375rem;
+  margin: 0;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+}
+.countdown-box {
+  display: inline-grid;
+  place-items: center;
+  min-width: 3.25rem;
+  height: 3.25rem;
+  border: 1.5px solid $bark;
+  border-radius: $border-radius-sm;
+  background-color: $canvas;
+  font-family: $font-family-slab;
+  font-size: $countdown-size-mobile;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+// ---------- 提示框：帆布底＋左側 4px 色條＋圓形圖示 ----------
+// <div class="alert alert-warning" role="alert"><i class="bi bi-exclamation-triangle-fill"></i><div>文字＋按鈕</div></div>
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  border-color: $bark;
+  border-left-width: 6px;
+  background-color: $canvas;
+  color: $bark;
+
+  > .bi {
+    flex-shrink: 0;
+    font-size: 1.25rem;
+    line-height: 1.5;
+  }
+  p:last-child { margin-bottom: 0; }
+}
+.alert-info    { border-left-color: $lake;    > .bi { color: $lake; } }
+.alert-success { border-left-color: $olive;   > .bi { color: $olive-deep; } }
+.alert-warning { border-left-color: $mustard; background-color: $warning-bg-subtle; > .bi { color: $mustard-text; } }
+.alert-danger  { border-left-color: $brick;   background-color: $danger-bg-subtle;  > .bi { color: $brick; } }
+
+// ---------- 設計稿狀態示意（DemoState）----------
+// 一看就知道「這不是正式畫面的一部分」：虛線框＋左上一片牛皮紙布標
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag">設計稿狀態示意</p>
+//   <h2 class="demo-state-title" id="…">保留時間剩 2 分鐘時</h2>
+//   <div class="demo-state-stage">…</div>
+// </section>
+.demo-state {
+  position: relative;
+  padding: 2.25rem 1.25rem 1.25rem;
+  border: 2px dashed $control;
+  border-radius: $border-radius-lg;
+  background-color: rgba($canvas, .55);
+
+  @include media-breakpoint-up(md) { padding: 2.5rem 1.75rem 1.75rem; }
+}
+.demo-state-tag {
+  position: absolute;
+  top: -.875rem;
+  left: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  padding: .1875rem .75rem;
+  border: 1.5px solid $bark;
+  border-radius: .375rem;
+  background-color: $kraft;
+  color: $bark;
+  font-size: .8125rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+
+  &::before {
+    content: map-get($bootstrap-icons-map, "pencil");
+    font-family: "bootstrap-icons";
+    font-weight: normal;
+  }
+}
+.demo-state-title {
+  margin-bottom: 1rem;
+  font-family: $font-family-base;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+  letter-spacing: $letter-spacing-body;
+}
+.demo-state-stage { position: relative; }
+// 同一個示意裡有好幾種狀態時，每一種上方的小標（「全部售罄時」「付款成功時」…）：鉛筆底線
+.demo-state-label {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0 0 .75rem;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+
+  &::before {
+    content: "";
+    flex-shrink: 0;
+    width: 1rem;
+    height: 2px;
+    border-radius: 1px;
+    background-color: $control;
+  }
+}
+
+// ---------- 空狀態（EmptyState）：Bootstrap 大圖示＋外圈手繪圓 → 標題 → 說明 → 主要按鈕，置中 ----------
+// <div class="empty-state"><span class="empty-state-icon"><i class="bi bi-ticket-perforated"></i></span>
+//   <h3 class="empty-state-title">…</h3><p>…</p><a class="btn btn-primary" href="events.html">探索活動</a></div>
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 30rem;
+  margin-inline: auto;
+  padding-block: 1rem;
+  text-align: center;
+
+  p { color: var(--bs-secondary-color); }
+}
+.empty-state-icon {
+  display: grid;
+  place-items: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  margin-bottom: 1rem;
+  background: $hand-circle center / 100% 100% no-repeat;
+  color: $ember;
+  font-size: 2.25rem;
+  line-height: 1;
+}
+.empty-state-title {
+  margin-bottom: .5rem;
+  font-size: 1.125rem;
+}
+
+// ---------- QR Code ----------
+// 規格 §2.5：25 × 25 模組＋四周 4 模組留白，白底＋樹皮色模組（14.39:1）
+// <svg class="qr" viewBox="0 0 33 33" role="img" aria-label="入場 QR Code，票號 T-4471-01">…</svg>
+.qr {
+  display: block;
+  width: 100%;
+  height: auto;
+  background-color: $white;
+  color: $bark;
+  shape-rendering: crispEdges;
+}

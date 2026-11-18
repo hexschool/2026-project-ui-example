@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>購票紀錄｜StageOne 城市現場</title>
+  <meta name="description" content="查看每筆訂單的票種明細、金額、付款狀態與電子發票，也可以在這裡申請退票。設計稿 03｜電競競技場。">
+  <meta name="theme-color" content="#0B0E13">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Oxanium（品牌字、英數、價格、倒數、票號、HUD 英文標；數字本身等寬）、Noto Sans TC（中文標題 700、內文 400、強調 500） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（10 個頁面共用）
+    - 頁首、頁尾、登入 Modal 在每一頁都完整寫一份；改的時候 10 個 .html 要一起改，
+      改完執行 npm run check 確認都與這份範本一致。
+    - 頁首是收在版心內的「懸浮 HUD 列」：品牌 → 主導覽（首頁｜活動列表 兩格分段控制鈕）→ 搜尋 → 登入／註冊 → 我要辦活動。
+      992px 以下品牌靠左，右側只留搜尋圖示與選單鈕；選單是由右滑出的 Offcanvas（#siteNav），
+      992px 以上同一個 Offcanvas 由 Bootstrap 的 .navbar-expand-lg 變回頁首裡的一般區塊。
+      搜尋按鈕有兩顆（手機一顆在選單外、桌機一顆在導覽之後），控制同一個搜尋列 #siteSearch，
+      這樣桌機的 Tab 順序與畫面順序一致。
+    - 每頁只需要調整一處「目前頁面」標示：頁首導覽目前頁的 <a class="nav-link"> 加 active 與 aria-current="page"
+    - 首頁（index.html）：「首頁」加 active＋aria-current="page"
+    - 活動列表（events.html）：「活動列表」加 active＋aria-current="page"
+    - 活動細節（event.html）：頁首的「活動列表」標示為 active（不加 aria-current）
+    - 結帳（checkout.html）、Guideline 不標示目前頁
+    - 2026-11 補的註冊（register.html）、我的票券（tickets.html）、電子票券詳情（ticket.html）、
+      購票紀錄（orders.html）、追蹤的主辦方（follows.html）在頁首沒有對應項目，也不標示目前頁
+    - <body> 的屬性不在比對範圍：有底部固定列的頁面加 class="has-bottom-bar"，Guideline 加 ScrollSpy 的 data-bs-*
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <div class="container-xl">
+        <nav class="site-hud navbar navbar-expand-lg" aria-label="主要導覽">
+          <a class="navbar-brand site-brand" href="index.html">
+            <img class="site-brand-mark" src="images/logo.svg" alt="" width="34" height="34">
+            <span class="site-brand-name">StageOne</span>
+            <span class="site-brand-sub">城市現場</span>
+          </a>
+
+          <!-- 992px 以下：搜尋＋選單按鈕 -->
+          <div class="d-flex d-lg-none align-items-center gap-1 ms-auto">
+            <button class="site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋活動">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <button class="navbar-toggler site-icon-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteNav" aria-controls="siteNav" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <!-- 992px 以下是由右滑出的選單；992px 以上是頁首的中間與右側 -->
+          <div id="siteNav" class="offcanvas offcanvas-end site-offcanvas" tabindex="-1" aria-labelledby="siteNavTitle">
+            <div class="offcanvas-header">
+              <p id="siteNavTitle" class="site-offcanvas-title">選單</p>
+              <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="關閉選單"></button>
+            </div>
+            <div class="offcanvas-body">
+              <ul class="navbar-nav site-nav">
+                <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+                <li class="nav-item"><a class="nav-link" href="events.html">活動列表</a></li>
+              </ul>
+              <div class="site-header-actions">
+                <button class="btn btn-text d-none d-lg-inline-flex" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false">
+                  <i class="bi bi-search" aria-hidden="true"></i>搜尋
+                </button>
+                <button class="btn btn-text d-none d-lg-inline-flex" type="button" data-bs-toggle="modal" data-bs-target="#loginModal">登入／註冊</button>
+                <button class="btn btn-secondary d-lg-none" type="button" data-bs-toggle="modal" data-bs-target="#loginModal">登入／註冊</button>
+                <a class="btn btn-primary btn-sm" href="index.html#organizer">我要辦活動</a>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <!-- 點「搜尋」在 HUD 列正下方展開的搜尋列（同寬） -->
+        <div id="siteSearch" class="collapse site-search">
+          <form class="site-search-form" role="search" action="events.html">
+            <label class="visually-hidden" for="siteSearchInput">搜尋活動</label>
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input id="siteSearchInput" class="form-control" type="search" name="q" placeholder="想看什麼？試試「爵士」、「書展」或「高雄」">
+            <button class="btn btn-primary" type="submit">搜尋活動</button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!-- ============ 區塊一：頁首區（麵包屑 → H1 → 說明，右側「共 6 筆訂單」讀數） ============ -->
+      <header class="page-header member-header">
+        <div class="container-xl member-header-inner">
+          <div class="member-header-main">
+            <nav aria-label="目前位置">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+                <li class="breadcrumb-item active" aria-current="page">購票紀錄</li>
+              </ol>
+            </nav>
+            <h1>購票紀錄</h1>
+            <p class="page-lead">每筆訂單的付款狀態、電子發票與退票都在這裡。</p>
+          </div>
+          <p class="member-readout"><span>共</span><b class="member-readout-num">6</b><span>筆訂單</span></p>
+        </div>
+      </header>
+
+      <!-- 本風格的排法（和其他 5 套的訂單卡不同）：「戰績列表」，像遊戲的對戰紀錄表。
+           滿寬一筆一列，下單時間新到舊；永遠看得到的一列是 訂單編號＋下單時間｜縮圖＋活動｜狀態｜總額｜按鈕＋「查看明細」，
+           說明文字（已退款、付款失敗）在這一列下方常駐；票種明細、平台服務費、付款方式、電子發票收在 Bootstrap Collapse 裡
+           （第一筆預設展開）。列左側 3px 狀態色條；滑過整列只換底色 -->
+      <!-- ============ 區塊二：訂單列表 ============ -->
+      <section id="orders" class="section pt-0" aria-labelledby="ordersTitle">
+        <div class="container-xl">
+          <h2 id="ordersTitle" class="visually-hidden">訂單列表</h2>
+          <p class="hud-index od-index" aria-hidden="true">01</p>
+          <ol class="od-board hud-panel">
+            <!-- O1：已付款，活動還沒到（結帳頁的那一筆）；明細預設展開 -->
+            <li class="od-row is-paid">
+              <article class="od-item" aria-labelledby="od1Title">
+                <div class="od-line">
+                  <p class="od-id"><span class="visually-hidden">訂單編號 </span><span class="od-no">#SO-20261018-4471</span><span class="od-time"><span class="od-label">下單時間</span><span class="num">2026/10/06 14:08</span></span></p>
+                  <div class="od-event">
+                    <div class="od-thumb img-frame"><img src="images/event-midnight-noise.jpg" alt="" width="1600" height="1067" loading="lazy"></div>
+                    <div class="od-event-body">
+                      <h3 id="od1Title" class="od-title text-phrase">午夜噪音祭 Vol.7</h3>
+                      <p class="num">2026/10/18 (六) 20:00</p>
+                      <p>台北 ‧ <span class="text-nowrap">Zepp New Taipei</span></p>
+                    </div>
+                  </div>
+                  <p class="od-status"><span class="visually-hidden">狀態：</span><span class="tag tag-ok"><i class="bi bi-check-circle" aria-hidden="true"></i>已付款</span></p>
+                  <p class="od-total"><span class="od-label">總額</span><span class="price">NT$ 5,974</span></p>
+                  <div class="od-actions">
+                    <a class="btn btn-secondary btn-sm" href="tickets.html"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>查看票券</a>
+                    <a class="btn btn-secondary btn-sm" href="#refund"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>申請退票</a>
+                    <button class="btn btn-text btn-sm od-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#od1Detail" aria-expanded="true" aria-controls="od1Detail">查看明細<span class="visually-hidden">：#SO-20261018-4471</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+                  </div>
+                </div>
+                <div id="od1Detail" class="collapse od-detail show">
+                  <div class="od-detail-inner">
+                    <div class="od-detail-items">
+                      <p class="od-label">票種明細</p>
+                      <ul class="order-summary-rows">
+                        <li><span>預售全票 × 2</span><span class="price">NT$ 3,000</span></li>
+                        <li><span>VIP 搖滾區 × 1<small>座位 A 區 12 排 7 號</small></span><span class="price">NT$ 2,800</span></li>
+                        <li class="od-fee"><span>平台服務費<small>（每張票 3%）</small></span><span class="price">NT$ 174</span></li>
+                      </ul>
+                    </div>
+                    <dl class="od-detail-meta">
+                      <div><dt>付款方式</dt><dd>Apple Pay</dd></div>
+                      <div><dt>電子發票</dt><dd><span class="num">QK-27401836</span><button class="btn btn-text btn-sm od-download" type="button" aria-label="下載電子發票 QK-27401836"><i class="bi bi-download" aria-hidden="true"></i>下載</button></dd></div>
+                    </dl>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <!-- O2：已付款，票已使用 -->
+            <li class="od-row is-paid">
+              <article class="od-item" aria-labelledby="od2Title">
+                <div class="od-line">
+                  <p class="od-id"><span class="visually-hidden">訂單編號 </span><span class="od-no">#SO-20261004-1189</span><span class="od-time"><span class="od-label">下單時間</span><span class="num">2026/10/04 14:52</span></span></p>
+                  <div class="od-event">
+                    <div class="od-thumb img-frame"><img src="images/event-silent-realm.jpg" alt="" width="1600" height="1067" loading="lazy"></div>
+                    <div class="od-event-body">
+                      <h3 id="od2Title" class="od-title text-phrase"><span class="text-nowrap">無聲之境｜</span><wbr>當代攝影聯展</h3>
+                      <p class="num">2026/10/04 (六) – 12/14 (日)</p>
+                      <p>台北 ‧ 旭川藝術空間</p>
+                    </div>
+                  </div>
+                  <p class="od-status"><span class="visually-hidden">狀態：</span><span class="tag tag-ok"><i class="bi bi-check-circle" aria-hidden="true"></i>已付款</span></p>
+                  <p class="od-total"><span class="od-label">總額</span><span class="price">NT$ 288</span></p>
+                  <div class="od-actions">
+                    <a class="btn btn-secondary btn-sm" href="tickets.html"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>查看票券</a>
+                    <button class="btn btn-text btn-sm od-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#od2Detail" aria-expanded="false" aria-controls="od2Detail">查看明細<span class="visually-hidden">：#SO-20261004-1189</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+                  </div>
+                </div>
+                <div id="od2Detail" class="collapse od-detail">
+                  <div class="od-detail-inner">
+                    <div class="od-detail-items">
+                      <p class="od-label">票種明細</p>
+                      <ul class="order-summary-rows">
+                        <li><span>單人票 × 1</span><span class="price">NT$ 280</span></li>
+                        <li class="od-fee"><span>平台服務費<small>（每張票 3%）</small></span><span class="price">NT$ 8</span></li>
+                      </ul>
+                    </div>
+                    <dl class="od-detail-meta">
+                      <div><dt>付款方式</dt><dd>LINE Pay</dd></div>
+                      <div><dt>電子發票</dt><dd><span class="num">QK-27319054</span><button class="btn btn-text btn-sm od-download" type="button" aria-label="下載電子發票 QK-27319054"><i class="bi bi-download" aria-hidden="true"></i>下載</button></dd></div>
+                    </dl>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <!-- O3：付款失敗（保留時間已到），沒有票券、不開發票 -->
+            <li class="od-row is-failed">
+              <article class="od-item" aria-labelledby="od3Title">
+                <div class="od-line">
+                  <p class="od-id"><span class="visually-hidden">訂單編號 </span><span class="od-no">#SO-20261205-3318</span><span class="od-time"><span class="od-label">下單時間</span><span class="num">2026/10/03 22:41</span></span></p>
+                  <div class="od-event">
+                    <div class="od-thumb img-frame"><img src="images/event-island-zine-fest.jpg" alt="" width="1600" height="1067" loading="lazy"></div>
+                    <div class="od-event-body">
+                      <h3 id="od3Title" class="od-title text-phrase"><span class="text-nowrap">小島出版節｜</span><wbr>獨立刊物三日展</h3>
+                      <p class="num">2026/12/05 (五) – 12/07 (日)</p>
+                      <p>台北 ‧ 松山文創園區 四號倉庫</p>
+                    </div>
+                  </div>
+                  <p class="od-status"><span class="visually-hidden">狀態：</span><span class="tag tag-danger"><i class="bi bi-x-circle" aria-hidden="true"></i>付款失敗</span></p>
+                  <p class="od-total"><span class="od-label">總額</span><span class="price">NT$ 1,236</span></p>
+                  <div class="od-actions">
+                    <a class="btn btn-primary btn-sm" href="event.html">重新選票<span class="visually-hidden">：小島出版節｜獨立刊物三日展</span></a>
+                    <button class="btn btn-text btn-sm od-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#od3Detail" aria-expanded="false" aria-controls="od3Detail">查看明細<span class="visually-hidden">：#SO-20261205-3318</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+                  </div>
+                </div>
+                <p class="od-msg"><i class="bi bi-x-circle" aria-hidden="true"></i><span>付款未完成，票券尚未保留。保留時間已到，票券已釋出。</span></p>
+                <div id="od3Detail" class="collapse od-detail">
+                  <div class="od-detail-inner">
+                    <div class="od-detail-items">
+                      <p class="od-label">票種明細</p>
+                      <ul class="order-summary-rows">
+                        <li><span>開幕夜限定票 × 2</span><span class="price">NT$ 1,200</span></li>
+                        <li class="od-fee"><span>平台服務費<small>（每張票 3%）</small></span><span class="price">NT$ 36</span></li>
+                      </ul>
+                    </div>
+                    <dl class="od-detail-meta">
+                      <div><dt>付款方式</dt><dd>信用卡（末四碼 <span class="num">2846</span>）</dd></div>
+                      <div><dt>電子發票</dt><dd>付款未完成，不開立發票</dd></div>
+                    </dl>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <!-- O4：已付款，活動還沒到 -->
+            <li class="od-row is-paid">
+              <article class="od-item" aria-labelledby="od4Title">
+                <div class="od-line">
+                  <p class="od-id"><span class="visually-hidden">訂單編號 </span><span class="od-no">#SO-20261025-2207</span><span class="od-time"><span class="od-label">下單時間</span><span class="num">2026/09/27 21:15</span></span></p>
+                  <div class="od-event">
+                    <div class="od-thumb img-frame"><img src="images/event-island-monologue.jpg" alt="" width="1600" height="1067" loading="lazy"></div>
+                    <div class="od-event-body">
+                      <h3 id="od4Title" class="od-title text-phrase"><span class="text-nowrap">島嶼獨白｜</span><wbr>現代舞獨舞展</h3>
+                      <p class="num">2026/10/25 (六) 19:30</p>
+                      <p>台中 ‧ 國家歌劇院小劇場</p>
+                    </div>
+                  </div>
+                  <p class="od-status"><span class="visually-hidden">狀態：</span><span class="tag tag-ok"><i class="bi bi-check-circle" aria-hidden="true"></i>已付款</span></p>
+                  <p class="od-total"><span class="od-label">總額</span><span class="price">NT$ 1,648</span></p>
+                  <div class="od-actions">
+                    <a class="btn btn-secondary btn-sm" href="tickets.html"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>查看票券</a>
+                    <a class="btn btn-secondary btn-sm" href="#refund"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>申請退票</a>
+                    <button class="btn btn-text btn-sm od-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#od4Detail" aria-expanded="false" aria-controls="od4Detail">查看明細<span class="visually-hidden">：#SO-20261025-2207</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+                  </div>
+                </div>
+                <div id="od4Detail" class="collapse od-detail">
+                  <div class="od-detail-inner">
+                    <div class="od-detail-items">
+                      <p class="od-label">票種明細</p>
+                      <ul class="order-summary-rows">
+                        <li><span>地板席 × 2</span><span class="price">NT$ 1,600</span></li>
+                        <li class="od-fee"><span>平台服務費<small>（每張票 3%）</small></span><span class="price">NT$ 48</span></li>
+                      </ul>
+                    </div>
+                    <dl class="od-detail-meta">
+                      <div><dt>付款方式</dt><dd>信用卡（末四碼 <span class="num">2846</span>）</dd></div>
+                      <div><dt>電子發票</dt><dd><span class="num">QK-26958143</span><button class="btn btn-text btn-sm od-download" type="button" aria-label="下載電子發票 QK-26958143"><i class="bi bi-download" aria-hidden="true"></i>下載</button></dd></div>
+                    </dl>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <!-- O5：已退款（主辦方取消 9 月那一場），票券與發票作廢；沒有按鈕 -->
+            <li class="od-row is-refunded">
+              <article class="od-item" aria-labelledby="od5Title">
+                <div class="od-line">
+                  <p class="od-id"><span class="visually-hidden">訂單編號 </span><span class="od-no">#SO-20260912-0836</span><span class="od-time"><span class="od-label">下單時間</span><span class="num">2026/09/01 12:30</span></span></p>
+                  <div class="od-event">
+                    <div class="od-thumb img-frame"><img src="images/event-resonance-friday.jpg" alt="" width="1600" height="1067" loading="lazy"></div>
+                    <div class="od-event-body">
+                      <h3 id="od5Title" class="od-title text-phrase">週五共振 <span class="text-nowrap">Resonance Friday</span></h3>
+                      <p class="num">2026/09/12 (五) 22:00</p>
+                      <p>台北 ‧ B1 Underground</p>
+                    </div>
+                  </div>
+                  <p class="od-status"><span class="visually-hidden">狀態：</span><span class="tag tag-dim"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>已退款</span></p>
+                  <p class="od-total"><span class="od-label">總額</span><span class="price">NT$ 824</span></p>
+                  <div class="od-actions">
+                    <button class="btn btn-text btn-sm od-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#od5Detail" aria-expanded="false" aria-controls="od5Detail">查看明細<span class="visually-hidden">：#SO-20260912-0836</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+                  </div>
+                </div>
+                <p class="od-msg"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span>主辦方取消了這一場，NT$ 824 已於 2026/09/11 全額退回 Google Pay。</span></p>
+                <div id="od5Detail" class="collapse od-detail">
+                  <div class="od-detail-inner">
+                    <div class="od-detail-items">
+                      <p class="od-label">票種明細</p>
+                      <ul class="order-summary-rows">
+                        <li><span>預售入場票 × 1</span><span class="price">NT$ 800</span></li>
+                        <li class="od-fee"><span>平台服務費<small>（每張票 3%）</small></span><span class="price">NT$ 24</span></li>
+                      </ul>
+                    </div>
+                    <dl class="od-detail-meta">
+                      <div><dt>付款方式</dt><dd>Google Pay</dd></div>
+                      <div><dt>電子發票</dt><dd><span class="num">QK-26510372</span>（已作廢）</dd></div>
+                    </dl>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <!-- O6：已付款，票已過期（午夜噪音祭的上一屆） -->
+            <li class="od-row is-paid">
+              <article class="od-item" aria-labelledby="od6Title">
+                <div class="od-line">
+                  <p class="od-id"><span class="visually-hidden">訂單編號 </span><span class="od-no">#SO-20251011-5120</span><span class="od-time"><span class="od-label">下單時間</span><span class="num">2025/09/20 20:05</span></span></p>
+                  <div class="od-event">
+                    <div class="od-thumb img-frame"><img src="images/organizer-past-4.jpg" alt="" width="1024" height="1024" loading="lazy"></div>
+                    <div class="od-event-body">
+                      <h3 id="od6Title" class="od-title text-phrase">午夜噪音祭 Vol.6</h3>
+                      <p class="num">2025/10/11 (六) 20:00</p>
+                      <p>台北 ‧ <span class="text-nowrap">Zepp New Taipei</span></p>
+                    </div>
+                  </div>
+                  <p class="od-status"><span class="visually-hidden">狀態：</span><span class="tag tag-ok"><i class="bi bi-check-circle" aria-hidden="true"></i>已付款</span></p>
+                  <p class="od-total"><span class="od-label">總額</span><span class="price">NT$ 1,442</span></p>
+                  <div class="od-actions">
+                    <a class="btn btn-secondary btn-sm" href="tickets.html"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>查看票券</a>
+                    <button class="btn btn-text btn-sm od-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#od6Detail" aria-expanded="false" aria-controls="od6Detail">查看明細<span class="visually-hidden">：#SO-20251011-5120</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+                  </div>
+                </div>
+                <div id="od6Detail" class="collapse od-detail">
+                  <div class="od-detail-inner">
+                    <div class="od-detail-items">
+                      <p class="od-label">票種明細</p>
+                      <ul class="order-summary-rows">
+                        <li><span>預售全票 × 1</span><span class="price">NT$ 1,400</span></li>
+                        <li class="od-fee"><span>平台服務費<small>（每張票 3%）</small></span><span class="price">NT$ 42</span></li>
+                      </ul>
+                    </div>
+                    <dl class="od-detail-meta">
+                      <div><dt>付款方式</dt><dd>信用卡（末四碼 <span class="num">2846</span>）</dd></div>
+                      <div><dt>電子發票</dt><dd><span class="num">PL-30958264</span><button class="btn btn-text btn-sm od-download" type="button" aria-label="下載電子發票 PL-30958264"><i class="bi bi-download" aria-hidden="true"></i>下載</button></dd></div>
+                    </dl>
+                  </div>
+                </div>
+              </article>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- ============ 區塊三：退票申請 #refund（滿寬面板 5 : 7：左選票、右退款試算） ============ -->
+      <!-- 設計稿不送出：「送出退票申請」是 type="button"，欄位不加 name；退款試算是固定的數字（勾選 T-4471-02），不用 JS 計算 -->
+      <section id="refund" class="section section-alt od-refund" aria-labelledby="refundTitle">
+        <div class="container-xl">
+          <div class="hud-heading">
+            <div class="hud-heading-main">
+              <p class="hud-index" aria-hidden="true">02</p>
+              <h2 id="refundTitle" class="hud-title">申請退票</h2>
+              <p class="hud-sub">選擇要退的票券。退票期限與手續費依各活動的購票須知，退款會退回原付款方式。</p>
+            </div>
+          </div>
+          <form class="od-refund-panel hud-panel" aria-labelledby="refundTitle">
+            <div class="od-refund-form">
+              <div class="od-field">
+                <label class="form-label" for="refundOrder">訂單</label>
+                <select id="refundOrder" class="form-select" autocomplete="off">
+                  <option selected>#SO-20261018-4471 午夜噪音祭 Vol.7</option>
+                  <option>#SO-20261025-2207 島嶼獨白｜現代舞獨舞展</option>
+                </select>
+              </div>
+              <div class="od-rule">
+                <p class="od-rule-title"><i class="bi bi-shield-exclamation" aria-hidden="true"></i>這場活動的退票規則</p>
+                <p class="mb-0">本活動於 10/11 前可申請退票，收取票價 10% 手續費；10/11 之後恕不退換。活動取消或延期則全額自動退款。</p>
+              </div>
+              <fieldset class="od-field">
+                <legend class="form-label">要退的票券</legend>
+                <ul class="od-picks">
+                  <li class="od-pick">
+                    <input id="refundT1" class="form-check-input" type="checkbox" autocomplete="off">
+                    <label for="refundT1"><span class="od-pick-no">T-4471-01</span><span class="od-pick-type">預售全票</span><span class="price">NT$ 1,500</span></label>
+                  </li>
+                  <li class="od-pick">
+                    <input id="refundT2" class="form-check-input" type="checkbox" autocomplete="off" checked>
+                    <label for="refundT2"><span class="od-pick-no">T-4471-02</span><span class="od-pick-type">預售全票</span><span class="price">NT$ 1,500</span></label>
+                  </li>
+                  <li class="od-pick">
+                    <input id="refundT3" class="form-check-input" type="checkbox" autocomplete="off">
+                    <label for="refundT3"><span class="od-pick-no">T-4471-03</span><span class="od-pick-type">VIP 搖滾區 ‧ A 區 12 排 7 號</span><span class="price">NT$ 2,800</span></label>
+                  </li>
+                </ul>
+              </fieldset>
+              <div class="od-field mb-0">
+                <label class="form-label" for="refundReason">退票原因（選填）</label>
+                <select id="refundReason" class="form-select" autocomplete="off">
+                  <option value="" selected>請選擇</option>
+                  <option>行程有變</option>
+                  <option>買錯場次或票種</option>
+                  <option>其他</option>
+                </select>
+              </div>
+            </div>
+            <div class="od-quote">
+              <h3 class="od-quote-title">退款試算</h3>
+              <!-- 三格讀數：票價、手續費、預估退款（預估退款是本區最大的數字，Oxanium 40px 薄荷色） -->
+              <dl class="od-quote-cells">
+                <div><dt>票價</dt><dd class="price">NT$ 1,500</dd></div>
+                <div><dt>手續費（票價 10%）</dt><dd class="price">NT$ 150</dd></div>
+                <div class="od-quote-total"><dt>預估退款</dt><dd class="price">NT$ 1,350</dd></div>
+              </dl>
+              <p class="od-quote-note"><i class="bi bi-info-circle" aria-hidden="true"></i><span>平台服務費 NT$ 45 不退。退款會退回 Apple Pay，約 <span class="text-nowrap">3–5 個工作天</span>入帳。</span></p>
+              <button class="btn btn-primary btn-lg od-quote-submit" type="button">送出退票申請</button>
+              <p class="buy-card-safe od-quote-safe"><i class="bi bi-shield-check" aria-hidden="true"></i>主辦方取消或延期，系統自動原路退款，不需自行申請。</p>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ============ 區塊四：設計稿狀態示意 ============ -->
+      <div class="section">
+        <div class="container-xl">
+          <div class="row g-4">
+            <div class="col-xl-4 d-flex">
+              <section class="demo-state mt-0 flex-grow-1" aria-labelledby="demoOrdersEmptyTitle">
+                <p class="demo-state-tag">設計稿狀態示意</p>
+                <h2 id="demoOrdersEmptyTitle" class="demo-state-title">還沒有購票紀錄時</h2>
+                <p class="text-note">訂單列表換成這個空狀態，退票申請一起隱藏。</p>
+                <div class="empty-state hud-panel">
+                  <span class="hex hex-lg empty-state-icon" aria-hidden="true"><i class="bi bi-receipt"></i></span>
+                  <h3>還沒有購票紀錄</h3>
+                  <p>買過的票、電子發票和退票進度都會整理在這裡。</p>
+                  <a class="btn btn-primary" href="events.html">探索活動</a>
+                </div>
+              </section>
+            </div>
+            <div class="col-xl-8 d-flex">
+              <section class="demo-state mt-0 flex-grow-1" aria-labelledby="demoOrdersRefundingTitle">
+                <p class="demo-state-tag">設計稿狀態示意</p>
+                <h2 id="demoOrdersRefundingTitle" class="demo-state-title">主辦方取消活動、退款處理中時</h2>
+                <p class="text-note">主辦方取消活動後，訂單從「已付款」變成「退款處理中」，退款入帳後變成「已退款」（同 <span class="num text-nowrap">#SO-20260912-0836</span>）。</p>
+                <ol class="od-board od-board-demo hud-panel">
+              <!-- O1 的「退款處理中」版本：不放查看票券、申請退票；電子發票退款完成後作廢 -->
+              <li class="od-row is-refunding">
+                <article class="od-item" aria-labelledby="odDemoTitle">
+                  <div class="od-line">
+                    <p class="od-id"><span class="visually-hidden">訂單編號 </span><span class="od-no">#SO-20261018-4471</span><span class="od-time"><span class="od-label">下單時間</span><span class="num">2026/10/06 14:08</span></span></p>
+                    <div class="od-event">
+                      <div class="od-thumb img-frame"><img src="images/event-midnight-noise.jpg" alt="" width="1600" height="1067" loading="lazy"></div>
+                      <div class="od-event-body">
+                        <h3 id="odDemoTitle" class="od-title text-phrase">午夜噪音祭 Vol.7</h3>
+                        <p class="num">2026/10/18 (六) 20:00</p>
+                        <p>台北 ‧ <span class="text-nowrap">Zepp New Taipei</span></p>
+                      </div>
+                    </div>
+                    <p class="od-status"><span class="visually-hidden">狀態：</span><span class="tag tag-info"><i class="bi bi-hourglass-split" aria-hidden="true"></i>退款處理中</span></p>
+                    <p class="od-total"><span class="od-label">總額</span><span class="price">NT$ 5,974</span></p>
+                    <div class="od-actions">
+                      <button class="btn btn-text btn-sm od-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#odDemoDetail" aria-expanded="true" aria-controls="odDemoDetail">查看明細<span class="visually-hidden">：#SO-20261018-4471</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+                    </div>
+                  </div>
+                  <div class="alert alert-danger alert-action od-alert">
+                    <i class="bi bi-x-octagon-fill" aria-hidden="true"></i>
+                    <p>主辦方已取消本場活動，退款將於 <span class="text-nowrap">3–5 個工作天</span>內原路退回。</p>
+                  </div>
+                  <div id="odDemoDetail" class="collapse od-detail show">
+                    <div class="od-detail-inner">
+                      <div class="od-detail-items">
+                        <p class="od-label">票種明細</p>
+                        <ul class="order-summary-rows">
+                          <li><span>預售全票 × 2</span><span class="price">NT$ 3,000</span></li>
+                          <li><span>VIP 搖滾區 × 1<small>座位 A 區 12 排 7 號</small></span><span class="price">NT$ 2,800</span></li>
+                          <li class="od-fee"><span>平台服務費<small>（每張票 3%）</small></span><span class="price">NT$ 174</span></li>
+                        </ul>
+                      </div>
+                      <dl class="od-detail-meta">
+                        <div><dt>付款方式</dt><dd>Apple Pay</dd></div>
+                        <div><dt>退款金額</dt><dd><span class="price">NT$ 5,974</span>（票價與平台服務費全額退回 Apple Pay）</dd></div>
+                        <div><dt>電子發票</dt><dd><span class="num">QK-27401836</span>（退款完成後作廢）</dd></div>
+                      </dl>
+                    </div>
+                  </div>
+                </article>
+              </li>
+                </ol>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container-xl">
+        <div class="row gy-5">
+          <div class="col-lg-4">
+            <a class="site-brand" href="index.html">
+              <img class="site-brand-mark" src="images/logo.svg" alt="" width="34" height="34">
+              <span class="site-brand-name">StageOne</span>
+              <span class="site-brand-sub">城市現場</span>
+            </a>
+            <p class="site-footer-lead text-phrase">
+              三步完成購票、<wbr>票券直接長在手機裡<br>
+              專為中小型現場活動<wbr>打造的售票平台。
+            </p>
+          </div>
+          <!-- 第二階段頁面（主辦方後台、驗票工具）：不帶 href 的佔位連結 -->
+          <div class="col-6 col-lg site-footer-col">
+            <h2 class="site-footer-title"><span class="site-footer-num" aria-hidden="true">01</span>購票者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="events.html">探索活動</a></li>
+              <li><a href="tickets.html">我的票券</a></li>
+              <li><a href="orders.html">購票紀錄</a></li>
+              <li><a href="follows.html">追蹤的主辦方</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-lg site-footer-col">
+            <h2 class="site-footer-title"><span class="site-footer-num" aria-hidden="true">02</span>主辦方</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="index.html#organizer">我要辦活動</a></li>
+              <li><a>主辦方後台</a></li>
+              <li><a>行動驗票工具</a></li>
+              <li><a>售票儀表板</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-lg site-footer-col">
+            <h2 class="site-footer-title"><span class="site-footer-num" aria-hidden="true">03</span>服務</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="event.html#faq">購票須知</a></li>
+              <li><a href="event.html#faq">退票規則</a></li>
+              <li><a href="event.html#faq">常見問題</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 StageOne 城市現場｜<wbr>本站為課程設計稿範例，活動與票券皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 登入／註冊 Modal：頁首「登入／註冊」、首頁「免費開賣我的第一場」、註冊頁的「登入」共用。設計稿：「登入」只關閉 Modal -->
+  <div class="modal fade login-modal" id="loginModal" tabindex="-1" aria-labelledby="loginModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h4" id="loginModalTitle">登入／註冊</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body">
+          <p class="login-modal-lead">登入後就能買票，註冊只要 30 秒。</p>
+          <form>
+            <div class="mb-3">
+              <label class="form-label" for="loginEmail">Email</label>
+              <input id="loginEmail" class="form-control" type="email" autocomplete="email" placeholder="you@example.com">
+            </div>
+            <div class="mb-4">
+              <label class="form-label" for="loginPassword">密碼</label>
+              <input id="loginPassword" class="form-control" type="password" autocomplete="current-password">
+            </div>
+            <div class="d-grid gap-3">
+              <button class="btn btn-primary" type="button" data-bs-dismiss="modal">登入</button>
+              <a class="btn btn-secondary" href="register.html">註冊新帳號</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

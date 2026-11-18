@@ -1,0 +1,190 @@
+// ============================================================
+// follows.html 追蹤的主辦方（2026-11 補；class 前綴 fol-）
+// 1 頁首區（components/_member-head.scss）：奶油黃帶、置中＋「追蹤中 4 個主辦方」數量貼紙
+// 2 #follows：≥ 768px 每列 2 座攤位卡（重用 components/_booth.scss 的售票亭：海軍藍屋簷＋鮮黃燈泡＋條紋扇形遮陽棚＋香草亭身）
+//   4 座攤位的遮陽棚顏色不同：糖果紅、鮮黃（條紋之間加深海軍藍細線）、海軍藍、糖果紅亮
+//   字母章是鮮黃代幣、壓在遮陽棚下緣正中 → 名稱 h2 置中 → 簡介 →「即將舉辦 1 場活動」
+//   → 奶油色櫃台：「下一場」＋橫式迷你入場票（.admit.is-link，左 1:1 縮圖、右資訊；整張是連結，hover 只加深陰影）
+//   →「取消追蹤」海軍藍框膠囊（js/main.js #10，推到攤位最下面，同一列對齊）
+// 3 狀態示意：還沒有追蹤任何主辦方時
+// ============================================================
+
+// 4 種遮陽棚：條紋顏色＋條紋之間細線的深淺
+$fol-awnings: (
+  "candy":  ($candy, .18),
+  "sunny":  ($sunny, .7),
+  "navy":   ($navy, .18),
+  "bright": ($candy-bright, .18),
+);
+
+.fol-list {
+  max-width: 66rem; // 1056px
+  margin-inline: auto;
+}
+
+// ---------- 攤位卡 ----------
+.fol-stall {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .booth-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 1rem 1.5rem;
+    box-shadow: $shadow-soft, $bevel; // 4 座並排，陰影比單獨的售票亭低一階
+    text-align: center;
+
+    @include media-breakpoint-up(lg) {
+      padding-inline: 1.75rem;
+    }
+  }
+}
+@each $name, $set in $fol-awnings {
+  .fol-stall.is-#{$name} .booth-roof {
+    background:
+      radial-gradient(circle, $sunny 0 2.5px, rgba($sunny, .3) 3px 4.5px, transparent 5px) 9px 0 / 18px .75rem repeat-x,
+      linear-gradient($navy, $navy) 0 0 / 100% .75rem no-repeat,
+      booth-awning(44, nth($set, 1), nth($set, 2)) 0 .75rem / 48px 44px round no-repeat;
+  }
+}
+// 字母章：鮮黃代幣壓在遮陽棚下緣正中（中文兩個字也放得下）
+.fol-logo {
+  position: relative;
+  z-index: 2;
+  margin-top: -1.75rem;
+  margin-bottom: .875rem;
+  font-size: 1.375rem;
+  letter-spacing: .02em;
+}
+.fol-name {
+  margin-bottom: .5rem;
+  font-size: 1.375rem;
+  font-weight: 900;
+  line-height: 1.35;
+
+  @include media-breakpoint-up(lg) {
+    font-size: 1.5rem;
+  }
+}
+// 簡介會換成 2～3 行：內文靠左（攤位的字母章、名稱、按鈕維持置中；Guideline 08「兩行以上的內文一律靠左」）
+.fol-intro {
+  max-width: 26em;
+  margin-bottom: .75rem;
+  text-align: start;
+  color: $navy-muted;
+  line-height: 1.75;
+}
+.fol-upcoming {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: 1.25rem;
+  font-weight: 700;
+
+  .bi { color: $candy; }
+}
+
+// 櫃台：奶油底的小檯面，放「下一場」與迷你入場票（文字靠左）
+.fol-counter {
+  align-self: stretch;
+  margin-bottom: 1.25rem;
+  padding: .875rem .625rem 1rem;
+  border-radius: 1.25rem;
+  background-color: $cream;
+  text-align: left;
+
+  @include media-breakpoint-up(lg) {
+    padding: 1rem 1.25rem 1.125rem;
+  }
+}
+.fol-next-label {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: .625rem;
+  color: $navy-muted;
+  font-size: .8125rem;
+  font-weight: 700;
+  letter-spacing: $letter-spacing-label;
+
+  .bi { color: $candy; }
+}
+
+// 迷你入場票：整張是 <a>（.admit.is-link），hover 只加深陰影；焦點環畫在外層
+.fol-next {
+  display: block;
+  color: $navy;
+  text-decoration: none;
+
+  // < 992px（手機 1 欄、平板 2 欄時攤位都很窄）縮圖 64px、內距收小，讓右邊的活動資訊有 180px 以上可以排
+  .admit-paper {
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    align-items: center;
+    gap: .75rem;
+    padding: .75rem;
+
+    @include media-breakpoint-up(lg) {
+      grid-template-columns: 6.5rem 1fr;
+      gap: 1rem;
+      padding: .875rem;
+    }
+  }
+  .img-frame {
+    border-radius: .875rem;
+  }
+  &:hover {
+    color: $navy;
+
+    .fol-next-name {
+      color: $candy-deep;
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: .25em;
+    }
+  }
+  &:focus-visible {
+    outline: 3px solid $navy;
+    outline-offset: 4px;
+    border-radius: 1rem;
+  }
+}
+.fol-next-body {
+  display: grid;
+  gap: .125rem;
+  min-width: 0;
+}
+.fol-next-name {
+  font-weight: 900;
+  line-height: 1.4;
+}
+.fol-next-meta {
+  color: $navy-muted;
+  font-size: .875rem;
+  line-height: 1.55;
+}
+.fol-next-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .625rem;
+  margin-top: .25rem;
+
+  .price { font-size: 1.125rem; }
+}
+
+// 取消追蹤：次要樣式，推到攤位最下面；手機滿寬
+.fol-unfollow {
+  margin-top: auto;
+
+  @include media-breakpoint-down(sm) { width: 100%; }
+}
+
+// ---------- 3. 狀態示意 ----------
+.fol-demo {
+  max-width: 66rem;
+  margin-inline: auto;
+}

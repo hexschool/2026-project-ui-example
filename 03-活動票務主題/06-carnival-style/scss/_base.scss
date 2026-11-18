@@ -1,0 +1,1125 @@
+// ============================================================
+// 全站基礎：字體、數字、區塊節奏、緞帶標題、按鈕、焦點、裝飾形（扇形、條紋、燈泡、星點）
+// 以及票務共用的小元件：代幣、星芒、狀態標籤、剩餘票數條、倒數數字磚、數量加減器、提示框、空狀態、設計稿狀態示意
+// ============================================================
+@use "sass:math";
+
+// ---------- SVG 背景小工具：把 Sass 色票轉成 data URI 可用的「%23RRGGBB」 ----------
+@function svg-color($c) {
+  @return "%23" + str-slice(ie-hex-str($c), 4);
+}
+
+// 單一淺色主題
+:root {
+  color-scheme: light;
+  accent-color: $candy;
+}
+
+body {
+  letter-spacing: $letter-spacing-body;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+// 頁面整體直向 flex，頁尾貼底
+.site-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+// 入場章貼在票的右緣，蓋印動畫一開始放大 1.8 倍、墨暈最後停在 1.25 倍，手機上會凸出視窗右緣
+// main 只裁掉左右超出的部分（clip 不會變成捲動容器，sticky 照常運作），頁面不會出現水平捲軸
+#main {
+  overflow-x: clip;
+}
+
+// 容器：≥ lg 左右各 32px（Bootstrap 預設只有一個值，這裡補上大螢幕的留白）
+@include media-breakpoint-up(lg) {
+  .container,
+  .container-fluid {
+    --bs-gutter-x: #{$container-padding-x-lg};
+  }
+}
+
+// ---------- 標題：昭源圓體 900，圓頭像樂園招牌；手機縮小一級 ----------
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  letter-spacing: $letter-spacing-heading;
+  text-wrap: balance;
+}
+h1, .h1 {
+  font-size: 2.125rem; // 34px
+  line-height: 1.2;
+  @include media-breakpoint-up(lg) { font-size: $h1-font-size; } // 56px
+}
+h2, .h2 {
+  font-size: 1.625rem; // 26px
+  @include media-breakpoint-up(lg) { font-size: $h2-font-size; } // 36px
+}
+h3, .h3 {
+  font-size: 1.1875rem; // 19px
+  font-weight: 700;
+  line-height: 1.4;
+  @include media-breakpoint-up(lg) { font-size: $h3-font-size; } // 22px
+}
+h4, .h4, h5, .h5, h6, .h6 {
+  font-weight: 700;
+  line-height: 1.45;
+}
+.lead {
+  font-size: 1.0625rem; // 17px
+  line-height: $line-height-lg;
+  @include media-breakpoint-up(lg) { font-size: $lead-font-size; } // 19px
+}
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty;
+}
+
+// sticky 頁首不遮住焦點與錨點目標（#tickets、#result…）
+html {
+  scroll-padding-top: $sticky-top-offset;
+}
+
+::selection {
+  background-color: $sunny;
+  color: $navy;
+}
+
+// 有底部浮動膠囊（活動細節購票列、結帳付款列）的頁面：<body class="has-bottom-bar">，< lg 在頁尾下緣多留 96px
+// 留白加在頁尾裡（海軍藍），捲到最底時浮動膠囊停在頁尾的海軍藍上，頁尾下方不會多出一截奶油色
+.has-bottom-bar .site-footer {
+  @include media-breakpoint-down(lg) {
+    padding-bottom: calc(#{map-get($spacers, 4)} + 6rem + env(safe-area-inset-bottom));
+  }
+}
+
+// ---------- 數字：價格、倒數、票號、座位號（Baloo 2 等寬數字） ----------
+// <span class="num">05</span>、<p class="price">NT$ 1,500 起</p>
+.num,
+.price {
+  font-family: $font-family-display;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .01em;
+}
+.num { font-weight: 700; }
+.price {
+  font-weight: 800;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.price-sm { font-size: 1.125rem; }    // 18px
+.price-md { font-size: 1.375rem; }    // 22px：卡片
+.price-lg { font-size: 2rem; }        // 32px：購票亭
+.price-xl {                           // 48px：應付總額
+  font-size: 2.25rem;
+  @include media-breakpoint-up(lg) { font-size: 3rem; }
+}
+
+// 品牌字、英數標題：Baloo 2
+.font-display { font-family: $font-family-display; }
+
+// 次要說明文字與最小字級
+.text-note {
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+}
+.text-caption {
+  font-size: .8125rem; // 13px
+  font-weight: 700;
+  line-height: 1.5;
+  color: $body-secondary-color;
+  letter-spacing: $letter-spacing-label;
+}
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、標點與 <wbr> 處換行；用在活動名、標題、短說明（長段落不要用）
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ============================================================
+// 裝飾形：扇形邊、遮陽棚條紋、燈泡點、星點（全部用重複背景，1920 寬也不會被拉伸）
+// ============================================================
+
+// 扇形邊：一排半圓。$edge 是半圓長在哪一側（top＝從上緣往下垂、bottom＝從下緣往上鼓）
+// 用在偽元素上：<section class="has-scallop-bottom">…</section>
+@mixin scallop($edge: bottom, $color: $cream, $r: $scallop-r) {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: $r;
+  pointer-events: none;
+  @if $edge == bottom {
+    bottom: -1px;
+    background: radial-gradient(circle at 50% 100%, $color $r, transparent calc(#{$r} + .5px)) 0 100% / #{$r * 2} #{$r} repeat-x;
+  } @else {
+    top: -1px;
+    background: radial-gradient(circle at 50% 0, $color $r, transparent calc(#{$r} + .5px)) 0 0 / #{$r * 2} #{$r} repeat-x;
+  }
+}
+
+// 遮陽棚條紋（糖果紅亮＋香草，28px 一條）
+@mixin awning-stripes($w: $stripe-w) {
+  background-image: repeating-linear-gradient(90deg, $candy-bright 0 $w, $vanilla $w ($w * 2));
+}
+
+// 遮陽棚下緣：海軍藍細線＋條紋＋扇形（每片扇形就是一條條紋的下端），扇形之間透明
+// 用 SVG 拼貼，48 × 18 一組（紅、白各一片）
+@mixin awning-valance($h: $site-awning-height) {
+  height: $h;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='18' viewBox='0 0 48 18'%3E%3Cpath fill='#{svg-color($candy-bright)}' d='M0 1h24v4a12 12 0 0 1-24 0z'/%3E%3Cpath fill='#{svg-color($vanilla)}' d='M24 1h24v4a12 12 0 0 1-24 0z'/%3E%3Cpath fill='none' stroke='#{svg-color($navy)}' stroke-width='1.5' d='M0 5a12 12 0 0 0 24 0a12 12 0 0 0 24 0'/%3E%3Cpath fill='#{svg-color($navy)}' d='M0 0h48v2H0z'/%3E%3C/svg%3E") 0 0 / 48px $h repeat-x;
+}
+
+// 燈泡點：鮮黃圓點＋1px 海軍藍描邊（靜態，不閃爍）
+// 用法：background: bulb-dot(4px) top left / 22px 14px repeat-x;
+@function bulb-dot($size: 4px) {
+  @return radial-gradient(circle, $sunny 0 $size, $navy ($size + .5px) ($size + 1.75px), transparent ($size + 2.25px));
+}
+
+// 海軍藍帶上疏落的鮮黃小星點
+@mixin navy-stars {
+  background-color: $navy;
+  // 三層不同大小、互質的拼貼，疊起來才不會排成整齊的格子
+  background-image:
+    radial-gradient(circle, rgba($sunny, .95) 0 1.75px, transparent 2.25px),
+    radial-gradient(circle, rgba($sunny, .6) 0 1.25px, transparent 1.75px),
+    radial-gradient(circle, rgba($vanilla, .45) 0 1px, transparent 1.5px),
+    radial-gradient(circle, rgba($sunny, .45) 0 1px, transparent 1.5px);
+  background-size: 263px 211px, 197px 173px, 151px 239px, 331px 127px;
+  background-position: 37px 52px, 121px 9px, 64px 141px, 203px 88px;
+}
+
+// ---------- 區塊節奏：上下 56px（手機）→ 104px（桌機） ----------
+.section {
+  position: relative;
+  padding-block: $section-padding-y-sm;
+  @include media-breakpoint-up(lg) { padding-block: $section-padding-y-lg; }
+}
+.section-tight {
+  padding-block: map-get($spacers, 5);
+}
+.section-butter { background-color: $butter; }      // 奶油黃帶：情境入口、列表頁首區
+.section-candy  { background-color: $candy-wash; }  // 糖粉帶：票種區（不要用海軍藍帶，軟陰影在深色上看不到）
+.section-navy {                                     // 海軍藍帶：本週熱門。上面的卡片不放陰影（.admit.is-flat）
+  @include navy-stars;
+  color: $cream;
+}
+// 直接放在深色底上的元素（區塊標題、箭頭、轉換帶文字）加 .on-dark：字改奶油、焦點改海軍藍＋鮮黃
+// 深色帶裡的香草卡片、票券不要加（它們自己是淺底）
+.on-dark {
+  --bs-heading-color: #{$cream};
+  color: $cream;
+}
+
+// ---------- 區塊標題 ----------
+// 滿寬區塊：H2 置中放在糖果紅緞帶上（兩端折角）＋置中副標
+// <div class="section-head">
+//   <h2 class="ribbon" id="…"><span class="ribbon-text">區塊標題</span></h2>
+//   <p>副標（選用）</p>
+// </div>
+// 深色帶上加 .ribbon-sunny（鮮黃底海軍藍字）
+.section-head {
+  margin-bottom: map-get($spacers, 5);
+  text-align: center;
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: 3.5rem;
+  }
+
+  > p {
+    max-width: 34em;
+    margin: map-get($spacers, 3) auto 0;
+    color: $body-secondary-color;
+    font-size: 1.0625rem;
+    text-wrap: balance; // 副標換成兩行時兩行等長，不留只有幾個字的第二行
+  }
+}
+.on-dark.section-head > p,
+.on-dark .section-head > p { color: rgba($cream, .9); }
+
+// 緞帶：字放在 .ribbon-text（糖果紅底），兩端的燕尾由 .ribbon 的偽元素畫在後面
+.ribbon {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  max-width: calc(100% - 3rem);
+  margin: 0 1.5rem;
+  color: $vanilla;  // 香草字在糖果紅上 5.16
+
+  .ribbon-text {
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+    padding: .3em .9em .34em;
+    border-radius: .3rem;
+    background-color: $candy;
+    box-shadow: $bevel-btn;
+    line-height: 1.3;
+  }
+
+  // 燕尾：比緞帶低一點、顏色深一階，像折到後面
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    top: .42em;
+    bottom: -.42em;
+    width: 1.6em;
+    background-color: $candy-deep;
+  }
+  &::before {
+    left: -1.1em;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, .5em 50%);
+  }
+  &::after {
+    right: -1.1em;
+    clip-path: polygon(0 0, 100% 0, calc(100% - .5em) 50%, 100% 100%, 0 100%);
+  }
+}
+.ribbon-sunny {
+  color: $navy;
+  .ribbon-text { background-color: $sunny; box-shadow: inset 0 1px 0 rgba($white, .6), inset 0 -3px 0 rgba($navy, .14); }
+  &::before,
+  &::after { background-color: $sunny-hover; }
+}
+
+// 欄內（8 欄、4 欄裡）的 H2：左對齊、不加緞帶，字下一條鮮黃螢光筆
+// <h2><span class="marker">活動介紹</span></h2>
+.marker {
+  background-image: linear-gradient(transparent 60%, $sunny 60%, $sunny 92%, transparent 92%);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding-inline: .1em;
+}
+
+// 頁面 H1：置中、海軍藍，字後一塊鮮黃圓角色塊（像貼紙）
+// <h1><span class="sticker">探索活動</span></h1>
+.sticker {
+  position: relative;
+  z-index: 0;
+  display: inline-block;
+  padding-inline: .2em;
+
+  &::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: .32em -.18em -.02em;
+    border: 2px solid $navy;
+    border-radius: .875rem;
+    background-color: $sunny;
+    transform: rotate(-1.5deg);
+  }
+}
+
+// ---------- 頁首區（活動列表、會員頁、Guideline 共用）：全部置中 ----------
+// <header class="page-head">
+//   <nav aria-label="目前位置"><ol class="breadcrumb">…</ol></nav>
+//   <h1><span class="sticker">頁面標題</span></h1>
+//   <p class="page-lead">一句說明（選用）</p>
+// </header>
+.page-head {
+  padding-block: map-get($spacers, 5) map-get($spacers, 5);
+  text-align: center;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: 3.5rem;
+  }
+
+  .breadcrumb {
+    justify-content: center;
+    margin-bottom: map-get($spacers, 3);
+  }
+  h1,
+  .h1 {
+    margin-bottom: map-get($spacers, 3);
+  }
+}
+.page-lead {
+  max-width: 36em;
+  margin: 0 auto;
+  color: $body-secondary-color;
+}
+
+// ---------- 麵包屑：連結 44px 高 ----------
+.breadcrumb {
+  align-items: center;
+  font-weight: 700;
+}
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: $navy-muted;
+  text-decoration: none;
+
+  &:hover {
+    color: $candy-deep;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .3em;
+  }
+}
+
+// ---------- 圖片框：固定比例、裁切填滿、圓角 20px ----------
+// <div class="img-frame ratio-16x9"><img …></div>
+// 不要同時設定 aspect-ratio 與 max-height（會把寬度卡住）
+.img-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: $radius-photo;
+  background-color: $butter;
+
+  > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+// 拱窗：上緣整個半圓拱頂（情境卡、票券卡、交通卡的場地照）
+// 半圓的垂直半徑＝寬度的一半，換算成高度的百分比要看比例，所以由 .ratio-* 設定 --arch-v（預設 4:5）
+.img-frame.is-arch {
+  border-radius: 50% 50% $border-radius-lg $border-radius-lg / var(--arch-v, 40%) var(--arch-v, 40%) $border-radius-lg $border-radius-lg;
+}
+.ratio-16x9 { aspect-ratio: 16 / 9; --arch-v: 88.89%; }
+.ratio-16x10 { aspect-ratio: 16 / 10; --arch-v: 80%; }
+.ratio-4x3 { aspect-ratio: 4 / 3; --arch-v: 66.67%; }
+.ratio-4x5 { aspect-ratio: 4 / 5; --arch-v: 40%; }
+.ratio-1x1 { aspect-ratio: 1; --arch-v: 50%; }
+.ratio-21x9 { aspect-ratio: 21 / 9; }
+
+// ---------- 卡片：香草＋24px 圓角＋柔和陰影 ----------
+// <div class="card-soft">…</div>（大面板加 .is-panel：28px 圓角＋浮起陰影）
+.card-soft {
+  --bs-heading-color: #{$navy};
+  position: relative;
+  border-radius: $border-radius-lg;
+  background-color: $vanilla;
+  color: $navy;
+  box-shadow: $shadow-soft;
+
+  &.is-panel {
+    border-radius: $border-radius-xl;
+    box-shadow: $shadow-float;
+  }
+}
+
+// ============================================================
+// 按鈕：全部是膠囊，內側上緣高光＋下緣厚度（像塑膠按鈕）
+// hover 只換底色、加深陰影；:active 內側陰影加深（像被按下去），不用 translate
+// ============================================================
+.btn {
+  --bs-btn-focus-box-shadow: #{$focus-ring-double};
+  --bs-btn-disabled-bg: #{$input-disabled-bg};
+  --bs-btn-disabled-color: #{$navy-muted};
+  --bs-btn-disabled-border-color: #{$input-disabled-border-color};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  letter-spacing: $letter-spacing-label;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+
+  &:disabled,
+  &.disabled {
+    border-style: dashed;
+    box-shadow: none;
+  }
+}
+.btn-primary,
+.btn-sunny,
+.btn-navy {
+  box-shadow: $bevel-btn;
+
+  &:hover { box-shadow: $bevel-btn, 0 6px 14px -6px rgba($navy, .45); }
+  &:active,
+  &.active { box-shadow: $bevel-pressed; }
+  &:focus-visible { box-shadow: $bevel-btn, $focus-ring-double; }
+}
+.btn-primary {
+  --bs-btn-color: #{$white};
+  --bs-btn-bg: #{$candy};
+  --bs-btn-border-color: #{$candy};
+  --bs-btn-hover-color: #{$white};
+  --bs-btn-hover-bg: #{$candy-deep};
+  --bs-btn-hover-border-color: #{$candy-deep};
+  --bs-btn-active-color: #{$white};
+  --bs-btn-active-bg: #{$candy-deep};
+  --bs-btn-active-border-color: #{$candy-deep};
+}
+// 鮮黃：深色帶上的主要按鈕（糖果紅在海軍藍上只有 2.60）。奶油底上用時有 2px 海軍藍框
+.btn-sunny {
+  --bs-btn-color: #{$navy};
+  --bs-btn-bg: #{$sunny};
+  --bs-btn-border-color: #{$navy};
+  --bs-btn-hover-color: #{$navy};
+  --bs-btn-hover-bg: #{$sunny-hover};
+  --bs-btn-hover-border-color: #{$navy};
+  --bs-btn-active-color: #{$navy};
+  --bs-btn-active-bg: #{$sunny-hover};
+  --bs-btn-active-border-color: #{$navy};
+}
+.btn-navy {
+  --bs-btn-color: #{$white};
+  --bs-btn-bg: #{$navy};
+  --bs-btn-border-color: #{$navy};
+  --bs-btn-hover-color: #{$white};
+  --bs-btn-hover-bg: #{mix($navy, $black, 80%)};
+  --bs-btn-hover-border-color: #{mix($navy, $black, 80%)};
+  --bs-btn-active-color: #{$white};
+  --bs-btn-active-bg: #{mix($navy, $black, 80%)};
+  --bs-btn-active-border-color: #{mix($navy, $black, 80%)};
+}
+// 次要：海軍藍 2px 框，hover 鋪奶油黃
+.btn-outline-secondary {
+  --bs-btn-color: #{$navy};
+  --bs-btn-bg: #{$vanilla};
+  --bs-btn-border-color: #{$navy};
+  --bs-btn-hover-color: #{$navy};
+  --bs-btn-hover-bg: #{$butter};
+  --bs-btn-hover-border-color: #{$navy};
+  --bs-btn-active-color: #{$navy};
+  --bs-btn-active-bg: #{$sunny};
+  --bs-btn-active-border-color: #{$navy};
+  box-shadow: inset 0 -3px 0 rgba($navy, .08);
+  &:active, &.active { box-shadow: $bevel-pressed; }
+}
+// 糖果紅框：城市列、演出陣容、「查看票券」
+.btn-outline-primary {
+  --bs-btn-color: #{$navy};
+  --bs-btn-bg: #{$vanilla};
+  --bs-btn-border-color: #{$candy};
+  --bs-btn-hover-color: #{$candy-deep};
+  --bs-btn-hover-bg: #{$candy-wash};
+  --bs-btn-hover-border-color: #{$candy-deep};
+  --bs-btn-active-color: #{$white};
+  --bs-btn-active-bg: #{$candy};
+  --bs-btn-active-border-color: #{$candy};
+}
+// 深色帶、照片遮罩上的次要按鈕：奶油框
+.btn-outline-cream {
+  --bs-btn-color: #{$cream};
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: #{$cream};
+  --bs-btn-hover-color: #{$navy};
+  --bs-btn-hover-bg: #{$cream};
+  --bs-btn-hover-border-color: #{$cream};
+  --bs-btn-active-color: #{$navy};
+  --bs-btn-active-bg: #{$sunny};
+  --bs-btn-active-border-color: #{$sunny};
+}
+// 文字按鈕：海軍藍字＋糖果紅底線（44px 高）
+.btn-text {
+  --bs-btn-padding-x: .25rem;
+  --bs-btn-padding-y: .25rem;
+  --bs-btn-color: #{$navy};
+  --bs-btn-hover-color: #{$candy-deep};
+  --bs-btn-active-color: #{$candy-deep};
+  --bs-btn-border-width: 0;
+  min-height: 2.75rem;
+  border-radius: $border-radius-sm;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: $candy;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .35em;
+}
+// 圓形圖示按鈕（44 × 44）
+.btn-icon {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  font-size: 1.125rem;
+}
+// 付款中（鎖定）：停用＋spinner＋文字
+.btn.is-loading {
+  cursor: progress;
+
+  .spinner-border {
+    --bs-spinner-width: 1.125rem;
+    --bs-spinner-height: 1.125rem;
+    --bs-spinner-border-width: .16em;
+  }
+}
+
+// ---------- 表單 ----------
+.form-control,
+.form-select {
+  caret-color: $candy;
+  min-height: 3rem;
+}
+.form-check {
+  min-height: 1.75rem;
+}
+.form-check-input {
+  margin-top: .15em;
+}
+.form-check-label {
+  cursor: pointer;
+}
+.form-check-input:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+// 錯誤狀態的說明文字前加圖示（不只靠紅色）
+.invalid-feedback {
+  font-weight: 700;
+  &::before {
+    content: "\F622"; // bi-x-circle-fill
+    margin-right: .3rem;
+    font-family: bootstrap-icons;
+    vertical-align: -.125em;
+  }
+}
+
+// 內文裡沒有 class 的連結：糖果紅底線
+a:not([class]) {
+  text-decoration-color: $candy;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .3em;
+}
+
+// ---------- 鍵盤焦點：雙環（香草＋海軍藍） ----------
+:focus-visible {
+  outline: 3px solid $navy;
+  outline-offset: 3px;
+}
+.offcanvas:focus-visible,
+.modal:focus-visible,
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+.btn:focus-visible,
+.btn-close:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible {
+  outline: none;
+}
+// 深色帶、照片遮罩上的焦點：海軍藍＋鮮黃
+.on-dark :focus-visible {
+  outline-color: $sunny;
+}
+.on-dark .btn:focus-visible {
+  box-shadow: $focus-ring-on-dark;
+}
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: $zindex-fixed + 10;
+  padding: .625rem 1.25rem;
+  border-radius: $border-radius-pill;
+  background: $navy;
+  color: $cream;
+  font-weight: 700;
+  &:focus { top: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+.dropdown-menu { box-shadow: $shadow-soft; }
+.modal-content { box-shadow: $shadow-float; }
+
+// ---------- 手機滿版橫向捲動列 ----------
+// < 576px 讓橫向捲動列貼齊螢幕兩側，第一項仍對齊版心（熱門列、代幣列、Guideline 章節膠囊）
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+  }
+}
+.bleed-x {
+  @include bleed-x;
+}
+
+// ============================================================
+// 票務共用小元件
+// ============================================================
+
+// ---------- 代幣 Token：鮮黃圓＋海軍藍外框＋內圈 2px 海軍藍環 ----------
+// 日期代幣、號碼代幣、圖示代幣、字母章。尺寸：預設 48px、.token-sm 32px、.token-lg 72px、.token-xl 96px
+// 顏色：預設鮮黃、.is-candy、.is-navy、.is-green、.is-berry、.is-vanilla（未選）
+// <span class="token" aria-hidden="true"><i class="bi bi-lightning-charge"></i></span>
+.token {
+  --token-size: #{$token-size};
+  --token-bg: #{$sunny};
+  --token-fg: #{$navy};
+  --token-ring: #{$navy};
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--token-size);
+  height: var(--token-size);
+  border: 2px solid $navy;
+  border-radius: 50%;
+  background-color: var(--token-bg);
+  color: var(--token-fg);
+  font-family: $font-family-display;
+  font-weight: 800;
+  font-size: calc(var(--token-size) * .4);
+  line-height: 1;
+  box-shadow: inset 0 0 0 3px var(--token-bg), inset 0 0 0 5px var(--token-ring), inset 0 -4px 0 2px rgba($navy, .1);
+
+  &.token-sm { --token-size: 2rem; box-shadow: inset 0 0 0 2px var(--token-bg), inset 0 0 0 3.5px var(--token-ring); }
+  &.token-lg { --token-size: 4.5rem; }
+  &.token-xl { --token-size: 6rem; }
+
+  &.is-candy  { --token-bg: #{$candy};  --token-fg: #{$white};  --token-ring: #{rgba($white, .75)}; border-color: $candy-deep; }
+  &.is-navy   { --token-bg: #{$navy};   --token-fg: #{$sunny};  --token-ring: #{rgba($sunny, .8)}; }
+  &.is-green  { --token-bg: #{$ride-green}; --token-fg: #{$white}; --token-ring: #{rgba($white, .7)}; border-color: $ride-green; }
+  &.is-berry  { --token-bg: #{$berry};  --token-fg: #{$white};  --token-ring: #{rgba($white, .7)}; border-color: $berry; }
+  &.is-vanilla { --token-bg: #{$vanilla}; --token-fg: #{$navy}; --token-ring: #{rgba($navy, .25)}; }
+}
+
+// 日期代幣：上「10月」小字、下「18」大字
+// <span class="date-token"><span class="date-token-month">10月</span><span class="date-token-day">18</span></span>
+.date-token {
+  display: inline-grid;
+  place-content: center;
+  justify-items: center;
+  width: 3.75rem;
+  height: 3.75rem;
+  border: 2px solid $navy;
+  border-radius: 50%;
+  background-color: $sunny;
+  color: $navy;
+  line-height: 1;
+  box-shadow: inset 0 0 0 3px $sunny, inset 0 0 0 4.5px rgba($navy, .85), 0 4px 0 rgba($navy, .18);
+
+  .date-token-month {
+    font-size: .6875rem;
+    font-weight: 700;
+  }
+  .date-token-day {
+    margin-top: .0625rem;
+    font-family: $font-family-display;
+    font-size: 1.5rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// ---------- 星芒 Starburst：即將完售（12 角，鮮黃＋2px 海軍藍框、海軍藍字＋火焰） ----------
+// <span class="starburst"><span class="starburst-inner"><i class="bi bi-fire" aria-hidden="true"></i>剩 8%</span></span>
+$starburst-points: ();
+@for $i from 0 through 23 {
+  $angle: math.div($i * 360deg, 24) - 90deg;
+  $r: if($i % 2 == 0, 50%, 39%);
+  $x: math.div(round((50% + $r * math.cos($angle)) * 100), 100);
+  $y: math.div(round((50% + $r * math.sin($angle)) * 100), 100);
+  $starburst-points: append($starburst-points, $x $y, comma);
+}
+.starburst {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 4.75rem;
+  height: 4.75rem;
+  background-color: $navy;
+  clip-path: polygon($starburst-points);
+  transform: rotate(8deg);
+
+  .starburst-inner {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    width: calc(100% - 5px);
+    height: calc(100% - 5px);
+    background-color: $sunny;
+    clip-path: polygon($starburst-points);
+    color: $navy;
+    font-family: $font-family-display;
+    font-size: .8125rem;
+    font-weight: 800;
+    line-height: 1.05;
+    text-align: center;
+    white-space: nowrap;
+
+    .bi { font-size: 1rem; }
+  }
+}
+
+// ---------- 狀態標籤 StatusTag（膠囊） ----------
+//   .tag              類別、日期（香草底＋表單框線）
+//   .tag.is-status    熱賣中、含免費票種、即將開賣（遊樂綠字＋圓點）
+//   .tag.is-scarce    即將完售、剩 8%（鮮黃底＋2px 海軍藍框＋火焰圖示，和其他狀態分得出來）
+//   .tag.is-muted     已售罄（虛線框＋灰化字）
+//   .tag.is-info      尚未開賣（天空藍）
+//   .tag.is-valid     有效、已付款（遊樂綠實心＋勾）  .tag.is-danger 活動已取消、付款失敗（莓果紅實心＋✕）
+//   .tag.is-warn      退款處理中（警示淡底）           .tag.is-owned  已購票（遊樂綠淡底＋綠框，和實心的「有效」分得開）
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .3125rem;
+  padding: .1875rem .75rem;
+  border: 2px solid $control;
+  border-radius: $border-radius-pill;
+  background-color: $vanilla;
+  color: $navy;
+  font-size: .8125rem;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+
+  .bi { font-size: .875em; }
+
+  &.is-status {
+    border-color: $ride-green;
+    color: $ride-green;
+    &::before {
+      content: "";
+      width: .4375rem;
+      height: .4375rem;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+  }
+  &.is-scarce {
+    border-color: $navy;
+    background-color: $sunny;
+    color: $navy;
+    font-weight: 800;
+  }
+  &.is-muted {
+    border-style: dashed;
+    border-color: $navy-faint;
+    background-color: transparent;
+    color: $navy-faint;
+  }
+  &.is-info {
+    border-color: $sky;
+    color: $sky;
+  }
+  &.is-valid {
+    border-color: $ride-green;
+    background-color: $ride-green;
+    color: $white;
+  }
+  &.is-danger {
+    border-color: $berry;
+    background-color: $berry;
+    color: $white;
+  }
+  &.is-warn {
+    border-color: $warning-border-subtle;
+    background-color: $warning-bg-subtle;
+    color: $amber-text;
+  }
+  &.is-owned {
+    border-color: $ride-green;
+    background-color: $success-bg-subtle; // 綠字 5.62
+    color: $ride-green;
+  }
+}
+
+// ---------- 剩餘票數條 RemainingBar ----------
+// 顏色＋文字＋進度條三者並用；剩餘 ≤ 25% 加 .is-scarce（糖果紅條紋＋火焰＋「即將完售」）
+// <div class="remain is-scarce">
+//   <div class="remain-head"><span>剩餘 8%</span><span class="remain-note"><i class="bi bi-fire"></i>即將完售</span></div>
+//   <div class="progress" role="progressbar" aria-label="剩餘票數 8%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100">
+//     <div class="progress-bar" style="width: 8%"></div>
+//   </div>
+// </div>
+.remain-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .25rem .75rem;
+  margin-bottom: .4375rem;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.remain-note {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+}
+.remain .progress {
+  border: 2px solid rgba($navy, .14);
+}
+.remain .progress-bar {
+  border-radius: inherit;
+}
+.remain.is-scarce {
+  .remain-head { color: $candy-deep; }
+  .progress-bar {
+    min-width: .75rem;
+    background-color: $candy;
+    background-image: repeating-linear-gradient(-45deg, $candy 0 6px, $candy-bright 6px 12px);
+  }
+}
+.remain.is-soldout {
+  .remain-head { color: $navy-faint; }
+  .progress {
+    background-image: repeating-linear-gradient(135deg, transparent 0 5px, rgba($navy-faint, .35) 5px 7px);
+  }
+}
+.on-dark .remain {
+  .remain-head { color: rgba($cream, .92); }
+  .progress { border-color: rgba($cream, .25); background-color: rgba($cream, .14); }
+  .progress-bar { background-color: $sunny; }
+  &.is-scarce .remain-head { color: $candy-light; }
+  &.is-scarce .progress-bar { background-image: repeating-linear-gradient(-45deg, $candy-light 0 6px, mix($candy-light, $white, 55%) 6px 12px); }
+}
+
+// ---------- 倒數 Countdown：數字放在鮮黃數字磚上 ----------
+// 只更新數字，不閃爍、不跳動、不放大；role="timer"，不加 aria-live
+// 狀態：一般、.is-warn（數字磚改糖果紅底白字＋整列糖粉底＋三角圖示）、.is-expired（灰化＋虛線＋✕）
+// <div class="countdown" role="timer">
+//   <p class="countdown-label"><i class="bi bi-clock"></i>距離票價調漲還有</p>
+//   <p class="countdown-tiles"><span class="tile">05</span> 時 <span class="tile">12</span> 分 <span class="tile">48</span> 秒</p>
+// </div>
+// 一行版（結帳步驟列、底部列）：<p class="countdown is-inline" role="timer"><i class="bi bi-clock"></i>…<span class="tile">09:12</span></p>
+.tile {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.75rem;
+  padding: .3125rem .4375rem .1875rem;
+  border: 2px solid $navy;
+  border-radius: $border-radius-sm;
+  background-color: $sunny;
+  color: $navy;
+  font-family: $font-family-display;
+  font-size: 1.5rem; // 24px（購票亭 34px 用 .tile-lg）
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 -3px 0 rgba($navy, .14), inset 0 1px 0 rgba($white, .6);
+
+  &.tile-lg {
+    min-width: 3.5rem;
+    font-size: 2.125rem;
+  }
+}
+.countdown {
+  margin-bottom: 0;
+  color: $navy;
+
+  .countdown-label {
+    display: flex;
+    align-items: center;
+    gap: .375rem;
+    margin-bottom: .5rem;
+    font-size: $small-font-size;
+    font-weight: 700;
+    .bi { color: $candy; }
+  }
+  .countdown-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .375rem;
+    margin-bottom: 0;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  &.is-inline {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .375rem .5rem;
+    font-weight: 700;
+    > .bi { color: $candy; }
+    .tile { font-size: 1.125rem; min-width: 0; padding: .25rem .5rem .125rem; }
+  }
+
+  &.is-warn {
+    padding: .5rem .75rem;
+    border-radius: $border-radius;
+    background-color: $candy-wash;
+    color: $candy-deep;
+    .bi { color: $candy-deep; }
+    .tile { border-color: $candy-deep; background-color: $candy; color: $white; }
+  }
+  &.is-expired {
+    padding: .5rem .75rem;
+    border: 2px dashed $navy-faint;
+    border-radius: $border-radius;
+    background-color: $ticket-faded;
+    color: $navy-faint;
+    .bi { color: $navy-faint; }
+    .tile { border-style: dashed; border-color: $navy-faint; background-color: transparent; color: $navy-faint; text-decoration: line-through; box-shadow: none; }
+  }
+  &.is-info {
+    color: $sky;
+    .bi { color: $sky; }
+    .tile { border-color: $sky; background-color: $info-bg-subtle; color: $sky; }
+  }
+}
+
+// ---------- 數量加減器 QuantityStepper：膠囊＋兩顆圓鈕 ----------
+// 「−」｜數字｜「＋」，每顆 44 × 44；0 時「−」停用，達上限「＋」停用
+.qty {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .1875rem;
+  border: 2px solid $navy;
+  border-radius: $border-radius-pill;
+  background-color: $vanilla;
+
+  .btn {
+    --bs-btn-padding-x: 0;
+    --bs-btn-padding-y: 0;
+    --bs-btn-border-width: 0;
+    --bs-btn-color: #{$navy};
+    --bs-btn-bg: #{$butter};
+    --bs-btn-hover-color: #{$navy};
+    --bs-btn-hover-bg: #{$sunny};
+    --bs-btn-active-bg: #{$sunny-hover};
+    --bs-btn-disabled-bg: transparent;
+    --bs-btn-disabled-color: #{$navy-faint};
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    font-size: 1.125rem;
+
+    &:disabled { border-style: solid; }
+  }
+  output {
+    min-width: 2rem;
+    font-family: $font-family-display;
+    font-size: 1.25rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+}
+
+// ---------- 提示框：左側色條＋圖示，不只靠底色 ----------
+.alert {
+  display: flex;
+  gap: .625rem;
+  border-width: 0 0 0 6px;
+  font-weight: 400;
+
+  > .bi {
+    flex: none;
+    margin-top: .1875rem;
+    font-size: 1.125rem;
+  }
+  p:last-child { margin-bottom: 0; }
+  strong { font-weight: 700; }
+}
+
+// ---------- 空狀態：大代幣圖示＋標題＋一句說明＋一個動作，置中 ----------
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: .75rem;
+  padding: map-get($spacers, 5) map-get($spacers, 3);
+  text-align: center;
+
+  h3,
+  .h3 { margin-bottom: 0; }
+  p {
+    max-width: 26em;
+    margin-bottom: map-get($spacers, 2);
+    color: $body-secondary-color;
+  }
+}
+
+// ---------- 設計稿狀態示意 DemoState ----------
+// 奶油黃帶＋點點海軍藍框＋鮮黃緞帶標籤，一看就知道「這不是正式畫面的一部分」
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag">設計稿狀態示意</p>
+//   <h2 id="…" class="demo-state-title">保留時間剩 2 分鐘時</h2>
+//   <p class="text-note">什麼情況下出現（選用）</p>
+//   <div class="demo-state-stage">…示意畫面…</div>
+// </section>
+.demo-state {
+  margin-top: map-get($spacers, 6);
+  padding: map-get($spacers, 3); // 手機 16px：外框、舞台、示意畫面三層內距疊起來，不要把示意擠窄
+  border: 3px dotted rgba($navy, .55);
+  border-radius: $border-radius-xl;
+  background-color: rgba($butter, .55);
+
+  @include media-breakpoint-up(sm) {
+    padding: map-get($spacers, 4);
+  }
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 5);
+  }
+
+  > .text-note {
+    margin-bottom: map-get($spacers, 3);
+  }
+}
+.demo-state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: map-get($spacers, 3);
+  padding: .25rem 1rem .25rem .75rem;
+  border: 2px solid $navy;
+  border-radius: .375rem;
+  background-color: $sunny;
+  color: $navy;
+  font-size: .8125rem;
+  font-weight: 800;
+  clip-path: polygon(0 0, 100% 0, calc(100% - .5rem) 50%, 100% 100%, 0 100%); // 右端燕尾，像緞帶標籤
+
+  &::before {
+    content: "\F4CA"; // bi-pencil-square：表示這是設計稿的註記
+    font-family: bootstrap-icons;
+    font-weight: 400;
+  }
+}
+.demo-state-title {
+  margin-bottom: map-get($spacers, 2);
+  font-size: 1.25rem;
+  font-weight: 900;
+  word-break: keep-all; // 同 .text-phrase：只在標點與空白處換行（「主辦方取消活動、／退款處理中時」）
+  overflow-wrap: anywhere;
+}
+.demo-state-stage {
+  padding: .75rem; // 手機 12px
+  border-radius: $border-radius-lg;
+  background-color: $cream;
+
+  @include media-breakpoint-up(sm) {
+    padding: map-get($spacers, 3);
+  }
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 4);
+  }
+}
+// 一個 DemoState 裡並排多個小狀態時，每個狀態的小標
+.demo-state-label {
+  margin-bottom: .5rem;
+  font-size: $small-font-size;
+  font-weight: 700;
+  color: $navy-muted;
+}

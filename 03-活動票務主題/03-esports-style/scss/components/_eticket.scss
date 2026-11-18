@@ -1,0 +1,302 @@
+// ============================================================
+// 電子票券＝直式通行證（結帳付款成功、我的票券詳情、Guideline 共用）
+// <article class="eticket" aria-label="電子票券 T-4471-01">
+//   <div class="eticket-head">票種 → 活動名 → 入場時間、日期 ‧ 場地（金屬藍漸層帶，$void 字）</div>
+//   <div class="eticket-body">
+//     <div class="qr"><img class="qr-code" …><span class="qr-scan" aria-hidden="true"></span></div>
+//     <p class="eticket-note">每 60 秒自動更新，請勿截圖轉傳</p>
+//     <p class="eticket-no">票號 <span class="num">T-4471-01</span></p>
+//   </div>
+// </article>
+// - 最寬 380px；左緣一條 6px 金屬箔條（藍到銀的漸層，靜態）
+// - QR 一律 #E6EDF5 淺底＋#05111F 模組（模組不能變藍），四角括角畫在淺底框外
+// - QR 掃描線：2px #BFE0FF、60% 不透明、multiply，在 QR 框內上下 3 秒一趟（深色模組維持深色，定位方塊不被蓋）
+// - 付款成功的顯影：#result:target 時票券由上往下 clip-path 顯影一次（0.6 秒），同時一條金屬藍線跟著往下
+// - 減少動態：不掃描、不顯影，直接顯示
+// 修飾類別：
+//   .is-landscape（≥ 768px 橫式：左資訊、右 QR，電子票券詳情用）
+//   .is-used（QR 上半透明槍灰遮罩＋「已使用」平行四邊形戳記：<span class="eticket-stamp">已使用</span> 放在 .qr 裡；
+//            戳記可以放圖示：<span class="eticket-stamp"><i class="bi bi-check2-circle" aria-hidden="true"></i>已使用</span>，已過期、活動已取消也用同一個戳記）
+//   .is-expired（金屬藍帶與箔條去色，字改 $text-muted／$text-faint，仍 ≥ AA；不降整張透明度）
+//   .is-cancelled（票身斜線紋、上緣警報紅；狀態標籤用 .tag.tag-danger）
+// ============================================================
+
+$eticket-max: 23.75rem; // 380px
+$qr-light: #E6EDF5;     // QR 淺底（= $text，固定寫死：QR 不跟主題換色）
+$qr-scan: #BFE0FF;
+
+.eticket {
+  --eticket-band: linear-gradient(118deg, #{$arc-deep} 0%, #{$arc} 55%, #{$arc-hi} 100%);
+  --eticket-band-ink: #{$void};
+  --eticket-foil: linear-gradient(180deg, #{$arc-hi} 0%, #{$arc} 28%, #C9D4E0 62%, #8E9FB4 100%);
+  position: relative;
+  width: 100%;
+  max-width: $eticket-max;
+  margin-inline: auto;
+  overflow: hidden;
+  border: 1px solid $gunmetal;
+  background-color: $carbon;
+  text-align: left;
+
+  // 左緣金屬箔條
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    z-index: 2;
+    width: 6px;
+    background: var(--eticket-foil);
+  }
+  // 顯影時跟著往下的金屬藍線（平常看不到）
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0;
+    background: linear-gradient(transparent calc(100% - 2px), $arc-hi calc(100% - 2px));
+    filter: drop-shadow(0 0 6px $arc);
+  }
+}
+.eticket-head {
+  position: relative;
+  padding: 1.25rem 1rem 1.25rem 1.375rem;
+
+  @include media-breakpoint-up(sm) {
+    padding: 1.25rem 1.5rem 1.25rem 1.875rem;
+  }
+  background: var(--eticket-band);
+  color: var(--eticket-band-ink);
+
+  // 漸層帶上的掃描線（4% 鋼白，很淡）
+  &::after {
+    @include scanlines-layer;
+  }
+  p,
+  ul { margin: 0; }
+}
+.eticket-type {
+  display: inline-block;
+  margin-bottom: .625rem !important;
+  padding: .125rem .5rem;
+  border: 1px solid currentcolor;
+  font-size: .8125rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+}
+.eticket-title {
+  margin-bottom: .5rem;
+  color: inherit;
+  font-size: 1.375rem;
+  line-height: 1.3;
+}
+.eticket-facts {
+  padding: 0;
+  list-style: none;
+  font-size: .875rem;
+  font-weight: 500;
+  line-height: 1.6;
+
+  strong { font-weight: 700; }
+}
+.eticket-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: .875rem;
+  padding: 1.5rem 1rem 1.25rem 1.375rem;
+  text-align: center;
+
+  @include media-breakpoint-up(sm) {
+    padding: 1.75rem 1.5rem 1.25rem 1.875rem;
+  }
+
+  p { margin: 0; }
+}
+// QR 淺底方框，括角在框外 8px
+.qr {
+  @include brackets-on(after, -.5rem);
+  --bracket: #{$bracket-lit};
+  max-width: calc(100% - 1rem); // 括角在框外 8px，窄螢幕也留得下
+  padding: .75rem;
+  background-color: $qr-light;
+}
+.qr-code {
+  display: block;
+  width: 13.5rem;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+// 掃描線：在 QR 圖的範圍內上下移動
+.qr-scan {
+  position: absolute;
+  inset: .75rem;
+  overflow: hidden;
+  pointer-events: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient($qr-scan, $qr-scan) top / 100% 2px no-repeat;
+    opacity: .6;
+    mix-blend-mode: multiply;
+    animation: qr-scan 3s ease-in-out infinite alternate;
+  }
+}
+@keyframes qr-scan {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(100% - 2px)); }
+}
+.eticket-note {
+  color: $text-muted;
+  font-size: .8125rem;
+}
+.eticket-no {
+  width: 100%;
+  padding-top: .875rem;
+  border-top: 1px dashed $gunmetal;
+  color: $text-muted;
+  font-size: .875rem;
+
+  .num {
+    margin-left: .25rem;
+    color: $text;
+    font-family: $font-family-display;
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+  }
+}
+
+// ---------- 付款成功的顯影（從「確認付款」連到 #result 時播一次） ----------
+$eticket-reveal-ease: cubic-bezier(.3, .7, .3, 1);
+// 延後 0.4 秒開始：從付款鈕平滑捲到 #result 需要一點時間，票券進到畫面裡才開始顯影
+#result:target .eticket {
+  animation: eticket-reveal .6s $eticket-reveal-ease .4s both;
+
+  &::after {
+    animation: eticket-scanline .6s $eticket-reveal-ease .4s both;
+  }
+}
+@keyframes eticket-reveal {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0); }
+}
+@keyframes eticket-scanline {
+  from { opacity: 1; transform: translateY(-100%); }
+  85% { opacity: 1; }
+  to { opacity: 0; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qr-scan { display: none; }
+  #result:target .eticket,
+  #result:target .eticket::after { animation: none; }
+}
+
+// ---------- 輪播（結帳付款成功：3 張票） ----------
+.eticket-carousel {
+  width: 100%;
+  max-width: calc(#{$eticket-max} + 2rem);
+
+  .carousel-item {
+    padding: .25rem .5rem; // 外框不被輪播的 overflow 切掉
+
+    @include media-breakpoint-up(sm) { padding-inline: 1rem; }
+  }
+}
+.eticket-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  color: $text-muted;
+  font-size: .9375rem;
+
+  .num {
+    color: $text;
+    font-family: $font-family-display;
+    font-weight: 700;
+  }
+}
+
+// ---------- 修飾類別 ----------
+// 橫式（≥ 768px）：左資訊、右 QR
+.eticket.is-landscape {
+  @include media-breakpoint-up(md) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    max-width: 45rem;
+
+    .eticket-head {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 2rem 2rem 2rem 2.5rem;
+    }
+    .eticket-type { align-self: flex-start; } // 直向 flex 會把行內區塊撐滿，票種框維持原本寬度
+    .eticket-title { font-size: 1.75rem; }
+    .eticket-facts { font-size: .9375rem; }
+    .eticket-body {
+      align-content: center;
+      padding: 1.75rem 2rem 1.5rem;
+      border-left: 1px dashed $gunmetal;
+    }
+  }
+}
+// 已使用
+.eticket.is-used {
+  .qr::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background-color: rgba($gunmetal, .82);
+  }
+  .qr-scan { display: none; }
+}
+.eticket-stamp {
+  @include parallelogram(.3125rem);
+  --para-bg: #{$obsidian};
+  --para-border: #{$text-muted};
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  padding: .5rem 1.5rem;
+  color: $text;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: .2em;
+  white-space: nowrap;
+  transform: translate(-50%, -50%) rotate(-8deg);
+}
+// 已過期：去色，字改 muted／faint（仍 ≥ AA），不降整張透明度
+.eticket.is-expired,
+.eticket.is-cancelled {
+  --eticket-band: linear-gradient(118deg, #{$gunmetal}, #2E3A4C);
+  --eticket-band-ink: #{$text-muted};
+  --eticket-foil: linear-gradient(180deg, #{$control}, #{$gunmetal});
+
+  .eticket-title { color: $text; }
+  .qr-code { filter: grayscale(1) contrast(.55) brightness(1.15); }
+  .qr-scan { display: none; }
+  .eticket-no .num { color: $text-muted; }
+}
+// 活動已取消：票身斜線紋、上緣警報紅
+.eticket.is-cancelled {
+  .eticket-head {
+    box-shadow: inset 0 2px 0 $alert;
+  }
+  .eticket-body {
+    @include hatch(rgba($alert, .08), 10px);
+  }
+}

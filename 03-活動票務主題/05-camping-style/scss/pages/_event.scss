@@ -1,0 +1,409 @@
+// ============================================================
+// 活動細節 event.html
+// 區塊 1～3（泥灰底）：麵包屑 → 8 : 4
+//   左：標題在圖的上方（標籤列 → H1 芫荽 52px → 副標）→ 主視覺 16:9（手機 4:3，圓角 18px、內縮縫線框）
+//       → 活動介紹：內文 → 雙舞台 21:9 → 演出陣容（牛皮紙名牌貼紙）＋時間流程（直向虛線步道＋營火節點）
+//   右：吊牌購票卡（sticky，components/_buy-card.scss）＋快速資訊
+//   < 992px：標題與主視覺 → 購票卡、快速資訊 → 活動介紹（CSS Grid 區域，內容只寫一次）
+// 區塊 4 #tickets：鼠尾草通欄＋等高線；6 : 6 左裝備清單票種卡、右營位圖＋背包清單
+// 區塊 5 #venue 7 : 5：左手繪場地地圖（components/_venue-map.scss）、右交通卡
+// 區塊 6 主辦方（帆布色帶）5 : 7：縫線圓布章＋簡介／手圈數字＋4 張小拍立得（不旋轉）
+// 區塊 7 #faq 4 : 8：左 H2＋指北針、右 Accordion；退票題橘淡底＋左側 4px 橘條＋盾牌圖示
+// 區塊 8：其他場次的吊牌購票卡狀態示意（3 張縮小版）
+// < 992px：底部固定購票列（components/_buy-card.scss 的 .mobile-bar）
+// ============================================================
+
+// ---------- 區塊 1～3 ----------
+.event-top {
+  padding-block: 1.5rem 4rem;
+
+  @include media-breakpoint-up(lg) { padding-block: 2rem 7.5rem; }
+
+  .breadcrumb { margin-bottom: 1.25rem; }
+}
+.event-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "overview" "aside" "about";
+  row-gap: 2.5rem;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    grid-template-areas: "overview aside" "about aside";
+    column-gap: 2rem;
+    row-gap: 4.5rem;
+  }
+  @include media-breakpoint-up(xl) { column-gap: 3rem; }
+}
+.event-overview { grid-area: overview; min-width: 0; }
+.event-tags { margin-bottom: 1rem; }
+.event-title { margin-bottom: .5rem; }
+.event-subtitle {
+  margin-bottom: 1.5rem;
+  color: var(--bs-secondary-color);
+  font-size: $lead-font-size-mobile;
+  @include media-breakpoint-up(lg) { font-size: $lead-font-size; margin-bottom: 1.75rem; }
+}
+// 主視覺：圓角 18px＋1.5px 樹皮框；內縮一圈帆布色縫線（深色照片上看得到）
+.event-hero {
+  position: relative;
+  margin: 0;
+  border: 1.5px solid $bark;
+  border-radius: 1.125rem;
+  overflow: hidden;
+  box-shadow: $shadow-paper;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+
+    @include media-breakpoint-up(md) { aspect-ratio: 16 / 9; }
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    inset: $stitch-inset;
+    border: 2px dashed rgba($canvas, .8);
+    border-radius: .75rem;
+    pointer-events: none;
+  }
+}
+
+// 右欄：上方留空間給吊牌的麻繩
+.event-aside {
+  grid-area: aside;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+  padding-top: 2.25rem;
+
+  @include media-breakpoint-up(lg) {
+    padding-top: 2.75rem;
+
+    // 購票卡 sticky；快速資訊不跟著黏（兩張加起來比視窗高）
+    .buy-tag {
+      position: sticky;
+      top: calc(#{$sticky-top-offset} + 2.5rem);
+      z-index: 3;
+    }
+  }
+  @include media-breakpoint-only(md) {
+    // 平板：購票卡與快速資訊並排
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+// 活動介紹
+.event-about { grid-area: about; min-width: 0; }
+.event-about .hand-title { margin-bottom: 1.25rem; }
+.event-about-text {
+  max-width: 42em;
+  margin-bottom: 2rem;
+  font-size: 1.0625rem;
+  line-height: 1.9;
+}
+.event-stage {
+  margin: 0 0 2.5rem;
+
+  img { aspect-ratio: 21 / 9; }
+}
+.event-about-grid {
+  display: grid;
+  gap: 2.5rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 2.5rem 3rem;
+  }
+}
+.event-about-sub {
+  margin-bottom: 1rem;
+  font-size: 1.125rem;
+}
+// 演出陣容：牛皮紙名牌貼紙（不規則手繪圓角＋內縮虛線）
+.lineup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding: .5rem 1rem;
+    border: 1.5px solid $bark;
+    border-radius: $radius-hand;
+    background-color: $kraft;
+    outline: 1.5px dashed rgba($bark, .4);
+    outline-offset: -5px;
+    font-weight: $font-weight-bold;
+    line-height: 1.4;
+  }
+}
+// 時間流程：直向橘色虛線步道，每一站一個營火圖示（在泥灰圓上，蓋住步道線）
+.schedule {
+  --trail-x: 1rem;
+
+  &::before { top: 1rem; bottom: 1rem; }
+
+  li {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: .875rem;
+    min-height: 2.75rem;
+    padding-block: .5rem;
+
+    + li { margin-top: .5rem; }
+  }
+  .hand-icon {
+    --hand-size: 2rem;
+    position: absolute;
+    top: .375rem;
+    left: calc(-3rem + 1.5px);
+    border-radius: 50%;
+    background-color: $mud;
+  }
+  time {
+    min-width: 3.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+  span { font-weight: $font-weight-medium; }
+}
+
+// ---------- 區塊 4：選擇票種 ----------
+.section-heading .event-tickets-limit {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  padding: .375rem .875rem;
+  border: 1.5px solid $bark;
+  border-radius: $radius-hand;
+  background-color: $canvas;
+  color: $bark;
+  font-size: .9375rem;
+  font-weight: $font-weight-bold;
+}
+.event-tickets {
+  .seat-map {
+    @include media-breakpoint-only(lg) { padding: 1.25rem; }
+    @include media-breakpoint-only(xl) { padding: 1.5rem 1.125rem; }
+  }
+  .seat-row,
+  .seat-map-canvas { gap: .25rem; }
+  .seat-row-label { width: 2.375rem; }
+}
+// ≥ 992px：左欄票種清單跟著捲動（選座位時還看得到票種與數量）
+@include media-breakpoint-up(lg) {
+  .event-tickets .ticket-types {
+    position: sticky;
+    top: calc(#{$sticky-top-offset} + 1rem);
+  }
+  .event-venue .venue-map-frame {
+    position: sticky;
+    top: calc(#{$sticky-top-offset} + 1rem);
+  }
+}
+.seat-conflict-demo {
+  margin-top: 1.75rem;
+  background-color: $mud;
+
+  .text-note { margin-bottom: .875rem; }
+}
+.event-pack-list {
+  margin-top: 1.5rem;
+}
+
+// ---------- 區塊 5：怎麼去？ ----------
+.venue-map .is-strong { font-weight: 700; }
+.venue-card {
+  .venue-card-img {
+    aspect-ratio: 16 / 9;
+    margin-bottom: 1.25rem;
+  }
+  .btn { margin-top: .5rem; }
+}
+.venue-card-name {
+  margin-bottom: .25rem;
+  font-size: 1.25rem;
+}
+.venue-card-address {
+  display: flex;
+  gap: .375rem;
+  margin-bottom: .75rem;
+  color: var(--bs-secondary-color);
+}
+.venue-card-sub {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  padding-top: 1rem;
+  background: $wave-line-faint left top / $wave-tile repeat-x;
+  font-size: 1rem;
+
+  .bi { color: $olive-deep; }
+}
+.venue-card-list {
+  margin: .5rem 0 1rem;
+  padding-left: 1.25rem;
+
+  li + li { margin-top: .25rem; }
+  li::marker { color: $flare; }
+}
+.venue-card-text { margin: .5rem 0 1rem; }
+
+// ---------- 區塊 6：關於主辦方 ----------
+.event-organizer {
+  margin-block: $site-header-wave; // 上下波浪蓋進相鄰區塊
+}
+.event-org-intro {
+  p { margin-bottom: 1.5rem; }
+}
+// 縫線圓布章 .org-badge 在 components/_cards.scss（追蹤的主辦方也用）
+.event-org-name {
+  margin-bottom: .75rem;
+  font-size: 1.375rem;
+}
+.event-org-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+// 數字：Zilla Slab 大字，外圈一個手繪橘圈
+.org-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0 0 2rem;
+  padding: 0;
+  list-style: none;
+  text-align: center;
+
+  li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .25rem;
+  }
+}
+.org-stats-label,
+.org-stats-unit {
+  color: var(--bs-secondary-color);
+  font-size: .875rem;
+  font-weight: $font-weight-medium;
+}
+// 手繪圈是正圓（SVG 不拉伸），所以數字放在固定大小的方塊裡，最長的「24,160」也圈得住
+.org-stats-num {
+  display: grid;
+  place-items: center;
+  width: 6.25rem;
+  height: 6.25rem;
+  background: $hand-circle-flare center / contain no-repeat;
+  font-family: $font-family-slab;
+  font-size: 1.375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums;
+  line-height: 1;
+
+  @include media-breakpoint-up(md) { width: 7.75rem; height: 7.75rem; font-size: 1.875rem; }
+}
+// 4 張小拍立得：帆布相框、正方照片，不旋轉
+.org-snaps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  li {
+    padding: .5rem .5rem 1.25rem;
+    border: 1.5px solid $bark;
+    border-radius: .375rem;
+    background-color: $white;
+    box-shadow: $shadow-paper;
+  }
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: .1875rem;
+    object-fit: cover;
+  }
+}
+
+// ---------- 區塊 7：購票須知 ----------
+.event-faq-title {
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: calc(#{$sticky-top-offset} + 1.5rem);
+  }
+}
+.faq-list {
+  .accordion-item + .accordion-item { margin-top: .75rem; }
+  .accordion-item {
+    border: 1.5px solid $bark;
+    border-radius: $accordion-border-radius;
+    overflow: hidden;
+  }
+  .accordion-button {
+    gap: .625rem;
+    font-weight: $font-weight-bold;
+    font-size: 1.0625rem;
+
+    .hand-icon { --hand-size: 1.75rem; }
+  }
+  .accordion-body {
+    padding-bottom: 1.25rem;
+    line-height: 1.85;
+  }
+}
+// 退票題：橘淡底＋左側 4px 橘條（框線改用樹皮，左邊再疊一條）
+.faq-refund.accordion-item {
+  border-left: 5.5px solid $flare;
+  background-color: $orange-soft;
+
+  .accordion-button,
+  .accordion-button:not(.collapsed) { background-color: $orange-soft; }
+}
+
+// ---------- 區塊 8：其他場次的購票卡 ----------
+.event-demo-cards {
+  margin-top: 4rem;
+
+  @include media-breakpoint-up(lg) { margin-top: 5.5rem; }
+
+  .tag-card { --hole-bg: #{mix($canvas, $mud, 55%)}; }
+  .alert { font-size: .9375rem; }
+}
+
+// ---------- 底部固定購票列 ----------
+.mobile-bar-info { min-width: 0; }
+.mobile-bar-price {
+  margin: 0;
+  font-size: 1.375rem;
+  line-height: 1.2;
+}
+.mobile-bar-timer {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  margin: .125rem 0 0;
+  color: var(--bs-secondary-color);
+  font-size: .8125rem;
+  font-weight: $font-weight-medium;
+
+  .num { color: $bark; font-weight: 700; }
+}

@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>活動列表｜StageOne 城市現場</title>
+  <meta name="description" content="StageOne 城市現場活動列表：依類型、日期、地區、票價與狀態篩選 Live House、劇場、市集與講座。設計稿 03｜電競競技場。">
+  <meta name="theme-color" content="#0B0E13">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Oxanium（品牌字、英數、價格、倒數、票號、HUD 英文標；數字本身等寬）、Noto Sans TC（中文標題 700、內文 400、強調 500） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（10 個頁面共用）
+    - 頁首、頁尾、登入 Modal 在每一頁都完整寫一份；改的時候 10 個 .html 要一起改，
+      改完執行 npm run check 確認都與這份範本一致。
+    - 頁首是收在版心內的「懸浮 HUD 列」：品牌 → 主導覽（首頁｜活動列表 兩格分段控制鈕）→ 搜尋 → 登入／註冊 → 我要辦活動。
+      992px 以下品牌靠左，右側只留搜尋圖示與選單鈕；選單是由右滑出的 Offcanvas（#siteNav），
+      992px 以上同一個 Offcanvas 由 Bootstrap 的 .navbar-expand-lg 變回頁首裡的一般區塊。
+      搜尋按鈕有兩顆（手機一顆在選單外、桌機一顆在導覽之後），控制同一個搜尋列 #siteSearch，
+      這樣桌機的 Tab 順序與畫面順序一致。
+    - 每頁只需要調整一處「目前頁面」標示：頁首導覽目前頁的 <a class="nav-link"> 加 active 與 aria-current="page"
+    - 首頁（index.html）：「首頁」加 active＋aria-current="page"
+    - 活動列表（events.html）：「活動列表」加 active＋aria-current="page"
+    - 活動細節（event.html）：頁首的「活動列表」標示為 active（不加 aria-current）
+    - 結帳（checkout.html）、Guideline 不標示目前頁
+    - 2026-11 補的註冊（register.html）、我的票券（tickets.html）、電子票券詳情（ticket.html）、
+      購票紀錄（orders.html）、追蹤的主辦方（follows.html）在頁首沒有對應項目，也不標示目前頁
+    - <body> 的屬性不在比對範圍：有底部固定列的頁面加 class="has-bottom-bar"，Guideline 加 ScrollSpy 的 data-bs-*
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <div class="container-xl">
+        <nav class="site-hud navbar navbar-expand-lg" aria-label="主要導覽">
+          <a class="navbar-brand site-brand" href="index.html">
+            <img class="site-brand-mark" src="images/logo.svg" alt="" width="34" height="34">
+            <span class="site-brand-name">StageOne</span>
+            <span class="site-brand-sub">城市現場</span>
+          </a>
+
+          <!-- 992px 以下：搜尋＋選單按鈕 -->
+          <div class="d-flex d-lg-none align-items-center gap-1 ms-auto">
+            <button class="site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋活動">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <button class="navbar-toggler site-icon-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteNav" aria-controls="siteNav" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <!-- 992px 以下是由右滑出的選單；992px 以上是頁首的中間與右側 -->
+          <div id="siteNav" class="offcanvas offcanvas-end site-offcanvas" tabindex="-1" aria-labelledby="siteNavTitle">
+            <div class="offcanvas-header">
+              <p id="siteNavTitle" class="site-offcanvas-title">選單</p>
+              <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="關閉選單"></button>
+            </div>
+            <div class="offcanvas-body">
+              <ul class="navbar-nav site-nav">
+                <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+                <li class="nav-item"><a class="nav-link active" aria-current="page" href="events.html">活動列表</a></li>
+              </ul>
+              <div class="site-header-actions">
+                <button class="btn btn-text d-none d-lg-inline-flex" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false">
+                  <i class="bi bi-search" aria-hidden="true"></i>搜尋
+                </button>
+                <button class="btn btn-text d-none d-lg-inline-flex" type="button" data-bs-toggle="modal" data-bs-target="#loginModal">登入／註冊</button>
+                <button class="btn btn-secondary d-lg-none" type="button" data-bs-toggle="modal" data-bs-target="#loginModal">登入／註冊</button>
+                <a class="btn btn-primary btn-sm" href="index.html#organizer">我要辦活動</a>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <!-- 點「搜尋」在 HUD 列正下方展開的搜尋列（同寬） -->
+        <div id="siteSearch" class="collapse site-search">
+          <form class="site-search-form" role="search" action="events.html">
+            <label class="visually-hidden" for="siteSearchInput">搜尋活動</label>
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input id="siteSearchInput" class="form-control" type="search" name="q" placeholder="想看什麼？試試「爵士」、「書展」或「高雄」">
+            <button class="btn btn-primary" type="submit">搜尋活動</button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!-- ============ 頁首區：麵包屑 → H1 → 搜尋指令列 ============ -->
+      <header class="page-header events-header">
+        <div class="container-xl">
+          <nav aria-label="目前位置">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+              <li class="breadcrumb-item active" aria-current="page">活動列表</li>
+            </ol>
+          </nav>
+          <h1>探索活動</h1>
+          <!-- 搜尋列＝指令列（同首頁 Hero 底部的樣式，收在碳纖維帶裡） -->
+          <div class="events-command">
+            <form class="search-bar" role="search" action="events.html" aria-label="搜尋活動">
+              <div class="row g-3 align-items-end">
+                <div class="col-12 col-lg-5 search-bar-keyword">
+                  <label class="form-label" for="eventsKeyword">關鍵字</label>
+                  <i class="bi bi-search" aria-hidden="true"></i>
+                  <input id="eventsKeyword" class="form-control" type="search" name="q" autocomplete="off" placeholder="想看什麼？試試「爵士」、「書展」或「高雄」">
+                </div>
+                <div class="col-6 col-lg-2">
+                  <label class="form-label" for="eventsDate">日期</label>
+                  <select id="eventsDate" class="form-select" name="date" autocomplete="off">
+                    <option value="">選擇日期</option>
+                    <option>今天</option>
+                    <option>本週末</option>
+                    <option>本月</option>
+                    <option>自訂日期區間</option>
+                  </select>
+                </div>
+                <div class="col-6 col-lg-2">
+                  <label class="form-label" for="eventsRegion">地區</label>
+                  <select id="eventsRegion" class="form-select" name="region" autocomplete="off">
+                    <option value="">全部地區</option>
+                    <option>台北</option>
+                    <option>新北</option>
+                    <option>桃園</option>
+                    <option>台中</option>
+                    <option>台南</option>
+                    <option>高雄</option>
+                    <option>線上</option>
+                  </select>
+                </div>
+                <div class="col-12 col-lg-3">
+                  <button class="btn btn-primary" type="submit"><i class="bi bi-search" aria-hidden="true"></i>搜尋活動</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </header>
+
+      <div class="section pt-0">
+        <div class="container-xl">
+          <!-- ============ 篩選控制台（滿寬兩層，不用側欄、不 sticky） ============
+               第一層：「篩選」＋「清除全部」→ 活動類型 8 格分段列（真的會篩選：js/main.js 第 2 項）
+               第二層：日期、地區、票價、狀態、排序（≥ 1200px 5 欄、992–1199px 3 欄）
+               < 992px：控制台只留分段列（在自己的容器內橫向捲動）＋「篩選與排序」鈕，第二層收進由下滑出的 Offcanvas（同一份 HTML） -->
+          <section class="events-console hud-panel" aria-labelledby="filterTitle">
+            <div class="events-console-head">
+              <p class="hud-index" aria-hidden="true">01</p>
+              <h2 id="filterTitle" class="events-console-title">篩選</h2>
+              <button class="btn btn-text btn-sm" type="button" data-filter-reset>清除全部</button>
+            </div>
+
+            <div class="events-type">
+              <h3 class="events-filter-label" id="fType">活動類型</h3>
+              <div class="events-type-scroll">
+                <div class="seg-bar" role="group" aria-labelledby="fType" data-filter-group="category">
+                  <button class="seg" type="button" data-filter="all" aria-pressed="true">全部<span class="seg-count">8</span></button>
+                  <button class="seg" type="button" data-filter="音樂演出" aria-pressed="false">音樂演出<span class="seg-count">1</span></button>
+                  <button class="seg" type="button" data-filter="劇場表演" aria-pressed="false">劇場表演<span class="seg-count">1</span></button>
+                  <button class="seg" type="button" data-filter="市集選物" aria-pressed="false">市集選物<span class="seg-count">2</span></button>
+                  <button class="seg" type="button" data-filter="講座工作坊" aria-pressed="false">講座工作坊<span class="seg-count">1</span></button>
+                  <button class="seg" type="button" data-filter="展覽" aria-pressed="false">展覽<span class="seg-count">1</span></button>
+                  <button class="seg" type="button" data-filter="運動賽事" aria-pressed="false">運動賽事<span class="seg-count">1</span></button>
+                  <button class="seg" type="button" data-filter="派對夜店" aria-pressed="false">派對夜店<span class="seg-count">1</span></button>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn btn-secondary w-100 d-lg-none events-console-more" type="button" data-bs-toggle="offcanvas" data-bs-target="#filterPanel" aria-controls="filterPanel">
+              <i class="bi bi-sliders" aria-hidden="true"></i>篩選與排序
+            </button>
+
+            <!-- .offcanvas-lg：≥ 992px 是控制台的第二層，< 992px 變成由下滑出的 Offcanvas -->
+            <div id="filterPanel" class="offcanvas-lg offcanvas-bottom events-filter" tabindex="-1" aria-labelledby="filterPanelTitle">
+              <div class="offcanvas-header">
+                <h2 id="filterPanelTitle" class="offcanvas-title h5">篩選與排序</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#filterPanel" aria-label="關閉"></button>
+              </div>
+              <div class="offcanvas-body">
+                <div class="events-filter-grid">
+                  <div class="events-filter-group">
+                    <h3 class="events-filter-label" id="fDate">日期</h3>
+                    <div class="chip-list" role="group" aria-labelledby="fDate" data-chip-group>
+                    <button class="chip" type="button" aria-pressed="false">今天</button>
+                    <button class="chip" type="button" aria-pressed="false">本週末</button>
+                    <button class="chip" type="button" aria-pressed="false">本月</button>
+                    <button class="chip" type="button" aria-pressed="false" data-reveal="#customDates" aria-controls="customDates">自訂日期區間</button>
+                    </div>
+                    <!-- 選了「自訂日期區間」才顯示（js/main.js 第 3 項） -->
+                    <div id="customDates" class="events-filter-dates" data-reveal-target hidden>
+                      <div>
+                        <label class="form-label" for="dateFrom">開始日期</label>
+                        <input id="dateFrom" class="form-control" type="date" autocomplete="off">
+                      </div>
+                      <div>
+                        <label class="form-label" for="dateTo">結束日期</label>
+                        <input id="dateTo" class="form-control" type="date" autocomplete="off">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="events-filter-group">
+                    <h3 class="events-filter-label" id="fRegion">地區</h3>
+                    <div class="chip-list" role="group" aria-labelledby="fRegion" data-chip-group>
+                    <button class="chip" type="button" aria-pressed="false">台北</button>
+                    <button class="chip" type="button" aria-pressed="false">新北</button>
+                    <button class="chip" type="button" aria-pressed="false">桃園</button>
+                    <button class="chip" type="button" aria-pressed="false">台中</button>
+                    <button class="chip" type="button" aria-pressed="false">台南</button>
+                    <button class="chip" type="button" aria-pressed="false">高雄</button>
+                    <button class="chip" type="button" aria-pressed="false">線上</button>
+                    </div>
+                  </div>
+                  <div class="events-filter-group">
+                    <h3 class="events-filter-label" id="fPrice">票價</h3>
+                    <div class="chip-list" role="group" aria-labelledby="fPrice" data-chip-group>
+                    <button class="chip" type="button" aria-pressed="false">免費</button>
+                    <button class="chip" type="button" aria-pressed="false">NT$ 1,000 以下</button>
+                    <button class="chip" type="button" aria-pressed="false">NT$ 1,000–2,000</button>
+                    <button class="chip" type="button" aria-pressed="false">NT$ 2,000 以上</button>
+                    </div>
+                  </div>
+                  <div class="events-filter-group">
+                    <h3 class="events-filter-label" id="fStatus">狀態</h3>
+                    <div class="chip-list" role="group" aria-labelledby="fStatus" data-chip-group>
+                    <button class="chip" type="button" aria-pressed="false">熱賣中</button>
+                    <button class="chip" type="button" aria-pressed="false">即將開賣</button>
+                    <button class="chip" type="button" aria-pressed="false">即將完售</button>
+                    <button class="chip" type="button" aria-pressed="false">含免費票種</button>
+                    </div>
+                  </div>
+                  <div class="events-filter-group">
+                    <label class="events-filter-label" for="sortSelect">排序</label>
+                    <select id="sortSelect" class="form-select" autocomplete="off">
+                      <option>即將開始</option>
+                      <option>最新上架</option>
+                      <option>最熱銷</option>
+                      <option>票價由低到高</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="events-filter-apply d-lg-none">
+                <button class="btn btn-primary w-100" type="button" data-bs-dismiss="offcanvas" data-bs-target="#filterPanel">套用篩選（顯示 <span data-filter-count>8</span> 場）</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============ 結果：工具列＋每列 2 張直式對戰卡（< 992px 1 張） ============ -->
+          <div class="events-toolbar">
+            <p class="hud-index mb-0" aria-hidden="true">02</p>
+            <p class="events-count" aria-live="polite">共 <b class="num" data-filter-count>8</b> 場活動</p>
+            <!-- 有套用篩選時，JS 在這裡放可移除的標籤 -->
+            <div class="chip-list" data-filter-applied></div>
+          </div>
+
+          <!-- 8 場活動，依開始日期排列（即將開始）。data-category 對應活動類型篩選；hover 只亮括角與框線，資訊全部常駐 -->
+          <ul id="eventList" class="row row-cols-1 row-cols-lg-2 g-4 list-unstyled mb-0">
+              <li class="col" data-category="展覽" data-id="silent-realm">
+                <article class="match-card">
+                  <div class="match-card-media">
+                    <a class="match-card-img" href="event.html" tabindex="-1" aria-hidden="true">
+                      <img src="images/event-silent-realm.jpg" alt="老屋改造的展間裡，一位觀眾看著空景攝影作品" width="1600" height="1067" loading="lazy">
+                    </a>
+                    <ul class="tag-list match-card-tags">
+                      <li><span class="tag">展覽</span></li>
+                      <li><span class="tag tag-hot"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i>熱賣中</span></li>
+                    </ul>
+                    <p class="match-card-price"><span class="match-card-price-label">票價</span><span class="price">NT$ 280 起</span></p>
+                  </div>
+                  <div class="match-card-body">
+                    <h2 class="match-card-title text-phrase"><a href="event.html"><span class="text-nowrap">無聲之境｜</span><wbr>當代攝影聯展</a></h2>
+                    <ul class="match-card-facts">
+                      <li><i class="bi bi-person-badge" aria-hidden="true"></i><span><span class="visually-hidden">主辦：</span>旭川藝術空間</span></li>
+                      <li><i class="bi bi-calendar3" aria-hidden="true"></i><span><span class="visually-hidden">時間：</span><span class="num">2026/10/04 (六) – 12/14 (日) 11:00 – 18:00（週一休館）</span></span></li>
+                      <li><i class="bi bi-geo-alt" aria-hidden="true"></i><span><span class="visually-hidden">地點：</span>台北 ‧ 旭川藝術空間（台北市大同區迪化街一段 127 號）</span></li>
+                    </ul>
+                    <p class="match-card-intro">集結十二位亞洲攝影創作者，以「空景」為題，呈現城市被清空後的樣貌。展期內每週六下午設有策展人導覽（需另行預約）。單次票可於展期內任選一日入場。</p>
+                    <div class="match-card-tickets">
+                      <p class="match-card-label">票種</p>
+                      <ul>
+                      <li><span class="match-card-ticket-name">單人票</span><span class="match-card-ticket-value"><span class="price">NT$ 280</span></span></li>
+                      <li><span class="match-card-ticket-name">雙人同行票</span><span class="match-card-ticket-value"><span class="price">NT$ 480</span></span></li>
+                      <li><span class="match-card-ticket-name">展期通行票</span><span class="match-card-ticket-value"><span class="price">NT$ 680</span></span></li>
+                      <li><span class="match-card-ticket-name">導覽加購</span><span class="match-card-ticket-value"><span class="price">NT$ 150</span></span></li>
+                      </ul>
+                    </div>
+                    <div class="match-card-foot">
+                      <div class="remain">
+                        <p class="remain-meta"><span class="remain-value">剩餘 76%</span></p>
+                        <div class="progress" role="progressbar" aria-label="剩餘票數 76%" aria-valuenow="76" aria-valuemin="0" aria-valuemax="100">
+                          <div class="progress-bar" style="width: 76%"></div>
+                        </div>
+                      </div>
+                      <div class="match-card-actions">
+                        <button class="btn btn-secondary btn-sm btn-follow" type="button" aria-pressed="false"><i class="bi bi-heart" aria-hidden="true"></i><span data-follow-text>追蹤</span><span class="visually-hidden">無聲之境｜當代攝影聯展</span></button>
+                        <a class="btn btn-primary btn-sm" href="event.html">立即購票<span class="visually-hidden">：無聲之境｜當代攝影聯展</span></a>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li class="col" data-category="派對夜店" data-id="resonance-friday">
+                <article class="match-card">
+                  <div class="match-card-media">
+                    <a class="match-card-img" href="event.html" tabindex="-1" aria-hidden="true">
+                      <img src="images/event-resonance-friday.jpg" alt="地下室夜店裡，DJ 台前的深夜舞池" width="1600" height="1067" loading="lazy">
+                    </a>
+                    <ul class="tag-list match-card-tags">
+                      <li><span class="tag">派對夜店</span></li>
+                      <li><span class="tag tag-hot"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i>熱賣中</span></li>
+                    </ul>
+                    <p class="match-card-price"><span class="match-card-price-label">票價</span><span class="price">NT$ 800 起</span></p>
+                  </div>
+                  <div class="match-card-body">
+                    <h2 class="match-card-title text-phrase"><a href="event.html">週五共振 Resonance Friday</a></h2>
+                    <ul class="match-card-facts">
+                      <li><i class="bi bi-person-badge" aria-hidden="true"></i><span><span class="visually-hidden">主辦：</span>B1 Underground</span></li>
+                      <li><i class="bi bi-calendar3" aria-hidden="true"></i><span><span class="visually-hidden">時間：</span><span class="num">2026/10/10 (五) 22:00 – 隔日 04:00</span></span></li>
+                      <li><i class="bi bi-geo-alt" aria-hidden="true"></i><span><span class="visually-hidden">地點：</span>台北 ‧ B1 Underground（台北市中山區林森北路 107 巷）</span></li>
+                    </ul>
+                    <p class="match-card-intro">每月一次的深夜 House 派對，本場邀請兩位柏林客座 DJ 接力演出。入場年齡限制 18 歲以上，需出示證件。採單一入場價，現場酒水另計。</p>
+                    <div class="match-card-tickets">
+                      <p class="match-card-label">票種</p>
+                      <ul>
+                      <li><span class="match-card-ticket-name">預售入場票</span><span class="match-card-ticket-value"><span class="price">NT$ 800</span></span></li>
+                      <li><span class="match-card-ticket-name">現場票</span><span class="match-card-ticket-value"><span class="price">NT$ 1,000</span></span></li>
+                      <li><span class="match-card-ticket-name">四人同行套票</span><span class="match-card-ticket-value"><span class="price">NT$ 2,800</span></span></li>
+                      </ul>
+                    </div>
+                    <div class="match-card-foot">
+                      <div class="remain">
+                        <p class="remain-meta"><span class="remain-value">剩餘 55%</span></p>
+                        <div class="progress" role="progressbar" aria-label="剩餘票數 55%" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100">
+                          <div class="progress-bar" style="width: 55%"></div>
+                        </div>
+                      </div>
+                      <div class="match-card-actions">
+                        <button class="btn btn-secondary btn-sm btn-follow" type="button" aria-pressed="false"><i class="bi bi-heart" aria-hidden="true"></i><span data-follow-text>追蹤</span><span class="visually-hidden">週五共振 Resonance Friday</span></button>
+                        <a class="btn btn-primary btn-sm" href="event.html">立即購票<span class="visually-hidden">：週五共振 Resonance Friday</span></a>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li class="col" data-category="音樂演出" data-id="midnight-noise">
+                <article class="match-card">
+                  <div class="match-card-media">
+                    <a class="match-card-img" href="event.html" tabindex="-1" aria-hidden="true">
+                      <img src="images/event-midnight-noise.jpg" alt="午夜噪音祭現場，電子音樂人在光束與煙霧中演出" width="1600" height="1067" loading="lazy">
+                    </a>
+                    <ul class="tag-list match-card-tags">
+                      <li><span class="tag">音樂演出</span></li>
+                      <li><span class="tag tag-scarce"><i class="bi bi-fire" aria-hidden="true"></i>即將完售</span></li>
+                    </ul>
+                    <p class="match-card-price"><span class="match-card-price-label">票價</span><span class="price">NT$ 1,500 起</span></p>
+                  </div>
+                  <div class="match-card-body">
+                    <h2 class="match-card-title text-phrase"><a href="event.html">午夜噪音祭 Vol.7</a></h2>
+                    <ul class="match-card-facts">
+                      <li><i class="bi bi-person-badge" aria-hidden="true"></i><span><span class="visually-hidden">主辦：</span>噪音共同體 Noise Collective</span></li>
+                      <li><i class="bi bi-calendar3" aria-hidden="true"></i><span><span class="visually-hidden">時間：</span><span class="num">2026/10/18 (六) 20:00 – 23:30（19:30 開放入場）</span></span></li>
+                      <li><i class="bi bi-geo-alt" aria-hidden="true"></i><span><span class="visually-hidden">地點：</span>台北 ‧ Zepp New Taipei（新北市新莊區新北大道四段 3 號）</span></li>
+                    </ul>
+                    <p class="match-card-intro">一年一度的地下電子現場，集結八組台日獨立電子與噪音創作者，從 Ambient 暖場一路推進到 Techno 高潮。本屆首度啟用雙舞台交錯演出，中場不中斷。現場採無現金制，入場即贈限量螢光手環一只。</p>
+                    <div class="match-card-tickets">
+                      <p class="match-card-label">票種</p>
+                      <ul>
+                      <li class="is-sold-out"><s><span class="match-card-ticket-name">早鳥全票</span><span class="match-card-ticket-value"><span class="price">NT$ 1,200</span><small>（已售罄）</small></span></s></li>
+                      <li><span class="match-card-ticket-name">預售全票</span><span class="match-card-ticket-value"><span class="price">NT$ 1,500</span></span></li>
+                      <li><span class="match-card-ticket-name">現場票</span><span class="match-card-ticket-value"><span class="price">NT$ 1,800</span></span></li>
+                      <li><span class="match-card-ticket-name">VIP 搖滾區</span><span class="match-card-ticket-value"><span class="price">NT$ 2,800</span></span></li>
+                      </ul>
+                    </div>
+                    <div class="match-card-foot">
+                      <div class="remain is-scarce">
+                        <p class="remain-meta"><span class="remain-value">剩餘 8%</span><span class="remain-note"><i class="bi bi-fire" aria-hidden="true"></i>限時｜今晚結束調漲</span></p>
+                        <div class="progress" role="progressbar" aria-label="剩餘票數 8%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100">
+                          <div class="progress-bar" style="width: 8%"></div>
+                        </div>
+                      </div>
+                      <div class="match-card-actions">
+                        <button class="btn btn-secondary btn-sm btn-follow" type="button" aria-pressed="false"><i class="bi bi-heart" aria-hidden="true"></i><span data-follow-text>追蹤</span><span class="visually-hidden">午夜噪音祭 Vol.7</span></button>
+                        <a class="btn btn-primary btn-sm" href="event.html">立即購票<span class="visually-hidden">：午夜噪音祭 Vol.7</span></a>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li class="col" data-category="劇場表演" data-id="island-monologue">
+                <article class="match-card">
+                  <div class="match-card-media">
+                    <a class="match-card-img" href="event.html" tabindex="-1" aria-hidden="true">
+                      <img src="images/event-island-monologue.jpg" alt="單一頂光下，一位現代舞者在黑盒子劇場中起舞" width="1600" height="1067" loading="lazy">
+                    </a>
+                    <ul class="tag-list match-card-tags">
+                      <li><span class="tag">劇場表演</span></li>
+                      <li><span class="tag tag-hot"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i>熱賣中</span></li>
+                    </ul>
+                    <p class="match-card-price"><span class="match-card-price-label">票價</span><span class="price">NT$ 600 起</span></p>
+                  </div>
+                  <div class="match-card-body">
+                    <h2 class="match-card-title text-phrase"><a href="event.html"><span class="text-nowrap">島嶼獨白｜</span><wbr>現代舞獨舞展</a></h2>
+                    <ul class="match-card-facts">
+                      <li><i class="bi bi-person-badge" aria-hidden="true"></i><span><span class="visually-hidden">主辦：</span>微光舞團</span></li>
+                      <li><i class="bi bi-calendar3" aria-hidden="true"></i><span><span class="visually-hidden">時間：</span><span class="num">2026/10/25 (六) 19:30 – 20:50（無中場休息）</span></span></li>
+                      <li><i class="bi bi-geo-alt" aria-hidden="true"></i><span><span class="visually-hidden">地點：</span>台中 ‧ 國家歌劇院小劇場（台中市西屯區惠來路二段 101 號）</span></li>
+                    </ul>
+                    <p class="match-card-intro">以一位舞者、一盞燈、七十分鐘，講述一座島嶼的遷徙記憶。全場採對稱式座位，前兩排為地板席可近距離觀看。本場次設有演後座談，由編舞家與觀眾面對面交流。</p>
+                    <div class="match-card-tickets">
+                      <p class="match-card-label">票種</p>
+                      <ul>
+                      <li><span class="match-card-ticket-name">地板席</span><span class="match-card-ticket-value"><span class="price">NT$ 800</span></span></li>
+                      <li><span class="match-card-ticket-name">A 區</span><span class="match-card-ticket-value"><span class="price">NT$ 1,200</span></span></li>
+                      <li><span class="match-card-ticket-name">B 區</span><span class="match-card-ticket-value"><span class="price">NT$ 900</span></span></li>
+                      <li><span class="match-card-ticket-name">學生票</span><span class="match-card-ticket-value"><span class="price">NT$ 600</span><small>（憑證入場）</small></span></li>
+                      </ul>
+                    </div>
+                    <div class="match-card-foot">
+                      <div class="remain">
+                        <p class="remain-meta"><span class="remain-value">剩餘 34%</span></p>
+                        <div class="progress" role="progressbar" aria-label="剩餘票數 34%" aria-valuenow="34" aria-valuemin="0" aria-valuemax="100">
+                          <div class="progress-bar" style="width: 34%"></div>
+                        </div>
+                      </div>
+                      <div class="match-card-actions">
+                        <button class="btn btn-secondary btn-sm btn-follow" type="button" aria-pressed="false"><i class="bi bi-heart" aria-hidden="true"></i><span data-follow-text>追蹤</span><span class="visually-hidden">島嶼獨白｜現代舞獨舞展</span></button>
+                        <a class="btn btn-primary btn-sm" href="event.html">立即購票<span class="visually-hidden">：島嶼獨白｜現代舞獨舞展</span></a>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li class="col" data-category="市集選物" data-id="riverside-market">
+                <article class="match-card">
+                  <div class="match-card-media">
+                    <a class="match-card-img" href="event.html" tabindex="-1" aria-hidden="true">
+                      <img src="images/event-riverside-market.jpg" alt="入夜的河岸廣場，手作市集的燈串剛亮起" width="1600" height="1067" loading="lazy">
+                    </a>
+                    <ul class="tag-list match-card-tags">
+                      <li><span class="tag">市集選物</span></li>
+                      <li><span class="tag tag-free"><i class="bi bi-gift" aria-hidden="true"></i>含免費票種</span></li>
+                    </ul>
+                    <p class="match-card-price"><span class="price">免費入場</span></p>
+                  </div>
+                  <div class="match-card-body">
+                    <h2 class="match-card-title text-phrase"><a href="event.html">秋日河岸手作市集</a></h2>
+                    <ul class="match-card-facts">
+                      <li><i class="bi bi-person-badge" aria-hidden="true"></i><span><span class="visually-hidden">主辦：</span>台南好市集協會</span></li>
+                      <li><i class="bi bi-calendar3" aria-hidden="true"></i><span><span class="visually-hidden">時間：</span><span class="num">2026/11/01 (六) – 11/02 (日) 14:00 – 21:00</span></span></li>
+                      <li><i class="bi bi-geo-alt" aria-hidden="true"></i><span><span class="visually-hidden">地點：</span>台南 ‧ 河樂廣場（台南市中西區中正路 343-20 號）</span></li>
+                    </ul>
+                    <p class="match-card-intro">六十個在地手作攤位沿河岸排開，涵蓋陶藝、皮革、烘焙與二手選物。每日下午設有兩場免費現場演出，入夜後點亮河岸燈串。本次新增「工作坊換票區」，可單獨購買單場體驗。</p>
+                    <div class="match-card-tickets">
+                      <p class="match-card-label">票種</p>
+                      <ul>
+                      <li><span class="match-card-ticket-name">入場免費（需線上索取電子票）</span></li>
+                      <li><span class="match-card-ticket-name">陶土手捏體驗</span><span class="match-card-ticket-value"><span class="price">NT$ 600</span></span></li>
+                      <li><span class="match-card-ticket-name">香氛蠟燭工作坊</span><span class="match-card-ticket-value"><span class="price">NT$ 480</span></span></li>
+                      </ul>
+                    </div>
+                    <div class="match-card-foot">
+                      <div class="remain">
+                        <p class="remain-meta"><span class="remain-value">工作坊名額剩 41%</span></p>
+                        <div class="progress" role="progressbar" aria-label="工作坊名額剩餘 41%" aria-valuenow="41" aria-valuemin="0" aria-valuemax="100">
+                          <div class="progress-bar" style="width: 41%"></div>
+                        </div>
+                      </div>
+                      <div class="match-card-actions">
+                        <button class="btn btn-secondary btn-sm btn-follow" type="button" aria-pressed="false"><i class="bi bi-heart" aria-hidden="true"></i><span data-follow-text>追蹤</span><span class="visually-hidden">秋日河岸手作市集</span></button>
+                        <a class="btn btn-primary btn-sm" href="event.html">免費報名<span class="visually-hidden">：秋日河岸手作市集</span></a>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li class="col" data-category="講座工作坊" data-id="photo-composition">
+                <article class="match-card">
+                  <div class="match-card-media">
+                    <a class="match-card-img" href="event.html" tabindex="-1" aria-hidden="true">
+                      <img src="images/event-photo-composition.jpg" alt="攝影構圖講座的桌面，散落印好的照片、相機與直播用手機" width="1600" height="1067" loading="lazy">
+                    </a>
+                    <ul class="tag-list match-card-tags">
+                      <li><span class="tag">講座工作坊</span></li>
+                      <li><span class="tag tag-hot"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i>熱賣中</span></li>
+                    </ul>
+                    <p class="match-card-price"><span class="match-card-price-label">票價</span><span class="price">NT$ 350 起</span></p>
+                  </div>
+                  <div class="match-card-body">
+                    <h2 class="match-card-title text-phrase"><a href="event.html"><span class="text-nowrap">從零開始的攝影構圖｜</span><wbr>週末講座</a></h2>
+                    <ul class="match-card-facts">
+                      <li><i class="bi bi-person-badge" aria-hidden="true"></i><span><span class="visually-hidden">主辦：</span>光線筆記 Light Notes</span></li>
+                      <li><i class="bi bi-calendar3" aria-hidden="true"></i><span><span class="visually-hidden">時間：</span><span class="num">2026/11/08 (六) 14:00 – 16:30</span></span></li>
+                      <li><i class="bi bi-geo-alt" aria-hidden="true"></i><span><span class="visually-hidden">地點：</span>線上直播（購票後取得觀看連結，保留 14 天回看）</span></li>
+                    </ul>
+                    <p class="match-card-intro">不談器材、只談怎麼看。兩個半小時拆解引導線、框中框與負空間三種最實用的構圖方法，並以學員投稿的照片現場改圖示範。手機拍照者同樣適用。</p>
+                    <div class="match-card-tickets">
+                      <p class="match-card-label">票種</p>
+                      <ul>
+                      <li><span class="match-card-ticket-name">線上直播票</span><span class="match-card-ticket-value"><span class="price">NT$ 350</span></span></li>
+                      <li><span class="match-card-ticket-name">直播＋講義包</span><span class="match-card-ticket-value"><span class="price">NT$ 580</span></span></li>
+                      </ul>
+                    </div>
+                    <div class="match-card-foot">
+                      <div class="remain">
+                        <p class="remain-meta"><span class="remain-value">剩餘 62%</span></p>
+                        <div class="progress" role="progressbar" aria-label="剩餘票數 62%" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100">
+                          <div class="progress-bar" style="width: 62%"></div>
+                        </div>
+                      </div>
+                      <div class="match-card-actions">
+                        <button class="btn btn-secondary btn-sm btn-follow" type="button" aria-pressed="false"><i class="bi bi-heart" aria-hidden="true"></i><span data-follow-text>追蹤</span><span class="visually-hidden">從零開始的攝影構圖｜週末講座</span></button>
+                        <a class="btn btn-primary btn-sm" href="event.html">立即購票<span class="visually-hidden">：從零開始的攝影構圖｜週末講座</span></a>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li class="col" data-category="運動賽事" data-id="night-run">
+                <article class="match-card">
+                  <div class="match-card-media">
+                    <a class="match-card-img" href="event.html" tabindex="-1" aria-hidden="true">
+                      <img src="images/event-night-run.jpg" alt="夜晚的河岸步道上，一群跑者的反光裝備在燈下發亮" width="1600" height="1067" loading="lazy">
+                    </a>
+                    <ul class="tag-list match-card-tags">
+                      <li><span class="tag">運動賽事</span></li>
+                      <li><span class="tag tag-scarce"><i class="bi bi-fire" aria-hidden="true"></i>即將完售</span></li>
+                    </ul>
+                    <p class="match-card-price"><span class="match-card-price-label">票價</span><span class="price">NT$ 750 起</span></p>
+                  </div>
+                  <div class="match-card-body">
+                    <h2 class="match-card-title text-phrase"><a href="event.html"><span class="text-nowrap">城市夜跑｜</span><wbr>10K 光影場</a></h2>
+                    <ul class="match-card-facts">
+                      <li><i class="bi bi-person-badge" aria-hidden="true"></i><span><span class="visually-hidden">主辦：</span>RunCity 跑城市</span></li>
+                      <li><i class="bi bi-calendar3" aria-hidden="true"></i><span><span class="visually-hidden">時間：</span><span class="num">2026/11/15 (六) 18:30 起跑（17:30 開始寄物）</span></span></li>
+                      <li><i class="bi bi-geo-alt" aria-hidden="true"></i><span><span class="visually-hidden">地點：</span>高雄 ‧ 愛河之心（高雄市三民區同盟二路）</span></li>
+                    </ul>
+                    <p class="match-card-intro">沿愛河水岸的夜間路跑，全程 10 公里平路無爬升，適合第一次挑戰 10K 的跑者。完賽禮為反光跑者腰包與獎牌，沿線設置三個補給站與兩處攝影點。報名含晶片計時與寄物服務。</p>
+                    <div class="match-card-tickets">
+                      <p class="match-card-label">票種</p>
+                      <ul>
+                      <li><span class="match-card-ticket-name">個人組</span><span class="match-card-ticket-value"><span class="price">NT$ 900</span></span></li>
+                      <li><span class="match-card-ticket-name">雙人組（每人）</span><span class="match-card-ticket-value"><span class="price">NT$ 800</span></span></li>
+                      <li><span class="match-card-ticket-name">企業團體 5 人以上（每人）</span><span class="match-card-ticket-value"><span class="price">NT$ 750</span></span></li>
+                      </ul>
+                    </div>
+                    <div class="match-card-foot">
+                      <div class="remain is-scarce">
+                        <p class="remain-meta"><span class="remain-value">剩餘 23%</span><span class="remain-note"><i class="bi bi-fire" aria-hidden="true"></i>即將完售</span></p>
+                        <div class="progress" role="progressbar" aria-label="剩餘票數 23%" aria-valuenow="23" aria-valuemin="0" aria-valuemax="100">
+                          <div class="progress-bar" style="width: 23%"></div>
+                        </div>
+                      </div>
+                      <div class="match-card-actions">
+                        <button class="btn btn-secondary btn-sm btn-follow" type="button" aria-pressed="false"><i class="bi bi-heart" aria-hidden="true"></i><span data-follow-text>追蹤</span><span class="visually-hidden">城市夜跑｜10K 光影場</span></button>
+                        <a class="btn btn-primary btn-sm" href="event.html">立即報名<span class="visually-hidden">：城市夜跑｜10K 光影場</span></a>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li class="col" data-category="市集選物" data-id="island-zine-fest">
+                <article class="match-card">
+                  <div class="match-card-media">
+                    <a class="match-card-img" href="event.html" tabindex="-1" aria-hidden="true">
+                      <img src="images/event-island-zine-fest.jpg" alt="倉庫展場的長桌上擺滿獨立刊物與手工書" width="1600" height="1067" loading="lazy">
+                    </a>
+                    <ul class="tag-list match-card-tags">
+                      <li><span class="tag">市集選物</span></li>
+                      <li><span class="tag tag-hot"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i>熱賣中</span></li>
+                    </ul>
+                    <p class="match-card-price"><span class="match-card-price-label">票價</span><span class="price">NT$ 200 起</span></p>
+                  </div>
+                  <div class="match-card-body">
+                    <h2 class="match-card-title text-phrase"><a href="event.html"><span class="text-nowrap">小島出版節｜</span><wbr>獨立刊物三日展</a></h2>
+                    <ul class="match-card-facts">
+                      <li><i class="bi bi-person-badge" aria-hidden="true"></i><span><span class="visually-hidden">主辦：</span>小島出版聯盟</span></li>
+                      <li><i class="bi bi-calendar3" aria-hidden="true"></i><span><span class="visually-hidden">時間：</span><span class="num">2026/12/05 (五) – 12/07 (日) 12:00 – 20:00</span></span></li>
+                      <li><i class="bi bi-geo-alt" aria-hidden="true"></i><span><span class="visually-hidden">地點：</span>台北 ‧ 松山文創園區 四號倉庫</span></li>
+                    </ul>
+                    <p class="match-card-intro">八十組獨立出版者齊聚，展出 ZINE、攝影集、手工書與絹印海報。三日內安排十二場創作者對談，另設有現場印刷體驗區。單日票與三日票皆可自由進出場。</p>
+                    <div class="match-card-tickets">
+                      <p class="match-card-label">票種</p>
+                      <ul>
+                      <li><span class="match-card-ticket-name">單日票</span><span class="match-card-ticket-value"><span class="price">NT$ 200</span></span></li>
+                      <li><span class="match-card-ticket-name">三日通行票</span><span class="match-card-ticket-value"><span class="price">NT$ 450</span></span></li>
+                      <li><span class="match-card-ticket-name">開幕夜限定票</span><span class="match-card-ticket-value"><span class="price">NT$ 600</span><small>（含限量刊物一本）</small></span></li>
+                      </ul>
+                    </div>
+                    <div class="match-card-foot">
+                      <div class="remain">
+                        <p class="remain-meta"><span class="remain-value">剩餘 88%</span></p>
+                        <div class="progress" role="progressbar" aria-label="剩餘票數 88%" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100">
+                          <div class="progress-bar" style="width: 88%"></div>
+                        </div>
+                      </div>
+                      <div class="match-card-actions">
+                        <button class="btn btn-secondary btn-sm btn-follow" type="button" aria-pressed="false"><i class="bi bi-heart" aria-hidden="true"></i><span data-follow-text>追蹤</span><span class="visually-hidden">小島出版節｜獨立刊物三日展</span></button>
+                        <a class="btn btn-primary btn-sm" href="event.html">立即購票<span class="visually-hidden">：小島出版節｜獨立刊物三日展</span></a>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+          </ul>
+
+          <!-- ============ 設計稿狀態示意：篩選無結果 ============ -->
+          <section class="demo-state" aria-labelledby="demoEmptyTitle">
+            <p class="demo-state-tag">設計稿狀態示意</p>
+            <h2 id="demoEmptyTitle" class="demo-state-title">篩選後沒有活動時</h2>
+            <p class="text-note">條件組合找不到場次時，結果區換成這個空狀態，「清除篩選」回到全部 8 場。</p>
+            <div class="empty-state hud-panel">
+              <span class="hex hex-lg empty-state-icon" aria-hidden="true"><i class="bi bi-calendar-x"></i></span>
+              <h3>這個條件下目前沒有活動</h3>
+              <p>試著放寬日期或地區範圍。</p>
+              <button class="btn btn-primary" type="button">清除篩選</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container-xl">
+        <div class="row gy-5">
+          <div class="col-lg-4">
+            <a class="site-brand" href="index.html">
+              <img class="site-brand-mark" src="images/logo.svg" alt="" width="34" height="34">
+              <span class="site-brand-name">StageOne</span>
+              <span class="site-brand-sub">城市現場</span>
+            </a>
+            <p class="site-footer-lead text-phrase">
+              三步完成購票、<wbr>票券直接長在手機裡<br>
+              專為中小型現場活動<wbr>打造的售票平台。
+            </p>
+          </div>
+          <!-- 第二階段頁面（主辦方後台、驗票工具）：不帶 href 的佔位連結 -->
+          <div class="col-6 col-lg site-footer-col">
+            <h2 class="site-footer-title"><span class="site-footer-num" aria-hidden="true">01</span>購票者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="events.html">探索活動</a></li>
+              <li><a href="tickets.html">我的票券</a></li>
+              <li><a href="orders.html">購票紀錄</a></li>
+              <li><a href="follows.html">追蹤的主辦方</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-lg site-footer-col">
+            <h2 class="site-footer-title"><span class="site-footer-num" aria-hidden="true">02</span>主辦方</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="index.html#organizer">我要辦活動</a></li>
+              <li><a>主辦方後台</a></li>
+              <li><a>行動驗票工具</a></li>
+              <li><a>售票儀表板</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-lg site-footer-col">
+            <h2 class="site-footer-title"><span class="site-footer-num" aria-hidden="true">03</span>服務</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="event.html#faq">購票須知</a></li>
+              <li><a href="event.html#faq">退票規則</a></li>
+              <li><a href="event.html#faq">常見問題</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 StageOne 城市現場｜<wbr>本站為課程設計稿範例，活動與票券皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 登入／註冊 Modal：頁首「登入／註冊」、首頁「免費開賣我的第一場」、註冊頁的「登入」共用。設計稿：「登入」只關閉 Modal -->
+  <div class="modal fade login-modal" id="loginModal" tabindex="-1" aria-labelledby="loginModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h4" id="loginModalTitle">登入／註冊</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body">
+          <p class="login-modal-lead">登入後就能買票，註冊只要 30 秒。</p>
+          <form>
+            <div class="mb-3">
+              <label class="form-label" for="loginEmail">Email</label>
+              <input id="loginEmail" class="form-control" type="email" autocomplete="email" placeholder="you@example.com">
+            </div>
+            <div class="mb-4">
+              <label class="form-label" for="loginPassword">密碼</label>
+              <input id="loginPassword" class="form-control" type="password" autocomplete="current-password">
+            </div>
+            <div class="d-grid gap-3">
+              <button class="btn btn-primary" type="button" data-bs-dismiss="modal">登入</button>
+              <a class="btn btn-secondary" href="register.html">註冊新帳號</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

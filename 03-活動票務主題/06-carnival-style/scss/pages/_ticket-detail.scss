@@ -1,0 +1,452 @@
+// ============================================================
+// ticket.html 電子票券詳情（2026-11 補；class 前綴 tkt-）
+// 置中單欄（最寬 880px），由上往下一條線讀完，沒有側欄：
+//   麵包屑（靠左）→ 眉標「電子票券」（糖果紅小膠囊）→ H1 置中（鮮黃貼紙，連到活動細節）→ 說明列置中
+//   → 3 顆代幣切換鈕（Bootstrap pill：票號＋票種，選中糖果紅）
+//   → 電子票券置中（400px，整頁最大的視覺；後面一圈奶油黃轉盤＋燈泡點）；切換時 .tab-pane.active .stamp 重新蓋章
+//   → 票券資訊 <dl> 2 × 2（每格一顆小代幣標籤）→ 操作 3 顆膠囊＋退票規則小字
+//   → #entry 緞帶 H2「入場資訊」→ 3 張往下排的香草圓角卡：①日期、時間、地點 ②怎麼去？（導覽地圖縮小版）③入場須知（鮮黃號碼代幣）
+// 狀態示意 3 個並排迷你票（各自蓋章），≥ 1200px 3 欄
+// 和 04 當代雙年展不同：沒有左右兩側的大編號與說明牌，只有中間一條欄
+// ============================================================
+
+$tkt-col: 55rem; // 880px
+
+.tkt-page {
+  padding-block: 1.5rem $section-padding-y-sm;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: 2rem $section-padding-y-lg;
+  }
+}
+.tkt-col {
+  max-width: $tkt-col;
+  margin-inline: auto;
+}
+
+// ---------- 1. 頁首區 ----------
+.tkt-head {
+  text-align: center;
+
+  .breadcrumb {
+    justify-content: flex-start;
+    margin-bottom: 1.5rem;
+  }
+  h1 {
+    margin-bottom: .75rem;
+
+    a {
+      color: inherit;
+      text-decoration: none;
+
+      &:hover {
+        color: $candy-deep;
+      }
+    }
+  }
+}
+.tkt-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: 1rem;
+  padding: .25rem .875rem;
+  border-radius: $border-radius-pill;
+  background-color: $candy;
+  color: $white; // 5.29
+  font-size: .8125rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+  box-shadow: $bevel-btn;
+}
+.tkt-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0 .5rem;
+  margin-bottom: 0;
+  color: $navy-muted;
+  font-weight: 700;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: $navy;
+  }
+}
+
+// ---------- 2. 3 張票的切換：代幣膠囊（Bootstrap pill） ----------
+// 放不下時（手機）在自己的容器內橫向捲動，頁面不會出現水平捲軸
+.tkt-switch-scroll {
+  margin-top: 2rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: .5rem .25rem;
+  scrollbar-color: $control transparent;
+  @include bleed-x;
+}
+.tkt-switch {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: .625rem;
+  width: max-content;
+  margin: 0 auto;
+}
+.tkt-switch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 3rem;
+  padding: .3125rem 1.125rem .3125rem .3125rem;
+  border: 2px solid $navy;
+  border-radius: $border-radius-pill;
+  background-color: $vanilla;
+  color: $navy;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: inset 0 -3px 0 rgba($navy, .08);
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+
+  .token { --token-size: 2.25rem; font-size: 1rem; }
+  .num { font-weight: 800; }
+
+  &:hover {
+    background-color: $butter;
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: $focus-ring-double;
+  }
+  &.active {
+    border-color: $candy-deep;
+    background-color: $candy;
+    color: $white;
+    box-shadow: $bevel-btn;
+
+    &:hover { background-color: $candy-deep; }
+    &:focus-visible { box-shadow: $bevel-btn, $focus-ring-double; }
+  }
+}
+
+// ---------- 電子票券：置中 400px，後面一圈奶油黃轉盤＋燈泡點（裝飾） ----------
+.tkt-stage {
+  position: relative;
+  isolation: isolate;
+  padding: 2.5rem 0 1rem;
+
+  @include media-breakpoint-up(md) {
+    padding-top: 3rem;
+  }
+
+  // 轉盤：奶油黃圓＋內圈一圈點點（靜態），放在票券正後方（裝飾）
+  // 圓心對準票券中央、直徑比票券高度小一點，整個圓留在這一區裡，不壓到下面的票券資訊
+  &::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: calc(50% + .75rem);
+    left: 50%;
+    width: min(32rem, 100%);
+    aspect-ratio: 1;
+    border: 3px solid rgba($navy, .12);
+    border-radius: 50%;
+    background-color: $butter;
+    outline: 3px dotted rgba($navy, .3);
+    outline-offset: -1.125rem;
+    transform: translate(-50%, -50%);
+  }
+}
+.tkt-eticket {
+  max-width: 25rem; // 400px
+
+  // 手機票面窄，「每 60 秒自動更新」那行幾乎滿寬：入場章往下移，一半壓出票的下緣（右下角），不蓋到文字
+  // 章不在票號旁邊了，票號回到正中間
+  @include media-breakpoint-down(sm) {
+    .eticket-stamp { bottom: -1.75rem; }
+    .eticket-no { padding-right: 0; }
+  }
+}
+
+// ---------- 票券資訊：2 × 2，每格一顆小代幣標籤 ----------
+.tkt-info {
+  display: grid;
+  gap: .875rem;
+  max-width: 40rem;
+  margin: 2rem auto 0;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  > div {
+    padding: .875rem 1.125rem;
+    border-radius: 1.25rem;
+    background-color: $vanilla;
+    box-shadow: $shadow-soft;
+  }
+  // 代幣放在 dt 裡（<dl> 的 div 只能裝 dt、dd），值往右縮到和標籤對齊
+  dt {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    color: $navy-muted;
+    font-size: .8125rem;
+    font-weight: 700;
+    letter-spacing: $letter-spacing-label;
+  }
+  dd {
+    margin: -.375rem 0 0;
+    padding-left: 2.75rem;
+    font-weight: 700;
+    line-height: 1.5;
+
+    small {
+      display: block;
+      color: $navy-muted;
+      font-size: .8125rem;
+      font-weight: 400;
+    }
+  }
+}
+
+// ---------- 3. 操作：3 顆膠囊置中＋退票規則小字 ----------
+.tkt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .75rem;
+  margin-top: 2rem;
+
+  @include media-breakpoint-down(sm) {
+    flex-direction: column;
+
+    .btn { width: 100%; }
+  }
+}
+.tkt-refund-note {
+  display: flex;
+  justify-content: center;
+  gap: .375rem;
+  max-width: 34rem;
+  margin: 1rem auto 0;
+  color: $navy-muted;
+  font-size: .875rem;
+  line-height: 1.7;
+
+  .bi { flex: none; margin-top: .125rem; color: $candy; }
+}
+
+// ---------- 4. 入場資訊：3 張往下排的香草圓角卡 ----------
+.tkt-entry {
+  margin-top: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    margin-top: 5.5rem;
+  }
+}
+.tkt-entry-cards {
+  display: grid;
+  gap: 1.5rem;
+}
+.tkt-entry-card {
+  padding: 1.5rem 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 2rem 2.25rem;
+  }
+
+  h3 {
+    margin-bottom: 1.25rem;
+    font-weight: 900;
+  }
+  h4 {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    margin-bottom: .5rem;
+    font-size: 1.0625rem;
+    font-weight: 900;
+  }
+}
+// ① 日期、時間、地點：≥ 768px 三欄，欄與欄之間一條糖果紅虛線
+.tkt-when {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 1fr 1fr 1.4fr;
+    gap: 0;
+
+    > div + div {
+      padding-left: 1.5rem;
+      border-left: 2px dashed rgba($candy, .45);
+    }
+    > div:not(:last-child) {
+      padding-right: 1.5rem;
+    }
+  }
+
+  dt {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    color: $navy-muted;
+    font-size: .8125rem;
+    font-weight: 700;
+    letter-spacing: $letter-spacing-label;
+  }
+  dd {
+    margin: -.25rem 0 0;
+    padding-left: 2.75rem;
+    font-weight: 700;
+    line-height: 1.6;
+  }
+}
+.tkt-address {
+  display: block;
+  color: $navy-muted;
+  font-size: .9375rem;
+  font-weight: 400;
+}
+
+// ② 怎麼去？：導覽地圖縮小版（16:9，手機 4:3）＋大眾運輸、開車兩欄＋開啟導航
+.tkt-map {
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  margin-bottom: 1.5rem;
+  border: 4px solid $cream;
+  border-radius: $radius-photo;
+  background-color: $cream;
+  box-shadow: inset 0 0 0 1px rgba($navy, .08);
+
+  @include media-breakpoint-up(md) {
+    aspect-ratio: 16 / 9;
+  }
+}
+.tkt-map-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.tkt-route {
+  display: grid;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  ul,
+  p {
+    margin: 0;
+    padding-left: 2.625rem;
+  }
+  ul {
+    list-style: none;
+
+    li {
+      position: relative;
+
+      &::before {
+        content: "";
+        position: absolute;
+        left: -1rem;
+        top: .7em;
+        width: .4375rem;
+        height: .4375rem;
+        border-radius: 50%;
+        background-color: $candy;
+      }
+    }
+  }
+}
+.tkt-nav-btn {
+  @include media-breakpoint-down(sm) { width: 100%; }
+}
+
+// ③ 入場須知：6 項，每項一顆鮮黃號碼代幣（裝飾；不用 Accordion，入場前一眼看完）
+.tkt-rules {
+  display: grid;
+  gap: .875rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 2rem;
+  }
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    line-height: 1.7;
+  }
+  .token {
+    --token-size: 2rem;
+    margin-top: -.0625rem;
+    font-size: .9375rem;
+    box-shadow: inset 0 0 0 2px var(--token-bg), inset 0 0 0 3.5px var(--token-ring);
+  }
+  strong {
+    font-weight: 900;
+  }
+}
+
+// ---------- 5. 狀態示意：3 張迷你票 ----------
+// 欄寬：< 992px 一個一列、992–1399px 兩欄（第 3 個占滿一列）、≥ 1400px 三欄（col-lg-6 col-xxl-4）
+// 三欄只在 ≥ 1400px：再窄的話票面不到 200px，活動名與票號會被擠斷、章會壓到 QR 框
+.tkt-demos {
+  margin-top: map-get($spacers, 6);
+
+  .demo-state {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin-top: 0;
+  }
+  .demo-state-tag {
+    align-self: flex-start;
+  }
+  .demo-state-stage {
+    flex: 1 1 auto;
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+    padding-inline: 1.25rem;
+
+    @include media-breakpoint-up(md) {
+      padding: 1.5rem 2.25rem 1.5rem 1.5rem; // 右側多留一點給一半壓出票緣的入場章
+    }
+  }
+  .eticket {
+    max-width: 18rem;
+  }
+}
+.tkt-demo-text {
+  display: flex;
+  gap: .5rem;
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.65;
+
+  .bi { flex: none; margin-top: .125rem; }
+}
+.tkt-demo-actions {
+  display: grid;
+  gap: .5rem;
+
+  // 768–1399px 取消活動的示意占滿一列：4 顆膠囊排成一列置中（同正式票券下方的操作列），不拉成 1000px 長條
+  @include media-breakpoint-between(md, xxl) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

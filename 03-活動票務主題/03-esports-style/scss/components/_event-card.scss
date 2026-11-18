@@ -1,0 +1,441 @@
+// ============================================================
+// 活動卡：選角卡（首頁情境入口）、對戰卡（首頁本週熱門；活動列表的直式對戰卡可以沿用 .feat-card 的底）
+// 圖片永遠有一層由上往下的曜石灰漸層壓底；文字壓在圖上的位置至少 70% 曜石灰
+// hover 只把框線與括角變亮、加光暈，不位移、不放大、不浮現資訊
+// ============================================================
+
+// ---------- 選角卡（像遊戲選角畫面） ----------
+// 4:5 照片切成平行四邊形（左上、右下各內縮 8%），四張並排、間距 8px；分類、標題、場次與票價常駐顯示
+// 框線：外層多邊形填框線色、內層內縮 1px 再切一次，斜邊也有框
+// <a class="scene-card" href="events.html">
+//   <div class="scene-card-media">
+//     <div class="scene-card-inner">
+//       <img …>
+//       <div class="scene-card-body">
+//         <p class="scene-card-category">音樂演出</p>
+//         <h3 class="scene-card-title">想在人群裡大聲唱</h3>
+//         <p class="scene-card-meta"><span>近期 48 場</span><span>NT$ 600 起</span></p>
+//       </div>
+//     </div>
+//   </div>
+// </a>
+.scene-card {
+  --slant: 4%;
+  --edge: #{$gunmetal};
+  display: block;
+  color: $text;
+  text-decoration: none;
+
+  @include media-breakpoint-up(lg) {
+    --slant: 8%;
+  }
+  &:hover,
+  &:focus-visible {
+    --edge: #{$arc};
+    color: $text;
+    filter: drop-shadow(0 0 .875rem rgba($arc, .45));
+  }
+  &:focus-visible {
+    outline-offset: 4px;
+  }
+}
+.scene-card-media,
+.scene-card-inner {
+  clip-path: polygon(var(--slant) 0, 100% 0, calc(100% - var(--slant)) 100%, 0 100%);
+}
+.scene-card-media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: var(--edge);
+}
+.scene-card-inner {
+  position: absolute;
+  inset: 1px;
+  overflow: hidden;
+  background-color: $carbon;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  // 壓底漸層：文字區（下方約 45%）至少 70% 曜石灰
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 30%, rgba($obsidian, .72) 55%, rgba($obsidian, .94) 78%);
+
+    // < 992px 卡片窄、文字佔卡片一半高：漸層從更上面開始
+    @include media-breakpoint-down(lg) {
+      background: linear-gradient(180deg, transparent 12%, rgba($obsidian, .78) 40%, rgba($obsidian, .95) 62%);
+    }
+  }
+}
+.scene-card-body {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  padding: 0 14% 1.125rem 9%;
+
+  @include media-breakpoint-down(lg) {
+    padding: 0 9% .875rem 7%;
+  }
+}
+.scene-card-category {
+  margin-bottom: .25rem;
+  color: $arc-hi;
+  font-size: .8125rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+}
+.scene-card-title {
+  margin-bottom: .5rem;
+  font-family: $font-family-base;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.35;
+
+  @include media-breakpoint-down(sm) {
+    font-size: 1.0625rem;
+  }
+}
+.scene-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .125rem .625rem;
+  margin: 0;
+  color: $text-muted;
+  font-family: $font-family-display;
+  font-size: .8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+
+  span + span::before {
+    content: "";
+    display: inline-block;
+    width: 1px;
+    height: .75em;
+    margin-right: .625rem;
+    background: $control;
+  }
+  // 窄卡片：場次與票價上下兩行，不畫分隔線
+  @include media-breakpoint-down(sm) {
+    flex-direction: column;
+
+    span + span::before { display: none; }
+  }
+}
+
+// ---------- 對戰卡（首頁本週熱門） ----------
+// 16:10 圖（左上 HUD 日期框、右上琥珀「剩 8%」）→ 名稱 h3（stretched-link）→ 日期時間、城市 ‧ 場地 → 血條 → Oxanium 票價＋小號按鈕
+// 括角平常 50%，滑過或鍵盤進入時 100%（.hud-frame 的規則）
+.feat-card {
+  @include brackets-on(after, -1px);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid $gunmetal;
+  border-image: $metal-edge 1;
+  background-color: $obsidian;
+
+  &:hover,
+  &:focus-within {
+    --bracket: #{$bracket-lit};
+  }
+}
+.feat-card-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-bottom: 1px solid $gunmetal;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba($obsidian, .35) 0%, transparent 40%, rgba($obsidian, .55) 100%);
+  }
+  .date-chip {
+    position: absolute;
+    top: .75rem;
+    left: .75rem;
+    z-index: 1;
+  }
+  .tag {
+    position: absolute;
+    top: .875rem;
+    right: .625rem;
+    z-index: 1;
+  }
+}
+.feat-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: .875rem;
+  padding: 1.125rem 1.25rem 1.25rem;
+}
+.feat-card-title {
+  margin: 0;
+  font-family: $font-family-display;
+  font-size: 1.1875rem;
+  line-height: 1.4;
+
+  a {
+    color: $text;
+    text-decoration: none;
+
+    &:hover { color: $arc-hi; }
+  }
+}
+.feat-card-meta {
+  margin: -.375rem 0 0;
+  color: $text-muted;
+  font-size: .875rem;
+  line-height: 1.6;
+}
+.feat-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: auto;
+  padding-top: .875rem;
+  border-top: 1px solid $gunmetal;
+
+  .btn {
+    position: relative;
+    z-index: 2; // 在 stretched-link 上面
+  }
+}
+.feat-card-foot .price {
+  white-space: nowrap;
+}
+.feat-card-free {
+  margin: 0;
+  color: $mint;
+  font-size: .875rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+// ---------- 直式對戰卡（活動列表，≥ 992px 每列 2 張） ----------
+// 16:9 圖（左上類別＋狀態標籤、右下票價讀數牌）→ 名稱 h2 → 主辦／時間／地點 → 介紹全文 →「票種」清單 →
+// 底列：血條（撐滿）＋「追蹤」＋主按鈕。圖片與名稱都連到 event.html（圖片連結對輔助科技隱藏，避免重複）
+// hover／鍵盤進入：括角變亮、框線變金屬藍；不位移、不放大、資訊全部常駐
+// <article class="match-card">
+//   <div class="match-card-media">
+//     <a class="match-card-img" href="event.html" tabindex="-1" aria-hidden="true"><img …></a>
+//     <ul class="tag-list match-card-tags">…</ul>
+//     <p class="match-card-price"><span class="match-card-price-label">票價</span><span class="price">NT$ 1,500 起</span></p>
+//   </div>
+//   <div class="match-card-body">…</div>
+// </article>
+.match-card {
+  @include brackets-on(after, -1px);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid $gunmetal;
+  border-image: $metal-edge 1;
+  background-color: $carbon;
+  transition: border-color .15s ease-in-out;
+
+  &:hover,
+  &:focus-within {
+    --bracket: #{$bracket-lit};
+    border-image: linear-gradient(135deg, rgba($arc-hi, .6), $gunmetal 40%, $gunmetal 60%, rgba($arc, .8)) 1;
+  }
+}
+.match-card-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-bottom: 1px solid $gunmetal;
+  background-color: $carbon-hi;
+
+  // 上緣壓暗給標籤、下緣壓暗給票價牌
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      $scanlines,
+      linear-gradient(180deg, rgba($obsidian, .55) 0%, transparent 32%, transparent 55%, rgba($obsidian, .9) 100%);
+  }
+}
+.match-card-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+.match-card-tags {
+  position: absolute;
+  top: .875rem;
+  left: .875rem;
+  z-index: 1;
+}
+// 票價讀數牌：曜石灰底＋左側金屬藍短條，Oxanium 價格
+.match-card-price {
+  position: absolute;
+  right: .875rem;
+  bottom: .875rem;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
+  margin: 0;
+  padding: .5rem .875rem .5rem .75rem;
+  border: 1px solid $gunmetal;
+  border-left: 3px solid $arc;
+  background-color: rgba($obsidian, .92);
+
+  .price {
+    color: $text;
+    font-size: 1.25rem;
+  }
+}
+.match-card-price-label {
+  color: $text-muted;
+  font-size: .75rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+}
+
+.match-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 1.5rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.5rem 1.75rem 1.75rem;
+  }
+}
+.match-card-title {
+  margin: 0;
+  font-size: 1.375rem;
+  line-height: 1.4;
+
+  a {
+    color: $text;
+    text-decoration: none;
+
+    &:hover {
+      color: $arc-hi;
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: .3em;
+    }
+  }
+}
+.match-card-facts {
+  display: grid;
+  gap: .375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: $text-muted;
+  font-size: .9375rem;
+  line-height: 1.6;
+
+  li {
+    display: grid;
+    grid-template-columns: 1.25rem 1fr;
+    gap: .5rem;
+  }
+  .bi {
+    color: $arc;
+    line-height: 1.6;
+  }
+}
+.match-card-intro {
+  margin: 0;
+  color: $text;
+  font-size: .9375rem;
+  line-height: 1.8;
+}
+// 票種清單：每列「票種名｜價格」，售罄刪除線
+.match-card-tickets {
+  border-top: 1px solid $gunmetal;
+  padding-top: .875rem;
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  li,
+  li > s {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: .125rem 1rem;
+  }
+  li {
+    padding-block: .375rem;
+    font-size: .875rem;
+    line-height: 1.5;
+
+    + li { border-top: 1px dashed $gunmetal; }
+  }
+  li > s { flex: 1; }
+  .price {
+    font-size: .9375rem;
+    font-weight: 600;
+  }
+  small {
+    margin-left: .25rem;
+    color: $text-muted;
+    font-size: .8125rem;
+  }
+  .is-sold-out {
+    color: $text-faint;
+
+    s { text-decoration-color: $text-faint; }
+    small { color: $text-faint; }
+  }
+}
+.match-card-ticket-name { min-width: 0; }
+.match-card-ticket-value { white-space: nowrap; }
+.match-card-label {
+  margin-bottom: .25rem;
+  color: $text-muted;
+  font-size: .8125rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+}
+.match-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid $gunmetal;
+
+  .remain {
+    flex: 1 1 12rem;
+  }
+}
+.match-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-left: auto;
+}

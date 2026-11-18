@@ -1,0 +1,363 @@
+// ============================================================
+// checkout.html 購票確認與快速支付（class 前綴 co-）
+// 1 H1 視覺隱藏 → 棋盤路徑步驟列（components/_board-steps.scss；≥ 768px sticky 在頁首下方 108px）
+// 2 < 992px「查看明細」膠囊（Collapse 展開鋸齒收據）→ 步驟列的兩種狀態示意
+// 3 7 : 5：左兩張香草圓角卡（欄內 H2＋.marker）｜右 sticky 鋸齒收據（components/_receipt.scss）
+// 4 #result 奶油黃帶：成功（入場票＋入場章「有效」、Carousel 3 張）7 : 失敗 5
+// 5 < 992px 底部浮動膠囊（components/_float-bar.scss）
+// ============================================================
+
+// ---------- 1. 步驟列 ----------
+// 外層是滿寬的奶油底帶子：sticky 時從頁首（88px）下緣開始遮住捲上來的內容，步驟列本身落在 108px
+.co-stepper {
+  position: relative;
+  z-index: $zindex-sticky;
+  padding-top: 1.25rem;
+  background-color: $cream;
+
+  @include media-breakpoint-up(md) {
+    position: sticky;
+    top: $site-header-height;
+  }
+}
+// 步驟列下方要留出扇形的高度
+.co-body {
+  padding-top: 2rem;
+}
+
+// ---------- 2. 查看明細（< 992px） ----------
+.co-summary-toggle {
+  margin-bottom: .5rem;
+}
+.co-summary-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: .5rem 1rem .5rem 1.25rem;
+  border: 2px solid $navy;
+  border-radius: $border-radius-pill;
+  background-color: $vanilla;
+  color: $navy;
+  font-weight: 700;
+  text-align: left;
+  box-shadow: $shadow-soft;
+  transition: background-color .15s ease;
+
+  &:hover { background-color: $butter; }
+  &:focus-visible {
+    outline: none;
+    box-shadow: $focus-ring-double;
+  }
+}
+.co-summary-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  white-space: nowrap;
+
+  .bi { color: $candy; font-size: 1.125rem; }
+}
+.co-summary-toggle-total {
+  margin-left: auto;
+  color: $navy-muted;
+  font-size: .8125rem;
+  text-align: right;
+
+  .price {
+    margin-left: .25rem;
+    color: $navy;
+    font-size: 1.25rem;
+  }
+}
+.co-summary-toggle-icon {
+  flex: none;
+  transition: transform .2s ease;
+}
+.co-summary-toggle-btn:not(.collapsed) .co-summary-toggle-icon {
+  transform: rotate(180deg);
+}
+.co-summary-mobile {
+  padding-top: 1rem;
+}
+
+// 狀態示意（步驟列下方）
+.co-demo-first {
+  margin-top: 1.5rem;
+}
+.co-expired-alert {
+  margin: 1.5rem 0 0;
+}
+.co-expired-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1rem;
+
+  p { margin: 0; }
+}
+
+// ---------- 3. 主體 7 : 5 ----------
+.co-main {
+  margin-top: 1.5rem;
+  padding-bottom: $section-padding-y-sm;
+
+  @include media-breakpoint-up(lg) {
+    margin-top: 2.5rem;
+    padding-bottom: $section-padding-y-lg;
+  }
+}
+.co-form fieldset {
+  min-width: 0;
+}
+.co-section + .co-section {
+  margin-top: 2rem;
+}
+.co-card {
+  padding: 1.5rem 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 2rem 2rem 2.25rem;
+  }
+}
+.co-card-title {
+  margin-bottom: 1.25rem;
+  font-size: 1.5rem;
+
+  @include media-breakpoint-up(lg) { font-size: 1.75rem; }
+}
+.co-card-note {
+  display: flex;
+  gap: .375rem;
+  margin: 1rem 0 0;
+
+  .bi { color: $candy; }
+}
+.co-demo-inline {
+  margin-top: 1.5rem;
+}
+.co-realname-lead {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  font-weight: 700;
+}
+
+// 快速支付：3 顆海軍藍框大膠囊
+.co-quickpay {
+  margin-bottom: 1.75rem;
+  padding: 1.25rem;
+  border-radius: $border-radius-lg;
+  background-color: $cream;
+}
+.co-quickpay-lead {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: .875rem;
+  font-weight: 700;
+
+  .bi { color: $amber-text; }
+}
+.co-quickpay-btns {
+  display: grid;
+  gap: .75rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .btn {
+    min-height: 3.5rem;
+    border-width: 2px;
+    font-family: $font-family-display;
+    font-weight: 700;
+    letter-spacing: .01em;
+
+    .bi { font-size: 1.25rem; }
+  }
+}
+
+// 其他方式：圓角 radio 卡（選中＝海軍藍框＋奶油黃淡底；hover 只換框色）
+.co-methods {
+  display: grid;
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+}
+.co-methods-title {
+  margin-bottom: 0;
+  color: $navy-muted;
+  font-size: .875rem;
+  font-weight: 700;
+  letter-spacing: $letter-spacing-label;
+}
+.co-method {
+  border: 2px solid $control;
+  border-radius: $border-radius-lg;
+  background-color: $vanilla;
+  transition: border-color .15s ease, background-color .15s ease;
+
+  &:hover { border-color: $navy; }
+  &:has(.form-check-input:checked) {
+    border-color: $navy;
+    background-color: rgba($butter, .45);
+  }
+
+  .form-check {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    min-height: 3.5rem;
+    margin: 0;
+    padding: .5rem 1.25rem;
+  }
+  .form-check-input {
+    flex: none;
+    margin: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .form-check-label {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    flex: 1 1 auto;
+    font-weight: 700;
+
+    .bi { color: $candy; font-size: 1.125rem; }
+  }
+}
+.co-method-body {
+  padding: .25rem 1.25rem 1.25rem;
+}
+.co-method-note {
+  margin: -.5rem 0 0;
+  padding: 0 1.25rem .875rem 3.25rem;
+  color: $navy-muted;
+  font-size: .875rem;
+}
+.co-agree {
+  margin-bottom: 1.25rem;
+}
+// 確認付款：56px 糖果紅膠囊
+.co-pay {
+  min-height: 3.5rem;
+  font-size: 1.125rem;
+
+  .num { font-size: 1.25rem; }
+}
+.co-secure {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: .375rem;
+  margin: .875rem 0 0;
+  color: $navy-muted;
+  font-size: .875rem;
+  text-align: center;
+}
+.co-paying {
+  .co-paying-fields { margin-bottom: 1rem; }
+  .co-pay { white-space: normal; }
+}
+
+// 右欄：sticky 鋸齒收據（≥ 992px 步驟列一列 76px 高，sticky 時收據落在步驟列下方）
+.co-receipt-sticky {
+  position: sticky;
+  top: calc(#{$sticky-top-offset} + 5.75rem);
+}
+.co-receipt-event {
+  display: grid;
+  grid-template-columns: 5.25rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: .25rem;
+
+  .img-frame {
+    aspect-ratio: 84 / 62;
+    border-radius: $border-radius-sm;
+    box-shadow: 0 0 0 2px $navy;
+  }
+  p {
+    margin: 0;
+    color: $navy-muted;
+    font-size: .875rem;
+  }
+}
+.co-receipt-name {
+  margin-bottom: .125rem;
+  font-size: 1.125rem;
+}
+
+// ---------- 4. 付款結果 ----------
+.co-result .demo-state {
+  margin-top: 0;
+  background-color: rgba($cream, .7);
+
+  @include media-breakpoint-down(sm) { padding: 1.25rem .75rem; }
+}
+.co-result-panel {
+  padding: 1.5rem .75rem 1.75rem;
+  text-align: center;
+
+  @include media-breakpoint-up(md) { padding: 2rem 2rem 2.25rem; }
+
+  .demo-state-label { text-align: left; }
+}
+.co-result-icon {
+  margin-bottom: 1rem;
+}
+.co-result-title {
+  margin-bottom: .75rem;
+  font-size: 1.375rem;
+
+  @include media-breakpoint-up(lg) { font-size: 1.5rem; }
+}
+// 說明會換行：內文靠左、和左上的「付款成功時」小標同一條左緣（代幣、標題、按鈕維持置中）
+.co-result-text {
+  margin: 0 0 1.25rem;
+  text-align: start;
+  color: $navy-muted;
+
+  .num { color: $navy; }
+}
+.co-result-time {
+  padding: .0625rem .375rem;
+  border-radius: .375rem;
+  background-color: $danger-bg-subtle;
+  color: $berry !important;
+}
+.co-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .75rem;
+
+  @include media-breakpoint-down(sm) {
+    .btn { width: 100%; }
+  }
+}
+
+// 電子票券 Carousel：留出入場章壓出票緣與陰影的空間（.carousel-inner 會裁切）
+.co-tickets {
+  margin: 0 auto 1.5rem;
+
+  .carousel-item {
+    padding: .75rem 2.5rem 1.75rem;
+
+    @include media-breakpoint-down(sm) {
+      padding-inline: .75rem;
+    }
+  }
+}
+.co-tickets-count {
+  margin: 1rem 0 0;
+  color: $navy-muted;
+  font-size: .875rem;
+  font-weight: 700;
+}
+.co-tickets-nav {
+  display: flex;
+  justify-content: center;
+  gap: .75rem;
+}

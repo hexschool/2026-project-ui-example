@@ -1,6 +1,6 @@
 # _wireframe：活動票務主題的版型參考
 
-這個資料夾是 StageOne 城市現場的**資訊架構與版型依據**：3 套風格（`01-rave-style`、`02-salon-style`、`04-biennale-style`）的頁面組成、區塊順序、欄數與元件狀態都以這裡為準。
+這個資料夾是 StageOne 城市現場的**資訊架構與版型依據**：6 套風格（`01-rave-style`、`02-salon-style`、`03-esports-style`、`04-biennale-style`、`05-camping-style`、`06-carnival-style`）的頁面組成、區塊順序、欄數與元件狀態都以這裡為準。
 
 - 來源：Notion「03-活動票務主題：StageOne 城市現場」頁內附的 wireframe 檔（<https://app.notion.com/p/3ee6ab47eb4880dd867bf60f71ffcd95>，〈wireframe〉一節的 `index.html` 附件）
 - 下載日期：2026-10-06（Notion 頁最後編輯 2026-10-04）
@@ -36,7 +36,7 @@
 ```
 _wireframe/
 ├─ index.html          ← Notion 附件原檔（未修改，外部只引用 Bootstrap 5.3.3 CDN）
-├─ WIREFRAME_SPEC.md   ← 逐頁版型規格（3 套風格的實作依據，從這裡開始讀）
+├─ WIREFRAME_SPEC.md   ← 逐頁版型規格（6 套風格的實作依據，從這裡開始讀）
 ├─ README.md           ← 本檔
 └─ screenshots/        ← 1440px 寬全頁截圖，淺色模式（只有 wireframe 的 5 頁；2026-11 補的 5 頁沒有）
    ├─ guideline.png      guideline-notes.png

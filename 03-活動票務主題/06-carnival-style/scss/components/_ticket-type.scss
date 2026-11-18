@@ -1,0 +1,151 @@
+// ============================================================
+// 票種卡 TicketTypeCard：四角內凹的立體入場票（.admit），直列
+// 用在：活動細節「選擇票種」、購票卡狀態示意（無劃位的活動）、Guideline 的元件狀態
+//
+// <article class="admit tt-card" data-ticket-type aria-labelledby="ttPresale">   ← js/main.js #4 依數量切換 .is-selected
+//   <div class="admit-paper">
+//     <div class="tt-main">
+//       <div class="tt-head"><h3 class="tt-name" id="ttPresale">預售全票</h3>（標籤或星芒）</div>
+//       <p class="tt-price price">NT$ 1,500</p>
+//       <p class="tt-note">含限量螢光手環</p>
+//       <div class="remain">…</div>
+//     </div>
+//     <div class="tt-control">（數量加減器或狀態按鈕）</div>
+//   </div>
+//   <span class="tt-check" aria-hidden="true"><i class="bi bi-check-lg"></i></span>   ← 已選時出現在右上角的鮮黃代幣
+// </article>
+//
+// 5 種狀態：
+//   可購買（未選）  一般入場票
+//   .is-selected    已選（數量 ≥ 1）：票內 3px 海軍藍框＋右上一顆鮮黃代幣打勾
+//   即將完售        名稱旁一顆鮮黃星芒（火焰＋即將完售）＋糖果紅條紋進度條（.remain.is-scarce）
+//   .is-soldout     已售罄：票面灰化、名稱與價格刪除線、虛線框、按鈕停用「已售完」
+//   .is-upcoming    尚未開賣：天空藍虛線框、沒有數量加減器
+// ============================================================
+
+.tt-list {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tt-card {
+  .admit-paper {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1.5rem 1.375rem 1.375rem;
+    transition: background-color .2s ease;
+
+    @include media-breakpoint-up(sm) {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 1rem 1.5rem;
+      padding: 1.5rem 1.75rem;
+    }
+  }
+  .remain {
+    max-width: 22rem;
+    margin-top: .75rem;
+  }
+}
+.tt-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .75rem;
+  margin-bottom: .25rem;
+}
+.tt-name {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 900;
+  @include media-breakpoint-up(lg) { font-size: 1.375rem; }
+}
+.tt-price {
+  margin-bottom: .25rem;
+  color: $candy-deep;
+  font-size: 1.375rem;
+}
+.tt-note {
+  margin-bottom: 0;
+  color: $navy-muted;
+  font-size: .9375rem;
+}
+.tt-control {
+  display: flex;
+  justify-content: flex-end; // 手機：控制項在卡片下方、靠右
+
+  > .btn { min-width: 9.5rem; }
+}
+// 名稱旁的小星芒（即將完售）
+.tt-flag.starburst {
+  width: 3.875rem;
+  height: 3.875rem;
+  margin-block: -.75rem;
+
+  .starburst-inner {
+    font-size: .6875rem;
+    line-height: 1.15;
+    .bi { font-size: .875rem; }
+  }
+}
+
+// 已選：右上角的鮮黃代幣（放在 .admit 外層，不會被 mask 切掉；壓在內凹的角上）
+.tt-check {
+  position: absolute;
+  top: -.625rem;
+  right: -.625rem;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 2px solid $navy;
+  border-radius: 50%;
+  background-color: $sunny;
+  color: $navy;
+  font-size: 1.125rem;
+  box-shadow: inset 0 0 0 2px $sunny, inset 0 0 0 3.5px rgba($navy, .8), 0 3px 0 rgba($navy, .18);
+  visibility: hidden;
+}
+.tt-card.is-selected {
+  .admit-paper::before {
+    border: 3px solid $navy;
+  }
+  .tt-check { visibility: visible; }
+}
+
+// 已售罄：灰化＋刪除線＋虛線框（陰影降一階）
+.tt-card.is-soldout {
+  filter: $shadow-ticket-sm;
+
+  .admit-paper {
+    background-color: $ticket-faded;
+    color: $navy-faint;
+    &::before { border-color: rgba($navy-faint, .55); }
+  }
+  .tt-name,
+  .tt-price {
+    color: $navy-faint;
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+  }
+  .tt-note { color: $navy-faint; }
+}
+// 尚未開賣：天空藍虛線框
+.tt-card.is-upcoming .admit-paper::before {
+  border-color: rgba($sky, .65);
+}
+.tt-card.is-upcoming .tt-note { color: $sky; font-weight: 700; }
+
+// 縮小版（狀態示意的「無劃位的活動」）
+.tt-card.is-compact {
+  .admit-paper {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 1.375rem 1.25rem 1.25rem;
+  }
+  .tt-control { justify-content: flex-start; }
+}

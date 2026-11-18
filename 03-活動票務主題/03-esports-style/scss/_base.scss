@@ -1,0 +1,601 @@
+// ============================================================
+// 全站基礎：字體、字距、區塊節奏、焦點、共用小工具
+// 以及本風格的形狀語言：碳纖維紋、掃描線、L 形括角、平行四邊形、六角徽章、HUD 標題
+// ============================================================
+
+// 單一深色主題：讓瀏覽器原生的捲軸、日期選擇器、下拉選單清單也用深色
+:root {
+  color-scheme: dark;
+  accent-color: $arc;
+}
+
+body {
+  letter-spacing: $letter-spacing-body;
+  -webkit-font-smoothing: antialiased; // 深底淺字，不加會顯得太粗
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+// 標題：英數 Oxanium、中文 Noto Sans TC 700（字型由 $headings-font-family 設定）
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  letter-spacing: $letter-spacing-heading;
+  text-wrap: balance; // 標題多行時平均分配，避免最後一行只剩一兩個字
+}
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty; // 內文避免孤字
+}
+
+// sticky 頁首（懸浮 HUD 列）不遮住焦點與錨點目標
+html {
+  scroll-padding-top: $sticky-top-offset;
+}
+
+::selection {
+  background-color: $arc;
+  color: $void;
+}
+
+// 容器：左右留白 24px，≥ 992px 32px（.row 的負邊距仍在留白之內）；xxl 版心 1400px
+.container-xl {
+  @include media-breakpoint-up(lg) {
+    --bs-gutter-x: 4rem;
+  }
+}
+
+// ============================================================
+// 形狀語言 1：碳纖維紋（只鋪大面積：頁首、頁尾、Hero 左半遮罩、註冊右側面板、票券詳情的票券帶）
+// 不放在小字底下；紋路最亮的一條是 $weave-2 #1B2129，上面放鋼白 13.73:1、次要文字 7.43:1
+// ============================================================
+@mixin carbon-weave($base: $carbon) {
+  background-color: $base;
+  background-image:
+    linear-gradient(27deg, $weave-1 5px, transparent 5px),
+    linear-gradient(207deg, $weave-1 5px, transparent 5px),
+    linear-gradient(27deg, $weave-2 5px, transparent 5px),
+    linear-gradient(207deg, $weave-2 5px, transparent 5px),
+    linear-gradient(90deg, $weave-3 10px, transparent 10px),
+    linear-gradient($weave-4 25%, $weave-5 25% 50%, transparent 50% 75%, $weave-6 75%);
+  background-position: 0 5px, 10px 0, 0 10px, 10px 5px, 0 0, 0 0;
+  background-size: 20px 20px;
+}
+.carbon-weave {
+  @include carbon-weave;
+}
+
+// 掃描線：3px 間距、4% 透明的水平細線，疊在照片或碳纖維上（用偽元素或額外一層）
+@mixin scanlines-layer {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: $scanlines;
+}
+
+// ============================================================
+// 形狀語言 2：L 形括角（卡片與面板四角各一個 12px × 12px、2px 的 L）
+// 顏色由 --bracket 控制：平常 50% 透明金屬藍，hover／focus-within 變 100%（只改顏色，不改尺寸）
+// 用法：
+//   .hud-frame（加在任何 position 不是 static 的元素上，括角畫在 ::after）
+//   或 mixin：@include brackets-on(before);（元素的 ::after 另有用途時）
+// ============================================================
+@mixin bracket-layers($size: $bracket-size, $w: $bracket-weight) {
+  background:
+    linear-gradient(var(--bracket), var(--bracket)) left top / #{$size} #{$w} no-repeat,
+    linear-gradient(var(--bracket), var(--bracket)) left top / #{$w} #{$size} no-repeat,
+    linear-gradient(var(--bracket), var(--bracket)) right top / #{$size} #{$w} no-repeat,
+    linear-gradient(var(--bracket), var(--bracket)) right top / #{$w} #{$size} no-repeat,
+    linear-gradient(var(--bracket), var(--bracket)) left bottom / #{$size} #{$w} no-repeat,
+    linear-gradient(var(--bracket), var(--bracket)) left bottom / #{$w} #{$size} no-repeat,
+    linear-gradient(var(--bracket), var(--bracket)) right bottom / #{$size} #{$w} no-repeat,
+    linear-gradient(var(--bracket), var(--bracket)) right bottom / #{$w} #{$size} no-repeat;
+}
+@mixin brackets-on($pseudo: after, $inset: -1px) {
+  --bracket: #{$bracket-dim};
+  position: relative;
+
+  &::#{$pseudo} {
+    content: "";
+    position: absolute;
+    inset: $inset;
+    z-index: 1;
+    pointer-events: none;
+    @include bracket-layers;
+  }
+}
+.hud-frame {
+  @include brackets-on(after);
+}
+.hud-frame:is(:hover, :focus-within),
+.hud-frame.is-lit {
+  --bracket: #{$bracket-lit};
+}
+
+// 面板：碳纖維底＋1px 金屬漸層框＋四角括角（卡片、購票卡、訂單明細、入場保障…的底）
+// <div class="hud-panel">…</div>；在 .section-alt（碳纖維底的區塊）裡自動改成曜石灰底
+.hud-panel {
+  @include brackets-on(after);
+  padding: map-get($spacers, 4);
+  border: 1px solid $gunmetal;
+  border-image: $metal-edge 1;
+  background-color: $carbon;
+}
+.section-alt .hud-panel {
+  background-color: $obsidian;
+}
+
+// ============================================================
+// 形狀語言 3：平行四邊形（-12° 斜切）
+// 按鈕、狀態標籤、篩選膠囊、分頁、步驟段：::before 畫斜的底與框，文字不斜；焦點環畫在元素本身（矩形）
+// 顏色由 CSS 變數控制：--para-bg、--para-border、--para-shadow
+// $inset：斜邊會往左右各突出「高度 × 0.106」，高 44–48px 用預設 5px，高 56px 用 6px
+// ============================================================
+@mixin parallelogram($inset: .3125rem) {
+  position: relative;
+  isolation: isolate;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 $inset;
+    z-index: -1;
+    border: 1px solid var(--para-border, transparent);
+    background: var(--para-bg, transparent);
+    box-shadow: var(--para-shadow, none);
+    transform: skewX($skew);
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out, background-color .15s ease-in-out;
+  }
+}
+
+// ============================================================
+// 形狀語言 4：六角徽章（品牌、價值主張圖示、頭像、主辦方字母章、空狀態、驗票 ✓／✕）
+// <span class="hex" aria-hidden="true"><i class="bi bi-lightning-charge"></i></span>
+// .hex-lg（72 × 84）、.hex-sm（36 × 42）、.hex-solid（實心金屬藍）、.hex-mint／.hex-alert（成功、失敗）
+// ============================================================
+$hex-polygon: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+.hex {
+  --hex-edge: linear-gradient(160deg, #{$arc-hi}, #{$arc-deep});
+  --hex-fill: #{$carbon};
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 3rem;
+  height: 3.5rem;
+  color: $arc-hi;
+  font-size: 1.375rem;
+  line-height: 1;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    clip-path: $hex-polygon;
+  }
+  &::before {
+    inset: 0;
+    background: var(--hex-edge);
+  }
+  &::after {
+    inset: 2px;
+    background: var(--hex-fill);
+  }
+}
+.hex-sm {
+  width: 2.25rem;
+  height: 2.625rem;
+  font-size: 1rem;
+}
+.hex-lg {
+  width: 4.5rem;
+  height: 5.25rem;
+  font-size: 2rem;
+}
+.hex-solid {
+  --hex-fill: #{$arc};
+  color: $void;
+}
+.hex-mint {
+  --hex-edge: #{$mint};
+  --hex-fill: #{$mint};
+  color: $mint-ink;
+}
+.hex-alert {
+  --hex-edge: #{$alert};
+  --hex-fill: #{$alert};
+  color: $alert-ink;
+}
+// 六角框裡放照片（評價頭像）：<span class="hex hex-photo"><img …></span>
+.hex-photo {
+  &::after { display: none; }
+
+  img {
+    position: absolute;
+    inset: 2px;
+    width: calc(100% - 4px);
+    height: calc(100% - 4px);
+    object-fit: cover;
+    clip-path: $hex-polygon;
+  }
+}
+
+// ============================================================
+// HUD 標題：區塊上方一行 Notion 英文區塊名（只用 Notion 括號原文，aria-hidden），
+// H2 左側 4px × 1em 金屬藍短條，右側一條 1px 槍灰線延伸到容器邊（或延伸到右側動作）
+// <div class="hud-heading">
+//   <div class="hud-heading-main">
+//     <p class="hud-label" aria-hidden="true">Value Proposition</p>   ← 活動列表與 2026-11 補的 5 頁改用 <p class="hud-index" aria-hidden="true">01</p>
+//     <h2 class="hud-title">為什麼在 StageOne 買票比較安心？</h2>
+//     <p class="hud-sub">副標（選用）</p>
+//   </div>
+//   <div class="hud-heading-actions">右側連結或箭頭（選用）</div>
+// </div>
+// ============================================================
+.hud-label,
+.hud-index {
+  margin-bottom: map-get($spacers, 2);
+  color: $arc;
+  font-family: $font-family-display;
+  font-size: .75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: $letter-spacing-hud;
+  text-transform: uppercase;
+}
+.hud-index::before {
+  content: "// ";
+  color: $text-faint;
+}
+.hud-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: map-get($spacers, 3) map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 5);
+}
+.hud-heading-main {
+  flex: 1 1 22rem;
+  min-width: 0;
+}
+.hud-heading-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: map-get($spacers, 2);
+}
+.hud-title {
+  display: flex;
+  align-items: center;
+  gap: map-get($spacers, 3);
+  margin-bottom: 0;
+
+  // 左側短條（偽元素沒有內容，所以給固定高度；不能用 stretch 配 margin-block: auto，交叉軸的 auto margin 會讓 stretch 失效、高度變 0）
+  &::before {
+    content: "";
+    flex-shrink: 0;
+    align-self: center;
+    width: 4px;
+    height: 1.1em;
+    background: linear-gradient($arc-hi, $arc-deep);
+  }
+  // 右側延伸線
+  &::after {
+    content: "";
+    flex: 1 1 1.5rem;
+    min-width: 1.5rem;
+    height: 1px;
+    background: $gunmetal;
+  }
+}
+.hud-sub {
+  max-width: 40em;
+  margin: map-get($spacers, 2) 0 0;
+  padding-left: calc(4px + #{map-get($spacers, 3)}); // 和標題文字對齊（扣掉左側短條）
+  color: $text-muted;
+}
+
+// 數字讀數：價格、小數字、英數大字
+.font-display {
+  font-family: $font-family-display;
+}
+.price {
+  margin: 0;
+  font-family: $font-family-display;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .01em;
+}
+.num {
+  font-family: $font-family-display;
+  font-variant-numeric: tabular-nums;
+}
+.text-note {
+  color: $text-muted;
+  font-size: $small-font-size;
+  font-weight: 500;
+}
+
+// ---------- 區塊節奏：上下 56px（手機）／88px（桌機） ----------
+.section {
+  padding-block: $section-space-sm;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: $section-space-lg;
+  }
+}
+// 碳纖維底的滿寬帶（相鄰區塊用它分開；不鋪紋路，紋路只給頁首、頁尾等大面積）
+.section-alt {
+  background-color: $carbon;
+  border-block: 1px solid $gunmetal;
+}
+
+// 照片框：括角＋1px 槍灰框（主視覺、縮圖）
+// <div class="img-frame hud-frame ratio ratio-16x9"><img …></div>
+.img-frame {
+  overflow: hidden;
+  border: 1px solid $gunmetal;
+  background-color: $carbon-hi;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// ---------- 連結 ----------
+a:not([class]) {
+  text-underline-offset: $link-underline-offset;
+}
+
+// ---------- 表單 ----------
+.form-control,
+.form-select {
+  min-height: 3rem;
+}
+.form-control:-webkit-autofill {
+  -webkit-text-fill-color: $text;
+  -webkit-box-shadow: 0 0 0 100px $carbon-hi inset;
+}
+.invalid-feedback {
+  font-weight: 500;
+}
+.form-check {
+  min-height: 1.75rem;
+}
+.form-check-input {
+  cursor: pointer;
+}
+
+// ---------- 麵包屑 ----------
+.breadcrumb {
+  font-family: $font-family-display;
+  letter-spacing: .04em;
+}
+.breadcrumb a {
+  color: $text-muted;
+  text-decoration: none;
+
+  &:hover {
+    color: $arc-hi;
+    text-decoration: underline;
+    text-underline-offset: $link-underline-offset;
+  }
+}
+
+// ---------- 提示框 ----------
+.alert {
+  border-left-width: 4px;
+}
+// 圖示＋說明＋按鈕的提示框（選位衝突、逾時、付款失敗）
+// <div class="alert alert-warning alert-action" role="alert">
+//   <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+//   <p>A 區 12 排 7 號剛剛被買走了，請重新選擇座位。</p>
+//   <button class="btn btn-secondary btn-sm" type="button">重新選位</button>
+// </div>
+.alert-action {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: .75rem;
+
+  > .bi { align-self: start; margin-top: .2em; }
+  > p { margin: 0; }
+  > .btn { grid-column: 2; justify-self: start; }
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: auto 1fr auto;
+
+    > .btn { grid-column: auto; }
+  }
+}
+
+// ---------- 鍵盤焦點 ----------
+// 2px 亮端藍外框，外推 2px，外圍一圈金屬藍光暈。平行四邊形按鈕的焦點環也畫在元素本身（矩形），不會被斜邊切掉
+:focus-visible {
+  outline: 2px solid $arc-hi;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba($arc, .35);
+}
+.offcanvas:focus-visible,
+.modal:focus-visible,
+[tabindex="-1"]:focus {
+  outline: 0;
+  box-shadow: none;
+}
+// 表單控制項由 Bootstrap 的 box-shadow 畫焦點，不再疊一層 outline
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible,
+.btn-close:focus-visible {
+  outline: none;
+}
+
+// 跳至主要內容：出現在懸浮 HUD 列上方
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: $zindex-modal + 10;
+  padding: .625rem 1.25rem;
+  background: $arc;
+  color: $void;
+  font-weight: 700;
+  text-decoration: none;
+
+  &:focus { top: .5rem; }
+}
+
+// ---------- 頁首區塊（活動列表、會員中心、Guideline 共用） ----------
+// <header class="page-header">
+//   <nav aria-label="目前位置"><ol class="breadcrumb">…</ol></nav>
+//   <h1>頁面標題</h1>
+//   <p class="page-lead">一句說明</p>
+// </header>
+.page-header {
+  padding-block: map-get($spacers, 4) map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 4) map-get($spacers, 6);
+  }
+
+  .breadcrumb {
+    margin-bottom: map-get($spacers, 4);
+  }
+  h1,
+  .h1 {
+    margin-bottom: map-get($spacers, 2);
+  }
+}
+.page-lead {
+  max-width: 40em;
+  margin-bottom: 0;
+  color: $text-muted;
+  font-size: $lead-font-size;
+  line-height: 1.7;
+}
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、標點與 <wbr> 處換行，「Zepp New Taipei」「午夜噪音祭」這類詞組不會被拆開
+// 用在活動名、短標題；長段落不要用
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 手機滿版橫向捲動列 ----------
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+  }
+}
+.bleed-x {
+  @include bleed-x;
+}
+
+// ---------- 斜線紋：售罄、逾時、不可選、活動已取消共用的「不能用」紋理 ----------
+@mixin hatch($color: rgba($text, .07), $gap: 8px) {
+  background-image: repeating-linear-gradient(-45deg, $color 0 2px, transparent 2px $gap);
+}
+
+// ---------- 設計稿狀態示意 ----------
+// 頁面上示範「另一種狀態」的畫面：虛線框＋淡斜紋＋「設計稿狀態示意」標籤，一看就知道不是正式內容
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag">設計稿狀態示意</p>
+//   <h2 id="…" class="demo-state-title">篩選後沒有活動時</h2>
+//   <p class="text-note">什麼情況下出現</p>
+//   <div class="demo-state-stage">…示意畫面…</div>
+// </section>
+.demo-state {
+  margin-top: map-get($spacers, 5);
+  padding: map-get($spacers, 4);
+  border: 1px dashed $control;
+  background-image: repeating-linear-gradient(-45deg, rgba($text, .025) 0 1px, transparent 1px 12px);
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 5);
+  }
+  > .text-note {
+    margin-bottom: map-get($spacers, 4);
+  }
+}
+.demo-state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: map-get($spacers, 2);
+  padding: .125rem .625rem;
+  border: 1px dashed $control;
+  color: $text-muted;
+  font-size: .75rem;
+  letter-spacing: .04em;
+
+  &::before {
+    content: "\F4CA"; // bi-pencil-square 的字碼：設計稿標記
+    font-family: bootstrap-icons;
+  }
+}
+.demo-state-title {
+  margin-bottom: map-get($spacers, 1);
+  font-family: $font-family-base;
+  font-size: $font-size-lg;
+  font-weight: 700;
+  letter-spacing: $letter-spacing-body;
+}
+// 狀態示意裡每一格的小標（多個狀態並排時）
+.demo-state-label {
+  margin-bottom: map-get($spacers, 2);
+  color: $text-muted;
+  font-size: $small-font-size;
+  font-weight: 500;
+}
+
+// ---------- 空狀態 ----------
+// 六角框圖示＋標題＋說明＋一個動作，置中
+// <div class="empty-state">
+//   <span class="hex hex-lg empty-state-icon" aria-hidden="true"><i class="bi bi-calendar-x"></i></span>
+//   <h3>這個條件下目前沒有活動</h3>
+//   <p>試著放寬日期或地區範圍。</p>
+//   <button class="btn btn-primary" type="button">清除篩選</button>
+// </div>
+.empty-state {
+  padding-block: map-get($spacers, 5);
+  text-align: center;
+
+  h3 { margin-bottom: map-get($spacers, 2); }
+  p {
+    max-width: 30em;
+    margin: 0 auto map-get($spacers, 4);
+    color: $text-muted;
+  }
+}
+.empty-state-icon {
+  margin-bottom: map-get($spacers, 3);
+}
+
+// ---------- 減少動態 ----------
+// 系統設定「減少動態」時：按鈕掃光、環形倒數刻度、QR 掃描線、票券顯影、轉場全部停止
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation: none !important;
+  }
+}
+
+// 同色相鄰區塊之間的 1px 槍灰分隔線
+.section-rule {
+  border-top: 1px solid $gunmetal;
+}

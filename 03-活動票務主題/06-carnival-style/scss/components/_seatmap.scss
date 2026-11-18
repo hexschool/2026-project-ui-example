@@ -1,0 +1,265 @@
+// ============================================================
+// 座位圖 SeatMap：香草大卡（圓角 28px）＋紅白條紋帳篷頂的舞台＋30px 圓形座位
+// 用在：活動細節「選擇座位」、選位衝突的狀態示意、Guideline 的元件狀態
+//
+// 座位 4 種樣式不只靠顏色：
+//   .seat                      可選：香草＋2px 海軍藍框（hover 鋪奶油黃）
+//   .seat[aria-pressed="true"]、.seat.is-selected   已選：糖果紅實心＋白勾
+//   .seat.is-sold              已售出：米灰底＋✕（disabled）
+//   .seat.is-blocked           不可選：點點紋＋虛線框（disabled）
+// 每個座位是 <button type="button">，aria-label「A 區 12 排 7 號，已選」；js/main.js #5 處理點選
+// < md 座位圖在卡片內水平捲動（.seatmap-scroll，可用鍵盤聚焦後左右捲）
+// ============================================================
+
+.seatmap {
+  --bs-heading-color: #{$navy};
+  padding: 1.5rem 1.25rem;
+  border-radius: $border-radius-xl;
+  background-color: $vanilla;
+  color: $navy;
+  box-shadow: $shadow-soft;
+
+  @include media-breakpoint-up(md) {
+    padding: 2rem 2rem 1.75rem;
+  }
+}
+.seatmap-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1.25rem;
+  margin-bottom: .75rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 900;
+    @include media-breakpoint-up(lg) { font-size: 1.375rem; }
+  }
+}
+// 鎖位倒數：鮮黃膠囊（2px 海軍藍框）＋時鐘；09:58 是等寬數字
+.seat-lock {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  padding: .4375rem 1rem .4375rem .75rem;
+  border: 2px solid $navy;
+  border-radius: 1.375rem;
+  background-color: $sunny;
+  color: $navy;
+  font-size: .875rem;
+  font-weight: 700;
+  line-height: 1.5;
+  box-shadow: inset 0 -3px 0 rgba($navy, .12);
+
+  > .bi { flex: none; font-size: 1rem; }
+  .num { font-size: 1.0625rem; font-weight: 800; }
+}
+.seatmap-hint {
+  margin-bottom: 1.25rem;
+  color: $navy-muted;
+  font-size: .9375rem;
+}
+
+.seatmap-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  margin-inline: -.25rem;
+  padding: .25rem .25rem .75rem;
+  border-radius: $border-radius;
+  scrollbar-color: $control transparent;
+
+  &:focus-visible {
+    outline: 3px solid $navy;
+    outline-offset: 2px;
+  }
+}
+// 寬度剛好包住座位；放得下時置中，放不下時從左邊開始捲
+.seatmap-canvas {
+  width: max-content;
+  margin-inline: auto;
+}
+
+// 舞台：紅白條紋的帳篷頂＋海軍藍舞台台口（「舞台」）＋扇形垂邊
+.seatmap-stage {
+  position: relative;
+  width: 20rem;
+  margin: 0 auto 1.75rem;
+  padding-top: 2.5rem;
+  text-align: center;
+
+  // 帳篷頂：半橢圓、紅白直條紋、2px 海軍藍框
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 1.25rem;
+    right: 1.25rem;
+    height: 2.625rem;
+    border: 2px solid $navy;
+    border-bottom: 0;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    background: repeating-linear-gradient(90deg, $candy-bright 0 1.25rem, $vanilla 1.25rem 2.5rem);
+  }
+  // 頂端的小旗
+  &::after {
+    content: "";
+    position: absolute;
+    top: -.875rem;
+    left: 50%;
+    width: .875rem;
+    height: .875rem;
+    margin-left: -.4375rem;
+    border: 2px solid $navy;
+    border-radius: 50%;
+    background-color: $sunny;
+  }
+
+  span {
+    position: relative;
+    display: block;
+    padding: .375rem 1rem .4375rem;
+    border-radius: .75rem;
+    background-color: $navy;
+    color: $cream;
+    font-size: .9375rem;
+    font-weight: 900;
+    letter-spacing: .3em;
+  }
+}
+.seatmap-zone {
+  margin-bottom: .75rem;
+  color: $navy-muted;
+  font-size: .8125rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.seat-row,
+.seat-numbers {
+  display: flex;
+  align-items: center;
+  gap: $seat-gap;
+}
+.seat-row + .seat-row { margin-top: $seat-gap + .125rem; }
+.seat-row-label {
+  flex: none;
+  width: 2.75rem;
+  color: $navy-muted;
+  font-family: $font-family-display;
+  font-size: .8125rem;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+.seat-numbers {
+  margin-top: .5rem;
+  padding-inline: calc(2.75rem + #{$seat-gap});
+
+  span {
+    flex: none;
+    width: $seat-size;
+    color: $navy-faint;
+    font-family: $font-family-display;
+    font-size: .6875rem;
+    font-weight: 700;
+    text-align: center;
+  }
+}
+
+.seat {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: $seat-size;
+  height: $seat-size;
+  padding: 0;
+  border: 2px solid $navy;
+  border-radius: 50%;
+  background-color: $vanilla;
+  color: $navy;
+  font-size: .875rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease;
+
+  &::before {
+    font-family: bootstrap-icons;
+    font-weight: 400;
+  }
+
+  &:not(:disabled):hover { background-color: $butter; }
+  &:focus-visible {
+    outline: 3px solid $navy;
+    outline-offset: 2px;
+  }
+
+  // 已選：糖果紅實心＋白勾
+  &[aria-pressed="true"],
+  &.is-selected {
+    border-color: $candy-deep;
+    background-color: $candy;
+    color: $white;
+    box-shadow: inset 0 -3px 0 rgba($navy, .22);
+    &::before { content: "\F633"; } // bi-check-lg
+    &:not(:disabled):hover { background-color: $candy-deep; }
+  }
+  // 已售出：米灰底＋✕
+  &.is-sold {
+    border-color: $control;
+    background-color: $seat-sold;
+    color: $navy-faint;
+    cursor: not-allowed;
+    &::before { content: "\F659"; font-size: .75rem; } // bi-x-lg
+  }
+  // 不可選：點點紋＋虛線框
+  &.is-blocked {
+    border-style: dashed;
+    border-color: $navy-faint;
+    background:
+      radial-gradient(circle, rgba($navy, .45) 0 1px, transparent 1.5px) 0 0 / 5px 5px,
+      $vanilla;
+    cursor: not-allowed;
+  }
+}
+
+// 圖例
+.seat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .625rem 1.5rem;
+  margin: 1.25rem 0 0;
+  padding: 1rem 0 0;
+  border-top: 2px dashed rgba($navy, .14);
+  list-style: none;
+  color: $navy-muted;
+  font-size: .875rem;
+  font-weight: 700;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .seat {
+    width: 1.375rem;
+    height: 1.375rem;
+    font-size: .6875rem;
+    cursor: default;
+    &.is-sold::before { font-size: .5625rem; }
+  }
+}
+.seatmap-picked {
+  margin: 1rem 0 0;
+  font-weight: 700;
+  text-align: center;
+
+  strong {
+    font-weight: 900;
+    color: $candy-deep;
+  }
+}

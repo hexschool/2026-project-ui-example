@@ -1,0 +1,491 @@
+// ============================================================
+// 購票紀錄 orders.html（class 前綴 od-）
+// 構圖（和其他 5 套的訂單卡、收據、日誌不同：唯一用「表格列＋收合明細」的）：
+// 1. 頁首區：麵包屑 → H1 → 說明，右側「共 6 筆訂單」讀數（components/_member.scss）
+// 2. 戰績列表 #orders（.od-board）：滿寬一筆一列，像遊戲的對戰紀錄表
+//    - 永遠看得到的一列（.od-line）：訂單編號＋下單時間｜縮圖＋活動｜狀態｜總額（列內最大的數字）｜按鈕＋「查看明細」
+//      訂單編號、狀態、總額一律常駐，不收進明細
+//    - 版面依「列表本身的寬度」切換（container query，所以狀態示意裡比較窄的列表也會自動換成兩層）：
+//      寬 ≥ 80rem 一層 5 欄（每欄固定寬，6 列上下對齊）；48–80rem 兩層（狀態在編號下方、按鈕在活動下方）；
+//      < 48rem 卡片式（編號＋狀態 → 活動 → 總額 → 按鈕）
+//    - 說明文字（已退款、付款失敗）在這一列下方常駐；票種明細、平台服務費、付款方式、電子發票在 Collapse（第一筆預設展開）
+//    - 列左側 3px 狀態色條（已付款薄荷、付款失敗警報紅、已退款槍灰、退款處理中金屬藍）；滑過整列只換底色
+// 3. 退票申請 #refund：滿寬面板 5 : 7（左：訂單、退票規則、要退的票券、原因｜右：退款試算 3 列讀數＋送出）
+// 4. 設計稿狀態示意：還沒有購票紀錄（4）｜退款處理中（8）
+// 本頁沒有 Notion 英文區塊名，所以不放 HUD 英文標，只用 Oxanium 編號 // 01、// 02
+// ============================================================
+
+// ---------- 2. 戰績列表 ----------
+.od-index {
+  margin-bottom: .75rem;
+}
+.od-board {
+  container: od-board / inline-size;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.od-row {
+  --od-strip: #{$mint};
+  position: relative;
+  transition: background-color .15s ease-in-out;
+
+  + .od-row { border-top: 1px solid $gunmetal; }
+
+  // 左側狀態色條
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background-color: var(--od-strip);
+  }
+  &:hover { background-color: $carbon-hi; }
+
+  &.is-failed { --od-strip: #{$alert}; }
+  &.is-refunded { --od-strip: #{$control}; }
+  &.is-refunding { --od-strip: #{$arc}; }
+}
+.od-item {
+  padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+
+  @container od-board (min-width: 48rem) {
+    padding: 1.5rem 1.75rem 1.5rem 2rem;
+  }
+}
+
+// 永遠看得到的一列
+.od-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "id status"
+    "event event"
+    "total total"
+    "actions actions";
+  gap: 1rem;
+  align-items: center;
+
+  // 很窄（手機上的狀態示意）：訂單編號放不下狀態標籤，標籤換到下一行
+  @container od-board (max-width: 20rem) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "id" "status" "event" "total" "actions";
+    gap: .75rem;
+  }
+  // 兩層：狀態標籤移到訂單編號下方，按鈕在活動下方
+  @container od-board (min-width: 48rem) {
+    grid-template-columns: 12rem minmax(0, 1fr) 9.5rem;
+    grid-template-areas:
+      "id event total"
+      "status actions actions";
+    gap: 1rem 1.5rem;
+  }
+  // 一層：每一欄固定寬（按鈕欄也是），6 列的狀態、總額上下對齊，像一張紀錄表
+  @container od-board (min-width: 80rem) {
+    grid-template-columns: 13rem minmax(0, 1fr) 8.5rem 9.5rem 23rem;
+    grid-template-areas: "id event status total actions";
+  }
+}
+.od-label {
+  display: block;
+  margin: 0 0 .25rem;
+  color: $text-muted;
+  font-size: .75rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+}
+.od-id {
+  grid-area: id;
+  margin: 0;
+}
+.od-no {
+  display: block;
+  color: $text;
+  font-family: $font-family-display;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  font-variant-numeric: tabular-nums;
+}
+.od-time {
+  display: block;
+  margin-top: .375rem;
+  color: $text-muted;
+  font-size: .8125rem;
+
+  .od-label { display: inline; margin-right: .375rem; }
+}
+.od-event {
+  display: flex;
+  grid-area: event;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+.od-thumb {
+  flex-shrink: 0;
+  width: 5.5rem;
+  aspect-ratio: 4 / 3;
+
+  @container od-board (max-width: 20rem) {
+    width: 4.5rem;
+  }
+}
+.od-event-body {
+  min-width: 0;
+
+  p {
+    margin: 0;
+    color: $text-muted;
+    font-size: .875rem;
+    line-height: 1.6;
+  }
+}
+.od-title {
+  margin-bottom: .25rem;
+  font-family: $font-family-display;
+  font-size: 1.0625rem;
+  line-height: 1.4;
+}
+.od-status {
+  grid-area: status;
+  margin: 0;
+  justify-self: end;
+
+  @container od-board (max-width: 20rem) {
+    justify-self: start;
+  }
+
+  @container od-board (min-width: 48rem) {
+    justify-self: start;
+  }
+}
+.od-total {
+  display: flex;
+  grid-area: total;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  padding-top: .75rem;
+  border-top: 1px dashed $gunmetal;
+
+  .od-label { margin: 0; }
+  .price { font-size: 1.5rem; }
+
+  @container od-board (min-width: 48rem) {
+    display: block;
+    padding: 0;
+    border: 0;
+    text-align: right;
+
+    .od-label { margin-bottom: .375rem; }
+  }
+}
+.od-actions {
+  display: flex;
+  flex-wrap: wrap;
+  grid-area: actions;
+  align-items: center;
+  gap: .5rem;
+
+  @container od-board (max-width: 30rem) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  @container od-board (min-width: 80rem) {
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+  }
+}
+.od-toggle {
+  --bs-btn-color: #{$arc};
+  --bs-btn-hover-color: #{$arc-hi};
+  --bs-btn-active-color: #{$arc-hi};
+  font-weight: 700;
+
+  &[aria-expanded="true"] .bi { transform: rotate(180deg); } // 展開後箭頭朝上（不做轉場）
+}
+
+// 說明文字（常駐）：對齊活動欄
+.od-msg,
+.od-alert {
+  margin: 1rem 0 0;
+
+  @container od-board (min-width: 48rem) {
+    margin-left: calc(12rem + 1.5rem);
+  }
+  @container od-board (min-width: 80rem) {
+    margin-left: calc(13rem + 1.5rem);
+  }
+}
+.od-msg {
+  display: flex;
+  gap: .5rem;
+  color: $text-muted;
+  font-size: .9375rem;
+  line-height: 1.6;
+
+  .bi { flex-shrink: 0; }
+}
+.od-row.is-failed .od-msg { color: $alert-text; }
+.od-alert {
+  font-size: .9375rem;
+}
+
+// 收合的明細
+.od-detail-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem 2rem;
+  margin-top: 1rem;
+  padding: 1.25rem;
+  border: 1px solid $gunmetal;
+  background-color: $obsidian;
+
+  @container od-board (min-width: 48rem) {
+    margin-left: calc(12rem + 1.5rem);
+  }
+  @container od-board (min-width: 64rem) {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+  @container od-board (min-width: 80rem) {
+    margin-left: calc(13rem + 1.5rem);
+  }
+
+  .od-label { margin-bottom: .625rem; }
+  .order-summary-rows .price { font-size: 1rem; }
+}
+.od-fee {
+  padding-top: .75rem;
+  border-top: 1px dashed $gunmetal;
+  color: $text-muted;
+
+  .price { color: $text; }
+}
+.od-detail-meta {
+  display: grid;
+  gap: .875rem;
+  align-content: start;
+  margin: 0;
+
+  @container od-board (min-width: 64rem) {
+    padding-left: 2rem;
+    border-left: 1px solid $gunmetal;
+  }
+
+  dt {
+    margin-bottom: .125rem;
+    color: $text-muted;
+    font-size: .75rem;
+    font-weight: 500;
+    letter-spacing: .08em;
+  }
+  dd {
+    margin: 0;
+    font-size: .9375rem;
+
+    .price { font-size: 1rem; }
+  }
+}
+.od-download {
+  --bs-btn-color: #{$arc};
+  --bs-btn-hover-color: #{$arc-hi};
+  --bs-btn-padding-x: .5rem;
+  margin-block: -.5rem; // 44px 觸控高度，不撐高這一行
+  margin-left: .25rem;
+}
+
+// ---------- 3. 退票申請 ----------
+.od-refund-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 0;
+
+  // 992–1199px 先 1 : 1，左欄才放得下訂單下拉的完整文字；≥ 1200px 5 : 7
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+}
+.od-refund-form,
+.od-quote {
+  padding: 1.5rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 2rem;
+  }
+  @include media-breakpoint-up(xl) {
+    padding: 2.5rem;
+  }
+}
+.od-quote {
+  border-top: 1px solid $gunmetal;
+
+  @include media-breakpoint-up(lg) {
+    border-top: 0;
+    border-left: 1px solid $gunmetal;
+  }
+}
+.od-field {
+  min-width: 0;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  border: 0;
+}
+.od-rule {
+  margin-bottom: 1.5rem;
+  padding: .875rem 1rem;
+  border-left: 3px solid $arc;
+  background-color: $arc-tint;
+  font-size: .9375rem;
+  line-height: 1.7;
+}
+.od-rule-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .25rem;
+  font-weight: 700;
+
+  .bi { color: $arc-hi; }
+}
+// 要退的票券：整列可點，勾選時整列金屬藍框＋淡底（只換顏色）
+.od-picks {
+  display: grid;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.od-pick {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid $gunmetal;
+  background-color: $obsidian;
+  transition: border-color .15s ease-in-out, background-color .15s ease-in-out;
+
+  .form-check-input {
+    position: absolute;
+    top: 50%;
+    left: 1rem;
+    margin: 0;
+    transform: translateY(-50%);
+  }
+  label {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .125rem .75rem;
+    min-height: 3.5rem;
+    padding: .75rem 1rem .75rem 3rem;
+    cursor: pointer;
+  }
+  .price {
+    margin-left: auto;
+    font-size: 1rem;
+  }
+  &:hover { border-color: $control; }
+  &:has(:checked) {
+    border-color: $arc;
+    background-color: $arc-tint;
+  }
+}
+.od-pick-no {
+  font-family: $font-family-display;
+  font-weight: 700;
+  letter-spacing: .06em;
+}
+.od-pick-type {
+  color: $text-muted;
+  font-size: .9375rem;
+}
+
+// 退款試算：三格讀數
+.od-quote {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.od-quote-title {
+  margin: 0;
+  font-family: $font-family-base;
+  font-size: 1.25rem;
+}
+.od-quote-cells {
+  display: grid;
+  gap: .5rem;
+  margin: 0;
+
+  // 一列一個讀數：左標籤、右 Oxanium 數字（像計分板）
+  > div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .25rem 1rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid $gunmetal;
+    background-color: $obsidian;
+
+    @include media-breakpoint-up(md) {
+      padding: 1.125rem 1.5rem;
+    }
+  }
+  dt {
+    color: $text-muted;
+    font-size: .9375rem;
+    font-weight: 500;
+  }
+  dd {
+    margin: 0;
+    font-size: 1.375rem;
+  }
+}
+.od-quote-cells > .od-quote-total {
+  @include brackets-on(after, -1px);
+  --bracket: #{$mint};
+  border-color: rgba($mint, .55);
+  background-color: $mint-tint;
+
+  align-items: center;
+  padding-block: 1.25rem;
+
+  dt { color: $mint; font-weight: 700; }
+  dd {
+    color: $mint;
+    font-size: 2.5rem; // 預估退款：Oxanium 40px 薄荷色
+  }
+}
+.od-quote-note {
+  display: flex;
+  gap: .5rem;
+  margin: 0;
+  color: $text-muted;
+  font-size: .875rem;
+  line-height: 1.7;
+
+  .bi { flex-shrink: 0; color: $arc; }
+}
+.od-quote-submit {
+  width: 100%;
+
+  @include media-breakpoint-up(md) {
+    width: auto;
+    min-width: 18rem;
+    align-self: flex-start;
+  }
+}
+// 小字直接接在「送出退票申請」下方（不推到欄底，左欄較高時才不會在按鈕下空一大塊）
+.od-quote-safe {
+  margin-top: 0;
+}
+
+// ---------- 4. 設計稿狀態示意 ----------
+.od-board-demo .od-row:hover {
+  background-color: transparent;
+}

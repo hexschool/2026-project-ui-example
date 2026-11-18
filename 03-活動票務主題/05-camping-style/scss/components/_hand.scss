@@ -1,0 +1,297 @@
+// ============================================================
+// 手繪語言（本風格的招牌）：手繪圖示、區塊標題的劃線、等高線、波浪分隔、
+// 山稜線、步道虛線、手繪勾選圈
+//
+// 手繪圖示一律是 images/hand-*.svg，用 <img alt=""> 引用（file:// 下 <use href="外部檔#id"> 會被擋）
+// 線條統一 2.25px（SVG 裡 vector-effect="non-scaling-stroke"，任何尺寸都一樣粗）
+// 麻繩、鉚釘、等高線、山稜線都是裝飾：aria-hidden、pointer-events: none
+// ============================================================
+
+// ---------- 手繪圖示 ----------
+// <img class="hand-icon" src="images/hand-tent.svg" alt="" width="32" height="32">
+// 尺寸用 --hand-size 調（預設 32px）
+.hand-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--hand-size, 2rem);
+  height: var(--hand-size, 2rem);
+  vertical-align: middle;
+}
+
+// 手繪圖示放在帆布圓裡（價值主張 72px、空狀態）
+// <span class="hand-badge"><img class="hand-icon" src="images/hand-map-pin.svg" alt="" width="72" height="72"></span>
+.hand-badge {
+  --hand-size: 4.5rem;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 7.25rem;
+  height: 7.25rem;
+  border: 1.5px solid $bark;
+  border-radius: 50%;
+  background-color: $canvas;
+  outline: 2px dashed $stitch-color;
+  outline-offset: -8px;
+}
+
+// ---------- 區塊標題（田野筆記）----------
+// 左對齊：前面一個 32px 手繪圖示、H2 芫荽、下方 120px 橘色手繪劃線；副標 Noto 次要色
+// <div class="section-heading">
+//   <div class="section-heading-main">
+//     <h2 class="hand-title"><img class="hand-icon" src="images/hand-compass.svg" alt="" width="32" height="32">標題</h2>
+//     <p>副標（選用）</p>
+//   </div>
+//   <a class="btn btn-text" href="…">右側動作（選用）</a>
+// </div>
+.section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: map-get($spacers, 3) map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 6);
+
+  p {
+    max-width: 34em;
+    margin: map-get($spacers, 3) 0 0;
+    color: var(--bs-secondary-color);
+  }
+}
+.section-heading-main { min-width: 0; }
+
+.hand-title {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: .75rem;
+  align-items: center;
+  margin-bottom: 0;
+
+  > .hand-icon {
+    --hand-size: 1.75rem;
+    @include media-breakpoint-up(lg) { --hand-size: 2rem; }
+  }
+  // 橘色手繪劃線：在文字下方（第 2 欄），寬 120px
+  &::after {
+    content: "";
+    grid-column: 2;
+    display: block;
+    width: 7.5rem;
+    max-width: 100%;
+    height: .625rem;
+    margin-top: .25rem;
+    background: $hand-underline center / 100% 100% no-repeat;
+  }
+}
+// 沒有圖示的版本（只有劃線）
+.hand-title-plain {
+  grid-template-columns: minmax(0, 1fr);
+  &::after { grid-column: 1; }
+}
+
+// 行內的手繪劃線（目前頁導覽、強調字）
+.hand-underline {
+  padding-bottom: .375rem;
+  background: $hand-underline left bottom / 100% .5rem no-repeat;
+}
+
+// ---------- 等高線、波浪、山稜線 ----------
+.bg-contours {
+  background-image: $contours;
+  background-repeat: repeat;
+  background-size: 560px 360px;
+}
+.on-night.bg-contours,
+.bg-contours-light {
+  background-image: $contours-light;
+  background-size: 560px 360px;
+}
+
+// 手繪波浪分隔線（取代 1px 直線的 <hr>）
+// <hr class="wave-rule"> 或 <div class="wave-rule" aria-hidden="true"></div>
+.wave-rule {
+  height: .5rem;
+  margin: map-get($spacers, 4) 0;
+  border: 0;
+  background: $wave-line left center / $wave-tile repeat-x;
+  opacity: 1;
+}
+.wave-rule-faint { background-image: $wave-line-faint; }
+
+// 帆布色帶的上下緣：手繪波浪（上下各 10px 蓋進相鄰區塊）
+// <section class="section band-canvas">…</section>
+.band-canvas {
+  position: relative;
+  background-color: $canvas;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: $site-header-wave;
+    pointer-events: none;
+    background: $wave-header left top / 480px 100% repeat-x;
+  }
+  &::before { top: -$site-header-wave; transform: scaleY(-1); }
+  &::after { bottom: -$site-header-wave; }
+}
+
+// 山稜線：放在區塊底部（填泥灰，像地面）或頂部（照片變成一排山）
+// <div class="ridge ridge-bottom" aria-hidden="true"></div>
+.ridge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  height: 3rem;
+  pointer-events: none;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+.ridge-bottom { bottom: -1px; background-image: $ridge-mud; }
+.ridge-top    { top: -1px;    background-image: $ridge-mud-top; }
+
+// ---------- 步道虛線（直向）：活動列表時間軸、購票紀錄旅程日誌、Guideline 目錄 ----------
+// <ol class="trail">…每一站一個 <li>（不另加 class）…</li></ol>
+// 左緣一條橘色手繪虛線；每一站左側可放 .date-flag（插在步道上）
+.trail {
+  --trail-x: 1.25rem; // 步道線離左緣的距離
+  position: relative;
+  margin: 0;
+  padding: 0 0 0 calc(var(--trail-x) + 2rem);
+  list-style: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: .5rem;
+    bottom: .5rem;
+    left: var(--trail-x);
+    width: 3px;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(to bottom, $flare 0 8px, transparent 8px 16px);
+    border-radius: 2px;
+  }
+}
+
+// ---------- 日期旗：插在步道上的牛皮紙小旗（Zilla Slab「10/04」，裝飾，aria-hidden） ----------
+// <span class="date-flag" aria-hidden="true">10/04</span>
+.date-flag {
+  display: inline-flex;
+  align-items: center;
+  height: 1.875rem;
+  padding: 0 1.25rem 0 .625rem;
+  border: 1.5px solid $bark;
+  border-right: 0;
+  background: $kraft;
+  color: $bark;
+  font-family: $font-family-slab;
+  font-size: .9375rem;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  // 燕尾：右端剪出一個三角缺口
+  clip-path: polygon(0 0, 100% 0, calc(100% - .625rem) 50%, 100% 100%, 0 100%);
+  pointer-events: none;
+}
+
+// ---------- 手繪勾選圈（裝備清單、打包清單步驟、背包清單） ----------
+// <span class="check-mark is-done" aria-hidden="true"></span>
+// 狀態：is-done（橘底打勾）／預設（空圈）／is-current（樹皮粗圈）／is-soldout（牛皮紙＋✕）／is-pending（虛線圈）
+// 只是圖示：狀態一定也要寫成文字（票種卡的按鈕、步驟的 aria-current…）
+.check-mark {
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--check-size, 1.75rem);
+  height: var(--check-size, 1.75rem);
+  background: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" fill="none"><path d="M15 2.4c6.4.4 10.8 5 10.6 11.6-.2 6.6-5 11.4-11.6 11.4S2.6 20.6 2.6 14C2.6 7.8 6.8 3.2 12.4 2.6" stroke="#{$bark}" stroke-width="2.25" stroke-linecap="round"/></svg>') center / 100% 100% no-repeat;
+
+  &.is-done {
+    background-image: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" fill="none"><path d="M15 2.4c6.4.4 10.8 5 10.6 11.6-.2 6.6-5 11.4-11.6 11.4S2.6 20.6 2.6 14C2.6 7.4 7.6 2.2 15 2.4z" fill="#{$campfire}" stroke="#{$bark}" stroke-width="2.25" stroke-linejoin="round"/><path d="M8.2 14.4c1.6 1.4 2.8 2.8 3.8 4.6 2.4-5 5.6-8.8 9.6-11.6" stroke="#{$ink-dark}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+  }
+  &.is-current {
+    background-image: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" fill="none"><path d="M15 2.4c6.4.4 10.8 5 10.6 11.6-.2 6.6-5 11.4-11.6 11.4S2.6 20.6 2.6 14C2.6 7.4 7.6 2.2 15 2.4z" fill="#{$canvas}" stroke="#{$bark}" stroke-width="3.6" stroke-linejoin="round"/></svg>');
+  }
+  &.is-soldout {
+    background-image: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" fill="none"><path d="M15 2.4c6.4.4 10.8 5 10.6 11.6-.2 6.6-5 11.4-11.6 11.4S2.6 20.6 2.6 14C2.6 7.4 7.6 2.2 15 2.4z" fill="#{$kraft}" stroke="#{$bark}" stroke-width="2.25" stroke-linejoin="round"/><path d="M9.6 9.8l8.6 8.6M18.4 9.6l-8.8 8.8" stroke="#{$bark}" stroke-width="2.4" stroke-linecap="round"/></svg>');
+  }
+  &.is-pending {
+    background-image: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="11.4" stroke="#{$bark}" stroke-width="2" stroke-dasharray="3 3.4" stroke-linecap="round"/></svg>');
+  }
+}
+
+// ---------- 打勾動畫（打包清單已完成的步驟，頁面載入跑一次） ----------
+// 用在內嵌 SVG 的勾：<path class="draw-check" pathLength="1" …>
+.draw-check {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw-check .6s ease-out .2s forwards;
+}
+@keyframes draw-check {
+  to { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .draw-check { animation: none; stroke-dashoffset: 0; }
+}
+
+// ---------- 插在步道上的旗子：旗竿＋牛皮紙日期旗（購票紀錄的旅程日誌） ----------
+// 放在 .trail 的每一項裡（li 要 position: relative）；父層要設 --trail-x（步道線離左緣）與 --trail-pad（內容離左緣）
+// ≥ 768px 旗竿立在步道線正中間；< 768px 旗子改到內容上方（不畫旗竿）
+// 裝飾：日期要另外寫在卡片裡
+// <li><span class="trail-flag" aria-hidden="true"><span class="date-flag">10/06</span></span><article>…</article></li>
+.trail-flag {
+  display: block;
+  margin-bottom: .625rem;
+  pointer-events: none;
+
+  @include media-breakpoint-up(md) {
+    position: absolute;
+    top: .125rem;
+    left: calc(var(--trail-x) - var(--trail-pad) + .5px); // 步道線 3px，旗竿 2px：對齊中線
+    z-index: 1;
+    margin: 0;
+    padding-left: 2px;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: -.375rem;
+      left: 0;
+      width: 2px;
+      height: 3.25rem;
+      border-radius: 1px;
+      background-color: $bark;
+    }
+  }
+}
+
+// ---------- 手繪勾選方框（入場須知的清單符號；只是圖示，不是真的 checkbox） ----------
+// <span class="check-box" aria-hidden="true"></span>
+.check-box {
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--check-size, 1.5rem);
+  height: var(--check-size, 1.5rem);
+  background: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" fill="none"><path d="M4.4 5.6C4.6 4.4 5.4 3.8 6.6 3.8L21.8 3.6C23.2 3.6 24 4.4 24.2 5.8L24.4 22C24.4 23.4 23.6 24.2 22.2 24.2L6 24.4C4.6 24.4 3.8 23.6 3.8 22.2Z" fill="#{$canvas}" stroke="#{$bark}" stroke-width="2" stroke-linejoin="round"/><path d="M8.4 14.6c1.6 1.4 2.8 2.8 3.8 4.6 2.6-5.6 6-9.8 10.6-13" stroke="#{$flare}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>') center / 100% 100% no-repeat;
+}
+
+// ---------- 路線圖上的編號圖釘（註冊頁的入場保障） ----------
+// 野營橘水滴形圖釘、中間帆布圓裡寫 Zilla Slab 數字（樹皮字在帆布上 13.56）；裝飾，aria-hidden
+// <span class="route-pin" aria-hidden="true">1</span>
+.route-pin {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 3rem;
+  background: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 48" fill="none"><ellipse cx="20" cy="45.6" rx="7" ry="1.6" fill="#{$bark}" opacity=".18"/><path d="M20.2 45.4C14.2 36.2 6.2 28.6 6 18.4 5.8 10 12.2 3.6 20 3.6c7.8 0 14.2 6.2 14 14.6-.2 10-8 17.8-13.8 27.2z" fill="#{$campfire}" stroke="#{$bark}" stroke-width="2" stroke-linejoin="round"/><path d="M20.6 8.8c5 .2 8.6 4 8.4 9-.2 5-4 8.6-9 8.4-4.8-.2-8.4-4-8.2-8.8.2-4.6 3.6-8.2 8-8.6" fill="#{$canvas}" stroke="#{$bark}" stroke-width="1.6"/></svg>') center / 100% 100% no-repeat;
+  color: $bark;
+  font-family: $font-family-slab;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 700;
+  line-height: 2.25rem; // 數字落在上方 36px 的圓心
+  text-align: center;
+}

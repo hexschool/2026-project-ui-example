@@ -1,0 +1,246 @@
+// ============================================================
+// 棋盤路徑步驟列 CheckoutStepper：香草橫條（下緣小扇形），三顆 40px 圓代幣用點點軌道串起來，像大富翁的棋盤路徑
+// 同一列右側是保留倒數（鮮黃膠囊＋時鐘＋Notion 全文，09:12 放在海軍藍數字磚）
+// 用在：結帳頁頂端（sticky）、結帳的狀態示意、Guideline 的元件狀態
+//
+// <div class="board-bar">
+//   <ol class="board-steps" aria-label="購票步驟">
+//     <li class="is-done"><span class="board-token" aria-hidden="true"><i class="bi bi-check-lg"></i></span><span class="board-label">確認訂單</span><span class="visually-hidden">（已完成）</span></li>
+//     <li class="is-current" aria-current="step"><span class="board-token" aria-hidden="true">2</span><span class="board-label">填寫購票資訊</span></li>
+//     <li><span class="board-token" aria-hidden="true">3</span><span class="board-label">付款完成</span></li>
+//   </ol>
+//   <p class="board-hold" role="timer"><i class="bi bi-clock-fill" aria-hidden="true"></i><span>為你保留的票券還有 <span class="tile">09:12</span>，逾時將自動釋出。</span></p>
+// </div>
+//
+// 步驟 3 態：.is-done（遊樂綠＋白勾）、.is-current（糖果紅＋白數字＋粗標籤）、未到（香草＋虛線框）
+// 整列 3 態：一般、.is-warn（整列糖粉底＋數字磚改糖果紅白字＋三角圖示）、.is-expired（整列灰化＋虛線＋✕）
+// < md：只顯示代幣與目前步驟的文字（其他步驟文字視覺隱藏），倒數換到第二行
+// ≥ md：步驟保持完整寬度不被擠壓；同一列放不下倒數時，倒數換到第二行（不讓步驟文字壓到下一顆代幣）
+// 倒數只換數字，不閃爍、不跳動、不放大；role="timer"，不加 aria-live
+// ============================================================
+
+.board-bar {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .875rem 1.5rem;
+  padding: .875rem 1.25rem;
+  border-radius: $border-radius-lg $border-radius-lg 0 0;
+  background-color: $vanilla;
+  color: $navy;
+  filter: drop-shadow(0 2px 1px rgba($navy, .06)) drop-shadow(0 8px 10px rgba($navy, .12)); // 陰影要跟著扇形走，所以用 drop-shadow
+
+  @include media-breakpoint-up(md) {
+    column-gap: 1rem;
+    padding: .875rem 1rem .875rem 1.5rem;
+  }
+
+  // 下緣小扇形（半徑 10px，從橫條往下垂）
+  &::after {
+    content: "";
+    position: absolute;
+    top: calc(100% - 1px);
+    left: 0;
+    right: 0;
+    height: .625rem;
+    background: radial-gradient(circle at 50% 0, $vanilla .625rem, transparent calc(.625rem + .5px)) 0 0 / 1.25rem .625rem round no-repeat;
+    pointer-events: none;
+  }
+}
+
+.board-steps {
+  display: flex;
+  align-items: center;
+  flex: 1 1 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    flex: 1 0 auto;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    min-width: 0;
+    color: $navy-muted;
+    font-weight: 700;
+    white-space: nowrap;
+
+    // 點點軌道：每一步後面接到下一步
+    &:not(:last-child) {
+      flex: 1 1 auto;
+
+      &::after {
+        content: "";
+        flex: 1 1 auto;
+        min-width: .75rem;
+        height: .5rem;
+        margin-inline: .25rem .5rem;
+        background: radial-gradient(circle, rgba($navy, .35) 0 2.5px, transparent 3px) 0 50% / .75rem .5rem round no-repeat;
+      }
+    }
+    &.is-done::after {
+      background-image: radial-gradient(circle, $ride-green 0 3px, transparent 3.5px);
+    }
+  }
+}
+.board-token {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 2px dashed $navy-faint;
+  border-radius: 50%;
+  background-color: $vanilla;
+  color: $navy-muted;
+  font-family: $font-family-display;
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1;
+
+  .bi { font-size: 1.125rem; }
+}
+.board-steps .is-done {
+  color: $ride-green;
+  .board-token {
+    border: 2px solid $ride-green;
+    background-color: $ride-green;
+    color: $white;
+    box-shadow: inset 0 0 0 2px $ride-green, inset 0 0 0 3.5px rgba($white, .55), inset 0 -3px 0 2px rgba($navy, .15);
+  }
+}
+.board-steps .is-current {
+  color: $navy;
+  .board-token {
+    border: 2px solid $candy-deep;
+    background-color: $candy;
+    color: $white;
+    box-shadow: inset 0 0 0 2px $candy, inset 0 0 0 3.5px rgba($white, .6), inset 0 -3px 0 2px rgba($navy, .15);
+  }
+  .board-label {
+    font-weight: 900;
+    font-size: 1.0625rem;
+  }
+}
+
+.board-label {
+  min-width: 0;
+}
+
+// < md：非目前步驟的文字視覺隱藏（讀屏仍讀得到）；目前步驟的文字太擠時換行，不會壓到下一顆代幣
+@include media-breakpoint-down(md) {
+  .board-steps .is-current .board-label {
+    white-space: normal;
+    line-height: 1.3;
+  }
+  .board-steps li:not(:last-child)::after {
+    min-width: .75rem;
+    margin-inline: .125rem .25rem;
+  }
+  .board-steps li:not(.is-current) .board-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+// 保留倒數：鮮黃膠囊＋時鐘，數字放在海軍藍數字磚
+.board-hold {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex: 1 1 100%;
+  margin: 0;
+  padding: .5rem 1rem .5rem .75rem;
+  border: 2px solid $navy;
+  border-radius: 1.375rem;
+  background-color: $sunny;
+  color: $navy;
+  font-size: .875rem;
+  font-weight: 700;
+  line-height: 1.55;
+  box-shadow: inset 0 -3px 0 rgba($navy, .12);
+
+  // ≥ md：整句排一行；結帳頁 ≥ 992px 步驟與倒數排得進同一列，更窄的容器倒數自動換到第二行
+  @include media-breakpoint-up(md) {
+    flex: 0 1 auto;
+  }
+
+  > .bi {
+    flex: none;
+    font-size: 1.125rem;
+  }
+  .tile {
+    min-width: 0;
+    padding: .1875rem .4375rem .0625rem;
+    border-color: $navy;
+    background-color: $navy;
+    color: $sunny;
+    font-size: 1.125rem;
+    vertical-align: -.0625rem;
+    box-shadow: inset 0 -2px 0 rgba($black, .25);
+  }
+}
+
+// 警示（剩 2 分鐘）：整列糖粉底；倒數膠囊改糖粉＋糖果紅框，數字磚糖果紅底白字，三角圖示
+.board-bar.is-warn {
+  background-color: $candy-wash;
+  &::after { background-image: radial-gradient(circle at 50% 0, $candy-wash .625rem, transparent calc(.625rem + .5px)); }
+
+  .board-hold {
+    border-color: $candy-deep;
+    background-color: $vanilla;
+    color: $candy-deep;
+    .tile { border-color: $candy-deep; background-color: $candy; color: $white; }
+  }
+  .board-token { background-color: $candy-wash; }
+  .is-done .board-token { background-color: $ride-green; }
+  .is-current .board-token { background-color: $candy; }
+}
+// 逾時：整列灰化＋虛線＋✕
+.board-bar.is-expired {
+  background-color: $ticket-faded;
+  filter: none;
+  outline: 2px dashed $navy-faint;
+  outline-offset: -2px;
+  &::after { background-image: radial-gradient(circle at 50% 0, $ticket-faded .625rem, transparent calc(.625rem + .5px)); }
+
+  .board-steps li,
+  .board-steps .is-done,
+  .board-steps .is-current { color: $navy-faint; }
+  .board-token,
+  .is-done .board-token,
+  .is-current .board-token {
+    border: 2px dashed $navy-faint;
+    background-color: transparent;
+    color: $navy-faint;
+    box-shadow: none;
+  }
+  .board-steps li::after { background-image: radial-gradient(circle, rgba($navy-faint, .45) 0 2.5px, transparent 3px); }
+  .board-hold {
+    border-style: dashed;
+    border-color: $navy-faint;
+    background-color: transparent;
+    color: $navy-faint;
+    box-shadow: none;
+    .tile {
+      border: 2px dashed $navy-faint;
+      background-color: transparent;
+      color: $navy-faint;
+      text-decoration: line-through;
+      box-shadow: none;
+    }
+  }
+}

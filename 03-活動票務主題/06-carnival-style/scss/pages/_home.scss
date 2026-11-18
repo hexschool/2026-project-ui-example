@@ -1,0 +1,617 @@
+// ============================================================
+// 首頁 index.html（class 前綴 home-）
+// 1 Hero：滿版照片＋中央一塊跑馬燈招牌（奶油底、燈泡點框），H1 與按鈕置中；底緣奶油色扇形
+//         倒數票 ≥ xl 在右下（立體票、斜 3°）；< xl 在招牌下方、不旋轉
+// 2 搜尋列：置中的大膠囊，≥ lg 往上壓住 Hero 扇形 −40px
+// 3 價值主張：緞帶 H2 置中＋4 顆 96px 設施徽章
+// 4 情境入口：奶油黃帶＋4 張拱窗卡＋「瀏覽全部活動」＋城市膠囊
+// 5 本週熱門：海軍藍帶＋鮮黃星點＋入場票軌道（深色帶上不放陰影）
+// 6 評價與保障 7 : 5：對話泡泡＋入場保障卡
+// 7 主辦方轉換帶：照片＋75% 海軍藍遮罩，上下緣奶油扇形，置中
+// ============================================================
+
+// ---------- 1. Hero ----------
+.home-hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  // 往上鑽到遮陽棚底下，讓扇形之間看得到照片
+  margin-top: -$site-awning-height;
+  padding-top: $site-awning-height + 2rem;
+  padding-bottom: $scallop-r + 2.5rem;
+  background-color: $navy;
+
+  @include media-breakpoint-up(lg) {
+    padding-bottom: $scallop-r + 5rem; // 搜尋膠囊往上壓 40px
+  }
+  @include media-breakpoint-up(xl) {
+    min-height: calc(min(100svh - #{$site-header-height}, 48.75rem) + #{$site-awning-height}); // min(100svh − 88px, 780px)
+    padding-top: $site-awning-height + 2.5rem;
+  }
+
+  // 照片上的淡淡海軍藍，讓奶油招牌浮出來（字不壓在照片上，所以不需要重遮罩）
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, rgba($navy, .3) 0%, rgba($navy, .12) 45%, rgba($navy, .4) 100%);
+  }
+  // 底緣奶油色扇形（半徑 24px）
+  &::after {
+    @include scallop(bottom, $cream, $scallop-r);
+    z-index: 0;
+  }
+}
+.home-hero-img {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 45%;
+}
+.home-hero-inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 1.75rem;
+
+  @include media-breakpoint-up(xl) {
+    // 三欄：左空欄｜招牌｜倒數票，招牌永遠在正中央，倒數票不會和招牌重疊
+    grid-template-columns: 1fr minmax(0, 33.75rem) 1fr;
+    align-content: stretch;
+    align-items: center;
+    column-gap: 1.5rem;
+  }
+  @include media-breakpoint-up(xxl) {
+    grid-template-columns: 1fr minmax(0, 37.5rem) 1fr;
+  }
+}
+
+// 跑馬燈招牌：香草底、3px 海軍藍框、32px 圓角，框內 10px 一圈鮮黃燈泡點（靜態）
+.home-marquee {
+  position: relative;
+  width: 100%;
+  max-width: 40rem;
+  padding: 2.75rem 1.5rem 2.5rem;
+  border: 3px solid $navy;
+  border-radius: $border-radius-xxl;
+  background-color: $vanilla;
+  box-shadow: $shadow-float, $bevel;
+  text-align: center;
+
+  @include media-breakpoint-up(md) {
+    padding: 3.25rem 3rem 3rem;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-column: 2;
+    max-width: none;
+    margin-top: 1.5rem; // 招牌重心略低於正中（約 55%）
+  }
+
+  // 上下兩排燈泡
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    background-image: bulb-dot(4px), bulb-dot(4px);
+  }
+  &::before {
+    inset: .5rem 2rem;
+    background-size: 1.375rem .75rem;
+    background-position: top center, bottom center;
+    background-repeat: space no-repeat;
+  }
+  // 左右兩排燈泡（手機只留上下兩排）
+  &::after {
+    inset: 2rem .5rem;
+    background-size: .75rem 1.375rem;
+    background-position: left center, right center;
+    background-repeat: no-repeat space;
+
+    @include media-breakpoint-down(md) {
+      content: none;
+    }
+  }
+}
+.home-marquee-title {
+  margin-bottom: 1rem;
+  font-size: 2.625rem; // 42px
+  font-weight: 900;
+  line-height: 1.12;
+
+  @include media-breakpoint-up(md) { font-size: 3.5rem; }
+  @include media-breakpoint-up(xl) { font-size: 4rem; }
+  @include media-breakpoint-up(xxl) { font-size: 4.5rem; } // 72px
+}
+.home-marquee-lead {
+  max-width: 30em;
+  margin: 0 auto 1.75rem;
+  color: $navy-muted;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+
+  @include media-breakpoint-up(lg) { font-size: $lead-font-size; }
+}
+.home-marquee-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .75rem;
+
+  @include media-breakpoint-down(sm) {
+    flex-direction: column;
+    .btn { width: 100%; }
+  }
+}
+
+// 倒數票：.admit 立體票，上段海軍藍帶（活動名、日期場地）、下段香草（數字磚、條紋進度條、星芒、立即購票）
+.home-countdown {
+  width: 100%;
+  max-width: 22rem;
+
+  @include media-breakpoint-up(xl) {
+    grid-column: 3;
+    align-self: end;
+    justify-self: end;
+    max-width: 17.5rem;
+    margin-bottom: 3rem;
+    transform: rotate(3deg);
+  }
+  @include media-breakpoint-up(xxl) {
+    max-width: 18.5rem;
+  }
+
+  .admit-band { padding: 1.125rem 1.25rem 1.5rem; }
+  .admit-body { padding: 1.125rem 1.25rem 1.375rem; }
+}
+.home-countdown-title {
+  margin-bottom: .375rem;
+  font-size: 1.375rem;
+  line-height: 1.3;
+}
+.home-countdown-meta {
+  display: grid;
+  margin-bottom: 0;
+  color: rgba($cream, .92);
+  font-size: .875rem;
+  line-height: 1.6;
+}
+.home-countdown-remain {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-block: 1rem 1.125rem;
+
+  .remain { flex: 1 1 auto; }
+  .starburst {
+    width: 4.25rem;
+    height: 4.25rem;
+  }
+}
+.home-countdown .countdown-tiles {
+  gap: .3125rem;
+  font-size: .9375rem;
+}
+// 1200～1399px：右欄只有約 244px，數字磚縮一號、票內距收一點，「時 分 秒」才排得進同一列
+@include media-breakpoint-only(xl) {
+  .home-countdown .admit-body { padding-inline: 1.125rem; }
+  .home-countdown .tile { min-width: 2.5rem; font-size: 1.375rem; }
+}
+
+// ---------- 2. 搜尋列 ----------
+.home-search {
+  position: relative;
+  z-index: 2;
+  margin-top: 1.5rem;
+
+  @include media-breakpoint-up(lg) {
+    margin-top: -2.5rem; // 往上壓住 Hero 的扇形 40px
+  }
+}
+
+// ---------- 3. 價值主張：4 顆 96px 設施徽章 ----------
+.home-why {
+  padding-top: $section-padding-y-sm;
+  @include media-breakpoint-up(lg) { padding-top: 5.5rem; }
+}
+.home-why-list {
+  text-align: center;
+
+  li {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+  }
+  .token {
+    margin-bottom: 1.25rem;
+    font-size: 2.375rem;
+  }
+  h3 { margin-bottom: .5rem; }
+  p {
+    max-width: 17em;
+    margin-bottom: 0;
+    color: $navy-muted;
+  }
+}
+
+// ---------- 4. 情境入口：拱窗卡 ----------
+// <a class="scene-card" href="events.html">
+//   <div class="img-frame is-arch ratio-4x5"><img …></div>
+//   <div class="scene-card-plate"><p class="scene-card-cat">…</p><h3 class="scene-card-title">…</h3><p class="scene-card-meta">…</p></div>
+// </a>
+// 場次與票價所有寬度常駐；hover／focus 只讓名牌陰影加深＋標題底線（不改尺寸、不浮現資訊）
+.scene-card {
+  display: block;
+  height: 100%;
+  color: $navy;
+  text-decoration: none;
+
+  .img-frame {
+    border: 3px solid $navy;
+    background-color: $navy;
+  }
+  &:hover,
+  &:focus-visible {
+    color: $navy;
+    .scene-card-plate { box-shadow: $shadow-soft-hover; }
+    .scene-card-title {
+      text-decoration: underline;
+      text-decoration-color: $candy;
+      text-decoration-thickness: 3px;
+      text-underline-offset: .3em;
+    }
+  }
+  &:focus-visible {
+    outline-offset: 6px;
+    border-radius: $border-radius-lg;
+  }
+}
+.scene-card-plate {
+  position: relative;
+  margin: -2rem .625rem 0;
+  padding: .875rem .875rem 1rem;
+  border-radius: $border-radius-lg;
+  background-color: $vanilla;
+  box-shadow: $shadow-soft;
+  text-align: center;
+  transition: box-shadow .2s ease;
+
+  @include media-breakpoint-up(md) {
+    margin-inline: .875rem;
+    padding: 1rem 1.125rem 1.125rem;
+  }
+}
+.scene-card-cat {
+  margin-bottom: .25rem;
+  color: $candy-deep;
+  font-size: .8125rem;
+  font-weight: 700;
+}
+.scene-card-title {
+  margin-bottom: .5rem;
+  font-size: 1.0625rem;
+  font-weight: 900;
+  line-height: 1.4;
+
+  @include media-breakpoint-up(lg) { font-size: 1.1875rem; }
+}
+.scene-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .125rem .625rem;
+  margin-bottom: 0;
+  color: $navy-muted;
+  font-size: .875rem;
+  font-weight: 700;
+
+  > span { white-space: nowrap; }
+}
+.home-scenes-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+.home-cities {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: .625rem;
+  margin-top: 1.5rem;
+}
+.home-cities-label {
+  margin: 0 .25rem 0 0;
+  font-weight: 900;
+}
+.home-cities-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  .btn {
+    min-width: 0;
+    padding-inline: .875rem;
+    @include media-breakpoint-up(sm) { min-width: 4.5rem; }
+  }
+}
+
+// ---------- 5. 本週熱門：入場票軌道 ----------
+.home-featured {
+  overflow: hidden; // 軌道的 bleed 不撐出水平捲軸
+}
+.featured-track {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 0;
+  padding-block: .5rem 1rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: $container-padding-x * .5;
+  scrollbar-color: rgba($cream, .45) transparent;
+
+  > li {
+    flex: 0 0 min(80%, 18.75rem); // 300px；手機約 80% 寬、露出下一張的邊
+    scroll-snap-align: start;
+  }
+
+  @include media-breakpoint-up(xl) {
+    overflow-x: visible;
+    > li { flex-basis: calc((100% - 4.5rem) / 4); } // 4 張剛好一列
+  }
+}
+.featured-card {
+  height: 100%;
+
+  .admit-paper {
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem 1.25rem 1.375rem; // 照片與文字和 8px 內縮的虛線框之間至少留 10px
+  }
+}
+.featured-card-media {
+  position: relative;
+  margin-bottom: 1rem;
+
+  .img-frame { display: block; }
+}
+.featured-card-date {
+  position: absolute;
+  top: -.375rem;
+  left: -.375rem;
+}
+.featured-card-flag {
+  position: absolute;
+  top: -.5rem;
+  right: -.5rem;
+}
+.featured-card-title {
+  margin: 0 .25rem .375rem;
+  font-size: 1.1875rem;
+  font-weight: 900;
+  line-height: 1.4;
+
+  a {
+    color: $navy;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+      text-decoration-color: $candy;
+      text-decoration-thickness: 3px;
+      text-underline-offset: .3em;
+    }
+  }
+}
+.featured-card-meta {
+  display: grid;
+  margin: 0 .25rem 1rem;
+  color: $navy-muted;
+  font-size: .875rem;
+  line-height: 1.6;
+
+  .bi { margin-right: .375rem; color: $candy; }
+}
+.featured-card .remain { margin: 0 .25rem 1rem; }
+// 虛線分隔＋票價列一起貼底：標題換行的卡片和其他張的票價列仍然對齊
+.featured-card .admit-divider { margin-block: auto .875rem; }
+.featured-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  padding-inline: .25rem;
+
+  .price { margin-bottom: 0; color: $candy-deep; }
+  .price-md { font-size: 1.25rem; } // 票價與按鈕在 ≥ 1200px 的 4 欄裡仍排得下同一列
+  .btn-sm { padding-inline: 1rem; }
+}
+// 左右箭頭：鮮黃圓鈕，放在軌道下方置中；≥ 1200px 4 張放得下時隱藏
+.featured-arrows {
+  display: flex;
+  justify-content: center;
+  gap: .75rem;
+  margin-top: 1.25rem;
+
+  .btn { border-radius: 50%; }
+
+  @include media-breakpoint-up(xl) {
+    display: none;
+  }
+}
+
+// ---------- 6. 評價與保障：對話泡泡＋入場保障卡 ----------
+.home-reviews {
+  display: grid;
+  gap: 2rem;
+}
+.bubble {
+  margin: 0;
+
+  &:nth-child(2) {
+    @include media-breakpoint-up(md) {
+      margin-left: 3.5rem;
+    }
+  }
+}
+.bubble-quote {
+  position: relative;
+  margin: 0 0 1.25rem;
+  padding: 1.5rem 1.75rem;
+  border-radius: $border-radius-lg;
+  background-color: $vanilla;
+  filter: drop-shadow(0 4px 6px rgba($navy, .1)) drop-shadow(0 12px 14px rgba($navy, .12)); // 尾巴也有陰影
+  font-size: 1.0625rem;
+  line-height: 1.8;
+
+  @include media-breakpoint-up(lg) { font-size: 1.125rem; }
+
+  p { margin-bottom: 0; }
+  p::before { content: "「"; }
+  p::after { content: "」"; }
+
+  // 下方小尾巴，指向頭像
+  &::after {
+    content: "";
+    position: absolute;
+    left: 2rem;
+    bottom: -.875rem;
+    width: 1.75rem;
+    height: 1rem;
+    background-color: $vanilla;
+    clip-path: polygon(0 0, 100% 0, 15% 100%);
+  }
+}
+.bubble-author {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding-left: 1.25rem;
+  font-family: $font-family-display;
+  font-weight: 700;
+  font-size: 1.0625rem;
+}
+// 頭像放在代幣圓框裡：海軍藍外框＋鮮黃內圈
+.bubble-avatar {
+  flex: none;
+  width: 3.5rem;
+  height: 3.5rem;
+  padding: 3px;
+  border: 2px solid $navy;
+  border-radius: 50%;
+  background-color: $sunny;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+}
+.home-guarantee {
+  padding: 1.75rem 1.5rem 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 2rem 2rem 1.5rem;
+  }
+
+  ul { margin: 0; padding: 0; list-style: none; }
+  li {
+    display: flex;
+    gap: 1rem;
+    padding-block: 1.125rem;
+
+    + li { border-top: 2px dashed rgba($navy, .14); }
+  }
+  h3 {
+    margin-bottom: .25rem;
+    font-size: 1.125rem;
+    font-weight: 900;
+  }
+  p {
+    margin-bottom: 0;
+    color: $navy-muted;
+  }
+}
+.home-guarantee-title {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  margin-bottom: .25rem;
+  font-size: 1.1875rem;
+  font-weight: 900;
+}
+
+// ---------- 7. 主辦方轉換帶：照片＋75% 海軍藍遮罩，上緣奶油扇形；下緣直接接頁尾 ----------
+// 下緣不畫扇形、不留奶油底：頁尾上緣那排奶油扇形就掛在照片帶下面，當兩片深色之間的布幔
+// （原本兩排扇形中間夾一條 64px 的奶油窄帶，看起來像多出來的空隙）
+.home-organizer {
+  position: relative;
+  isolation: isolate;
+  padding-block: 5rem;
+  background-color: $navy; // 照片還沒載入時也是深色，奶油字不會看不見
+  overflow: hidden;
+  text-align: center;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: 6.5rem;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: rgba($navy, .75); // 照片最亮處上的奶油字仍有 6.3:1
+  }
+  // 上緣：奶油扇形往下垂（<span class="home-organizer-scallops" aria-hidden="true">）
+  .home-organizer-scallops {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+
+    &::before { @include scallop(top, $cream, $scallop-r-sm); }
+  }
+  .container { position: relative; z-index: 1; }
+
+  h2 {
+    margin-bottom: 1rem;
+    font-size: 1.875rem;
+    @include media-breakpoint-up(lg) { font-size: 2.75rem; }
+  }
+  p {
+    max-width: 30em;
+    margin: 0 auto 2rem;
+    color: rgba($cream, .92);
+    font-size: 1.0625rem;
+  }
+  .btn {
+    @include media-breakpoint-down(lg) {
+      width: 100%;
+      max-width: 22rem;
+    }
+  }
+}
+.home-organizer-img {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 65% 50%;
+}

@@ -1,0 +1,1482 @@
+// ============================================================
+// guideline.html 設計 Guideline（class 前綴 gl-）
+// 1 頁首區：奶油黃帶（下緣奶油扇形）、全部置中：麵包屑 → 眉標 → H1 鮮黃貼紙 → 說明；< 992px 下方一排章節膠囊（橫向捲動）
+// 2 3 : 9：左目錄（≥ 992px sticky 108px）是直排的糖果紅框膠囊，每顆前一顆編號小代幣；
+//   目前章節＝糖果紅實心（Bootstrap ScrollSpy 加 .active，不另寫 JS）｜右 9 個章節
+// 3 每個章節：編號代幣＋欄內 H2（左對齊＋鮮黃螢光筆）→ 說明；示範框是香草圓角卡（.card-soft）
+//   色票是圓形代幣（不是方塊）；元件示範一律用頁面真的在用的 class
+// 4 Guideline 專用的「固定狀態」：.is-hover／.is-focus 讓 hover、focus 能並排比較（頁面上不用）
+// 數值對應 _variables.scss 與 _base.scss；色票圓的顏色由下面的 $gl-coins 從變數產生，不寫死色碼
+// ============================================================
+
+// ---------- 1. 頁首區 ----------
+.gl-head {
+  position: relative;
+  padding-block: 2.25rem 3.75rem;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: 3rem 4.5rem;
+  }
+
+  // 下緣奶油扇形：從頁面底色往上鼓
+  &::after {
+    @include scallop(bottom, $cream, $scallop-r-sm);
+  }
+  .page-head {
+    padding-block: 0;
+  }
+}
+.gl-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: 1rem;
+  padding: .25rem .875rem;
+  border-radius: $border-radius-pill;
+  background-color: $candy;
+  color: $white; // 5.29
+  font-size: .8125rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+  box-shadow: $bevel-btn;
+}
+.gl-head .page-lead {
+  max-width: 40em;
+}
+
+// < 992px：章節膠囊列（取代左側目錄），在自己的容器內橫向捲動
+.gl-chips {
+  display: flex;
+  gap: .5rem;
+  margin-top: 1.75rem;
+  padding: .25rem .25rem .75rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-color: $control transparent;
+  @include bleed-x;
+
+  .pill {
+    flex: none;
+    text-decoration: none;
+  }
+}
+
+// ---------- 2. 主體 3 : 9 ----------
+.gl-body {
+  padding-block: 3rem $section-padding-y-sm;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: 4rem $section-padding-y-lg;
+  }
+}
+
+// 左目錄：直排的糖果紅框膠囊＋編號小代幣；目前章節糖果紅實心
+.gl-toc {
+  position: sticky;
+  top: $sticky-top-offset;
+  padding: 1.25rem 1rem 1.25rem;
+  border-radius: $border-radius-xl;
+  background-color: $vanilla;
+  box-shadow: $shadow-soft;
+}
+.gl-toc-title {
+  margin: 0 0 .875rem .5rem;
+  color: $navy-muted;
+  font-size: .8125rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+.gl-toc-list {
+  display: grid;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    min-height: 2.75rem;
+    padding: .25rem 1rem .25rem .3125rem;
+    border: 2px solid $candy;
+    border-radius: $border-radius-pill;
+    background-color: $vanilla;
+    color: $navy;
+    font-weight: 700;
+    line-height: 1.35;
+    transition: background-color .15s ease, color .15s ease;
+
+    &:hover {
+      background-color: $candy-wash;
+      color: $navy;
+    }
+    &:focus-visible {
+      outline: none;
+      box-shadow: $focus-ring-double;
+    }
+    &.active {
+      border-color: $candy-deep;
+      background-color: $candy;
+      color: $white; // 5.29
+      box-shadow: $bevel-btn;
+
+      .token {
+        --token-bg: #{$vanilla};
+        --token-fg: #{$candy-deep};
+        --token-ring: #{rgba($candy, .45)};
+        border-color: $vanilla;
+      }
+    }
+  }
+  .token { font-size: .8125rem; }
+}
+
+// ---------- 3. 章節 ----------
+.gl-section {
+  padding-bottom: 3.5rem;
+  scroll-margin-top: $sticky-top-offset;
+
+  @include media-breakpoint-up(lg) {
+    padding-bottom: 4.5rem;
+  }
+
+  // 章節之間：一條糖果紅虛線（同票內的分隔）
+  & + & {
+    padding-top: 3.5rem;
+    border-top: 2px dashed rgba($candy, .45);
+
+    @include media-breakpoint-up(lg) {
+      padding-top: 4.5rem;
+    }
+  }
+  &:last-child { padding-bottom: 0; }
+}
+.gl-section-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+
+  > .token { margin-top: .125rem; }
+  h2 { margin-bottom: .5rem; }
+  p {
+    max-width: 44em;
+    margin-bottom: 0;
+    color: $navy-muted;
+  }
+}
+// 小標：前面一顆鮮黃小圓點（海軍藍框）
+.gl-sub {
+  position: relative;
+  margin: 2.5rem 0 1rem;
+  padding-left: 1.5rem;
+  font-size: 1.1875rem;
+  font-weight: 900;
+
+  // 圓點對齊第一行；標題換行時文字照常接在後面，不會把圓點或 code 擠成獨立一行
+  &::before {
+    content: "";
+    position: absolute;
+    top: calc(.625em - .4375rem);
+    left: 0;
+    width: .875rem;
+    height: .875rem;
+    border: 2px solid $navy;
+    border-radius: 50%;
+    background-color: $sunny;
+  }
+  code {
+    margin-inline: .125rem;
+    font-size: .8125rem;
+  }
+}
+.gl-section-head + .gl-sub { margin-top: 0; }
+
+// 示範框：香草圓角卡（.card-soft）＋內距
+.gl-demo {
+  padding: 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.75rem;
+  }
+  & + & { margin-top: 1rem; }
+}
+.gl-note {
+  display: flex;
+  gap: .5rem;
+  margin: 1rem 0 0;
+  color: $navy-muted;
+  font-size: .9375rem;
+
+  .bi { flex: none; margin-top: .1875rem; color: $candy; }
+}
+.gl-label {
+  margin-bottom: .625rem;
+  color: $navy-muted;
+  font-size: .8125rem;
+  font-weight: 700;
+  letter-spacing: $letter-spacing-label;
+}
+// 程式碼片段（只在本頁）：奶油黃淡底＋深糖果紅字
+.gl-head code,
+.gl-body code {
+  padding: .0625rem .3125rem;
+  border-radius: .375rem;
+  background-color: rgba($butter, .6);
+  color: $candy-deep; // 奶油黃淡底上 5.6 以上
+  font-family: SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .8125em;
+  overflow-wrap: anywhere;
+}
+// 深色帶上的程式碼：奶油字
+.gl-body .section-navy code {
+  background-color: rgba($cream, .14);
+  color: $cream;
+}
+// 重點規則：奶油黃底＋左側糖果紅條
+.gl-key-rule {
+  display: flex;
+  gap: .625rem;
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.25rem;
+  border-radius: $border-radius;
+  background-color: $butter;
+  box-shadow: inset 6px 0 0 $candy;
+  color: $navy;
+
+  .bi { flex: none; margin-top: .25rem; color: $candy-deep; } // 奶油黃上 5.44
+  strong { font-weight: 900; }
+}
+
+// 編號清單：每列前一顆編號小代幣
+.gl-callouts {
+  display: grid;
+  gap: .875rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: gl-callout;
+
+  li {
+    position: relative;
+    padding-left: 2.75rem;
+    counter-increment: gl-callout;
+
+    &::before {
+      content: counter(gl-callout);
+      position: absolute;
+      left: 0;
+      top: -.125rem;
+      display: grid;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      border: 2px solid $navy;
+      border-radius: 50%;
+      background-color: $sunny;
+      color: $navy;
+      font-family: $font-family-display;
+      font-size: .875rem;
+      font-weight: 800;
+      box-shadow: inset 0 0 0 2px $sunny, inset 0 0 0 3.5px rgba($navy, .8);
+    }
+  }
+  strong { font-weight: 900; }
+}
+// 規則清單：鮮黃小星點
+.gl-rules {
+  display: grid;
+  gap: .625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    padding-left: 1.5rem;
+
+    &::before {
+      content: "\F586"; // bi-star-fill
+      position: absolute;
+      left: 0;
+      top: .1875rem;
+      color: $candy;
+      font-family: bootstrap-icons;
+      font-size: .75rem;
+    }
+  }
+}
+
+// ---------- 00 招牌元素 ----------
+// Notion 風格表引文：香草卡＋左上一條鮮黃緞帶標籤
+.gl-quote {
+  position: relative;
+  margin: 0 0 2.5rem;
+  padding: 1.75rem 1.5rem 1.375rem;
+  border-radius: $border-radius-lg;
+  background-color: $vanilla;
+  box-shadow: $shadow-soft, inset 6px 0 0 $candy;
+
+  @include media-breakpoint-up(md) {
+    padding: 2rem 2.25rem 1.5rem;
+  }
+  blockquote {
+    margin: 0 0 .75rem;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    line-height: 1.75;
+
+    p { margin: 0; }
+  }
+  figcaption {
+    color: $navy-muted;
+    font-size: .875rem;
+  }
+}
+
+// 入場票構造：編號圖釘放在 .admit 外層（不被 mask 切掉）
+.gl-anatomy {
+  max-width: 22rem;
+  margin: 0 auto;
+  padding: 1rem 2.5rem 1.75rem 1rem;
+
+  .admit { position: relative; }
+  .stamp {
+    right: -2.25rem;
+    bottom: 1rem;
+    --stamp-size: 5.5rem;
+  }
+}
+.gl-anatomy-kicker {
+  margin-bottom: .25rem;
+  color: $sunny;
+  font-family: $font-family-display;
+  font-size: .8125rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+.gl-anatomy-title {
+  margin-bottom: .25rem;
+  color: $cream;
+  font-size: 1.375rem;
+  font-weight: 900;
+}
+.gl-anatomy-meta {
+  margin: 0;
+  color: rgba($cream, .92);
+  font-size: .875rem;
+}
+.gl-anatomy-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .5rem;
+  margin: 0;
+  padding-right: 3rem; // 右下留給入場章
+
+  dt {
+    color: $navy-muted;
+    font-size: .8125rem;
+    font-weight: 700;
+  }
+  dd { margin: 0; font-weight: 900; }
+}
+.gl-pin {
+  position: absolute;
+  z-index: 3;
+
+  &.is-1 { top: -.625rem; left: -.625rem; }
+  &.is-2 { bottom: 34%; left: -.875rem; }
+  &.is-3 { top: 1rem; right: -.875rem; }
+  &.is-4 { bottom: -1.125rem; left: 50%; margin-left: -1rem; }
+  &.is-5 { bottom: 6.75rem; right: -1.375rem; }
+}
+
+// 入場章的回彈：4 個關鍵影格（靜態，不播動畫）
+.gl-keyframes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  li {
+    display: grid;
+    justify-items: center;
+    gap: .5rem;
+    padding: 1rem .5rem .875rem;
+    border-radius: $border-radius-lg;
+    background-color: $cream;
+    text-align: center;
+  }
+  .gl-keyframe-box {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 7.5rem;
+    height: 7.5rem;
+  }
+  .stamp {
+    --stamp-size: 4.5rem;
+    position: relative;
+    animation: none;
+    &::after { animation: none; }
+  }
+  .is-f0 .stamp { opacity: .3; transform: rotate($stamp-rotate) scale(1.8); }
+  .is-f1 .stamp { transform: rotate($stamp-rotate) scale(.88); }
+  .is-f2 .stamp { transform: rotate($stamp-rotate) scale(1.06); }
+  .is-f3 .stamp::after { opacity: .25; transform: scale(1.12); }
+  p { margin: 0; font-size: .875rem; }
+  .num { display: block; color: $candy-deep; font-size: 1.125rem; }
+}
+
+// 換狀態重新蓋章：Bootstrap pill（.pill＋.active），切到的 .tab-pane.active 裡的章會重播
+.gl-stamp-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .5rem;
+  margin-bottom: 1.25rem;
+
+  .pill.active {
+    border-color: $candy-deep;
+    background-color: $candy;
+    color: $white;
+    box-shadow: $bevel-btn;
+
+    &:hover { background-color: $candy-deep; }
+    &:focus-visible { box-shadow: $bevel-btn, $focus-ring-double; }
+  }
+}
+// 切換舞台：糖粉底（同活動細節的票種區），票券的柔影才看得到
+.gl-stamp-panel {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1rem 1.5rem;
+  border-radius: $border-radius-xl;
+  background-color: $candy-wash;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.5rem 1.75rem 1.75rem;
+  }
+}
+.gl-stamp-stage {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  padding: 1rem .5rem .5rem;
+}
+.gl-stamp-ticket {
+  width: 100%;
+  max-width: 19rem;
+  margin-right: 1.5rem; // 右側留給壓出票緣的章
+
+  .admit-paper { padding: 1.5rem 1.5rem 1.375rem; }
+  .stamp {
+    top: 50%;
+    right: -2.25rem;
+    margin-top: -3rem;
+  }
+  h4 {
+    margin-bottom: .25rem;
+    font-size: 1.1875rem;
+    font-weight: 900;
+  }
+  p { margin: 0; color: $navy-muted; font-size: .9375rem; }
+  .gl-stamp-no { margin-top: .75rem; color: $navy; font-weight: 700; }
+}
+.gl-stamp-caption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  color: $navy-muted;
+  font-size: .9375rem;
+  text-align: center;
+}
+
+// ---------- 01 色彩：圓形代幣色票 ----------
+$gl-coins: (
+  "vanilla": $vanilla,
+  "cream": $cream,
+  "butter": $butter,
+  "candy-wash": $candy-wash,
+  "ticket-faded": $ticket-faded,
+  "seat-sold": $seat-sold,
+  "border": $border-color,
+  "white": $white,
+  "navy": $navy,
+  "navy-muted": $navy-muted,
+  "navy-faint": $navy-faint,
+  "control": $control,
+  "candy": $candy,
+  "candy-deep": $candy-deep,
+  "candy-bright": $candy-bright,
+  "candy-light": $candy-light,
+  "sunny": $sunny,
+  "sunny-hover": $sunny-hover,
+  "ride-green": $ride-green,
+  "berry": $berry,
+  "amber-text": $amber-text,
+  "sky": $sky,
+  "success-bg": $success-bg-subtle,
+  "info-bg": $info-bg-subtle,
+  "warning-bg": $warning-bg-subtle,
+  "danger-bg": $danger-bg-subtle,
+);
+@each $name, $color in $gl-coins {
+  .gl-coin-#{$name} { --coin: #{$color}; }
+}
+
+.gl-swatches {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.gl-swatch {
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: .125rem;
+  padding: 1.25rem .75rem 1rem;
+  border-radius: $border-radius-lg;
+  background-color: $vanilla;
+  box-shadow: $shadow-soft;
+  text-align: center;
+
+  p { margin: 0; }
+}
+// 色票：圓形代幣（2px 海軍藍框＋內圈細環）
+.gl-coin {
+  width: 4.5rem;
+  height: 4.5rem;
+  margin-bottom: .625rem;
+  border: 2px solid $navy;
+  border-radius: 50%;
+  background-color: var(--coin);
+  box-shadow: inset 0 0 0 4px var(--coin), inset 0 0 0 5.5px rgba($navy, .25), inset 0 -5px 0 3px rgba($navy, .08);
+
+  &.is-dark {
+    box-shadow: inset 0 0 0 4px var(--coin), inset 0 0 0 5.5px rgba($white, .55), inset 0 -5px 0 3px rgba($black, .12);
+  }
+  // 只當裝飾的顏色：外圈改虛線
+  &.is-deco { border-style: dashed; }
+}
+.gl-swatch-name {
+  font-weight: 900;
+  line-height: 1.4;
+}
+.gl-swatch-var {
+  font-size: .8125rem;
+}
+.gl-swatch-hex {
+  color: $navy;
+  font-size: 1.0625rem;
+}
+.gl-swatch-use {
+  margin-top: .25rem !important;
+  color: $navy-muted;
+  font-size: .8125rem;
+  line-height: 1.55;
+}
+.gl-swatch-cr {
+  margin-top: .375rem !important;
+  padding: .125rem .625rem;
+  border-radius: $border-radius-pill;
+  background-color: $cream;
+  color: $navy;
+  font-size: .8125rem;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+// 表格：香草底、圓角、表頭奶油黃
+.gl-table-wrap {
+  border-radius: $border-radius-lg;
+  background-color: $vanilla;
+  box-shadow: $shadow-soft;
+}
+.gl-table {
+  min-width: 36rem;
+  margin: 0;
+  font-size: .9375rem;
+
+  > :not(caption) > * > * {
+    padding: .875rem 1rem;
+    background-color: transparent;
+    vertical-align: top;
+  }
+  thead th {
+    background-color: $butter;
+    font-weight: 900;
+    white-space: nowrap;
+
+    &:first-child { border-top-left-radius: $border-radius-lg; }
+    &:last-child { border-top-right-radius: $border-radius-lg; }
+  }
+  tbody tr:last-child > * { border-bottom: 0; }
+  tbody th { font-weight: 900; white-space: nowrap; }
+  &.is-wide { min-width: 52rem; }
+}
+
+// 票務語意卡
+.gl-semantic {
+  height: 100%;
+  padding: 1.25rem;
+
+  .gl-semantic-name {
+    margin-bottom: .875rem;
+    font-weight: 900;
+  }
+  .gl-semantic-visual {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .75rem;
+    min-height: 5rem;
+    margin-bottom: .875rem;
+  }
+  .gl-semantic-rule {
+    margin: 0;
+    color: $navy-muted;
+    font-size: .875rem;
+    line-height: 1.7;
+  }
+  .remain { flex: 1 1 10rem; }
+}
+// 驗票成功／失敗的大面積色
+.gl-bigcolor {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  width: 100%;
+  padding: .875rem 1rem;
+  border-radius: $border-radius;
+  color: $white;
+  font-weight: 900;
+  font-size: 1.125rem;
+
+  .bi { font-size: 1.375rem; }
+  &.is-valid { background-color: $ride-green; }   // 白字 6.59
+  &.is-invalid { background-color: $berry; }      // 白字 7.77
+}
+
+// ---------- 02 字級階層：字樣列 ----------
+.gl-specimens {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-radius: $border-radius-lg;
+  background-color: $vanilla;
+  box-shadow: $shadow-soft;
+}
+.gl-specimen {
+  display: grid;
+  gap: .75rem;
+  padding: 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 12rem minmax(0, 1fr);
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.375rem 1.75rem;
+  }
+  & + & { border-top: 2px dashed rgba($navy, .12); }
+}
+.gl-specimen-meta {
+  p { margin: 0; }
+  .gl-specimen-name {
+    font-family: $font-family-display;
+    font-size: 1.125rem;
+    font-weight: 800;
+  }
+  .gl-specimen-spec {
+    color: $navy;
+    font-size: .875rem;
+  }
+  .gl-specimen-use {
+    color: $navy-muted;
+    font-size: .8125rem;
+    line-height: 1.6;
+  }
+}
+.gl-specimen-sample {
+  min-width: 0;
+
+  > :last-child { margin-bottom: 0; }
+  .ribbon { margin-block: .25rem 1.5rem; }
+}
+
+// ---------- 03 間距與格線 ----------
+.gl-spacers {
+  display: grid;
+  gap: .625rem;
+  margin: 0;
+  padding: 1.25rem;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { padding: 1.5rem 1.75rem; }
+
+  li {
+    display: grid;
+    grid-template-columns: 2rem 3.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: .75rem;
+    font-size: .875rem;
+  }
+  code { justify-self: start; }
+}
+.gl-spacer-bar {
+  display: block;
+  height: 1rem;
+  border: 2px solid $navy;
+  border-radius: $border-radius-pill;
+  background: repeating-linear-gradient(90deg, $sunny 0 6px, $sunny-hover 6px 12px);
+}
+.gl-facts {
+  height: 100%;
+  padding: 1.125rem 1.25rem;
+
+  .gl-facts-name {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: .375rem;
+    font-weight: 900;
+    .bi { color: $candy; }
+  }
+  p:last-child { margin-bottom: 0; color: $navy-muted; font-size: .9375rem; line-height: 1.7; }
+}
+// 10 個頁面的格線示意
+.gl-pages {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.gl-page {
+  display: grid;
+  align-content: start;
+  gap: .625rem;
+  padding: 1.25rem;
+
+  h4 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .25rem .5rem;
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 900;
+  }
+  p { margin: 0; color: $navy-muted; font-size: .875rem; line-height: 1.7; }
+}
+.gl-bar {
+  display: flex;
+  gap: .3125rem;
+
+  > span {
+    display: grid;
+    place-items: center;
+    min-width: 0;
+    min-height: 2.5rem;
+    padding: .25rem .375rem;
+    border: 2px solid $navy;
+    border-radius: .625rem;
+    background-color: $butter;
+    color: $navy;
+    font-size: .75rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
+  }
+  > .is-side { background-color: $candy-wash; }
+  > .is-ghost {
+    border-style: dashed;
+    border-color: rgba($navy, .3);
+    background-color: transparent;
+    color: $navy-muted;
+  }
+  & + & { margin-top: .3125rem; }
+  &.is-center { justify-content: center; }
+}
+
+// ---------- 04 圓角與陰影 ----------
+.gl-radii {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  li {
+    display: grid;
+    justify-items: center;
+    gap: .5rem;
+    text-align: center;
+  }
+  p { margin: 0; color: $navy-muted; font-size: .8125rem; line-height: 1.55; }
+  .num { color: $navy; font-size: 1rem; }
+}
+.gl-radius {
+  width: 100%;
+  max-width: 7rem;
+  height: 4.5rem;
+  border: 2px solid $navy;
+  background-color: $butter;
+}
+.gl-layers {
+  > [class*="col-"] { display: flex; }
+}
+.gl-layer {
+  display: grid;
+  align-content: start;
+  gap: .375rem;
+  width: 100%;
+  padding: 1.375rem 1.25rem;
+
+  p { margin: 0; font-size: .875rem; line-height: 1.7; color: $navy-muted; }
+  .gl-layer-name { color: $navy; font-size: 1rem; font-weight: 900; }
+}
+.gl-layer-admit {
+  width: 100%;
+
+  .admit-paper {
+    display: grid;
+    align-content: start;
+    gap: .375rem;
+  }
+  p { margin: 0; font-size: .875rem; line-height: 1.7; color: $navy-muted; }
+  .gl-layer-name { color: $navy; font-size: 1rem; font-weight: 900; }
+}
+// 深色帶上：不放陰影（.admit.is-flat）
+.gl-dark {
+  height: 100%;
+  padding: 1.5rem 1.25rem;
+  border-radius: $border-radius-lg;
+
+  @include media-breakpoint-up(md) { padding: 1.75rem; }
+
+  > p { margin: 0 0 1rem; color: rgba($cream, .92); font-size: .9375rem; }
+  .admit { max-width: 20rem; }
+  .admit-paper p { margin: 0; color: $navy-muted; font-size: .875rem; }
+  .admit-paper .gl-layer-name { margin-bottom: .25rem; color: $navy; font-size: 1rem; font-weight: 900; }
+}
+
+// ---------- 05 元件狀態 ----------
+.gl-state-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1.25rem 1rem;
+
+  & + & { margin-top: 1.5rem; }
+  figure {
+    display: grid;
+    justify-items: start;
+    gap: .5rem;
+    margin: 0;
+  }
+  figcaption {
+    color: $navy-muted;
+    font-size: .8125rem;
+    font-weight: 700;
+  }
+}
+// 一列一列直排（倒數這種長句）
+.gl-state-row.is-stack {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+.gl-on-navy {
+  padding: 1.25rem;
+  border-radius: $border-radius-lg;
+
+  @include media-breakpoint-up(md) { padding: 1.75rem; }
+
+  .gl-label { color: rgba($cream, .92); }
+  figcaption { color: rgba($cream, .9); }
+}
+
+// Guideline 專用：固定 hover／focus 外觀，方便並排比較（頁面上不用）
+.btn.is-hover {
+  border-color: var(--bs-btn-hover-border-color);
+  background-color: var(--bs-btn-hover-bg);
+  color: var(--bs-btn-hover-color);
+}
+.btn-primary.is-hover,
+.btn-sunny.is-hover { box-shadow: $bevel-btn, 0 6px 14px -6px rgba($navy, .45); }
+.btn.is-focus { box-shadow: $focus-ring-double; }
+.btn-primary.is-focus { box-shadow: $bevel-btn, $focus-ring-double; }
+.form-control.is-focus {
+  border-color: $input-focus-border-color;
+  box-shadow: $input-focus-box-shadow;
+}
+.form-check-input.is-focus {
+  border-color: $form-check-input-focus-border;
+  box-shadow: $focus-ring-double;
+}
+.pill.is-hover {
+  border-color: $navy;
+  background-color: $butter;
+}
+.seat.is-hover { background-color: $butter; }
+.admit.is-hover { filter: $shadow-ticket-hover; }
+.site-nav .nav-link.is-hover { background-color: $butter; }
+
+.gl-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1.5rem;
+  margin-top: 1.5rem;
+}
+
+// 票種卡 5 態：一樣直列
+.gl-tt .tt-list { gap: 1.5rem; }
+.gl-tt-label {
+  margin: 0 0 .5rem;
+}
+
+// 座位圖示意（兩排）
+.gl-seatmap {
+  .seatmap-stage { width: 16rem; }
+  .seatmap-head h4 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 900;
+  }
+}
+.gl-seat-states {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 1.75rem;
+
+  figure {
+    display: grid;
+    justify-items: center;
+    gap: .5rem;
+    margin: 0;
+  }
+  figcaption { color: $navy-muted; font-size: .8125rem; font-weight: 700; text-align: center; }
+}
+
+// 有劃位／無劃位：流程
+.gl-flow {
+  display: grid;
+  justify-items: start;
+  gap: .375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    padding: .375rem 1rem .375rem .375rem;
+    border: 2px solid $navy;
+    border-radius: $border-radius-pill;
+    background-color: $vanilla;
+    font-weight: 700;
+  }
+  li + li { position: relative; margin-top: 1rem; }
+  // 點點軌道（同結帳步驟列）
+  li + li::before {
+    content: "";
+    position: absolute;
+    top: -1.25rem;
+    left: 1.25rem;
+    width: .5rem;
+    height: 1rem;
+    background: radial-gradient(circle, rgba($navy, .4) 0 2.5px, transparent 3px) 50% 0 / .5rem .5rem repeat-y;
+  }
+}
+
+// 步驟列 3 態：每個狀態上方一行小標
+.gl-board .board-bar + .gl-label { margin-top: 1.75rem; }
+
+// 電子票券 4 態：2 × 2；右側留 40px 給一半壓出票緣的入場章
+.gl-etickets {
+  > [class*="col-"] {
+    display: grid;
+    align-content: start;
+    gap: .75rem;
+  }
+  .gl-label { margin-bottom: 0; }
+  .eticket { max-width: 17rem; }
+  .eticket-title { font-size: 1.25rem; }
+  .qr-frame { max-width: 10.5rem; }
+  // 這裡的票只有 272px，「每 60 秒自動更新，請勿截圖轉傳」會換成兩行：章往上移到 QR 框右側中段，不蓋到這行
+  // （< 576px 照元件規則改到右下角票號旁，這個值不作用）
+  .eticket-stamp { --eticket-stamp-bottom: 7.5rem; }
+  .alert { margin: 0; font-size: .875rem; }
+}
+.gl-eticket-wrap {
+  @include media-breakpoint-up(sm) {
+    padding-right: 2.5rem;
+  }
+}
+.gl-eticket-note {
+  display: flex;
+  gap: .375rem;
+  max-width: 18rem;
+  margin: 0 auto;
+  color: $navy-muted;
+  font-size: .875rem;
+  line-height: 1.65;
+
+  .bi { flex: none; margin-top: .125rem; color: $candy; }
+}
+
+// 驗票回饋：手機尺寸的大面積色畫面＋入場章（白章）｜右側規格
+.gl-verify {
+  display: grid;
+  gap: 1.5rem;
+  padding-top: 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 15.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: 2rem;
+  }
+}
+.gl-phone {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: .375rem;
+  width: 100%;
+  max-width: 15.5rem;
+  min-height: 25rem;
+  margin-inline: auto;
+  padding: 2.25rem 1.25rem 1.75rem;
+  border: 6px solid $navy;
+  border-radius: 2.25rem;
+  color: $white;
+  text-align: center;
+  box-shadow: $shadow-float;
+
+  // 聽筒
+  &::before {
+    content: "";
+    position: absolute;
+    top: .625rem;
+    left: 50%;
+    width: 3.5rem;
+    height: .375rem;
+    margin-left: -1.75rem;
+    border-radius: $border-radius-pill;
+    background-color: rgba($navy, .55);
+  }
+  &.is-valid { background-color: $ride-green; }  // 白字 6.59
+  &.is-invalid { background-color: $berry; }     // 白字 7.77
+
+  .gl-phone-app {
+    margin: 0 0 1rem;
+    color: rgba($white, .9);
+    font-family: $font-family-display;
+    font-size: .8125rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+  }
+  .gl-phone-stamp {
+    position: relative;
+    width: 8rem;
+    height: 8rem;
+    margin-bottom: 1rem;
+
+    .stamp { inset: 0; }
+  }
+  .gl-phone-title {
+    display: flex;
+    align-items: center;
+    gap: .375rem;
+    margin: 0 0 .5rem;
+    color: $white;
+    font-size: 1.625rem;
+    font-weight: 900;
+  }
+  .gl-phone-meta {
+    margin: 0;
+    font-size: .9375rem;
+    font-weight: 700;
+    line-height: 1.7;
+  }
+}
+
+// Accordion 與頁首導覽
+.gl-faq.ev-faq-list { max-width: none; }
+.gl-nav-demo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  margin-top: 1.5rem;
+
+  .site-nav {
+    flex-direction: row;
+    gap: .25rem;
+    margin: 0;
+    padding: .25rem;
+    border-radius: $border-radius-pill;
+    background-color: $vanilla;
+    box-shadow: $shadow-soft;
+  }
+  p { flex: 1 1 16rem; margin: 0; color: $navy-muted; font-size: .875rem; }
+}
+
+// ---------- 06 狀態文案：16 張卡 ----------
+.gl-copies {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.gl-copy {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-content: start;
+  gap: .25rem .875rem;
+  padding: 1.25rem;
+
+  > .token { grid-row: span 4; }
+  h3 {
+    margin: .25rem 0 .25rem;
+    font-size: 1rem;
+    font-weight: 900;
+  }
+  .gl-copy-text {
+    margin: 0;
+    font-weight: 700;
+    line-height: 1.7;
+  }
+  .gl-copy-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .375rem;
+    margin: .375rem 0 0;
+  }
+  .gl-copy-where {
+    margin: .5rem 0 0;
+    padding-top: .5rem;
+    border-top: 2px dashed rgba($navy, .12);
+    color: $navy-muted;
+    font-size: .8125rem;
+    line-height: 1.65;
+  }
+}
+// 文案裡的按鈕名稱：小膠囊（不是真的按鈕）
+.gl-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: .0625rem .625rem;
+  border: 2px solid $candy;
+  border-radius: $border-radius-pill;
+  background-color: $vanilla;
+  color: $candy-deep;
+  font-size: .8125rem;
+  font-weight: 700;
+}
+.gl-copy-ok,
+.gl-copy-ng {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: 0 .5rem;
+  border-radius: .375rem;
+  color: $white;
+}
+.gl-copy-ok { background-color: $ride-green; }
+.gl-copy-ng { background-color: $berry; }
+
+.gl-extra .alert { margin-bottom: 1rem; }
+.gl-extra .alert:last-child { margin-bottom: 0; }
+
+// ---------- 08 Do／Don't：一組一列，左 Do 右 Don't ----------
+.gl-dos {
+  display: grid;
+  gap: 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  & + & { margin-top: 1.25rem; }
+}
+.gl-do {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: .875rem;
+  padding: 1.25rem;
+  border-top: 6px solid $ride-green;
+
+  > p {
+    margin: 0;
+    font-weight: 700;
+    line-height: 1.7;
+  }
+  &.is-dont { border-top-color: $berry; }
+}
+.gl-do-visual {
+  display: grid;
+  align-content: center;
+  min-height: 6.5rem;
+  padding: 1rem;
+  border-radius: $border-radius;
+  background-color: $cream;
+  overflow: hidden;
+
+  &.is-navy { @include navy-stars; }
+  &.is-wash { background-color: $candy-wash; }
+  > .btn { justify-self: start; }
+}
+// 退票規則強調題（同活動細節 FAQ 的 .is-emphasis）
+.gl-do-faq {
+  padding: .875rem 1rem .875rem 1.25rem;
+  border-radius: $border-radius;
+  background-color: $candy-wash;
+  box-shadow: inset 6px 0 0 $candy;
+
+  .gl-do-faq-q {
+    display: flex;
+    align-items: center;
+    gap: .375rem;
+    margin-bottom: .25rem;
+    font-weight: 900;
+    .bi { color: $candy-deep; }
+  }
+}
+.gl-do-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  margin-right: .5rem;
+  padding: .0625rem .625rem;
+  border-radius: $border-radius-pill;
+  color: $white;
+  font-family: $font-family-display;
+  font-size: .875rem;
+  font-weight: 800;
+  vertical-align: .0625rem;
+
+  &.is-do { background-color: $ride-green; }    // 白字 6.59
+  &.is-dont { background-color: $berry; }       // 白字 7.77
+}
+.gl-mini-list {
+  display: grid;
+  gap: .375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: .9375rem;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .25rem .75rem;
+    padding: .375rem .75rem;
+    border-radius: .625rem;
+    background-color: $vanilla;
+  }
+  .is-soldout { color: $navy-faint; }
+}
+.gl-mini-total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  padding: .625rem .875rem;
+  border-radius: $border-radius-pill;
+  background-color: $navy;
+  color: $cream;
+  font-weight: 700;
+
+  .tile { border-color: $sunny; }
+  .price { color: $sunny; font-size: 1.25rem; }
+}
+// Don't 示意：只畫出錯誤的樣子（aria-hidden，不放真的互動元件）
+.gl-dont-blink {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  color: $berry;
+  font-weight: 900;
+
+  .tile {
+    border-color: $berry;
+    background-color: $berry;
+    color: $white;
+    font-size: 2rem;
+    transform: scale(1.15) rotate(-4deg);
+  }
+  .bi { font-size: 1.25rem; }
+}
+.gl-dont-dots {
+  display: flex;
+  gap: .5rem;
+
+  span {
+    width: 2.75rem;
+    height: 1rem;
+    border-radius: $border-radius-pill;
+    background-color: $ride-green;
+  }
+  .is-red { background-color: $candy; }
+}
+.gl-dont-fine {
+  margin: 0;
+  color: $navy-faint;
+  font-size: .6875rem;
+  text-align: right;
+}
+.gl-dont-caption {
+  margin: .5rem 0 0;
+  color: $berry;
+  font-size: .875rem;
+  font-weight: 700;
+}
+.gl-dont-plain {
+  margin: 0;
+  padding: .75rem 1rem;
+  border-radius: .625rem;
+  background-color: $vanilla;
+  font-weight: 700;
+}
+.gl-dont-sunny {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+
+  span {
+    display: inline-grid;
+    place-items: center;
+    min-width: 3rem;
+    height: 3rem;
+    padding: 0 .75rem;
+    border-radius: $border-radius-pill;
+    background-color: $sunny;
+    color: $vanilla; // 故意示範看不清楚的樣子
+    font-weight: 900;
+  }
+}
+.gl-dont-candy-on-navy {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  padding: .6875rem 1.5rem;
+  border-radius: $border-radius-pill;
+  background-color: $candy;
+  color: $navy;
+  font-weight: 700;
+}
+// 側邊半圓缺口＋灰黑重陰影（02 古典藝文沙龍的票根＋髒影，本風格不用）
+.gl-dont-notch {
+  justify-self: center;
+  width: 100%;
+  max-width: 15rem;
+  padding: 1rem 1.5rem;
+  background-color: $vanilla;
+  -webkit-mask: radial-gradient(circle .75rem at 0 50%, #0000 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle .75rem at 100% 50%, #0000 98%, #000) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle .75rem at 0 50%, #0000 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle .75rem at 100% 50%, #0000 98%, #000) right / 51% 100% no-repeat;
+  font-weight: 900;
+  text-align: center;
+}
+.gl-dont-notch-wrap {
+  justify-self: center;
+  width: 100%;
+  max-width: 15rem;
+  filter: drop-shadow(0 10px 6px rgba($black, .45));
+}
+.gl-do-admit {
+  justify-self: center;
+  width: 100%;
+  max-width: 15rem;
+
+  .admit-paper { padding: 1rem 1.5rem; font-weight: 900; text-align: center; }
+}
+// 入場章壓住 QR 定位方塊（錯誤示範）
+.gl-dont-qr {
+  position: relative;
+  justify-self: center;
+  width: 7.5rem;
+
+  .qr-frame { margin: 0; }
+  .stamp {
+    --stamp-size: 4.5rem;
+    top: -.25rem;
+    left: -.75rem;
+    animation: none;
+    &::after { animation: none; }
+  }
+}
+.gl-do-qr {
+  position: relative;
+  justify-self: center;
+  width: 7.5rem;
+  margin-right: 2.5rem;
+
+  .qr-frame { margin: 0; }
+  .stamp {
+    --stamp-size: 4.5rem;
+    bottom: -.75rem;
+    right: -3rem;
+  }
+}
+.gl-dont-center {
+  margin: 0;
+  color: $candy;
+  font-size: .875rem;
+  font-weight: 700;
+  text-align: center;
+}
+.gl-do-left {
+  margin: 0;
+  font-size: .875rem;
+
+  strong { display: block; margin-bottom: .25rem; text-align: center; font-size: 1rem; font-weight: 900; }
+}
+.gl-dont-lift {
+  justify-self: center;
+  width: 100%;
+  max-width: 15rem;
+
+  .card-soft {
+    padding: 1rem 1.25rem;
+    font-weight: 900;
+    text-align: center;
+    transform: translateY(-.5rem) scale(1.06);
+    box-shadow: 0 18px 30px rgba($black, .35);
+  }
+  p { margin: .75rem 0 0; color: $berry; font-size: .8125rem; font-weight: 700; text-align: center; }
+}

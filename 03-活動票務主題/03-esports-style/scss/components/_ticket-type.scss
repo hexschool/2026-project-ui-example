@@ -1,0 +1,197 @@
+// ============================================================
+// 票種卡＝「裝備欄位」＋分段式數量加減器
+// 左側 4px 狀態色條（::before）、名稱＋狀態標籤、附註、血條；右上 Oxanium 價格、右下控制項
+// 5 種狀態（Guideline 也用同一組 class）：
+//   預設（可購買、未選）／.is-selected（數量 ≥ 1：金屬藍框＋$arc-tint 底＋勾＋光暈；js/main.js 第 4 項切換）
+//   .is-scarce（即將完售：琥珀色條與血條）／.is-sold-out（槍灰斜線色條、名稱與價格刪除線、停用「已售完」）
+//   .is-upcoming（尚未開賣：虛線框、沒有加減器）
+// < 576px 控制項換到卡片下方、靠右
+// ============================================================
+
+.ev-ticket-list,
+.ticket-type-list {
+  display: grid;
+  gap: .75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ticket-type {
+  @include brackets-on(after, -1px);
+  --tt-bar: #{$control};
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "main price"
+    "main action";
+  align-items: start;
+  gap: .75rem 1.25rem;
+  padding: 1.125rem 1.25rem 1.125rem 1.5rem;
+  border: 1px solid $gunmetal;
+  background-color: $obsidian;
+  transition: border-color .15s ease-in-out, background-color .15s ease-in-out, box-shadow .15s ease-in-out;
+
+  // 左側狀態色條
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px auto -1px -1px;
+    width: 4px;
+    background: var(--tt-bar);
+  }
+
+  @include media-breakpoint-down(sm) {
+    grid-template-areas:
+      "main price"
+      "action action";
+  }
+}
+.ticket-type-main {
+  grid-area: main;
+  display: grid;
+  gap: .5rem;
+  min-width: 0;
+
+  p { margin: 0; }
+}
+.ticket-type-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .75rem;
+}
+.ticket-type-name {
+  margin: 0;
+  font-family: $font-family-base;
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+.ticket-type-price {
+  grid-area: price;
+  justify-self: end;
+  font-size: 1.375rem;
+  white-space: nowrap;
+}
+.ticket-type-note {
+  color: $text-muted;
+  font-size: .875rem;
+}
+.ticket-type-status {
+  display: flex;
+  align-items: baseline;
+  gap: .375rem;
+  color: $text-muted;
+  font-size: .875rem;
+  line-height: 1.6;
+}
+.ticket-type-action {
+  grid-area: action;
+  align-self: end;
+  justify-self: end;
+}
+// 已選的勾：只在 .is-selected 時出現（狀態，不是 hover）
+.ticket-type-check {
+  display: none;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: $arc;
+  color: $void;
+  font-size: .875rem;
+}
+
+// 已選
+.ticket-type.is-selected {
+  --bracket: #{$bracket-lit};
+  --tt-bar: #{$arc};
+  border-color: $arc;
+  background-color: $arc-tint;
+  box-shadow: $glow-selected;
+
+  .ticket-type-check { display: inline-grid; }
+}
+// 即將完售（可購買）
+.ticket-type.is-scarce {
+  --tt-bar: #{$amber};
+}
+// 已售罄
+.ticket-type.is-sold-out {
+  --bracket: transparent;
+  --tt-bar: #{$gunmetal};
+  background-color: $carbon;
+  @include hatch(rgba($text, .03), 10px);
+
+  &::before {
+    @include hatch(rgba($text, .25), 5px);
+    background-color: $gunmetal;
+  }
+  .ticket-type-name,
+  .ticket-type-price {
+    color: $text-muted;
+    text-decoration: line-through;
+    text-decoration-color: $text-faint;
+  }
+}
+// 尚未開賣
+.ticket-type.is-upcoming {
+  --bracket: transparent;
+  --tt-bar: transparent;
+  border-style: dashed;
+  border-color: $control;
+
+  &::before {
+    border-left: 2px dashed $control;
+    background: none;
+  }
+  .ticket-type-price { color: $text-muted; }
+}
+
+// ---------- 數量加減器（分段式）：[－｜數字｜＋]，每格 44px ----------
+// 0 時「－」停用；達上限（剩餘張數或整筆訂單 4 張）時「＋」停用
+.qty {
+  display: inline-flex;
+  gap: 2px;
+}
+.qty-btn,
+.qty-value {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid $control;
+  background-color: $carbon-hi;
+}
+.qty-btn {
+  padding: 0;
+  color: $text;
+  font-size: 1rem;
+  transition: color .15s ease-in-out, border-color .15s ease-in-out, background-color .15s ease-in-out;
+
+  &:hover:not(:disabled) {
+    border-color: $arc;
+    color: $arc-hi;
+  }
+  &:active:not(:disabled) {
+    background-color: $arc-tint;
+  }
+  &:disabled {
+    border-color: $gunmetal;
+    background-color: transparent;
+    color: $text-faint;
+    cursor: not-allowed;
+  }
+}
+.qty-value {
+  border-color: $gunmetal;
+  background-color: $obsidian;
+  color: $text;
+  font-family: $font-family-display;
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.is-selected .qty-value {
+  border-color: $arc;
+  color: $arc-hi;
+}

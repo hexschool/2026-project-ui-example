@@ -1,0 +1,144 @@
+// ============================================================
+// 結帳步驟列（CheckoutStepper）＝打包清單：三個 28px 手繪勾選方框串在一條橘色虛線步道上，終點是背包
+//   已完成 .is-done：內嵌 SVG 的野營橘方框＋手繪勾（.draw-check 頁面載入時畫一次）＋「已完成：」給讀屏
+//   目前   .is-current：.pack-step-box.is-current（樹皮粗框）＋ Noto 700 ＋ aria-current="step"
+//   未到   預設：.pack-step-box（虛線框）＋次要字
+// 背包：空背包＋裝滿的背包疊在一起；付款成功（網址是 #result）時裝滿的那張淡入（裝飾，pages/_checkout.scss）
+// 整列狀態（加在 .pack-steps-bar）：預設（父層帆布底）／.is-warning 芥末黃底／.is-expired 牛皮紙＋虛線框
+// < 768px：只留目前步驟的文字（其他步驟的文字改成只給讀屏），倒數換到第二行
+// <div class="pack-steps-bar">
+//   <div class="pack-steps-track">
+//     <ol class="pack-steps" aria-label="結帳步驟">
+//       <li class="pack-step is-done"><svg class="pack-step-mark">…</svg><span class="pack-step-label"><span class="visually-hidden">已完成：</span>確認訂單</span></li>
+//       <li class="pack-step is-current" aria-current="step"><span class="pack-step-box is-current" aria-hidden="true"></span><span class="pack-step-label">填寫購票資訊</span></li>
+//       <li class="pack-step"><span class="pack-step-box" aria-hidden="true"></span><span class="pack-step-label">付款完成</span></li>
+//     </ol>
+//     <span class="pack-steps-bag" aria-hidden="true"><span class="pack-steps-bag-icon"><img …backpack><img class="is-full" …backpack-full></span></span>
+//   </div>
+//   <p class="countdown" role="timer">…</p>
+// </div>
+// ============================================================
+.pack-steps-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1.5rem;
+
+  .countdown {
+    font-size: .875rem;
+
+    @include media-breakpoint-down(md) { flex: 1 1 100%; }
+  }
+
+  // 整列警示：芥末黃底（樹皮字 8.57）；整列逾時：牛皮紙＋虛線框
+  &.is-warning,
+  &.is-expired {
+    padding: .875rem 1rem;
+    border: 1.5px solid $bark;
+    border-radius: $border-radius-lg;
+  }
+  &.is-warning {
+    background-color: $warning-bg;
+    .countdown { background-color: $canvas; }
+  }
+  &.is-expired {
+    border-style: dashed;
+    background-color: $kraft;
+
+    .pack-step,
+    .pack-step.is-current { color: $bark-muted; font-weight: $font-weight-medium; }
+  }
+}
+.pack-steps-track {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.pack-steps {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pack-step {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.3;
+  white-space: nowrap;
+
+  &:not(.is-done):not(.is-current) { color: var(--bs-secondary-color); }
+  &.is-current { font-weight: $font-weight-bold; }
+}
+// 手繪方框：未到＝虛線；目前＝樹皮粗框（已完成用內嵌 SVG，才能畫勾的動畫）
+.pack-step-box {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" fill="none"><path d="M4.4 5.6C4.6 4.4 5.4 3.8 6.6 3.8L21.8 3.6C23.2 3.6 24 4.4 24.2 5.8L24.4 22C24.4 23.4 23.6 24.2 22.2 24.2L6 24.4C4.6 24.4 3.8 23.6 3.8 22.2Z" fill="#{$canvas}" stroke="#{$bark}" stroke-width="2" stroke-dasharray="3.2 3" stroke-linecap="round"/></svg>') center / 100% 100% no-repeat;
+
+  &.is-current {
+    background-image: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" fill="none"><path d="M4.4 5.6C4.6 4.4 5.4 3.8 6.6 3.8L21.8 3.6C23.2 3.6 24 4.4 24.2 5.8L24.4 22C24.4 23.4 23.6 24.2 22.2 24.2L6 24.4C4.6 24.4 3.8 23.6 3.8 22.2Z" fill="#{$canvas}" stroke="#{$bark}" stroke-width="3.6" stroke-linejoin="round"/></svg>');
+  }
+}
+// 逾時：未完成的方框打 ✕（整列停用）
+.pack-steps-bar.is-expired .pack-step-box {
+  background-image: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" fill="none"><path d="M4.4 5.6C4.6 4.4 5.4 3.8 6.6 3.8L21.8 3.6C23.2 3.6 24 4.4 24.2 5.8L24.4 22C24.4 23.4 23.6 24.2 22.2 24.2L6 24.4C4.6 24.4 3.8 23.6 3.8 22.2Z" fill="#{$canvas}" stroke="#{$bark-muted}" stroke-width="2" stroke-dasharray="3.2 3" stroke-linecap="round"/><path d="M9.6 9.8l8.6 8.6M18.4 9.6l-8.8 8.8" stroke="#{$bark-muted}" stroke-width="2.2" stroke-linecap="round"/></svg>');
+}
+// 步驟之間、最後一步到背包：橘色虛線步道
+.pack-step + .pack-step::before,
+.pack-steps-bag::before {
+  content: "";
+  flex-shrink: 0;
+  width: clamp(1.25rem, 3vw, 2.75rem);
+  height: 3px;
+  margin-right: .625rem;
+  border-radius: 2px;
+  background: repeating-linear-gradient(90deg, $flare 0 7px, transparent 7px 12px);
+}
+.pack-step + .pack-step::before { margin-left: .25rem; }
+.pack-steps-bag::before { margin-left: .625rem; }
+.pack-step-mark {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+.pack-steps-bag {
+  display: flex;
+  align-items: center;
+}
+.pack-steps-bag-icon {
+  position: relative;
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .is-full {
+    opacity: 0;
+    transition: opacity .3s ease;
+  }
+}
+// < 768px：只留目前步驟的文字
+@include media-breakpoint-down(md) {
+  .pack-step:not(.is-current) .pack-step-label {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+}

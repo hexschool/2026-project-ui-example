@@ -1,0 +1,101 @@
+// ============================================================
+// 購票確認與快速支付 checkout.html（class 前綴 co-）
+// 構圖（和既有 3 套的差別：步驟列是任務段＋耗盡計時條；面板有 HUD 標與任務代號；票券是通行證）：
+// 1. H1 視覺隱藏 → 任務進度條（滿版碳纖維帶，sticky top 84px，元件見 components/_checkout-parts.scss）
+// 2. 版心內 .co-layout（CSS Grid 區域，不複製內容）：
+//    ≥ 992px：狀態示意（剩 2 分鐘、逾時）滿寬 → 左 7 欄兩塊任務面板（02-A 購票人資訊、02-B 快速支付）｜右 5 欄 sticky 戰利品面板
+//    < 992px：「查看明細」列 → 狀態示意 → 任務面板；底部固定「應付總額＋確認付款」
+// 3. #result：$carbon 滿寬帶裡的狀態示意，≥ 992px 7 : 5（左成功＋通行證輪播｜右失敗）
+// ============================================================
+
+// 任務進度條的高度：≥ 1200px 一列（$mission-height）；992–1199px 兩列（倒數換到第二行）；< 768px 步驟只留編號，仍是兩列
+$co-mission-h-lg: 6.5rem;  // 104px（實測 103px）
+$co-mission-h-sm: 7.75rem; // 124px（390px 寬實測：倒數文字換成兩行）
+$co-offset-sm: $sticky-bar-top + $co-mission-h-sm + 1rem;
+$co-offset-lg: $sticky-bar-top + $co-mission-h-lg + 1rem;
+$co-offset-xl: $sticky-bar-top + $mission-height + 1rem; // 168px
+
+// 錨點（#attendee、#payment、#result）捲動後不被頁首與任務進度條蓋住
+// <html> 已經有 scroll-padding-top: $sticky-top-offset（96px），scroll-margin 會再加上去，所以只補差額
+.co-anchor,
+#result {
+  scroll-margin-top: $co-offset-sm - $sticky-top-offset;
+
+  @include media-breakpoint-up(lg) { scroll-margin-top: $co-offset-lg - $sticky-top-offset; }
+  @include media-breakpoint-up(xl) { scroll-margin-top: $co-offset-xl - $sticky-top-offset; }
+}
+
+.co-main {
+  padding-block: map-get($spacers, 4) $section-space-sm;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 5) $section-space-lg;
+  }
+}
+.co-layout {
+  display: grid;
+  grid-template-areas:
+    "summary"
+    "demo"
+    "form";
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-areas:
+      "demo demo"
+      "form summary";
+    align-items: start;
+    gap: map-get($spacers, 5) 1.5rem;
+  }
+  @include media-breakpoint-up(xl) {
+    column-gap: 3rem;
+  }
+}
+.co-summary {
+  grid-area: summary;
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $co-offset-lg;
+  }
+  @include media-breakpoint-up(xl) {
+    top: $co-offset-xl;
+  }
+}
+.co-demo-timer {
+  grid-area: demo;
+  margin-top: 0;
+}
+.co-form {
+  grid-area: form;
+  min-width: 0;
+}
+.co-demo-missions {
+  display: grid;
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .alert { margin: .75rem 0 0; }
+}
+
+// ---------- #result ----------
+.co-result {
+  border-top: 1px solid $gunmetal;
+
+  .demo-state {
+    @include media-breakpoint-down(sm) {
+      padding-inline: 1rem; // 手機上狀態示意、面板、輪播三層內距，票券才不會被擠到 200px 寬
+    }
+    @include media-breakpoint-up(lg) {
+      padding: 2.5rem;
+    }
+  }
+  // 成功與失敗兩欄各自依內容高度、頂端對齊（失敗面板很短，拉成等高只會留一大片空白）
+  .row { align-items: flex-start; }
+}
+.co-result-label {
+  margin: .75rem 0 .25rem;
+}

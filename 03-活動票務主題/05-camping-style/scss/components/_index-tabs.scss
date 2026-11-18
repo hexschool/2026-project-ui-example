@@ -1,0 +1,132 @@
+// ============================================================
+// 牛皮紙資料夾索引標籤（TicketTabs）：我的票券的分頁、電子票券詳情的 3 張票切換
+// 一排圓頂的牛皮紙標籤插在面板上緣；選中的那片換成帆布色、下緣和下面的面板接成一片（像抽出來的那一格）
+// 選中前後、hover 前後尺寸都不變：只換底色與下框顏色
+//
+// 接在面板上（我的票券）：標籤列的下緣壓在面板的上框上
+// <div class="index-tabs" role="group" aria-label="票券分頁" data-filter-list="#ticketList">
+//   <button class="index-tab" type="button" data-filter="upcoming" aria-pressed="true">
+//     <span class="index-tab-label">即將到來</span><span class="index-tab-count">2</span>
+//   </button>
+// </div>
+// <div class="tickets-drawer">…</div>
+//
+// 單獨使用（電子票券詳情）：加 .index-tabs-line，自己畫一條底線；選中看 Bootstrap pill 的 .active
+// <div class="nav index-tabs index-tabs-line" role="tablist">
+//   <button class="index-tab active" data-bs-toggle="pill" …><span class="index-tab-label num">T-4471-01</span><span class="index-tab-sub">預售全票</span></button>
+// </div>
+// ============================================================
+.index-tabs {
+  --index-tab-active-bg: #{$canvas};
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: .375rem;
+  margin-bottom: -1.5px; // 標籤的下框剛好疊在面板的上框上
+  padding: .5rem .5rem 0; // 上方留給焦點環（橫向捲動時上下也會裁切）
+  overflow-x: auto;
+
+  @include media-breakpoint-down(sm) { gap: .25rem; } // 390px 也排得下 3 片，不必捲動
+  @include media-breakpoint-up(sm) { padding-inline: 1.5rem; }
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+.index-tab {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: .5rem;
+  min-height: 3rem;
+  margin: 0;
+  padding: .5rem .625rem .4375rem;
+
+  @include media-breakpoint-down(sm) { gap: .375rem; }
+  @include media-breakpoint-up(sm) { padding: .5rem 1rem .4375rem 1.125rem; }
+  border: 1.5px solid $bark;
+  border-radius: .875rem .875rem 0 0;
+  background-color: $kraft;
+  color: $bark;
+  font-size: .9375rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.3;
+  letter-spacing: $letter-spacing-label;
+  white-space: nowrap;
+  transition: background-color .15s ease;
+
+  &:hover { background-color: mix($kraft, $canvas, 55%); }
+
+  &[aria-pressed="true"],
+  &.active {
+    border-bottom-color: var(--index-tab-active-bg);
+    background-color: var(--index-tab-active-bg);
+    color: $bark;
+  }
+  &:focus-visible { outline-offset: -5px; } // 焦點環畫在標籤裡面，不被捲動容器裁掉
+}
+// 數量：帆布小圓＋Zilla Slab 等寬數字
+.index-tab-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.625rem;
+  height: 1.625rem;
+  padding-inline: .25rem;
+  border: 1.5px solid $bark;
+  border-radius: 50%;
+  background-color: $canvas;
+  font-family: $font-family-slab;
+  font-size: .9375rem;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 700;
+  line-height: 1;
+}
+.index-tab[aria-pressed="true"] .index-tab-count,
+.index-tab.active .index-tab-count {
+  border-color: $bark;
+  background-color: $campfire;
+  color: $ink-dark;
+}
+
+// 單獨使用：自己畫底線（標籤下框疊在底線上，選中的那片蓋掉底線）
+.index-tabs-line {
+  margin-bottom: 0;
+  padding-inline: .75rem;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    height: 1.5px;
+    background-color: $bark;
+  }
+  .index-tab {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding: .5rem .875rem .375rem;
+  }
+
+  // 各片平分寬度，不必橫向捲動；欄寬窄的時候（< 576px、992～1199px 的 5 欄）字小一號
+  .index-tab {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  @include media-breakpoint-down(sm) { padding-inline: 0; }
+  @include media-breakpoint-only(lg) { padding-inline: 0; }
+  @media (max-width: 575.98px), (min-width: 992px) and (max-width: 1199.98px) {
+    .index-tab {
+      padding-inline: .5rem;
+      font-size: .875rem;
+    }
+    .index-tab-sub { font-size: .75rem; }
+  }
+}
+// 兩行的標籤：上行票號（Zilla Slab）、下行票種
+.index-tab-sub {
+  font-size: .8125rem;
+  font-weight: $font-weight-medium;
+}

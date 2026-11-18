@@ -1,0 +1,175 @@
+// ============================================================
+// 鋸齒收據 Receipt：香草紙、下緣（或上下緣）鋸齒，陰影用外層的 drop-shadow（mask 會切掉 box-shadow）
+// 用在：結帳的訂單明細（右欄 sticky、手機的「查看明細」）、購票紀錄的訂單卡
+//
+// <aside class="receipt">
+//   <div class="receipt-paper">
+//     <h2 class="receipt-title">訂單明細</h2>
+//     <p class="receipt-label">票種明細</p>
+//     <ul class="receipt-items list-unstyled"><li><span>預售全票 × 2</span><span class="price">NT$ 3,000</span></li></ul>
+//     <dl class="receipt-rows"><div><dt>票券小計</dt><dd class="price">NT$ 5,800</dd></div></dl>
+//     <div class="receipt-total"><span>應付總額</span><strong class="price">NT$ 5,974</strong></div>
+//   </div>
+// </aside>
+//
+// 變體：.receipt.has-top-teeth（上緣也是鋸齒，購票紀錄的收據卡）、.receipt.is-flat（不放陰影）
+// 明細列用「點點引導線」連到金額（.receipt-items 的 li）
+// ============================================================
+
+.receipt {
+  position: relative;
+  filter: $shadow-ticket;
+
+  &.is-flat { filter: none; }
+}
+.receipt-paper {
+  --tooth: .625rem; // 鋸齒高 10px、寬 20px
+  --bs-heading-color: #{$navy};
+  position: relative;
+  padding: 1.75rem 1.5rem calc(1.5rem + var(--tooth));
+  border-radius: $border-radius-lg $border-radius-lg 0 0;
+  background-color: $vanilla;
+  color: $navy;
+  -webkit-mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--tooth) + 1px) no-repeat,
+    conic-gradient(from -45deg at 50% 100%, #000 90deg, #0000 0) bottom / calc(var(--tooth) * 2) var(--tooth) round no-repeat;
+  mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--tooth) + 1px) no-repeat,
+    conic-gradient(from -45deg at 50% 100%, #000 90deg, #0000 0) bottom / calc(var(--tooth) * 2) var(--tooth) round no-repeat;
+
+  @include media-breakpoint-up(xl) {
+    padding-inline: 1.875rem;
+  }
+
+  // 紙張上緣一排鮮黃小星點（收據機印出來的花邊，裝飾）
+  &::before {
+    content: "";
+    position: absolute;
+    top: .75rem;
+    left: 1.5rem;
+    right: 1.5rem;
+    height: 6px;
+    background: radial-gradient(circle, $sunny 0 2px, rgba($navy, .35) 2.5px 3px, transparent 3.5px) 0 50% / 14px 6px round no-repeat;
+  }
+}
+.receipt.has-top-teeth .receipt-paper {
+  padding-top: calc(1.75rem + var(--tooth));
+  border-radius: 0;
+  -webkit-mask:
+    conic-gradient(from 135deg at 50% 0, #000 90deg, #0000 0) top / calc(var(--tooth) * 2) var(--tooth) round no-repeat,
+    linear-gradient(#000 0 0) center / 100% calc(100% - var(--tooth) * 2 + 2px) no-repeat,
+    conic-gradient(from -45deg at 50% 100%, #000 90deg, #0000 0) bottom / calc(var(--tooth) * 2) var(--tooth) round no-repeat;
+  mask:
+    conic-gradient(from 135deg at 50% 0, #000 90deg, #0000 0) top / calc(var(--tooth) * 2) var(--tooth) round no-repeat,
+    linear-gradient(#000 0 0) center / 100% calc(100% - var(--tooth) * 2 + 2px) no-repeat,
+    conic-gradient(from -45deg at 50% 100%, #000 90deg, #0000 0) bottom / calc(var(--tooth) * 2) var(--tooth) round no-repeat;
+
+  &::before { top: calc(.75rem + var(--tooth)); }
+}
+
+.receipt-title {
+  margin: .5rem 0 1.25rem;
+  font-size: 1.375rem;
+  font-weight: 900;
+  text-align: center;
+}
+.receipt-label {
+  margin-bottom: .5rem;
+  color: $navy-muted;
+  font-size: .8125rem;
+  font-weight: 700;
+  letter-spacing: $letter-spacing-label;
+}
+// 收據裡的分隔線：2px 海軍藍淡虛線
+.receipt-cut {
+  height: 0;
+  margin: 1.125rem 0;
+  border: 0;
+  border-top: 2px dashed rgba($navy, .22);
+  opacity: 1;
+}
+
+// 明細列：名稱 ··········· 金額（點點引導線）
+.receipt-items {
+  display: grid;
+  gap: .75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+
+    // 引導線：名稱與金額之間的點點
+    &::after {
+      content: "";
+      order: 1;
+      flex: 1 1 1.5rem;
+      min-width: 1.5rem;
+      height: .25rem;
+      background: radial-gradient(circle, rgba($navy, .4) 0 1.25px, transparent 1.75px) 0 50% / 8px 4px repeat-x;
+    }
+    > :last-child {
+      order: 2;
+      flex: none;
+    }
+    // 品名＋數量（「VIP 搖滾區 × 1」）不拆開；座位、服務費說明的小字照常換行
+    > :first-child:not(:last-child) { white-space: nowrap; }
+    small { white-space: normal; }
+  }
+  small {
+    display: block;
+    color: $navy-muted;
+    font-size: .8125rem;
+  }
+  .price { font-size: 1.125rem; }
+}
+
+// 小計、服務費：左右分開
+.receipt-rows {
+  display: grid;
+  gap: .5rem;
+  margin: 0;
+
+  > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .75rem;
+  }
+  dt { font-weight: 400; }
+  dt small {
+    margin-left: .25rem;
+    color: $navy-muted;
+    font-size: .8125rem;
+  }
+  dd {
+    margin: 0;
+    font-size: 1.0625rem;
+  }
+}
+
+// 應付總額：收據上最大的數字，下方一條鮮黃螢光筆
+.receipt-total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+
+  > span {
+    font-size: 1.0625rem;
+    font-weight: 900;
+  }
+  .price {
+    padding-inline: .1em;
+    background-image: linear-gradient(transparent 62%, $sunny 62%, $sunny 90%, transparent 90%);
+  }
+}
+.receipt-note {
+  margin: 1rem 0 0;
+  color: $navy-muted;
+  font-size: .875rem;
+}

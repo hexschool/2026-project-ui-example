@@ -1,0 +1,325 @@
+// ============================================================
+// 我的票券 tickets.html（class 前綴 tk-）
+// 構圖（和其他 5 套「縮圖分開放」不同：照片就是整張卡的底）：
+// 1. 頁首區：麵包屑 → H1 → 說明
+// 2. 分頁：3 格 HUD 分段列（.seg-bar，js/main.js 第 9 項），數字以場次計
+// 3. 票券列表 #ticketList：
+//    - 最近一場（午夜噪音祭）.is-next 是跨 2 欄的聚光橫幅，右側一個括角讀數盒：大的 Oxanium「×3」＋「查看票券」
+//    - 其他票券 ≥ 992px 每列 2 張照片底橫幅；一列只剩 1 張時撐滿整列（flex-wrap）
+//    - 照片上的字：≥ 768px 文字壓在左側（曜石灰 94% → 90%，到卡寬 55%／992–1199px 70% 才開始變淡），
+//      右側讀數盒自帶曜石灰底；< 768px 照片只露出卡片上緣，文字區 92% 以上
+//    - 已使用、已過期：照片去色變暗，字改次要色與 faint（仍 ≥ AA）
+// 4. 設計稿狀態示意：還沒有任何票券（5）｜主辦方取消活動（7）
+// 整張卡可點（.stretched-link），滑過或鍵盤進入只亮括角、換按鈕與標題顏色，尺寸不變
+// 本頁沒有 Notion 英文區塊名，所以不放 HUD 英文標，只用 Oxanium 編號 // 01
+// ============================================================
+
+// ---------- 2. 分頁 ----------
+.tk-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1.25rem;
+  margin-bottom: map-get($spacers, 4);
+
+  .hud-index { margin: 0; }
+}
+.tk-tabs {
+  flex: 0 1 34rem;
+  min-width: 0;
+
+  @include media-breakpoint-down(sm) {
+    flex-basis: 100%;
+    gap: .25rem;
+
+    .seg {
+      gap: .375rem;
+      padding-inline: .75rem;
+      font-size: .875rem;
+    }
+    .seg-count { min-width: 1.25rem; }
+  }
+}
+.tk-tabs-demo {
+  max-width: 30rem;
+  margin-bottom: map-get($spacers, 3);
+
+  .seg { cursor: default; }
+}
+
+// ---------- 3. 票券列表 ----------
+// 用 flex-wrap 而不是 2 欄格線：分頁切換後某一列只剩 1 張時（例如「即將到來」的第 2 張），那張會撐滿整列，不會留半列空白
+.tk-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tk-slot {
+  display: flex;
+  flex: 1 1 100%;
+  min-width: 0;
+
+  @include media-breakpoint-up(lg) {
+    flex-basis: calc(50% - #{map-get($spacers, 4) * .5});
+  }
+  &.is-next { flex-basis: 100%; }
+}
+
+// 照片底橫幅
+.tk-card {
+  --veil-solid: 55%; // 文字區（曜石灰 ≥ 90%）的寬度
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "main" "side";
+  flex-grow: 1;
+  gap: map-get($spacers, 3);
+  min-height: 15rem;
+  padding: 7rem 1.25rem 1.25rem; // < 768px：上方 7rem 露出照片
+  border: 1px solid $gunmetal;
+
+  // < 768px：照片只露出上緣，往下很快壓到 92% 以上
+  &::before {
+    background:
+      $scanlines,
+      linear-gradient(180deg, rgba($obsidian, .3) 0, rgba($obsidian, .62) 5rem, rgba($obsidian, .92) 8.5rem, rgba($obsidian, .94) 100%);
+  }
+  &.hud-frame::after { inset: 0; } // overflow: hidden 會切掉外推的括角
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, var(--veil-solid)) minmax(0, 1fr);
+    grid-template-areas: "main side";
+    gap: map-get($spacers, 4);
+    padding: 1.5rem;
+
+    &::before {
+      background:
+        $scanlines,
+        linear-gradient(90deg, rgba($obsidian, .94) 0%, rgba($obsidian, .9) var(--veil-solid), rgba($obsidian, .5) calc(var(--veil-solid) + 20%), rgba($obsidian, .35) 100%);
+    }
+  }
+  @include media-breakpoint-only(lg) {
+    --veil-solid: 68%;
+  }
+}
+.tk-card-main {
+  grid-area: main;
+  min-width: 0;
+}
+.tk-card-status {
+  margin-bottom: .75rem;
+}
+.tk-card-title {
+  margin-bottom: .75rem;
+  font-family: $font-family-display;
+  font-size: 1.375rem;
+  line-height: 1.35;
+
+  a {
+    color: $text;
+    text-decoration: none;
+    transition: color .15s ease-in-out;
+  }
+}
+.tk-card-facts {
+  display: grid;
+  gap: .25rem;
+  margin: 0 0 .75rem;
+  padding: 0;
+  list-style: none;
+  color: $text-muted;
+  font-size: .9375rem;
+  line-height: 1.6;
+
+  li {
+    display: grid;
+    grid-template-columns: 1.25rem 1fr;
+    gap: .5rem;
+  }
+  .bi { color: $arc; }
+}
+.tk-card-order {
+  margin: 0;
+  color: $text-muted;
+  font-size: $small-font-size;
+
+  .num { letter-spacing: .04em; }
+}
+.tk-card-note {
+  display: flex;
+  gap: .5rem;
+  margin: .75rem 0 0;
+  padding-top: .75rem;
+  border-top: 1px solid $gunmetal;
+  color: $text-muted;
+  font-size: .875rem;
+  line-height: 1.6;
+
+  .bi { flex-shrink: 0; }
+}
+.tk-card-alert {
+  margin-top: 1rem;
+  font-size: .9375rem;
+}
+
+// 右側讀數盒：張數＋查看票券（自帶曜石灰底，壓在照片上也讀得到）
+.tk-card-side {
+  display: flex;
+  grid-area: side;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid $gunmetal;
+
+  @include media-breakpoint-up(md) {
+    @include brackets-on(after, -1px);
+    flex-direction: column;
+    align-items: stretch;
+    align-self: end;
+    justify-self: end;
+    gap: .75rem;
+    min-width: 9.5rem;
+    padding: 1rem;
+    border: 1px solid $gunmetal;
+    background-color: rgba($obsidian, .9);
+  }
+}
+.tk-card-count {
+  display: flex;
+  align-items: baseline;
+  margin: 0;
+  color: $text-muted;
+  line-height: 1;
+
+  @include media-breakpoint-up(md) {
+    justify-content: flex-end;
+  }
+}
+.tk-card-count-x {
+  margin-right: .125rem;
+  color: $arc;
+  font-family: $font-family-display;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.tk-card-count-num {
+  color: $text;
+  font-family: $font-family-display;
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.tk-card-count-unit {
+  margin-left: .375rem;
+  font-size: .875rem;
+  font-weight: 500;
+}
+.tk-card-cta {
+  pointer-events: none; // 外觀；整張卡的連結在活動名上（.stretched-link）
+}
+
+// ---------- 最近一場：聚光橫幅 ----------
+.tk-card.is-next {
+  @include media-breakpoint-up(md) {
+    min-height: 16.25rem;
+    padding: 2rem;
+  }
+  @include media-breakpoint-up(lg) {
+    --veil-solid: 50%;
+    padding: 2.25rem 2.5rem;
+  }
+
+  .tk-card-title {
+    font-size: 1.75rem;
+
+    @include media-breakpoint-up(lg) { font-size: 2.25rem; }
+  }
+  .tk-card-side {
+    @include media-breakpoint-up(md) {
+      --bracket: #{$bracket-lit};
+      min-width: 12rem;
+      padding: 1.25rem;
+    }
+  }
+  .tk-card-count-num {
+    font-size: 3rem;
+
+    @include media-breakpoint-up(lg) { font-size: 4.5rem; }
+  }
+  .tk-card-count-x { font-size: 1.5rem; }
+}
+
+// ---------- 互動：滑過或鍵盤進入（只換顏色，尺寸不變） ----------
+.tk-card:is(:hover, :focus-within) {
+  .tk-card-title a { color: $arc-hi; }
+  .tk-card-side { --bracket: #{$bracket-lit}; }
+  .btn-secondary.tk-card-cta {
+    --para-bg: #{$carbon-hi};
+    --para-border: #{$arc};
+  }
+  .btn-primary.tk-card-cta {
+    --para-bg: linear-gradient(100deg, #{$arc-hi} 0%, #{mix($arc-hi, $arc, 40%)} 50%, #{$arc} 100%);
+    --para-shadow: #{$glow-btn-hover};
+  }
+}
+// 焦點環畫在整張卡上（.stretched-link 的 ::after 蓋滿卡片；卡片 overflow: hidden，所以往內畫）
+.tk-card .stretched-link:focus-visible {
+  outline: 0;
+  box-shadow: none;
+
+  &::after {
+    outline: 2px solid $arc-hi;
+    outline-offset: -3px;
+    box-shadow: inset 0 0 0 6px rgba($arc, .35);
+  }
+}
+
+// ---------- 已使用、已過期、活動已取消：照片去色變暗，字降一階（仍 ≥ AA） ----------
+.tk-card:is(.is-used, .is-expired, .is-cancelled) {
+  .photo-veil-img { filter: grayscale(1) brightness(.6); }
+  .tk-card-facts .bi { color: $text-faint; }
+  .tk-card-count-x { color: $text-faint; }
+}
+.tk-card:is(.is-used, .is-expired) {
+  .tk-card-title a { color: $text-muted; }
+  .tk-card-facts,
+  .tk-card-count-num { color: $text-muted; }
+  .tk-card-order { color: $text-faint; }
+}
+.tk-card.is-cancelled {
+  box-shadow: inset 0 2px 0 $alert;
+
+  .tk-card-title a {
+    color: $text;
+    text-decoration: underline;
+    text-decoration-color: $control;
+    text-underline-offset: $link-underline-offset;
+
+    &:hover { color: $arc-hi; }
+  }
+  .tk-card-cta { pointer-events: auto; }
+}
+
+// ---------- 4. 設計稿狀態示意 ----------
+.tk-demos {
+  margin-top: map-get($spacers, 5);
+
+  .empty-state {
+    padding-inline: 1.5rem;
+  }
+  .tk-card.is-next {
+    @include media-breakpoint-up(lg) {
+      --veil-solid: 58%;
+      padding: 1.75rem;
+    }
+    .tk-card-title {
+      @include media-breakpoint-up(lg) { font-size: 1.75rem; }
+    }
+    .tk-card-count-num {
+      @include media-breakpoint-up(lg) { font-size: 3rem; }
+    }
+  }
+}

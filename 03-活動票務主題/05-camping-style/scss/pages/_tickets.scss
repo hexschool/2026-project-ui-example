@@ -1,0 +1,134 @@
+// ============================================================
+// 我的票券 tickets.html（2026-11 補）
+// 頁首區（泥灰＋等高線）：麵包屑 → H1 → 說明
+// 分頁＝3 片牛皮紙資料夾索引標籤（components/_index-tabs.scss），選中的那片和下面的帆布「抽屜面板」接成一片
+// 抽屜裡：每一列頂端一條橫過面板的麻繩，票券卡（components/_ticket-tag.scss 的直式吊牌）用一小段繩子穿過鉚釘孔掛在繩上
+//   ≥ 1200px 每列 3 張、768～1199px 2 張、手機 1 張
+//   手機：麻繩只畫一條在列表頂端，只有第一張掛在繩上
+// 麻繩、繩結都是裝飾：pointer-events: none，不擋點擊
+// 狀態示意 2 個在抽屜下方（≥ 992px 並排）
+// ============================================================
+
+// 麻繩：三道直線疊成（亮邊、繩色、暗邊），不用重複花紋，所以同一列好幾段疊在一起也看不出接縫
+$rope-line: linear-gradient(#CDB487 0 1px, $rope 1px 3px, #8E7650 3px 4px);
+
+.tickets-title > .hand-icon {
+  --hand-size: 2.25rem;
+  @include media-breakpoint-up(lg) { --hand-size: 2.75rem; }
+}
+
+.tickets-body {
+  padding-bottom: 4rem;
+
+  @include media-breakpoint-up(lg) { padding-bottom: 7.5rem; }
+}
+
+// ---------- 抽屜面板 ----------
+.tickets-drawer {
+  position: relative;
+  overflow: hidden; // 麻繩往兩側拉到面板邊緣就裁掉
+  padding: 1rem 1rem 1.75rem;
+  border: 1.5px solid $bark;
+  border-radius: $border-radius-xl;
+  background-color: $canvas;
+  box-shadow: $shadow-paper;
+
+  @include media-breakpoint-up(md) { padding: 1.25rem 2rem 2.5rem; }
+  @include media-breakpoint-up(xl) { padding: 1.5rem 2.5rem 3rem; }
+}
+
+// ---------- 票券列表＋營繩 ----------
+.tickets-list {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.75rem 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 1.25rem;
+  }
+  @include media-breakpoint-up(xl) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  > li {
+    position: relative;
+    padding-top: 2.75rem;
+
+    .ticket-tag { --hole-bg: #{$canvas}; }
+  }
+}
+
+// 每張卡的繩子：從營繩繞一圈穿進鉚釘孔（孔心在卡片上緣下 .875rem，也就是 li 上緣下 3.625rem）
+@mixin tickets-hanger {
+  content: "";
+  position: absolute;
+  top: .375rem;
+  left: 50%;
+  width: 1.375rem;
+  height: 3.25rem;
+  margin-left: -.6875rem;
+  pointer-events: none;
+  background: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 52" fill="none"><path d="M7.4 6.4C5.6 18 7 32 11 50M14.6 6.4C16.4 18 15 32 11 50" stroke="#{$rope}" stroke-width="2.4" stroke-linecap="round"/><path d="M8.6 12c-.8 9 .2 21 2.4 32" stroke="#8E7650" stroke-width="1" stroke-dasharray="1.5 2.5" stroke-linecap="round"/><path d="M4.6 3.2C6.6.8 15.4.8 17.4 3.2 18.4 5.4 16.4 8.4 11 8.4S3.6 5.4 4.6 3.2Z" fill="#{$rope}" stroke="#8E7650" stroke-width="1.2"/></svg>') center top / 100% 100% no-repeat;
+}
+
+@include media-breakpoint-up(md) {
+  // 每一列的營繩：每張卡各畫一段，往兩側拉到面板邊緣（被 .tickets-drawer 裁掉），同一列疊成一條
+  .tickets-list > li::before {
+    content: "";
+    position: absolute;
+    top: .625rem;
+    left: -100vw;
+    right: -100vw;
+    height: 4px;
+    pointer-events: none;
+    background: $rope-line;
+  }
+  .tickets-list > li::after { @include tickets-hanger; }
+}
+
+// 手機：營繩只在列表頂端畫一條，只有第一張（目前分頁裡第一張看得到的）掛在繩上
+@include media-breakpoint-down(md) {
+  .tickets-list {
+    padding-top: .25rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: .875rem;
+      left: -2rem;
+      right: -2rem;
+      height: 4px;
+      pointer-events: none;
+      background: $rope-line;
+    }
+    > li { padding-top: 0; }
+    > li:not([hidden]):not(li:not([hidden]) ~ li) {
+      padding-top: 2.5rem;
+
+      &::after {
+        @include tickets-hanger;
+        top: .625rem;
+        height: 2.75rem;
+      }
+    }
+  }
+}
+
+// ---------- 狀態示意 ----------
+.tickets-demos {
+  margin-top: 3rem;
+
+  @include media-breakpoint-up(lg) { margin-top: 3.5rem; }
+
+  .demo-state { height: 100%; }
+  // 取消示意裡的吊牌：限制寬度（跟列表的一張一樣寬）
+  .ticket-tag {
+    --hole-bg: #{$canvas};
+    max-width: 22rem;
+    height: auto;
+    margin: .5rem auto 0;
+  }
+}

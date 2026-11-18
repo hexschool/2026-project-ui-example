@@ -1,0 +1,322 @@
+// ============================================================
+// 註冊 register.html（class 前綴 reg-）
+// 構圖（和既有 3 套「收在版心內的卡」不同）：像遊戲的登入畫面
+// - ≥ 992px：.reg-split 是一個至少一屏高（扣掉頁首 88px）的分割畫面。
+//   用 CSS Grid 畫出 4 欄：[視窗左緣留白][版心 7][版心 5][視窗右緣留白]，
+//   左欄放表單面板（最寬 520px，置中），右側入場保障面板的底（.reg-guarantee-bg）從版心 5 一路跨到視窗右緣，
+//   內容（.reg-guarantee）仍收在版心內。留白欄寬度＝(視窗 − 版心內容寬) ÷ 2，和頁首、頁尾的版心對齊
+// - 入場保障層級低於表單：沒有陰影、沒有按鈕，只有碳纖維紋＋一個 40% 透明的巨大六角徽章（裝飾）
+// - 欄位錯誤的狀態示意在分割畫面下方，寬度同表單面板，對齊左側表單欄
+// - < 992px：表單 → 入場保障（和表單同寬的面板，不再延伸）→ 狀態示意
+// 本頁沒有 Notion 英文區塊名，所以不放 HUD 英文標，只用 Oxanium 編號 // 01、// 02
+// ============================================================
+
+$reg-card-max: 32.5rem; // 520px
+
+// 版心內容寬（container-xl 寬度扣掉左右各 32px）：lg 流動、xl 1076、xxl 1336
+@mixin reg-grid {
+  @include media-breakpoint-up(lg) {
+    --reg-side: 2rem;
+    display: grid;
+    grid-template-columns:
+      [full-start] var(--reg-side)
+      [content-start] minmax(0, 7fr)
+      [split] minmax(0, 5fr)
+      [content-end] var(--reg-side)
+      [full-end];
+  }
+  @include media-breakpoint-up(xl) {
+    --reg-side: max(2rem, calc((100% - 1076px) / 2));
+  }
+  @include media-breakpoint-up(xxl) {
+    --reg-side: max(2rem, calc((100% - 1336px) / 2));
+  }
+}
+
+.reg-split {
+  @include reg-grid;
+  padding-inline: $container-padding-x * .5; // < 992px：左右 24px（同 .container-xl）
+
+  @include media-breakpoint-up(lg) {
+    min-height: calc(100svh - #{$site-header-space});
+    padding-inline: 0;
+  }
+}
+
+// ---------- 區塊一：表單面板 ----------
+.reg-form-area {
+  padding-block: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-column: content-start / split;
+    grid-row: 1;
+    place-items: center;
+    padding: map-get($spacers, 5) map-get($spacers, 5) map-get($spacers, 5) 0;
+  }
+}
+.reg-card {
+  width: 100%;
+  max-width: $reg-card-max;
+  margin-inline: auto;
+
+  @include media-breakpoint-up(sm) {
+    padding: 2rem 2rem 1.75rem;
+  }
+  @include media-breakpoint-up(lg) {
+    padding: 2.5rem 2.5rem 2rem;
+  }
+}
+.reg-index {
+  margin-bottom: map-get($spacers, 3);
+}
+.reg-title {
+  margin-bottom: map-get($spacers, 2);
+  font-size: 2.125rem; // 34px：表單面板裡的 H1 不用頁面標題的 52px
+  line-height: 1.25;
+}
+.reg-lead {
+  margin-bottom: map-get($spacers, 4);
+  color: $text-muted;
+}
+.reg-field {
+  margin-bottom: 1.25rem;
+
+  .form-text {
+    margin: .375rem 0 0;
+    font-size: $small-font-size;
+  }
+  .invalid-feedback {
+    margin-top: .375rem;
+  }
+}
+// 錯誤文字：前面的三角圖示＋文字（不只靠顏色）
+.reg-card .invalid-feedback {
+  display: flex;
+  gap: .375rem;
+  align-items: baseline;
+  margin: .375rem 0 0;
+
+  .bi { flex-shrink: 0; }
+}
+.reg-agree {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 .625rem;
+  margin-bottom: map-get($spacers, 4);
+  padding-left: 0;
+
+  .form-check-input {
+    flex-shrink: 0;
+    margin: .25rem 0 0;
+    float: none;
+  }
+  .form-check-label {
+    flex: 1 1 0;
+    min-width: 0;
+    cursor: pointer;
+  }
+  .invalid-feedback {
+    flex-basis: 100%;
+  }
+}
+// 服務條款、隱私權政策：沒有頁面的佔位連結，外觀是連結
+.reg-terms-link {
+  margin-inline: .125rem;
+  color: $arc;
+  text-decoration: underline;
+  text-underline-offset: $link-underline-offset;
+}
+.reg-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  margin: map-get($spacers, 3) 0 0;
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $gunmetal;
+  color: $text-muted;
+
+  .btn-text {
+    --bs-btn-color: #{$arc};
+    --bs-btn-hover-color: #{$arc-hi};
+    --bs-btn-padding-x: .5rem;
+    font-weight: 700;
+  }
+}
+// 錯誤訊息裡的「登入」：外觀是連結的按鈕（開登入 Modal）
+.reg-inline-link {
+  margin-inline: .125rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $arc-hi;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: $link-underline-offset;
+
+  &:hover { color: $text; }
+}
+
+// ---------- 區塊二：入場保障面板（≥ 992px 延伸到視窗右緣） ----------
+.reg-guarantee-bg {
+  display: none;
+
+  @include media-breakpoint-up(lg) {
+    position: relative;
+    display: block;
+    grid-column: split / full-end;
+    grid-row: 1;
+    // 往上延伸到視窗頂端，墊在懸浮 HUD 列後面（頁首 z-index 較高），分割畫面才是真正滿一屏
+    margin-top: -$site-header-space;
+    overflow: hidden;
+    @include carbon-weave;
+    border-left: 1px solid $gunmetal;
+
+    // 掃描線
+    &::before {
+      @include scanlines-layer;
+    }
+    // 左緣一條金屬藍光線（中間亮、上下淡出）
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 -1px;
+      width: 2px;
+      background: linear-gradient(180deg, transparent, rgba($arc, .5) 25%, $arc-hi 50%, rgba($arc, .5) 75%, transparent);
+    }
+  }
+}
+// 巨大六角徽章（裝飾）：40% 透明的金屬藍描線，右下角一半跑出視窗外，不壓到入場保障的文字
+.reg-guarantee-hex {
+  position: absolute;
+  right: -7rem;
+  bottom: -15rem;
+  width: 28rem;
+  height: auto;
+  opacity: .4;
+  fill: none;
+  stroke: $arc;
+  stroke-width: 1.5;
+  stroke-linejoin: miter;
+
+  polygon:first-child { stroke: $control; stroke-width: 4; }
+  path { stroke: $arc; stroke-width: 6; }
+}
+
+.reg-guarantee {
+  position: relative;
+  padding: map-get($spacers, 4);
+  @include carbon-weave;
+  @include brackets-on(after, -1px);
+  border: 1px solid $gunmetal;
+
+  @include media-breakpoint-up(sm) {
+    padding: 2rem;
+  }
+  // < 992px：和表單面板同寬、置中，上下對齊成一條
+  @include media-breakpoint-down(lg) {
+    max-width: $reg-card-max;
+    margin-inline: auto;
+  }
+  @include media-breakpoint-up(lg) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    grid-column: split / content-end;
+    grid-row: 1;
+    z-index: 1;
+    padding: map-get($spacers, 5) 0 map-get($spacers, 5) map-get($spacers, 5);
+    border: 0;
+    background: none;
+
+    &::after { display: none; } // 面板本身沒有括角，底延伸到視窗右緣
+  }
+  @include media-breakpoint-up(xl) {
+    padding-left: 4rem;
+  }
+
+  .hud-index {
+    margin-bottom: map-get($spacers, 2);
+  }
+}
+.reg-guarantee-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: map-get($spacers, 4);
+  color: $text;
+  font-family: $font-family-base;
+  font-size: 1.25rem;
+
+  .bi { color: $mint; }
+}
+.reg-guarantee-list {
+  max-width: 26rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding-block: 1.25rem;
+
+    // 列與列之間：發光細線（左亮右淡）
+    + li::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 1px;
+      background: linear-gradient(90deg, $arc 0%, rgba($arc, .35) 45%, transparent 100%);
+      box-shadow: 0 0 8px rgba($arc, .45);
+    }
+  }
+  li:first-child { padding-top: 0; }
+  li:last-child { padding-bottom: 0; }
+
+  h3 {
+    margin-bottom: .25rem;
+    font-family: $font-family-base;
+    font-size: 1.0625rem;
+  }
+  p {
+    margin: 0;
+    color: $text-muted;
+    font-size: .9375rem;
+    line-height: 1.7;
+  }
+}
+
+// ---------- 設計稿狀態示意：欄位有錯誤時 ----------
+.reg-after {
+  @include reg-grid;
+  padding: map-get($spacers, 5) ($container-padding-x * .5) map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding: map-get($spacers, 5) 0 $section-space-lg;
+  }
+}
+// 和表單欄同一欄、同樣右側留 48px，所以示意區和表單面板同寬、同一條中線
+.reg-after-col {
+  @include media-breakpoint-up(lg) {
+    grid-column: content-start / split;
+    padding-right: map-get($spacers, 5);
+  }
+}
+.reg-demo {
+  width: 100%;
+  max-width: $reg-card-max;
+  margin: 0 auto;
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 4);
+  }
+}
+.reg-card-demo {
+  @include media-breakpoint-up(sm) {
+    padding: 1.5rem;
+  }
+}

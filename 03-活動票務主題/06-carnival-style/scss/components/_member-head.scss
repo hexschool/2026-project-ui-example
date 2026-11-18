@@ -1,0 +1,205 @@
+// ============================================================
+// 會員頁頁首區（我的票券、購票紀錄、追蹤的主辦方共用；2026-11 補）
+// 奶油黃帶、全部置中，結構同活動列表的頁首區：麵包屑 → H1 鮮黃貼紙 → 說明 → 數量貼紙或分頁托盤；下緣奶油扇形
+//
+// <div class="section-butter member-head">
+//   <div class="container">
+//     <header class="page-head">…麵包屑、<h1><span class="sticker">購票紀錄</span></h1>、<p class="page-lead">…</p></header>
+//     <p class="count-sticker">共 <strong class="num">6</strong> 筆訂單</p>
+//   </div>
+// </div>
+//
+// 我的票券把分頁托盤放在頁首區最下面，一半壓在扇形上（同活動列表的搜尋列壓在頁首區裡的做法）：
+// <div class="section-butter member-head has-tray">…<div class="tray-wrap"><div class="tray" role="group">…</div></div></div>
+// ============================================================
+
+.member-head {
+  position: relative;
+  padding-block: 2.25rem 3.75rem;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: 3rem 4.5rem;
+  }
+
+  // 下緣奶油扇形：從頁面底色往上鼓
+  &::after {
+    @include scallop(bottom, $cream, $scallop-r-sm);
+  }
+  .page-head {
+    padding-block: 0;
+  }
+}
+
+// ---------- 數量貼紙：「共 6 筆訂單」「追蹤中 4 個主辦方」 ----------
+// 香草膠囊＋海軍藍框，數字放在斜貼的鮮黃貼紙上（鮮黃一律加海軍藍框）
+.count-sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: .625rem;
+  margin: 1.5rem 0 0;
+  padding: .4375rem 1.375rem;
+  border: 2px solid $navy;
+  border-radius: $border-radius-pill;
+  background-color: $vanilla;
+  color: $navy;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  box-shadow: $shadow-soft;
+
+  strong {
+    display: inline-grid;
+    place-items: center;
+    min-width: 2.875rem;
+    height: 2.875rem;
+    padding: .3125rem .5rem 0;
+    border: 2px solid $navy;
+    border-radius: .75rem;
+    background-color: $sunny;
+    font-size: 1.875rem;
+    font-weight: 800;
+    line-height: 1;
+    transform: rotate(-4deg);
+    box-shadow: inset 0 -3px 0 rgba($navy, .14), inset 0 1px 0 rgba($white, .6);
+  }
+}
+// 頁首區裡的數量貼紙：和說明之間留一點距離
+// 頁首區全部置中：貼紙也放在正中間
+.member-head .count-sticker {
+  display: flex;
+  width: fit-content;
+  margin: 1.75rem auto 0;
+}
+
+// ---------- 膠囊托盤分頁（我的票券；js/main.js #9 切換 aria-pressed） ----------
+// 香草托盤＋$shadow-soft；選中的那一段是糖果紅膠囊白字；段內一顆鮮黃小代幣放數量
+// <div class="tray" role="group" aria-label="票券分類" data-ticket-tabs="#ticketList">
+//   <button class="tray-btn" type="button" data-filter="upcoming" aria-pressed="true">即將到來<span class="tray-count num">2</span></button>
+// </div>
+.member-head.has-tray {
+  padding-bottom: 0;
+}
+.tray-wrap {
+  position: relative;
+  z-index: 1;
+  margin-top: 2rem;
+  margin-bottom: -1.75rem; // 托盤下半部壓出奶油黃帶，落在扇形與頁面底色上
+}
+.tray {
+  display: inline-flex;
+  gap: .25rem;
+  padding: .375rem;
+  border: 2px solid rgba($navy, .12);
+  border-radius: $border-radius-pill;
+  background-color: $vanilla;
+  box-shadow: $shadow-float;
+
+  // 手機：滿寬 3 等分
+  @include media-breakpoint-down(sm) {
+    display: flex;
+    width: 100%;
+    gap: .125rem;
+    padding: .3125rem;
+  }
+}
+.tray-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 3rem;
+  padding: .375rem .5rem .375rem 1.25rem;
+  border: 0;
+  border-radius: $border-radius-pill;
+  background-color: transparent;
+  color: $navy;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  transition: background-color .15s ease, color .15s ease, box-shadow .15s ease;
+
+  @include media-breakpoint-down(sm) {
+    flex: 1 1 0;
+    gap: .3125rem;
+    padding: .375rem .25rem;
+    font-size: .9375rem;
+  }
+
+  &:hover {
+    background-color: $butter;
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: $focus-ring-double;
+  }
+  &[aria-pressed="true"],
+  &.active {
+    background-color: $candy;
+    color: $white; // 5.29
+    box-shadow: $bevel-btn;
+
+    &:hover { background-color: $candy-deep; }
+    &:focus-visible { box-shadow: $bevel-btn, $focus-ring-double; }
+  }
+}
+// 段內的數量：鮮黃小代幣（海軍藍框；放在糖果紅上也看得清楚）
+.tray-count {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding-top: .125rem;
+  border: 2px solid $navy;
+  border-radius: 50%;
+  background-color: $sunny;
+  color: $navy;
+  font-size: .9375rem;
+  font-weight: 800;
+  line-height: 1;
+
+  @include media-breakpoint-down(sm) {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: .8125rem;
+  }
+}
+
+// 會員頁的內容區：頁首區之後到頁尾的上下留白
+.member-body {
+  padding-block: 3rem $section-padding-y-sm;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: 4rem $section-padding-y-lg;
+  }
+}
+.member-head.has-tray + .member-body {
+  padding-top: 4.5rem;
+
+  @include media-breakpoint-up(lg) {
+    padding-top: 5.5rem;
+  }
+}
+
+// ---------- 會員頁底部的狀態示意：≥ 992px 兩個並排、同高 ----------
+// <div class="row g-4 member-demos"><div class="col-lg-6"><section class="demo-state is-center">…</section></div>…</div>
+// .is-center：舞台撐滿高度、內容垂直置中（空狀態用）
+.member-demos {
+  margin-top: map-get($spacers, 6);
+
+  .demo-state {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin-top: 0;
+  }
+  .demo-state-tag {
+    align-self: flex-start; // 直向 flex 裡不要被拉滿寬
+  }
+  .demo-state-stage {
+    flex: 1 1 auto;
+  }
+  .demo-state.is-center .demo-state-stage {
+    display: grid;
+    align-content: center;
+  }
+}

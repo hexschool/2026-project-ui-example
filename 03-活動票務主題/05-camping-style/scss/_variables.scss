@@ -1,0 +1,541 @@
+// ============================================================
+// StageOne 城市現場｜05 戶外露營音樂節：Bootstrap 5 變數覆寫（design token）
+// 規則：只在這裡改 Bootstrap 變數與本風格的 token；元件與頁面樣式一律引用變數，不寫死色碼
+//
+// 一句話：像音樂節寄到家的營地手冊。泥灰紙面、牛皮紙吊牌、帆布、麻繩、手繪路線圖。
+// 單一淺色主題（不用 data-bs-theme）。對比度都用 WCAG 2.x 公式算過，括號裡是比值。
+//
+// 三條一定要守的顏色規則：
+//   1. 野營橘 $campfire 上只能放深色字（#1E1C17，5.44:1）；白字只有 3.13:1，不准用
+//   2. 橘色當「文字」一律換成炭橘 $ember；炭橘不放在牛皮紙上
+//   3. 橘色塊放在淺底上要加 2px 樹皮框（橘色本身對帆布只有 2.95:1，邊界看不清）
+// ============================================================
+
+// ---------- 1. 色彩 ----------
+// 底色與紙材
+$mud:          #ECE9E2; // 泥灰灰白：頁面底（偏灰，不是米黃；樹皮字 11.87）
+$canvas:       #FAF8F3; // 帆布白：卡片、輸入框、頁首（樹皮字 13.56）
+$sage:         #E1E4D3; // 鼠尾草：交替區塊（橄欖淡底；樹皮字 11.13）
+$kraft:        #E3CFA6; // 牛皮紙：吊牌、票根、裝箱單、索引卡（樹皮字 9.42、次要字 4.99）
+$orange-soft:  #F8E4D5; // 橘淡底：選中卡、稀缺淡底、退票強調（樹皮字 11.68）
+
+// 文字與線
+$bark:         #2B2A24; // 樹皮：內文、標題、手繪線、卡片框、按鈕框
+$bark-muted:   #55544A; // 次要文字（泥灰 6.29、帆布 7.19、鼠尾草 5.90、牛皮紙 4.99）
+$bark-faint:   #66645A; // placeholder（帆布 5.60、泥灰 4.90）；不放在牛皮紙、鼠尾草上
+$stone:        #C9C3B4; // 裝飾線、等高線、鉚釘金屬環（不承載資訊）
+$control:      #7A7564; // 表單框線、膠囊框（非文字：帆布 4.34、泥灰 3.80）
+$ink-dark:     #1E1C17; // 橘色、芥末黃上的字；照片遮罩的底色
+
+// 品牌色
+$campfire:       #EE6A1F; // 野營橘（主色）：主要按鈕底、選中膠囊底、大面積重點；上放 $ink-dark 字（5.44）
+$campfire-hover: #F07A32; // 主要按鈕 hover（$ink-dark 字 6.11）
+$ember:          #A3420A; // 炭橘：橘色文字、連結、小圖示（帆布 5.92、泥灰 5.18、鼠尾草 4.86、橘淡底 5.10）
+$flare:          #D45A12; // 手繪圖示的橘色筆觸、稀缺進度條（非文字：帆布 3.75、泥灰 3.29）
+$flare-on-sage:  #CF5711; // 鼠尾草底上的橘色筆觸（3.23）
+$ember-light:    #F3A266; // 夜營綠上的橘色字與焦點環（4.81）
+$olive:          #5C6B2A; // 橄欖綠：次要按鈕底、成功、熱賣中進度條（白字 5.85；當字：帆布 5.51、泥灰 4.82、鼠尾草 4.52）
+$olive-deep:     #4A5720; // 橄欖色文字（泥灰 6.47、鼠尾草 6.07；白字 7.85）
+$olive-night:    #3D4719; // 夜營綠：頁尾、深色帶（帆布字 9.36、牛皮紙字 6.50）
+
+// 語意色
+$brick:        #B3261E; // 磚紅：錯誤、付款失敗、驗票失敗（帆布 6.16、泥灰 5.39；白字 6.54）
+$mustard:      #F2C14E; // 芥末黃：警示底（倒數警示；樹皮字 8.57）
+$mustard-text: #8A5A00; // 警示文字（帆布 5.58、泥灰 4.89）
+$lake:         #2F6274; // 湖水藍：資訊、尚未開賣（帆布 6.34、泥灰 5.55）
+$rope:         #B79A6A; // 麻繩（裝飾，不承載資訊）
+$white:        #FFFFFF; // 只給 QR 底、橄欖／磚紅大面積上的字
+
+// Bootstrap 主題色
+$primary:   $campfire;
+$secondary: $olive;
+$success:   $olive-deep;
+$info:      $lake;
+$warning:   $mustard;
+$danger:    $brick;
+$light:     $canvas;
+$dark:      $bark;
+
+$theme-colors: (
+  "primary":   $primary,
+  "secondary": $secondary,
+  "success":   $success,
+  "info":      $info,
+  "warning":   $warning,
+  "danger":    $danger,
+  "light":     $light,
+  "dark":      $dark,
+);
+
+// 按鈕、標籤上的文字色：Bootstrap 依序試「淺色 → 深色」，取第一個達 4.5:1 的
+// 野營橘（白字 3.13）、芥末黃會選到深色字；橄欖、磚紅、湖水藍、樹皮會選到白字
+$color-contrast-light: $white;
+$color-contrast-dark:  $ink-dark;
+$min-contrast-ratio:   4.5;
+
+// 單一淺色主題：不輸出 [data-bs-theme="dark"] 那一份變數
+$enable-dark-mode: false;
+// 字級自己控制（_base.scss 用斷點寫桌機／手機兩個值），不用 RFS 自動縮放
+$enable-rfs: false;
+
+// ---------- 全站底色與文字 ----------
+$body-bg:                  $mud;
+$body-color:               $bark;
+$body-secondary-color:     $bark-muted;
+$body-secondary-bg:        $canvas;
+$body-tertiary-color:      $bark-muted;
+$body-tertiary-bg:         $sage;
+$body-emphasis-color:      $bark;
+$border-color:             $bark;
+$border-color-translucent: rgba($bark, .2);
+$headings-color:           inherit;
+
+// 連結：炭橘＋底線
+$link-color:            $ember;
+$link-hover-color:      $bark;
+$link-decoration:       underline;
+$link-underline-offset: .25em;
+
+// 各狀態的「文字、淡底、淡框」三件組（alert、.text-*-emphasis、.bg-*-subtle 共用）
+$primary-text-emphasis:   $ember;
+$secondary-text-emphasis: $olive-deep;
+$success-text-emphasis:   $olive-deep;
+$info-text-emphasis:      $lake;
+$warning-text-emphasis:   $mustard-text;
+$danger-text-emphasis:    $brick;
+$light-text-emphasis:     $bark;
+$dark-text-emphasis:      $bark;
+
+$primary-bg-subtle:       $orange-soft;
+$secondary-bg-subtle:     $sage;
+$success-bg-subtle:       $sage;
+$info-bg-subtle:          #DCE7EA; // 湖水淡底（湖水藍字 5.34）
+$warning-bg-subtle:       #FBEBC4; // 芥末淡底（警示字 5.02、樹皮字 12.18）
+$danger-bg-subtle:        #F6DEDB; // 磚紅淡底（磚紅字 5.10）
+$light-bg-subtle:         $canvas;
+$dark-bg-subtle:          $mud;
+
+$primary-border-subtle:   $bark;
+$secondary-border-subtle: $olive;
+$success-border-subtle:   $olive;
+$info-border-subtle:      $lake;
+$warning-border-subtle:   $bark;
+$danger-border-subtle:    $brick;
+$light-border-subtle:     $stone;
+$dark-border-subtle:      $bark;
+
+// 元件的「選中」（下拉、列表群組、核取方塊）
+$component-active-bg:    $campfire;
+$component-active-color: $ink-dark;
+
+// 焦點環：3px 炭橘實線、外推 3px（帆布上 5.92）；夜營綠區塊換成 $ember-light（_base.scss）
+$focus-ring-width:      3px;
+$focus-ring-opacity:    1;
+$focus-ring-blur:       0;
+$focus-ring-color:      $ember;
+$focus-ring-box-shadow: 0 0 0 3px $ember;
+
+$mark-bg:    $orange-soft;
+$mark-color: $bark;
+$code-color: $ember;
+
+$hr-color:   $bark;
+$hr-opacity: 1;
+
+// ---------- 2. 字體與字級 ----------
+// 芫荽 Iansui：Display、H1、H2、情境卡標題、吊牌上的活動名（手寫感；只有 400，不准加粗）
+// Noto Sans TC：H3、內文、表單、按鈕
+// Zilla Slab：英數、價格、倒數、票號、日期旗（粗襯線，有 tnum）
+$font-family-sans-serif: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+$font-family-base:       $font-family-sans-serif;
+$font-family-hand:       "Iansui", "Noto Sans TC", "PingFang TC", sans-serif;   // 自訂：手寫標題
+$font-family-slab:       "Zilla Slab", "Noto Sans TC", "PingFang TC", serif;    // 自訂：數字、票號
+$headings-font-family:   $font-family-sans-serif; // H3 以下；H1、H2、Display 在 _base.scss 換成芫荽
+
+$font-size-base:  1rem;      // 16px
+$font-size-sm:    .875rem;   // 14px
+$font-size-lg:    1.125rem;  // 18px
+$small-font-size: .8125rem;  // 13px：Caption
+
+$font-weight-light:    400;
+$font-weight-normal:   400;
+$font-weight-medium:   500;
+$font-weight-semibold: 600;
+$font-weight-bold:     700;
+$font-weight-bolder:   700;
+
+$line-height-base: 1.85; // Body
+$line-height-sm:   1.5;
+$line-height-lg:   1.8;
+
+// 字級階層（桌機／手機）：手機值在 _base.scss 用 media-breakpoint-down(lg) 覆寫
+$display-size:        4.75rem;  // 76px／44px（首頁主標）
+$display-size-mobile: 2.75rem;
+$h1-font-size:        3.25rem;  // 52px／34px（Iansui）
+$h1-font-size-mobile: 2.125rem;
+$h2-font-size:        2.375rem; // 38px／28px（Iansui）
+$h2-font-size-mobile: 1.75rem;
+$h3-font-size:        1.25rem;  // 20px／18px（Noto 700）
+$h3-font-size-mobile: 1.125rem;
+$h4-font-size:        1.125rem;
+$h5-font-size:        1rem;
+$h6-font-size:        .875rem;
+
+$headings-font-weight:   700;
+$headings-line-height:   1.3;
+$headings-margin-bottom: .75rem;
+
+$display-font-sizes: (
+  1: $display-size,
+  2: 3.75rem,
+  3: 3rem,
+  4: 2.75rem,  // 44px：應付總額（Zilla Slab）
+  5: 2.25rem,
+  6: 1.875rem,
+);
+$display-font-weight: 400;
+$display-line-height: 1.2;
+
+$lead-font-size:          1.1875rem; // 19px／17px
+$lead-font-size-mobile:   1.0625rem;
+$lead-font-weight:        400;
+
+// 價格與倒數（Zilla Slab 700）
+$price-size-buy:     1.875rem; // 30px：購票卡
+$price-size-card:    1.25rem;  // 20px：卡片
+$price-size-total:   2.75rem;  // 44px：應付總額
+$countdown-size:        2.125rem; // 34px
+$countdown-size-mobile: 1.5rem;   // 24px
+
+$letter-spacing-body:  .02em;
+$letter-spacing-label: .04em;
+
+// ---------- 3. 間距 ----------
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * .25,  // 4px
+  2: $spacer * .5,   // 8px
+  3: $spacer,        // 16px
+  4: $spacer * 1.5,  // 24px
+  5: $spacer * 2,    // 32px
+  6: $spacer * 3,    // 48px
+  7: $spacer * 4,    // 64px：手機區塊上下
+  8: $spacer * 7.5,  // 120px：桌機區塊上下
+);
+$section-space:        4rem;   // 64px
+$section-space-lg:     7.5rem; // 120px
+
+// 格線：12 欄、欄距 32px；容器 xl 1140、xxl 1240（比既有 3 套窄，像一本手冊）
+// 容器左右留白 24px（≥ lg 32px，見 _base.scss）。$container-padding-x 要 ≥ 欄距，.row 負邊距才不會溢出
+$grid-gutter-width:   2rem;
+$container-padding-x: 3rem;
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  xxl: 1240px,
+);
+
+// ---------- 4. 圓角、線、陰影 ----------
+$border-width:       1.5px;  // 卡片框：1.5px 樹皮實線
+$border-radius-sm:   .5rem;  // 8px：座位、小標籤
+$border-radius:      .75rem; // 12px：按鈕、輸入框
+$border-radius-lg:   .875rem;// 14px：卡片
+$border-radius-xl:   1.25rem;// 20px：大面板（摺頁地圖、紙地圖、對話框）
+$border-radius-xxl:  1.25rem;
+$border-radius-pill: 50rem;
+$radius-photo:       .625rem; // 自訂：10px，照片內縮在卡片裡
+// 自訂：不規則手繪圓角（只給狀態標籤、篩選膠囊、城市膠囊這類小東西）
+$radius-hand:        255px 15px 225px 15px / 15px 225px 15px 255px;
+
+// 縫線：卡片內縮 6px 一圈 2px 橄欖虛線（裝飾）
+$stitch-color:  rgba($olive, .45);
+$stitch-inset:  8px;  // outline-offset 取負值：1.5px 框＋6px 間距
+
+// 陰影：只有「紙張浮起」一種（吊牌、夾板、索引卡、hover 中的卡片）；其他不靠陰影
+$enable-shadows:   false;
+$shadow-paper:     0 1px 0 rgba($bark, .08), 0 8px 16px -10px rgba($bark, .35);
+$shadow-paper-lg:  0 1px 0 rgba($bark, .08), 0 14px 28px -14px rgba($bark, .45);
+$box-shadow-sm:    0 1px 2px rgba($bark, .12);
+$box-shadow:       $shadow-paper;
+$box-shadow-lg:    0 24px 48px -16px rgba($bark, .4);
+$box-shadow-inset: inset 0 1px 2px rgba($bark, .1);
+
+$enable-negative-margins: true;
+
+// ---------- 5. 元件 ----------
+// 按鈕：主要＝野營橘底＋深色字＋2px 樹皮框（橘色貼紙）；次要＝帆布底＋2px 樹皮框
+$btn-border-width:     2px;
+$btn-padding-y:        .625rem;  // 高 48px：(10 + 24 + 10) + 2 × 2
+$btn-padding-x:        1.375rem;
+$btn-font-size:        1rem;
+$btn-line-height:      1.5;
+$btn-padding-y-sm:     .5rem;    // 高 44px：(8 + 24 + 8) + 2 × 2（line-height 固定 1.5 × 16px）
+$btn-padding-x-sm:     1rem;
+$btn-font-size-sm:     .9375rem;
+$btn-padding-y-lg:     .875rem;  // 高 56px：付款按鈕
+$btn-padding-x-lg:     1.75rem;
+$btn-font-size-lg:     1.0625rem;
+$btn-font-weight:      700;
+$btn-border-radius:    .75rem;
+$btn-border-radius-sm: .75rem;
+$btn-border-radius-lg: .75rem;
+$btn-disabled-opacity: 1;        // 停用不疊透明度，改用牛皮紙底＋虛線框（_base.scss），文字仍達 AA
+$btn-focus-width:      $focus-ring-width;
+$btn-link-disabled-color: $bark-muted;
+
+// 表單：帆布底、1.5px 控制框（4.34）、12px 圓角；focus 改成炭橘框＋3px 炭橘環
+$input-bg:                    $canvas;
+$input-color:                 $bark;
+$input-border-color:          $control;
+$input-border-width:          1.5px;
+$input-placeholder-color:     $bark-faint;
+$input-padding-y:             .625rem;  // 高 48px：(10 + 24 + 10) + 1.5 × 2 ≈ 47px，min-height 補到 48（_base.scss）
+$input-padding-x:             1rem;
+$input-font-size:             1rem;
+$input-line-height:           1.5;
+$input-border-radius:         .75rem;
+$input-border-radius-sm:      .625rem;
+$input-border-radius-lg:      .875rem;
+$input-focus-bg:              $canvas;
+$input-focus-color:           $bark;
+$input-focus-border-color:    $ember;
+$input-focus-box-shadow:      0 0 0 3px rgba($ember, .9);
+$input-disabled-bg:           $mud;
+$input-disabled-color:        $bark-muted;
+$input-disabled-border-color: $stone;
+$input-group-addon-bg:        $mud;
+$input-group-addon-color:     $bark;
+$input-group-addon-border-color: $control;
+$form-label-font-size:        .875rem;
+$form-label-font-weight:      700;
+$form-label-color:            $bark;
+$form-label-margin-bottom:    .5rem;
+$form-text-color:             $bark-muted;
+$form-text-font-size:         .8125rem;
+
+$form-select-indicator-color:  $bark;
+$form-select-focus-box-shadow: $input-focus-box-shadow;
+
+// 核取方塊、radio：帆布底＋2px 樹皮框（6px 圓角）；選中＝野營橘底＋深色勾
+$form-check-input-width:                1.375em;
+$form-check-input-bg:                   $canvas;
+$form-check-input-border:               2px solid $bark;
+$form-check-input-border-radius:        .375rem;
+$form-check-input-checked-color:        $ink-dark;
+$form-check-input-checked-bg-color:     $campfire;
+$form-check-input-checked-border-color: $bark;
+$form-check-input-focus-border:         $bark;
+$form-check-input-focus-box-shadow:     0 0 0 3px $ember;
+$form-check-input-disabled-opacity:     .5;
+$form-check-label-disabled-opacity:     1;
+$form-check-radio-checked-bg-image:     url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='2' fill='#{$ink-dark}'/></svg>");
+
+$form-feedback-valid-color:   $olive-deep;
+$form-feedback-invalid-color: $brick;
+$form-feedback-font-size:     .875rem;
+$form-feedback-icon-valid-color:   $olive-deep;
+$form-feedback-icon-invalid-color: $brick;
+
+$btn-close-color:         $bark;
+$btn-close-opacity:       1;
+$btn-close-hover-opacity: .7;
+$btn-close-focus-shadow:  0 0 0 3px $ember;
+
+// 卡片：帆布底＋1.5px 樹皮框＋14px 圓角（縫線另外加 .stitch）
+$card-bg:            $canvas;
+$card-color:         $bark;
+$card-border-color:  $bark;
+$card-border-width:  1.5px;
+$card-border-radius: .875rem;
+$card-cap-bg:        transparent;
+$card-spacer-y:      1.5rem;
+$card-spacer-x:      1.5rem;
+
+// 頁首高度：sticky 側欄、步驟列、錨點捲動的位移都以此為準
+// 76px 本體＋底部手繪波浪 10px（蓋在下一區上面）＋ 22px 呼吸
+$site-header-height: 4.75rem;   // 76px
+$site-header-wave:   .625rem;   // 10px
+$sticky-top-offset:  6.75rem;   // 108px：購票卡、篩選側欄、訂單明細、結帳步驟列
+
+// 導覽列
+$navbar-padding-y:                  .875rem; // 14 × 2 ＋ 48 ＝ 76px
+$navbar-nav-link-padding-x:         .875rem;
+$navbar-light-color:                $bark;
+$navbar-light-hover-color:          $ember;
+$navbar-light-active-color:         $bark;
+$navbar-light-brand-color:          $bark;
+$navbar-light-brand-hover-color:    $bark;
+$navbar-light-toggler-border-color: transparent;
+$navbar-toggler-border-radius:      .75rem;
+$nav-link-font-size:                1rem;
+$nav-link-font-weight:              500;
+$nav-link-color:                    $bark;
+$nav-link-hover-color:              $ember;
+$nav-link-disabled-color:           $bark-muted;
+
+// 下拉選單
+$dropdown-bg:                  $canvas;
+$dropdown-color:               $bark;
+$dropdown-border-color:        $bark;
+$dropdown-border-width:        1.5px;
+$dropdown-border-radius:       .75rem;
+$dropdown-divider-bg:          $stone;
+$dropdown-box-shadow:          $shadow-paper-lg;
+$dropdown-link-color:          $bark;
+$dropdown-link-hover-color:    $bark;
+$dropdown-link-hover-bg:       $orange-soft;
+$dropdown-link-active-color:   $ink-dark;
+$dropdown-link-active-bg:      $campfire;
+$dropdown-link-disabled-color: $bark-muted;
+
+// 對話框、側邊抽屜：帆布底＋1.5px 樹皮框＋20px 圓角（縫線另外加）；遮罩是樹皮色六成
+$modal-content-bg:            $canvas;
+$modal-content-color:         $bark;
+$modal-content-border-color:  $bark;
+$modal-content-border-width:  1.5px;
+$modal-content-border-radius: 1.25rem;
+$modal-header-border-color:   $stone;
+$modal-footer-border-color:   $stone;
+$modal-header-padding:        1.5rem 1.75rem 1rem;
+$modal-inner-padding:         1.75rem;
+$modal-backdrop-bg:           $ink-dark;
+$modal-backdrop-opacity:      .6;
+$offcanvas-bg-color:          $canvas;
+$offcanvas-color:             $bark;
+$offcanvas-border-color:      $bark;
+$offcanvas-border-width:      1.5px;
+$offcanvas-backdrop-bg:       $ink-dark;
+$offcanvas-backdrop-opacity:  .6;
+
+// Accordion
+$accordion-color:                   $bark;
+$accordion-bg:                      $canvas;
+$accordion-border-color:            $bark;
+$accordion-border-width:            1.5px;
+$accordion-border-radius:           .875rem;
+$accordion-inner-border-radius:     .75rem;
+$accordion-button-padding-y:        1.125rem;
+$accordion-button-padding-x:        1.25rem;
+$accordion-body-padding-y:          0;
+$accordion-body-padding-x:          1.25rem;
+$accordion-button-color:            $bark;
+$accordion-button-active-bg:        $canvas;
+$accordion-button-active-color:     $bark;
+$accordion-icon-color:              $bark;
+$accordion-icon-active-color:       $ember;
+$accordion-button-focus-box-shadow: inset 0 0 0 3px $ember;
+
+$badge-color:         $bark;
+$badge-font-weight:   700;
+$badge-border-radius: $border-radius-sm;
+$badge-padding-y:     .375em;
+$badge-padding-x:     .625em;
+
+// 麵包屑
+$breadcrumb-divider:       quote("/");
+$breadcrumb-font-size:     .875rem;
+$breadcrumb-divider-color: $bark-muted;
+$breadcrumb-active-color:  $bark;
+$breadcrumb-margin-bottom: 0;
+
+// 提示框：帆布底＋1.5px 框＋12px 圓角；各狀態的左側色條與圖示寫在 _base.scss
+$alert-border-radius: .75rem;
+$alert-border-width:  1.5px;
+$alert-padding-y:     1rem;
+$alert-padding-x:     1.25rem;
+
+// 進度條（剩餘票數）：帆布軌道＋1.5px 樹皮框（_base.scss）；熱賣中橄欖、即將完售野營橘
+$progress-height:        .625rem; // 10px
+$progress-bg:            $canvas;
+$progress-bar-bg:        $olive;
+$progress-border-radius: 50rem;
+$progress-bar-transition: none;
+
+$table-color:          $bark;
+$table-bg:             transparent;
+$table-border-color:   $stone;
+$table-cell-padding-y: .875rem;
+$table-cell-padding-x: 1rem;
+$table-striped-bg:     $mud;
+
+$tooltip-bg:            $bark;
+$tooltip-color:         $canvas;
+$tooltip-opacity:       1;
+$tooltip-border-radius: .5rem;
+$toast-border-radius:   .75rem;
+
+$figure-caption-color: $bark-muted;
+
+// ---------- 6. 票務專用語意 ----------
+// 即將完售：野營橘實心＋樹皮字＋火焰圖示＋橘進度條
+// 售罄：牛皮紙底＋刪除線＋「已售完」虛線框
+// 選中：橘淡底＋2px 樹皮框＋橘色手繪勾
+// 倒數警示：芥末黃底＋三角圖示＋樹皮字
+// 驗票成功／失敗：橄欖綠／磚紅大面積＋白字＋✓／✕
+$scarce-bg:       $campfire;
+$scarce-color:    $ink-dark;
+$scarce-bar:      $flare;
+$soldout-bg:      $kraft;
+$selected-bg:     $orange-soft;
+$selected-border: $bark;
+$warning-bg:      $mustard;
+$valid-bg:        $olive;
+$invalid-bg:      $brick;
+
+// 剩餘票數 ≤ 25% 為「即將完售」（規格 §2.5 RemainingBar）
+$scarce-threshold: 25%;
+
+// 座位：30px 圓角方塊（規格最小 28px）
+$seat-size:    1.875rem;
+$seat-size-sm: 1.75rem;
+
+// 底部固定列高度（活動細節的購票列、結帳的付款列）：<body> 要補同樣的 padding-bottom
+$mobile-bar-height: 4.75rem; // 76px（含上緣波浪另加 10px）
+
+// ---------- 7. 手繪 SVG（data URI） ----------
+// 用 url-encode 後的 SVG 當背景；顏色寫死在 SVG 裡，換色時要一起改（README「換色時同步檢查」）
+@function svg-uri($svg) {
+  $svg: str-replace($svg, '"', "'");
+  $svg: str-replace($svg, "<", "%3C");
+  $svg: str-replace($svg, ">", "%3E");
+  $svg: str-replace($svg, "#", "%23");
+  @return url("data:image/svg+xml,#{$svg}");
+}
+
+// 紙紋：feTurbulence 噪點，4% 不透明，鋪在頁面底
+$paper-grain: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .17 0 0 0 0 .16 0 0 0 0 .14 0 0 0 .55 0"/></filter><rect width="220" height="220" filter="url(#n)" opacity=".08"/></svg>');
+
+// 等高線：石墨色細線（裝飾），鋪在 Hero 上緣、頁首區、鼠尾草帶、頁尾
+$contour-stroke: #C9C3B4;
+$contours: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" width="560" height="360" viewBox="0 0 560 360" fill="none" stroke="#{$contour-stroke}" stroke-opacity=".8" stroke-width="1.2" stroke-linecap="round"><path d="M-10 60c60-34 118-40 176-14s104 40 170 6 140-40 234 4"/><path d="M-10 92c66-30 122-30 180-6s110 34 168 6 134-34 232 6"/><path d="M-10 128c70-24 128-22 184 0s108 28 166 4 134-26 230 8"/><path d="M128 230c0-34 34-58 76-58s82 22 82 54-36 56-80 56-78-20-78-52z"/><path d="M152 230c0-20 22-36 52-36s56 14 56 34-24 36-54 36-54-14-54-34z"/><path d="M178 230c0-8 10-16 26-16s28 6 28 16-12 16-28 16-26-6-26-16z"/><path d="M-10 316c74-22 136-14 192 6s116 22 180-4 128-28 208 4"/><path d="M380 210c22-26 64-32 102-18s70 40 88 26"/><path d="M400 246c24-18 58-22 90-10s60 30 80 18"/></svg>');
+$contours-light: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" width="560" height="360" viewBox="0 0 560 360" fill="none" stroke="#FAF8F3" stroke-opacity=".09" stroke-width="1.2" stroke-linecap="round"><path d="M-10 60c60-34 118-40 176-14s104 40 170 6 140-40 234 4"/><path d="M-10 92c66-30 122-30 180-6s110 34 168 6 134-34 232 6"/><path d="M-10 128c70-24 128-22 184 0s108 28 166 4 134-26 230 8"/><path d="M128 230c0-34 34-58 76-58s82 22 82 54-36 56-80 56-78-20-78-52z"/><path d="M152 230c0-20 22-36 52-36s56 14 56 34-24 36-54 36-54-14-54-34z"/><path d="M178 230c0-8 10-16 26-16s28 6 28 16-12 16-28 16-26-6-26-16z"/><path d="M-10 316c74-22 136-14 192 6s116 22 180-4 128-28 208 4"/><path d="M380 210c22-26 64-32 102-18s70 40 88 26"/><path d="M400 246c24-18 58-22 90-10s60 30 80 18"/></svg>');
+
+// 手繪劃線：區塊標題下方、目前頁導覽（橘色，略帶起伏的一筆）
+$hand-underline: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 10" preserveAspectRatio="none"><path d="M2 6.2c18-2.6 34-3.4 52-2.2s38 1.6 64-1.6" fill="none" stroke="#{$flare}" stroke-width="3.2" stroke-linecap="round"/><path d="M14 8.2c22-1.6 46-1.4 70-.6" fill="none" stroke="#{$flare}" stroke-width="1.6" stroke-linecap="round" opacity=".7"/></svg>');
+
+// 手繪波浪線：頁首底緣、底部固定列上緣、區塊分隔（樹皮 1.5px，下方填帆布）
+// 一格 240 × 10 的無縫圖塊，放大成 480px 寬用 repeat-x 平鋪，寬螢幕也不會被拉平
+$wave-path: "M0 5 C13 1.2 27 1.2 40 5 C53 8.6 67 8.6 80 5 C93 1.6 107 1.6 120 5 C133 8.9 147 8.9 160 5 C173 1.4 187 1.4 200 5 C213 8.5 227 8.5 240 5";
+$wave-header: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 10" preserveAspectRatio="none"><path d="M0 0 H240 V5 C227 8.5 213 8.5 200 5 C187 1.4 173 1.4 160 5 C147 8.9 133 8.9 120 5 C107 1.6 93 1.6 80 5 C67 8.6 53 8.6 40 5 C27 1.2 13 1.2 0 5 Z" fill="#{$canvas}"/><path d="#{$wave-path}" fill="none" stroke="#{$bark}" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>');
+$wave-line: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 10" preserveAspectRatio="none"><path d="#{$wave-path}" fill="none" stroke="#{$bark}" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>');
+$wave-line-faint: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 10" preserveAspectRatio="none"><path d="#{$wave-path}" fill="none" stroke="#{$stone}" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>');
+// 平鋪的寫法（用在 background 簡寫裡）：$wave-line-faint left top / $wave-tile repeat-x
+$wave-tile: 480px .625rem;
+
+// 手繪山稜線（填色＋1.5px 樹皮描邊）：Hero 底緣（泥灰、填在線下）、頁尾上緣（夜營綠）、主辦方轉換帶上緣（泥灰、填在線上）
+$ridge-path: "M0 64 L0 58 C40 52 70 30 104 34 C128 37 140 22 168 14 C190 8 206 26 228 30 C256 35 268 18 296 20 C330 23 344 44 380 46 C410 48 430 30 462 24 C486 20 500 6 524 4 C548 2 566 22 590 32 C620 44 640 40 668 36 C700 32 716 50 748 52 C780 54 800 42 820 40 L820 64 Z";
+$ridge-line: "M0 58 C40 52 70 30 104 34 C128 37 140 22 168 14 C190 8 206 26 228 30 C256 35 268 18 296 20 C330 23 344 44 380 46 C410 48 430 30 462 24 C486 20 500 6 524 4 C548 2 566 22 590 32 C620 44 640 40 668 36 C700 32 716 50 748 52 C780 54 800 42 820 40";
+$ridge-mud: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 64" preserveAspectRatio="none"><path d="#{$ridge-path}" fill="#{$mud}"/><path d="#{$ridge-line}" fill="none" stroke="#{$bark}" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linecap="round"/></svg>');
+$ridge-night: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 64" preserveAspectRatio="none"><path d="#{$ridge-path}" fill="#{$olive-night}"/></svg>');
+// 填在稜線「上方」：讓下面的照片看起來是一排山（主辦方轉換帶上緣）
+$ridge-mud-top: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 64" preserveAspectRatio="none"><path d="M0 0 L820 0 L820 40 C800 42 780 54 748 52 C716 50 700 32 668 36 C640 40 620 44 590 32 C566 22 548 2 524 4 C500 6 486 20 462 24 C430 30 410 48 380 46 C344 44 330 23 296 20 C268 18 256 35 228 30 C206 26 190 8 168 14 C140 22 128 37 104 34 C70 30 40 52 0 58 Z" fill="#{$mud}"/><path d="#{$ridge-line}" fill="none" stroke="#{$bark}" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linecap="round"/></svg>');
+
+// 步道虛線（水平）：價值主張四個圖示之間
+$trail-dash-h: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 40" preserveAspectRatio="none"><path d="M4 22c40-14 80-16 120-4s82 18 124 2 86-20 128-4 82 18 120 4 64-12 100-4" fill="none" stroke="#{$flare}" stroke-width="2.5" stroke-dasharray="7 8" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>');
+
+// 不規則手繪圓（空狀態外圈、數字圈）
+$hand-circle: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none"><path d="M52 6c22 1 40 16 42 40 2 26-16 46-42 48S8 80 6 54C4 30 20 10 44 7c8-1 16 0 24 4" stroke="#{$bark}" stroke-width="2.25" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>');
+$hand-circle-flare: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none"><path d="M52 6c22 1 40 16 42 40 2 26-16 46-42 48S8 80 6 54C4 30 20 10 44 7c8-1 16 0 24 4" stroke="#{$flare}" stroke-width="2.5" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>');

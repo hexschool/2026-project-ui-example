@@ -1,0 +1,540 @@
+// ============================================================
+// 購票紀錄 orders.html（2026-11 補）
+// 頁首區（泥灰＋等高線）：麵包屑 → H1 → 說明
+// ≥ 1200px 左日誌＋右退票單（CSS Grid 區域；退票單固定 24rem、≥ 1400px 25.5rem，約 8 : 4 再寬一點，
+//   讓訂單下拉的「#SO-20261018-4471 午夜噪音祭 Vol.7」整串放得下）：
+//   左「旅程日誌」#orders：左緣一條橘色虛線步道（.trail），起點是腳印＋「共 6 筆訂單」，
+//     每筆訂單左側插一面牛皮紙日期旗（下單日，裝飾；下單時間寫在卡片裡），跨年的地方立一塊「2025」里程牌，終點是營火
+//     訂單卡＝帆布橫卡＋右側一段牛皮紙收據票根（總額、付款方式、電子發票）
+//   右 #refund：夾板退票單（視窗夠高時 sticky）
+//   狀態示意 2 個接在日誌下方（左欄）
+// < 1200px：日誌 → 退票單 → 狀態示意（內容只寫一次，用 grid-template-areas 排）
+// < 768px：步道線移到左邊，日期旗改到卡片上方；收據票根移到卡片底部
+// ============================================================
+
+.orders-title > .hand-icon {
+  --hand-size: 2.25rem;
+  @include media-breakpoint-up(lg) { --hand-size: 2.75rem; }
+}
+
+.orders-body {
+  padding-block: 1rem 4rem;
+
+  @include media-breakpoint-up(lg) { padding-block: 1.5rem 7.5rem; }
+}
+.orders-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "list" "refund" "demos";
+  gap: 3rem;
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 1fr) 24rem;
+    grid-template-areas: "list refund" "demos refund";
+    gap: 3.5rem 2.5rem;
+  }
+  @include media-breakpoint-up(xxl) { grid-template-columns: minmax(0, 1fr) 25.5rem; }
+}
+.orders-journal { grid-area: list; min-width: 0; }
+.orders-refund  { grid-area: refund; align-self: start; min-width: 0; }
+.orders-demos   { grid-area: demos; min-width: 0; }
+
+// ---------- 旅程日誌 ----------
+.orders-trail {
+  --trail-x: .875rem;
+  --trail-pad: 2.5rem;
+  padding-left: var(--trail-pad);
+
+  @include media-breakpoint-up(md) {
+    --trail-x: 1rem;
+    --trail-pad: 6rem;
+  }
+
+  &::before {
+    top: 1.25rem;
+    bottom: 1.5rem;
+  }
+}
+// 起點：腳印＋「共 6 筆訂單」
+.orders-trailhead {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  margin-bottom: 1.75rem;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: calc(var(--trail-x) - var(--trail-pad) + 1.5px);
+    width: 2.25rem;
+    height: 2.25rem;
+    margin: -1.125rem 0 0 -1.125rem;
+    border: 1.5px solid $bark;
+    border-radius: 50%;
+    background: url("../images/hand-footprints.svg") center / 1.625rem no-repeat, $canvas;
+    pointer-events: none;
+  }
+}
+.orders-count {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bold;
+
+  b {
+    font-family: $font-family-slab;
+    font-size: 1.375rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+}
+.orders-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    position: relative;
+
+    + li { margin-top: 2.25rem; }
+  }
+}
+.orders-year-row { pointer-events: none; }
+// 跨年的里程牌：插在步道上（裝飾，年份也寫在卡片的下單時間裡）
+.orders-year {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: .125rem .625rem;
+  border: 1.5px solid $bark;
+  border-radius: .375rem;
+  background-color: $canvas;
+  font-family: $font-family-slab;
+  font-size: .9375rem;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 700;
+  pointer-events: none;
+
+  @include media-breakpoint-up(md) {
+    position: relative;
+    left: calc(var(--trail-x) - var(--trail-pad) + 1.5px);
+    margin: 0 0 1.75rem;
+    transform: translateX(-50%);
+  }
+}
+// 終點：營火
+.orders-trail-end {
+  position: relative;
+  min-height: 3rem;
+  margin-top: 1.5rem;
+
+  img {
+    position: absolute;
+    top: 0;
+    left: calc(var(--trail-x) - var(--trail-pad) - 1.375rem + 1.5px);
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
+// ---------- 訂單卡：帆布橫卡＋右側牛皮紙收據票根 ----------
+.order-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  border: 1.5px solid $bark;
+  border-radius: $border-radius-lg;
+  background-color: $canvas;
+
+  @include media-breakpoint-up(md) { grid-template-columns: minmax(0, 1fr) 13.5rem; }
+  // 1200～1399px 右邊退票單加寬到 24rem，日誌變窄：收據票根收成 12.5rem，左邊明細「平台服務費（每張票 3%）」維持一行
+  @include media-breakpoint-only(xl) { grid-template-columns: minmax(0, 1fr) 12.5rem; }
+
+  &.is-failed { border-style: dashed; }
+}
+.order-card-main {
+  min-width: 0;
+  padding: 1.25rem 1.25rem 1.375rem;
+
+  @include media-breakpoint-up(md) { padding: 1.5rem 1.75rem 1.625rem; }
+}
+.order-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  margin-bottom: 1.125rem;
+}
+.order-card-no {
+  margin: 0;
+  font-family: $font-family-slab;
+  font-size: 1.125rem;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: .01em;
+}
+.order-card-no-label {
+  display: block;
+  color: var(--bs-secondary-color);
+  font-family: $font-family-base;
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+}
+.order-card-time {
+  margin: .125rem 0 0;
+  color: var(--bs-secondary-color);
+  font-size: .875rem;
+  font-weight: 500;
+}
+// 活動：縮圖＋名稱、日期、場地
+.order-card-event {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  padding-bottom: 1.125rem;
+
+  @include media-breakpoint-up(md) { grid-template-columns: 6.5rem minmax(0, 1fr); }
+
+  .inset-photo { aspect-ratio: 4 / 3; }
+  p {
+    margin: 0;
+    font-size: .875rem;
+    line-height: 1.6;
+  }
+}
+.order-card-title {
+  margin-bottom: .25rem;
+  font-family: $font-family-base;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.45;
+  letter-spacing: $letter-spacing-body;
+}
+.order-card-label {
+  margin: 0;
+  padding-top: 1rem;
+  background: $wave-line-faint left top / $wave-tile repeat-x;
+  color: var(--bs-secondary-color);
+  font-size: .8125rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+}
+// 票種明細：名稱 ……（手繪點線）…… 金額
+.order-lines {
+  margin: 0;
+  padding: .375rem 0 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    padding-block: .3125rem;
+  }
+  small {
+    display: block;
+    color: var(--bs-secondary-color);
+    font-size: .8125rem;
+  }
+  .price { font-size: 1rem; }
+  .is-fee { color: var(--bs-secondary-color); }
+}
+.order-lines-leader {
+  flex: 1 1 auto;
+  min-width: 1.5rem;
+  height: .5rem;
+  background: radial-gradient(circle, $control 1.1px, transparent 1.5px) left bottom / 7px 4px repeat-x;
+}
+// 依狀態多出來的說明（付款失敗、已退款）
+.order-card-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  margin: 1rem 0 0;
+  padding: .75rem .875rem;
+  border-radius: $border-radius;
+  background-color: $mud;
+  font-size: .875rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.65;
+
+  .bi { flex-shrink: 0; line-height: inherit; }
+  &.is-danger .bi { color: $brick; }
+  &.is-refund .bi { color: $olive-deep; }
+}
+.order-card .alert {
+  margin: 1rem 0 0;
+  padding: .75rem .875rem;
+  font-size: .875rem;
+}
+.order-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-top: 1.125rem;
+
+  @include media-breakpoint-down(sm) {
+    flex-direction: column;
+  }
+}
+
+// 收據票根：牛皮紙、和本體之間一道虛線（不是撕線圓點）、上緣一枚鉚釘孔
+// 牛皮紙上的字只用樹皮（9.42）與次要字（4.99），不放炭橘字
+.order-stub {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 1.375rem;
+  border-top: 1.5px dashed $bark;
+  border-radius: 0 0 calc(#{$border-radius-lg} - 1.5px) calc(#{$border-radius-lg} - 1.5px);
+  background-color: $kraft;
+  color: $bark;
+
+  @include media-breakpoint-up(md) {
+    padding: 2.5rem 1.25rem 1.5rem;
+    border-top: 0;
+    border-left: 1.5px dashed $bark;
+    border-radius: 0 calc(#{$border-radius-lg} - 1.5px) calc(#{$border-radius-lg} - 1.5px) 0;
+
+    // 鉚釘孔（裝飾）
+    &::before {
+      content: "";
+      position: absolute;
+      top: .875rem;
+      left: 50%;
+      width: .75rem;
+      height: .75rem;
+      margin-left: -.375rem;
+      border: 1.5px solid $bark;
+      border-radius: 50%;
+      background-color: $mud;
+      box-shadow: 0 0 0 2.5px $stone, 0 0 0 4px $bark;
+      pointer-events: none;
+    }
+  }
+}
+.order-stub-total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .25rem .75rem;
+  margin: 0;
+
+  @include media-breakpoint-up(md) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  > span:first-child {
+    font-size: .8125rem;
+    font-weight: $font-weight-bold;
+    letter-spacing: $letter-spacing-label;
+  }
+  .price {
+    font-size: 1.75rem;
+
+    @include media-breakpoint-up(xl) { font-size: 1.875rem; }
+  }
+  small {
+    flex-basis: 100%;
+    color: $bark-muted;
+
+    @include media-breakpoint-up(md) { flex-basis: auto; } // 直排時不能用 100%（會變成高度）
+
+    font-size: .8125rem;
+    font-weight: $font-weight-medium;
+    line-height: 1.6;
+  }
+}
+.order-stub-info {
+  margin: 0;
+
+  > div {
+    padding-top: .625rem;
+    background: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 10" preserveAspectRatio="none"><path d="#{$wave-path}" fill="none" stroke="#{$bark}" stroke-opacity=".4" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>') left top / $wave-tile repeat-x;
+
+    + div { margin-top: .625rem; }
+  }
+  dt {
+    color: $bark-muted;
+    font-size: .75rem;
+    font-weight: $font-weight-bold;
+    letter-spacing: $letter-spacing-label;
+  }
+  dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 .375rem;
+    margin: 0;
+    font-size: .875rem;
+    font-weight: $font-weight-bold;
+    line-height: 1.6;
+  }
+  s { text-decoration-thickness: 1.5px; }
+  // 下載：文字按鈕（牛皮紙上不用炭橘，hover 只換底線顏色）
+  .btn-text {
+    --bs-btn-hover-color: #{$bark};
+    --bs-btn-active-color: #{$bark};
+    min-height: 2.75rem;
+    margin-left: -.375rem;
+    font-size: .875rem;
+  }
+}
+
+// ---------- 退票單（夾板） ----------
+.refund-board {
+  h2 {
+    margin-bottom: .75rem;
+    font-size: 1.75rem;
+  }
+}
+.refund-lead {
+  margin-bottom: 1.25rem;
+  color: var(--bs-secondary-color);
+  font-size: .9375rem;
+}
+.refund-field { margin-bottom: 1.25rem; }
+// ≥ 1200px 夾板在右欄：下拉字級小一號（15px）、左右內距收窄，選項全文不被截掉
+@include media-breakpoint-up(xl) {
+  .refund-field .form-select {
+    padding-left: .875rem;
+    padding-right: 2.5rem;
+    background-position: right .875rem center;
+    font-size: .9375rem;
+  }
+}
+// 這場活動的退票規則：橘淡底＋左側 4px 火光橘條＋盾牌圖示（同活動細節 FAQ 的退票題）
+.refund-rule {
+  margin-bottom: 1.25rem;
+  padding: .875rem 1rem;
+  border-left: 4px solid $flare;
+  border-radius: 0 $border-radius $border-radius 0;
+  background-color: $orange-soft;
+  font-size: .875rem;
+  line-height: 1.7;
+
+  p { margin: 0; }
+}
+.refund-rule-title {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: .25rem !important;
+  font-weight: $font-weight-bold;
+
+  .bi { color: $ember; }
+}
+// 要退的票券：整列可點（label 包住 checkbox），勾選後框線換炭橘＋橘淡底；框線粗細不變
+.refund-tickets {
+  margin-bottom: 1.25rem;
+
+  legend {
+    margin-bottom: .5rem;
+    font-size: $form-label-font-size;
+    font-weight: $form-label-font-weight;
+  }
+}
+.refund-pick {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .75rem;
+  min-height: 3rem;
+  padding: .625rem .875rem;
+  border: 2px solid $stone;
+  border-radius: $border-radius;
+  background-color: $canvas;
+  font-size: .875rem;
+  line-height: 1.45;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+
+  + .refund-pick { margin-top: .5rem; }
+  &:hover { border-color: $control; }
+  &:has(:checked) {
+    border-color: $ember;
+    background-color: $orange-soft;
+  }
+  .form-check-input { margin: 0; }
+  .price { font-size: .9375rem; }
+}
+// 退款試算：預估退款 Zilla Slab 32px 深橄欖
+.refund-calc {
+  margin: 0 0 .75rem;
+  padding: .75rem 1rem 1rem;
+  border: 1.5px dashed $bark;
+  border-radius: $border-radius;
+  background-color: $mud;
+
+  > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: .25rem;
+  }
+  dt { font-weight: $font-weight-medium; font-size: .875rem; }
+  dd { margin: 0; }
+  .price { font-size: 1rem; }
+  .refund-calc-total {
+    margin-top: .5rem;
+    padding-top: .75rem;
+    background: $wave-line left top / $wave-tile repeat-x;
+
+    dt { font-weight: $font-weight-bold; font-size: .9375rem; }
+    .price {
+      color: $olive-deep;
+      font-size: 2rem;
+    }
+  }
+}
+.refund-note {
+  margin-bottom: 1.25rem;
+  color: var(--bs-secondary-color);
+  font-size: .8125rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.7;
+}
+.refund-assure {
+  display: flex;
+  align-items: flex-start;
+  gap: .375rem;
+  margin: 1rem 0 0;
+  color: var(--bs-secondary-color);
+  font-size: .8125rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.7;
+
+  .bi { flex-shrink: 0; color: $olive-deep; line-height: inherit; }
+}
+// 只有視窗夠高、整張退票單放得下時才 sticky（退票單實測 1200～1399px 寬高 1208px、≥ 1400px 寬高 1188px，加上頁首 108px 與夾子 20px）
+@media (min-width: 1200px) and (min-height: 1400px) {
+  .orders-refund {
+    position: sticky;
+    top: calc(#{$sticky-top-offset} + 1.25rem);
+  }
+}
+// < 1200px：退票單置中、限制寬度
+@include media-breakpoint-down(xl) {
+  .orders-refund {
+    width: 100%;
+    max-width: 36rem;
+    margin-top: 1rem;
+    justify-self: center;
+  }
+}
+
+// ---------- 狀態示意 ----------
+.orders-demos {
+  display: grid;
+  gap: 3rem;
+
+  @include media-breakpoint-up(md) { padding-left: 6rem; } // 和日誌裡的卡片對齊
+}

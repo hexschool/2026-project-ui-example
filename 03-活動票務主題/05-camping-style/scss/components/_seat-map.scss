@@ -1,0 +1,181 @@
+// ============================================================
+// 營位圖（SeatMap）：帆布卡，上方是手繪舞台棚線稿＋「舞台」，下面一排排 28px 圓角方塊座位（≥ 1400px 30px）
+// 座位 4 態不只靠顏色：
+//   可選    帆布底＋1.5px 樹皮框（hover 橘淡底＋炭橘框）
+//   已選    aria-pressed="true"（圖例用 .is-picked）：野營橘底＋深色勾
+//   已售出  .is-sold（disabled）：牛皮紙底＋✕
+//   不可選  .is-blocked（disabled）：虛線框＋斜線紋
+// 排號在每排左側（Zilla Slab）；座位圖比卡片寬時在卡片內水平捲動（不讓整頁捲動）
+// js/main.js 第 5 項：點選切換 aria-pressed、aria-label，更新 [data-seat-output]
+// <section class="seat-map camp-card" data-seat-map aria-labelledby="seatTitle">
+//   <div class="seat-map-head"><h3 class="seat-map-title">選擇座位</h3><p class="countdown" role="timer">鎖位倒數</p></div>
+//   <p class="seat-map-hint">選位提示</p>
+//   <div class="seat-map-scroll" tabindex="0"><div class="seat-map-canvas">
+//     <p class="seat-stage">舞台</p><p class="seat-zone">A 區</p>
+//     <div class="seat-row" role="group" aria-label="11 排"><span class="seat-row-label" aria-hidden="true">11 排</span><button class="seat" …></button>…</div>
+//   </div></div>
+//   <ul class="seat-legend">…</ul>
+//   <p class="seat-picked">已選座位：<span data-seat-output>…</span></p>
+// </section>
+// ============================================================
+
+// 手繪舞台棚：弧形棚頂＋扇形垂邊＋兩根支柱（牛皮紙填色、樹皮線）
+$stage-canopy: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 76" fill="none" stroke="#{$bark}" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M22 38 C80 4 280 4 338 38 Z" fill="#{$kraft}"/><path d="M22 38 q19.75 12 39.5 0 q19.75 12 39.5 0 q19.75 12 39.5 0 q19.75 12 39.5 0 q19.75 12 39.5 0 q19.75 12 39.5 0 q19.75 12 39.5 0 q19.75 12 39.5 0" fill="#{$canvas}"/><path d="M34 45 L32 73 M326 45 L328 73"/><path d="M180 13 L180 1" /><path d="M180 2 L194 5.5 L180 9 Z" fill="#{$campfire}" stroke-width="1.5"/><path d="M8 74.5 C120 72 240 72 352 74.5" stroke="#{$stone}"/></svg>');
+
+.seat-map {
+  min-width: 0;
+}
+.seat-map-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  margin-bottom: .75rem;
+
+  .countdown { font-size: .875rem; }
+}
+.seat-map-title {
+  margin: .375rem 0 0;
+}
+.seat-map-hint {
+  margin-bottom: 1.25rem;
+  color: var(--bs-secondary-color);
+  font-size: .9375rem;
+}
+.seat-map-swipe {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin: -.5rem 0 .75rem;
+  color: var(--bs-secondary-color);
+  font-size: .8125rem;
+  font-weight: $font-weight-bold;
+}
+.seat-map-scroll {
+  overflow-x: auto;
+  margin-inline: -.25rem;
+  padding: .25rem .25rem .75rem;
+  overscroll-behavior-x: contain;
+
+  &:focus-visible { outline-offset: -3px; border-radius: $border-radius-sm; }
+}
+.seat-map-canvas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .3125rem;
+  width: max-content;
+  margin-inline: auto;
+}
+// 「舞台」寫在棚子底下、兩根支柱之間（像舞台地板上的字）
+.seat-stage {
+  display: grid;
+  place-items: center;
+  width: 20rem;
+  height: 4.75rem;
+  margin: 0 0 .5rem;
+  padding-top: 3rem;
+  background: $stage-canopy center top / 100% 100% no-repeat;
+  font-family: $font-family-hand;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.seat-zone {
+  margin: 0 0 .25rem;
+  font-family: $font-family-slab;
+  font-size: .875rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+.seat-row {
+  display: flex;
+  align-items: center;
+  gap: .3125rem;
+}
+.seat-row-label {
+  width: 2.5rem;
+  padding-right: .25rem;
+  font-family: $font-family-slab;
+  font-size: .8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums lining-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+.seat {
+  --seat: #{$seat-size-sm};
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: var(--seat);
+  height: var(--seat);
+  padding: 0;
+  border: 1.5px solid $bark;
+  border-radius: .4375rem;
+  background-color: $canvas;
+  color: $ink-dark;
+  font-size: .875rem;
+  line-height: 1;
+  transition: background-color .15s ease, border-color .15s ease;
+
+  @include media-breakpoint-up(xxl) { --seat: #{$seat-size}; }
+
+  &::after {
+    font-family: "bootstrap-icons";
+    font-weight: normal;
+  }
+  &:hover:not(:disabled) {
+    border-color: $ember;
+    background-color: $orange-soft;
+  }
+  &:focus-visible { outline-offset: 2px; }
+
+  &[aria-pressed="true"],
+  &.is-picked {
+    border-color: $bark;
+    background-color: $campfire;
+    &::after { content: map-get($bootstrap-icons-map, "check-lg"); }
+  }
+  &[aria-pressed="true"]:hover:not(:disabled) { background-color: $campfire-hover; color: $ink-dark; }
+  &.is-sold {
+    border-color: $bark-muted;
+    background-color: $kraft;
+    color: $bark;
+    cursor: not-allowed;
+    &::after { content: map-get($bootstrap-icons-map, "x-lg"); font-size: .75rem; }
+  }
+  &.is-blocked {
+    border-style: dashed;
+    border-color: $control;
+    background: repeating-linear-gradient(135deg, transparent 0 4px, rgba($bark, .38) 4px 5.5px), $canvas;
+    cursor: not-allowed;
+  }
+}
+.seat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .5rem 1.25rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: .875rem;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .seat { --seat: 1.375rem; font-size: .75rem; }
+  .seat.is-sold::after { font-size: .625rem; }
+}
+.seat-picked {
+  margin: 1rem 0 0;
+  padding-top: 1rem;
+  background: $wave-line-faint left top / $wave-tile repeat-x;
+  font-weight: $font-weight-bold;
+  text-align: center;
+
+  span { color: $ember; }
+}

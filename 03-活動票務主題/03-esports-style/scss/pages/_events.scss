@@ -1,0 +1,221 @@
+// ============================================================
+// 活動列表 events.html（class 前綴 events-）
+// 構圖（和既有 3 套的「3 : 9 左側欄＋每列 1 張橫式卡」不同）：
+// 1. 頁首區：麵包屑 → H1「探索活動」→ 搜尋指令列（碳纖維帶，同首頁 Hero 底部）
+// 2. 篩選控制台（滿寬 HUD 面板，不 sticky）：
+//    第一層「篩選」＋「清除全部」→ 活動類型 8 格分段列（.seg-bar，綁 JS 篩選）
+//    第二層日期、地區、票價、狀態、排序（≥ 1200px 5 欄、992–1199px 3 欄，欄與欄之間 1px 槍灰線）
+//    < 992px：只留分段列（容器內橫向捲動）＋「篩選與排序」鈕，第二層是由下滑出的 Offcanvas
+// 3. 結果：工具列「共 8 場活動」＋已套用標籤 → ≥ 992px 每列 2 張直式對戰卡（.match-card）
+// 4. 設計稿狀態示意：篩選後沒有活動時
+// 本頁沒有 Notion 英文區塊名，所以不放 HUD 英文標，只用 Oxanium 編號 // 01、// 02
+// ============================================================
+
+// ---------- 1. 頁首區 ----------
+.events-header {
+  padding-bottom: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    padding-bottom: map-get($spacers, 5);
+  }
+  h1 {
+    margin-bottom: map-get($spacers, 4);
+  }
+}
+// 搜尋指令列：碳纖維紋＋上緣 1px 金屬藍光線＋四角括角
+.events-command {
+  @include brackets-on(after, 0);
+  --bracket: #{$bracket-lit};
+  padding: map-get($spacers, 3) map-get($spacers, 3) 1.25rem;
+  border: 1px solid $gunmetal;
+  @include carbon-weave;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px 0 auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, $arc 30%, $arc-hi 50%, $arc 70%, transparent);
+  }
+  @include media-breakpoint-up(lg) {
+    padding: 1.25rem 1.5rem 1.5rem;
+  }
+}
+
+// ---------- 2. 篩選控制台 ----------
+.events-console {
+  @include media-breakpoint-up(lg) {
+    padding: 1.75rem 2rem 2rem;
+  }
+}
+.events-console-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem 1rem;
+  margin-bottom: map-get($spacers, 3);
+
+  .hud-index {
+    margin: 0;
+  }
+  .btn-text {
+    margin-left: auto;
+  }
+}
+.events-console-title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+// 篩選群組的小標：前面一個金屬藍小刻度（同搜尋列的欄位標籤）
+.events-filter-label {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: .75rem;
+  color: $text-muted;
+  font-family: $font-family-base;
+  font-size: .8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: .06em;
+
+  &::before {
+    content: "";
+    flex-shrink: 0;
+    width: .375rem;
+    height: .375rem;
+    background: $arc;
+  }
+}
+
+// 第一層：活動類型分段列。放不下時在自己的容器內橫向捲動（不讓整頁捲動）
+.events-type-scroll {
+  margin-inline: -.375rem;
+  padding-block: .375rem; // 選中段的光暈不被裁掉
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: $control transparent;
+
+  .seg-bar {
+    min-width: max-content;
+  }
+  @include media-breakpoint-up(xl) {
+    overflow: visible;
+
+    .seg-bar { min-width: 0; }
+  }
+}
+.events-console-more {
+  margin-top: map-get($spacers, 3);
+}
+
+// 第二層：≥ 992px 是控制台裡的格線；< 992px 是由下滑出的 Offcanvas（同一份 HTML）
+.events-filter-grid {
+  display: grid;
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    flex: 1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: map-get($spacers, 4) 0;
+    margin-top: map-get($spacers, 4);
+    padding-top: map-get($spacers, 4);
+    border-top: 1px solid $gunmetal;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 1.3fr) minmax(0, 1.2fr) minmax(0, .9fr);
+  }
+}
+.events-filter-group {
+  min-width: 0;
+
+  @include media-breakpoint-up(lg) {
+    padding-inline: 1.25rem;
+    border-left: 1px solid $gunmetal;
+
+    &:first-child,
+    &:nth-child(4) {
+      padding-left: 0;
+      border-left: 0;
+    }
+  }
+  @include media-breakpoint-up(xl) {
+    &:nth-child(4) {
+      padding-left: 1.25rem;
+      border-left: 1px solid $gunmetal;
+    }
+    &:last-child {
+      padding-right: 0;
+    }
+  }
+}
+.events-filter-dates {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .75rem;
+  margin-top: .875rem;
+
+  .form-label {
+    margin-bottom: .25rem;
+    color: $text-muted;
+    font-size: .8125rem;
+  }
+}
+
+// Offcanvas（< 992px）：碳纖維底、上緣金屬藍光線、底部固定「套用篩選」
+.events-filter {
+  @include media-breakpoint-down(lg) {
+    --bs-offcanvas-height: min(85vh, 44rem);
+    @include carbon-weave;
+    border-top: 1px solid $gunmetal !important;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, $arc, transparent);
+    }
+    .offcanvas-header {
+      border-bottom: 1px solid $gunmetal;
+    }
+    .offcanvas-title {
+      margin: 0;
+    }
+  }
+}
+.events-filter-apply {
+  padding: map-get($spacers, 3);
+  border-top: 1px solid $gunmetal;
+  background-color: $carbon;
+}
+
+// 已套用標籤（JS 產生的「音樂演出 ✕」）
+.chip-applied {
+  --para-border: #{$arc};
+  color: $arc-hi;
+  font-size: .875rem;
+
+  .bi { font-size: .75rem; }
+}
+
+// ---------- 3. 結果 ----------
+.events-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1rem;
+  margin-block: map-get($spacers, 5) map-get($spacers, 4);
+}
+.events-count {
+  margin: 0;
+  color: $text-muted;
+
+  b {
+    margin-inline: .125rem;
+    color: $text;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+}

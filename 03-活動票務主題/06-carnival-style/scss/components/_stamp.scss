@@ -1,0 +1,152 @@
+// ============================================================
+// ★ 招牌二：入場驗證章，蓋印回彈
+//
+// 直徑 96px 的雙圈圓章（外圈 3px、內圈 1px，中間一圈小星點），中央是狀態字＋圖示，整體 rotate(-12deg)、
+// mix-blend-mode: multiply，章面用 SVG 雜訊 mask 做出印泥不均。
+// 章是裝飾（aria-hidden="true"），狀態仍由一般狀態標籤（.tag，圖示＋文字）負責。
+//
+// <span class="stamp is-valid" aria-hidden="true"><i class="bi bi-check-lg"></i><span class="stamp-text">有效</span></span>
+//
+// 顏色：.is-valid／.is-success（遊樂綠：有效、驗票成功）、.is-used（海軍藍：已使用）、
+//       .is-expired（灰化：已過期）、.is-cancelled／.is-invalid（莓果紅：活動已取消、無效票券）
+// 尺寸：預設 96px、.stamp-sm 72px、.stamp-lg 128px（驗票畫面）
+// 位置由使用的地方決定（通常絕對定位在 .admit 的右上角，壓住票緣一半；不能蓋住 QR Code 的定位方塊）
+//
+// 回彈動畫（全部純 CSS，不加 JS）：
+//   ① 頁面載入時，畫面裡的章播一次
+//   ② 結帳：#result:target .stamp 重新播（按「確認付款」跳到 #result 時剛好看到蓋章）
+//   ③ 我的票券：JS #9 把卡片從 hidden 切回顯示時，動畫會自動重播
+//   ④ 電子票券詳情、Guideline 的 Bootstrap pill／tab：.tab-pane.active .stamp 同理重播
+//   prefers-reduced-motion: reduce 時不播動畫，直接顯示落定的章（不會消失）
+// ============================================================
+
+@use "sass:math";
+
+// 印泥不均：feTurbulence 雜訊轉成 alpha，大部分不透明、零星缺墨（只套在章面上，墨暈不套）
+$stamp-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3.2 2.55'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+
+// 章的圓圈：外圈 3px、內圈 1px、中間一圈 24 顆小星點，畫成 SVG（每種狀態一個顏色）
+@function stamp-ring($color) {
+  $c: svg-color($color);
+  $dots: "";
+  @for $i from 0 through 23 {
+    $a: math.div($i * 360deg, 24);
+    $x: math.div(round((48 + 42.5 * math.cos($a)) * 100), 100);
+    $y: math.div(round((48 + 42.5 * math.sin($a)) * 100), 100);
+    $dots: $dots + "%3Ccircle cx='#{$x}' cy='#{$y}' r='1.3'/%3E";
+  }
+  @return url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='#{$c}'%3E%3Ccircle cx='48' cy='48' r='46.5' stroke-width='3'/%3E%3Ccircle cx='48' cy='48' r='38.5' stroke-width='1.2'/%3E%3C/g%3E%3Cg fill='#{$c}'%3E#{$dots}%3C/g%3E%3C/svg%3E");
+}
+
+@keyframes stamp-in {
+  0%   { opacity: 0; transform: rotate($stamp-rotate) scale(1.8); }
+  45%  { opacity: 1; transform: rotate($stamp-rotate) scale(.88); }
+  70%  { transform: rotate($stamp-rotate) scale(1.06); }
+  100% { opacity: 1; transform: rotate($stamp-rotate) scale(1); }
+}
+// 同樣的關鍵影格換個名字：:target 時換成這個名字，動畫才會重新播放
+@keyframes stamp-in-again {
+  0%   { opacity: 0; transform: rotate($stamp-rotate) scale(1.8); }
+  45%  { opacity: 1; transform: rotate($stamp-rotate) scale(.88); }
+  70%  { transform: rotate($stamp-rotate) scale(1.06); }
+  100% { opacity: 1; transform: rotate($stamp-rotate) scale(1); }
+}
+// 落定瞬間外圈一道一次的墨暈
+@keyframes stamp-ink {
+  0%, 60% { opacity: .35; transform: scale(.9); }
+  100%    { opacity: 0; transform: scale(1.25); }
+}
+
+.stamp {
+  --stamp-color: #{$ride-green};
+  --stamp-ring: #{stamp-ring($ride-green)};
+  --stamp-size: #{$stamp-size};
+  position: absolute;
+  z-index: 2;
+  display: inline-grid;
+  place-content: center;
+  justify-items: center;
+  gap: .125rem;
+  width: var(--stamp-size);
+  height: var(--stamp-size);
+  color: var(--stamp-color);
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  transform: rotate($stamp-rotate);
+  animation: stamp-in .55s cubic-bezier(.2, 1.4, .4, 1) .25s both;
+
+  // 章面（圓圈＋小星點）、圖示、狀態字都套印泥雜訊
+  &::before,
+  > * {
+    -webkit-mask: $stamp-noise 0 0 / 120px 120px;
+    mask: $stamp-noise 0 0 / 120px 120px;
+  }
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--stamp-ring) center / 100% 100% no-repeat;
+  }
+  // 墨暈：落定瞬間一次
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border: 5px solid var(--stamp-color);
+    border-radius: 50%;
+    opacity: 0;
+    animation: stamp-ink .4s ease-out .5s both;
+  }
+
+  .bi {
+    position: relative;
+    font-size: calc(var(--stamp-size) * .3);
+    line-height: 1;
+  }
+  .stamp-text {
+    position: relative;
+    max-width: calc(var(--stamp-size) * .7);
+    font-size: calc(var(--stamp-size) * .155);
+    letter-spacing: .04em;
+    word-break: keep-all;
+  }
+
+  &.stamp-sm { --stamp-size: 4.5rem; }
+  &.stamp-lg { --stamp-size: 8rem; }
+
+  &.is-valid,
+  &.is-success { --stamp-color: #{$ride-green}; --stamp-ring: #{stamp-ring($ride-green)}; }
+  &.is-used { --stamp-color: #{$navy}; --stamp-ring: #{stamp-ring($navy)}; }
+  &.is-expired { --stamp-color: #{$navy-faint}; --stamp-ring: #{stamp-ring($navy-faint)}; }
+  &.is-cancelled,
+  &.is-invalid { --stamp-color: #{$berry}; --stamp-ring: #{stamp-ring($berry)}; }
+  // 驗票畫面的大面積色上：白章（不用 multiply）
+  &.on-color {
+    --stamp-color: #{$white};
+    --stamp-ring: #{stamp-ring($white)};
+    mix-blend-mode: normal;
+  }
+}
+
+// 重播：結帳付款結果、Bootstrap pill／tab 切換
+#result:target .stamp,
+.tab-pane.active .stamp {
+  animation-name: stamp-in-again;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp,
+  #result:target .stamp,
+  .tab-pane.active .stamp {
+    animation: none;
+    opacity: 1;
+    transform: rotate($stamp-rotate);
+  }
+  .stamp::after {
+    animation: none;
+    opacity: 0;
+  }
+}

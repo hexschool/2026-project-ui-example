@@ -1,0 +1,441 @@
+// ============================================================
+// 全站基礎：紙面、字體與字級、區塊節奏、按鈕、表單、焦點、麵包屑、頁首區
+// 元件（吊牌、夾板、手繪圖示、狀態）在 components/，頁面構圖在 pages/
+// ============================================================
+
+// 單一淺色主題：作業系統是深色模式時，原生的捲軸、日期選擇器也維持淺色
+:root {
+  color-scheme: light;
+  accent-color: $campfire;
+  --focus-color: #{$ember};  // 焦點環的顏色；夜營綠區塊（.on-night）換成 $ember-light
+  --font-hand: #{inspect($font-family-hand)};
+  --font-slab: #{inspect($font-family-slab)};
+}
+
+// 頁面底：泥灰＋紙紋（4% 噪點），像一本營地手冊的紙面
+body {
+  background-color: $mud;
+  background-image: $paper-grain;
+  letter-spacing: $letter-spacing-body;
+  font-variant-numeric: lining-nums;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+// sticky 頁首不遮住錨點目標（#tickets、#faq、#result、#refund…）
+html {
+  scroll-padding-top: $sticky-top-offset;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+::selection {
+  background-color: $orange-soft;
+  color: $bark;
+}
+
+// ---------- 字級階層 ----------
+// Display、H1、H2：芫荽 Iansui（只有 400，不准加粗：font-weight 一律 400，避免瀏覽器做假粗體）
+// H3：Noto Sans TC 700；手寫字只放大字，小字一律 Noto
+h1, .h1, h2, .h2,
+.display-1, .display-2, .display-3,
+.font-hand {
+  font-family: $font-family-hand;
+  font-weight: 400;
+  font-synthesis: none;
+  letter-spacing: .01em;
+}
+h1, .h1 {
+  font-size: $h1-font-size-mobile;
+  line-height: 1.25;
+  @include media-breakpoint-up(lg) { font-size: $h1-font-size; }
+}
+h2, .h2 {
+  font-size: $h2-font-size-mobile;
+  line-height: 1.3;
+  @include media-breakpoint-up(lg) { font-size: $h2-font-size; }
+}
+h3, .h3 {
+  font-size: $h3-font-size-mobile;
+  line-height: 1.45;
+  @include media-breakpoint-up(lg) { font-size: $h3-font-size; }
+}
+.display-1 {
+  font-size: $display-size-mobile;
+  line-height: 1.2;
+  @include media-breakpoint-up(lg) { font-size: $display-size; }
+}
+.lead {
+  font-size: $lead-font-size-mobile;
+  line-height: 1.8;
+  @include media-breakpoint-up(lg) { font-size: $lead-font-size; }
+}
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  text-wrap: balance;
+}
+p, li, dd, label, .form-text {
+  text-wrap: pretty;
+}
+small, .small { font-weight: $font-weight-medium; }
+
+// ---------- 數字：Zilla Slab 粗襯線、等寬數字 ----------
+// 金額、倒數、票號、座位號、日期旗一律等寬（規格 §0.2）
+.num,
+.slab {
+  font-family: $font-family-slab;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+// 價格：Zilla Slab 700，不換行（「NT$ 1,500 起」整串在一起）；字級由所在位置決定
+.price {
+  font-family: $font-family-slab;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.price-lg { font-size: $price-size-buy; }
+.price-md { font-size: $price-size-card; }
+.price-xl { font-size: $price-size-total; }
+
+// 次要說明文字
+.text-note {
+  font-size: $small-font-size;
+  font-weight: $font-weight-medium;
+  color: var(--bs-secondary-color);
+}
+// 橘色文字一律用炭橘（野營橘當字對比不夠）
+.text-ember { color: $ember !important; }
+.text-olive { color: $olive-deep !important; }
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、標點與 <wbr> 處換行，「現代舞獨舞展」這類詞不會被拆開；放不下時才強制斷行
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 區塊節奏：手機 64px → 桌機 120px（寬鬆，像手冊） ----------
+.section {
+  position: relative;
+  padding-block: $section-space;
+  @include media-breakpoint-up(lg) { padding-block: $section-space-lg; }
+}
+.section-tight {
+  padding-block: map-get($spacers, 6);
+  @include media-breakpoint-up(lg) { padding-block: map-get($spacers, 7); }
+}
+.bg-canvas { background-color: $canvas; }
+.bg-sage   { background-color: $sage; }
+.bg-kraft  { background-color: $kraft; }
+
+// ---------- 容器：≥ lg 左右留白 32px（規格 §2.1） ----------
+@include media-breakpoint-up(lg) {
+  .container,
+  .container-fluid {
+    --bs-gutter-x: 4rem;
+  }
+}
+
+// ---------- 夜營綠區塊（頁尾、深色帶）：帆布字、焦點環換成淺橘 ----------
+.on-night {
+  --focus-color: #{$ember-light};
+  --bs-secondary-color: #{rgba($canvas, .82)}; // 夜營綠上 6.91:1
+  background-color: $olive-night;
+  color: $canvas;
+
+  a:not(.btn) { color: $canvas; }
+}
+
+// ---------- 頁首區（活動列表、我的票券、購票紀錄、追蹤的主辦方、Guideline 共用） ----------
+// 泥灰底＋等高線；麵包屑 → H1 → 一句說明（規格 §3「頁首的一致性」）
+// <header class="page-header"><div class="container">麵包屑、<h1>、<p class="page-lead"></div></header>
+.page-header {
+  position: relative;
+  padding-block: map-get($spacers, 5) map-get($spacers, 6);
+  background-image: $contours;
+  background-position: right -60px top -40px;
+  background-repeat: no-repeat;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 6) map-get($spacers, 7);
+  }
+
+  .breadcrumb { margin-bottom: map-get($spacers, 3); }
+  h1 { margin-bottom: 0; }
+}
+.page-lead {
+  max-width: 36em;
+  margin: map-get($spacers, 3) 0 0;
+  font-size: $lead-font-size-mobile;
+  color: var(--bs-secondary-color);
+  @include media-breakpoint-up(lg) { font-size: $lead-font-size; }
+}
+// 眉標（電子票券詳情 H1 上方的「電子票券」等）：炭橘、Noto 700 小字
+.eyebrow {
+  margin-bottom: .5rem;
+  color: $ember;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+}
+
+// ---------- 麵包屑：每一項 44px 觸控高度，目前頁粗體 ----------
+.breadcrumb { align-items: center; }
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+
+  &.active { font-weight: $font-weight-bold; }
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: $bark;
+  text-decoration: underline;
+  text-decoration-color: $control;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: .3em;
+
+  &:hover { color: $ember; text-decoration-color: $flare; }
+}
+
+// ---------- 連結 ----------
+a:not([class]) {
+  text-decoration-thickness: 1.5px;
+  &:hover { text-decoration-color: $flare; }
+}
+
+// ---------- 按鈕 ----------
+// 主要 .btn-primary：野營橘底＋深色字＋2px 樹皮框（橘色貼紙）；hover 換 $campfire-hover
+// 次要 .btn-outline-dark：帆布底＋2px 樹皮框＋樹皮字；hover 換橘淡底
+// 橄欖 .btn-secondary：橄欖底＋白字＋2px 樹皮框；hover 換深橄欖
+// 夜營綠或照片上的次要鈕 .btn-outline-light：透明底＋2px 帆布框＋帆布字
+// 停用：牛皮紙底＋2px 虛線框＋樹皮次要字（牛皮紙上 4.99），不疊透明度
+// hover 只換顏色、框線，不位移、不放大
+.btn {
+  --bs-btn-focus-box-shadow: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  letter-spacing: $letter-spacing-label;
+  transition: color .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+
+  &:disabled,
+  &.disabled {
+    --bs-btn-disabled-color: #{$bark-muted};
+    --bs-btn-disabled-bg: #{$kraft};
+    --bs-btn-disabled-border-color: #{$bark-muted};
+    border-style: dashed;
+  }
+}
+.btn-primary {
+  --bs-btn-color: #{$ink-dark};
+  --bs-btn-bg: #{$campfire};
+  --bs-btn-border-color: #{$bark};
+  --bs-btn-hover-color: #{$ink-dark};
+  --bs-btn-hover-bg: #{$campfire-hover};
+  --bs-btn-hover-border-color: #{$bark};
+  --bs-btn-active-color: #{$ink-dark};
+  --bs-btn-active-bg: #{$campfire};
+  --bs-btn-active-border-color: #{$bark};
+  // 貼紙感：底部 2px 樹皮色實邊（不改尺寸）
+  box-shadow: 0 2px 0 $bark;
+
+  &:active { box-shadow: none; }
+}
+.btn-secondary {
+  --bs-btn-color: #{$white};
+  --bs-btn-bg: #{$olive};
+  --bs-btn-border-color: #{$bark};
+  --bs-btn-hover-color: #{$white};
+  --bs-btn-hover-bg: #{$olive-deep};
+  --bs-btn-hover-border-color: #{$bark};
+  --bs-btn-active-color: #{$white};
+  --bs-btn-active-bg: #{$olive-night};
+  --bs-btn-active-border-color: #{$bark};
+}
+.btn-outline-dark {
+  --bs-btn-color: #{$bark};
+  --bs-btn-bg: #{$canvas};
+  --bs-btn-border-color: #{$bark};
+  --bs-btn-hover-color: #{$bark};
+  --bs-btn-hover-bg: #{$orange-soft};
+  --bs-btn-hover-border-color: #{$bark};
+  --bs-btn-active-color: #{$bark};
+  --bs-btn-active-bg: #{$kraft};
+  --bs-btn-active-border-color: #{$bark};
+}
+.btn-outline-light {
+  --bs-btn-color: #{$canvas};
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: #{$canvas};
+  --bs-btn-hover-color: #{$bark};
+  --bs-btn-hover-bg: #{$canvas};
+  --bs-btn-hover-border-color: #{$canvas};
+  --bs-btn-active-color: #{$bark};
+  --bs-btn-active-bg: #{$kraft};
+  --bs-btn-active-border-color: #{$kraft};
+}
+// 照片上的帆布框按鈕（首頁 Hero「我要辦活動」）：帆布底、樹皮字，照片上最清楚
+.btn-canvas {
+  --bs-btn-color: #{$bark};
+  --bs-btn-bg: #{$canvas};
+  --bs-btn-border-color: #{$bark};
+  --bs-btn-hover-color: #{$bark};
+  --bs-btn-hover-bg: #{$kraft};
+  --bs-btn-hover-border-color: #{$bark};
+  --bs-btn-active-color: #{$bark};
+  --bs-btn-active-bg: #{$kraft};
+  --bs-btn-active-border-color: #{$bark};
+}
+
+// 文字按鈕：手繪底線（樹皮細線，hover 變橘），高度 44px
+.btn-text {
+  --bs-btn-padding-x: .375rem;
+  --bs-btn-padding-y: .25rem;
+  --bs-btn-border-width: 0;
+  --bs-btn-color: currentColor;
+  --bs-btn-hover-color: #{$ember};
+  --bs-btn-active-color: #{$ember};
+  --bs-btn-font-weight: #{$font-weight-bold};
+  min-height: 2.75rem;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: $control;
+  text-underline-offset: .35em;
+
+  &:hover { text-decoration-color: $flare; }
+}
+
+// 付款中（loading）：停用＋spinner；不是「不能用」，所以用野營橘實心＋進度游標
+.btn.is-loading,
+.btn.is-loading:disabled {
+  --bs-btn-disabled-color: #{$ink-dark};
+  --bs-btn-disabled-bg: #{$campfire};
+  --bs-btn-disabled-border-color: #{$bark};
+  border-style: solid;
+  cursor: progress;
+}
+
+// 圓形圖示按鈕（熱門列箭頭、頁首圖示鈕）：44 × 44px
+.btn-icon {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  font-size: 1.125rem;
+}
+
+// ---------- 鍵盤焦點：3px 炭橘實線、外推 3px ----------
+:focus-visible {
+  outline: 3px solid var(--focus-color);
+  outline-offset: 3px;
+}
+.offcanvas:focus-visible,
+.modal:focus-visible,
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+.form-control:focus-visible,
+.form-select:focus-visible {
+  outline: none; // 由 $input-focus-box-shadow 畫焦點
+}
+.form-check-input:focus:not(:focus-visible) { box-shadow: none; }
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: $zindex-fixed + 10;
+  padding: .75rem 1rem;
+  border: 2px solid $bark;
+  border-radius: $border-radius;
+  background: $canvas;
+  color: $bark;
+  font-weight: $font-weight-bold;
+  &:focus { top: 1rem; }
+}
+
+// ---------- 表單 ----------
+.form-control,
+.form-select {
+  min-height: 3rem; // 48px
+  caret-color: $ember;
+}
+.form-control::placeholder { opacity: 1; }
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-width: 2px;
+}
+.invalid-feedback {
+  display: none;
+  align-items: flex-start;
+  gap: .375rem;
+  font-weight: $font-weight-bold;
+
+  &::before {
+    content: map-get($bootstrap-icons-map, "exclamation-triangle-fill");
+    font-family: "bootstrap-icons";
+    font-weight: normal;
+    line-height: inherit;
+  }
+}
+.is-invalid ~ .invalid-feedback,
+.was-validated :invalid ~ .invalid-feedback {
+  display: flex;
+}
+// 勾選框：標籤垂直置中；觸控範圍至少 44px 高
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  min-height: 2.75rem;
+  margin-bottom: 0;
+  padding-left: 0;
+
+  .form-check-input {
+    flex-shrink: 0;
+    float: none;
+    margin: 0;
+  }
+  .form-check-label { line-height: $line-height-sm; }
+}
+
+// ---------- 浮層 ----------
+.dropdown-menu { box-shadow: var(--bs-dropdown-box-shadow); }
+.modal-content { box-shadow: $box-shadow-lg; }
+
+// ---------- 手機滿版橫向捲動列 ----------
+// 576px 以下 container 沒有最大寬，讓橫向捲動列貼齊螢幕兩側，內容起點仍對齊版心
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+    scroll-padding-inline: $container-padding-x * .5;
+  }
+}
+.bleed-x { @include bleed-x; }
+
+// ---------- 動態：系統要求減少動態時，全部關掉 ----------
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

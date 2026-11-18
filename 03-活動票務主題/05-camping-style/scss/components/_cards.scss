@@ -1,0 +1,339 @@
+// ============================================================
+// 卡片與紙材：營地卡、縫線、行李吊牌、拍立得、索引卡、夾板、郵戳、布標
+// 共同規則：
+//   - 大卡片 14px 規則圓角＋1.5px 樹皮框；不規則手繪圓角只給小標籤與膠囊
+//   - 陰影只有「紙張浮起」一種（$shadow-paper），給吊牌、夾板、索引卡與 hover 中的卡片
+//   - hover 只換框線顏色（樹皮 → 炭橘）與加紙張陰影：不位移、不放大、不展開
+//   - 旋轉只在 ≥ md、角度 ≤ 3°；手機全部擺正
+// ============================================================
+
+// ---------- 縫線：內縮一圈 2px 橄欖虛線（裝飾） ----------
+// 加在任何有 14px 圓角＋1.5px 框的卡片上：<div class="camp-card stitch">
+.stitch {
+  outline: 2px dashed $stitch-color;
+  outline-offset: -$stitch-inset;
+}
+// 縫線卡片拿到鍵盤焦點時，改用外推的炭橘焦點環（不要和縫線搶）
+.stitch:focus-visible,
+a.stitch:focus-visible {
+  outline: 3px solid var(--focus-color);
+  outline-offset: 3px;
+}
+
+// ---------- 營地卡（一般內容卡） ----------
+// <div class="camp-card stitch">…</div>；整張是連結時用 <a class="camp-card camp-card-link stitch">
+.camp-card {
+  position: relative;
+  padding: 1.5rem;
+  border: 1.5px solid $bark;
+  border-radius: $border-radius-lg;
+  background-color: $canvas;
+  color: $bark;
+
+  @include media-breakpoint-up(md) { padding: 1.75rem; }
+}
+.camp-card-link {
+  display: block;
+  text-decoration: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+
+  &:hover {
+    border-color: $ember;
+    box-shadow: $shadow-paper;
+    color: $bark;
+  }
+}
+
+// ---------- 行李吊牌（.tag-card，露營風票券卡片的招牌） ----------
+// 帆布＋上段牛皮紙、頂端（直式）或左端（橫式）一個 14px 鉚釘圓孔、孔上接一段麻繩、內縮縫線
+// 不准半圓缺口、不准撕線圓點（那是 02 古典沙龍的語言）
+//
+// 直式（熱門卡、我的票券、電子票券、下一場小卡…）：
+// <article class="tag-card stitch" style="--hole-bg: #E1E4D3">     ← 孔的顏色＝所在區塊底色（預設泥灰）
+//   <div class="tag-card-head">牛皮紙段（選用）</div>
+//   <div class="tag-card-body">帆布段</div>
+// </article>
+// 只要一條牛皮紙窄條（不放內容）時，不寫 head，改加 .tag-card-strip
+// 橫式（活動列表卡、訂單）：再加 .tag-card-h，孔在左端
+// 麻繩：再加 .has-rope（直式往上、橫式往左各拉出一段，裝飾）
+.tag-card {
+  --hole-bg: #{$mud};
+  --hole-top: .875rem;   // 孔心離上緣（直式）
+  --head-pad-top: 2.5rem; // 牛皮紙段的上內距（讓出孔的位置）
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1.5px solid $bark;
+  border-radius: $border-radius-lg;
+  background-color: $canvas;
+  color: $bark;
+
+  // 鉚釘圓孔：中心透出所在區塊的底色，外圈 3px 石色金屬環
+  &::before {
+    content: "";
+    position: absolute;
+    top: var(--hole-top);
+    left: 50%;
+    z-index: 2;
+    width: .875rem;
+    height: .875rem;
+    margin-left: -.4375rem;
+    border: 1.5px solid $bark;
+    border-radius: 50%;
+    background-color: var(--hole-bg);
+    box-shadow: 0 0 0 3px $stone, 0 0 0 4.5px $bark, inset 0 1px 2px rgba($bark, .35);
+    pointer-events: none;
+  }
+}
+.tag-card-head {
+  padding: var(--head-pad-top) 1.375rem 1.125rem;
+  border-bottom: 1.5px dashed $bark;
+  border-radius: calc(#{$border-radius-lg} - 1.5px) calc(#{$border-radius-lg} - 1.5px) 0 0;
+  background-color: $kraft;
+
+  // 炭橘不放在牛皮紙上（4.11，未達 4.5）：牛皮紙段裡的眉標改用樹皮色（9.42）
+  .eyebrow { color: $bark; }
+}
+.tag-card-body {
+  flex: 1 1 auto;
+  padding: 1.25rem 1.375rem 1.375rem;
+}
+// 只有一條牛皮紙窄條（熱門卡）
+.tag-card-strip {
+  background-image: linear-gradient($kraft 0 2.5rem, transparent 2.5rem);
+  background-clip: padding-box;
+
+  > .tag-card-body { padding-top: 3.25rem; }
+}
+// 麻繩：從孔往上拉出一段曲線（直式）
+.tag-card.has-rope::after {
+  content: "";
+  position: absolute;
+  bottom: calc(100% - var(--hole-top) - .25rem);
+  left: 50%;
+  z-index: 1;
+  width: 2.25rem;
+  height: 2.75rem;
+  margin-left: -.375rem;
+  pointer-events: none;
+  background: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 44" fill="none"><path d="M6 42c2-10 1-20 6-28s14-10 22-12" stroke="#{$rope}" stroke-width="2.5" stroke-linecap="round"/><path d="M6 42c3-9 6-17 12-22" stroke="#8E7650" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="1.5 2.5"/></svg>') left bottom / 100% 100% no-repeat;
+}
+
+// 橫式：孔在左端（垂直置中）
+.tag-card-h {
+  --hole-left: 1rem;
+  flex-direction: row;
+  padding-left: 2.25rem;
+
+  &::before {
+    top: 50%;
+    left: var(--hole-left);
+    margin: -.4375rem 0 0;
+  }
+  &.has-rope::after {
+    top: 50%;
+    bottom: auto;
+    left: auto;
+    right: calc(100% - var(--hole-left) - .25rem);
+    width: 2.75rem;
+    height: 1.5rem;
+    margin: -1.25rem 0 0;
+    background-image: svg-uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 24" fill="none"><path d="M42 18c-10-2-20-1-28-6S4 4 2 2" stroke="#{$rope}" stroke-width="2.5" stroke-linecap="round"/></svg>');
+  }
+}
+
+// 紙張浮起（吊牌、夾板、索引卡）
+.paper-lift { box-shadow: $shadow-paper; }
+
+// 卡片裡的內縮照片：圓角 10px、1.5px 樹皮框，不出血
+.inset-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1.5px solid $bark;
+  border-radius: $radius-photo;
+  object-fit: cover;
+}
+
+// ---------- 郵戳：牛皮紙圓形日期章（熱門卡照片左上）「10月／18」 ----------
+// <span class="postmark"><span class="postmark-month">10月</span><span class="postmark-day">18</span></span>
+.postmark {
+  display: inline-grid;
+  place-content: center;
+  justify-items: center;
+  width: 4rem;
+  height: 4rem;
+  border: 1.5px solid $bark;
+  border-radius: 50%;
+  background-color: $kraft;
+  color: $bark;
+  outline: 1.5px dashed rgba($bark, .55);
+  outline-offset: -6px;
+  line-height: 1;
+  text-align: center;
+}
+.postmark-month {
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+}
+.postmark-day {
+  margin-top: .125rem;
+  font-family: $font-family-slab;
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+// ---------- 田野筆記拍立得（首頁情境卡） ----------
+// 帆布相框（四周 10px）＋ 4:5 照片＋頂端一條半透明牛皮紙膠帶；文字在照片下方的相框白邊上
+// 靜態旋轉角度用 --tilt（只在 ≥ md 生效）
+.polaroid {
+  --tilt: 0deg;
+  position: relative;
+  display: block;
+  padding: .625rem .625rem 0;
+  border: 1.5px solid $bark;
+  border-radius: .375rem;
+  background-color: $canvas;
+  color: $bark;
+  text-decoration: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+
+  @include media-breakpoint-up(md) { transform: rotate(var(--tilt)); }
+
+  // 膠帶（裝飾）
+  &::before {
+    content: "";
+    position: absolute;
+    top: -.75rem;
+    left: 50%;
+    z-index: 1;
+    width: 5.5rem;
+    height: 1.5rem;
+    margin-left: -2.75rem;
+    background-color: rgba($kraft, .82);
+    border-left: 1px dashed rgba($bark, .25);
+    border-right: 1px dashed rgba($bark, .25);
+    transform: rotate(-2deg);
+    pointer-events: none;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    border-radius: .1875rem;
+    object-fit: cover;
+  }
+
+  &:hover {
+    border-color: $ember;
+    box-shadow: $shadow-paper-lg;
+    color: $bark;
+  }
+}
+.polaroid-caption {
+  display: block;
+  padding: .875rem .375rem 1.125rem;
+}
+
+// ---------- 索引卡：牛皮紙＋上緣一枚圖釘（首頁評價） ----------
+// <figure class="index-card paper-lift">…</figure>
+.index-card {
+  position: relative;
+  margin: 0;
+  padding: 2.25rem 1.5rem 1.5rem;
+  border: 1.5px solid $bark;
+  border-radius: .375rem;
+  background-color: $kraft;
+  // 索引卡頂端的一條橘線
+  background-image: linear-gradient(transparent 1.5rem, rgba($flare, .7) 1.5rem, rgba($flare, .7) calc(1.5rem + 2px), transparent calc(1.5rem + 2px));
+  color: $bark;
+
+  @include media-breakpoint-up(md) { padding: 2.5rem 2rem 1.75rem; }
+
+  // 圖釘
+  &::before {
+    content: "";
+    position: absolute;
+    top: -1rem;
+    left: 50%;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-left: -1.125rem;
+    background: url("../images/hand-pushpin.svg") center / contain no-repeat;
+    pointer-events: none;
+  }
+}
+
+// ---------- 夾板：帆布板＋頂端金屬夾（首頁入場保障、活動列表篩選、購票紀錄退票單） ----------
+// <div class="clipboard stitch paper-lift">…</div>
+.clipboard {
+  position: relative;
+  padding: 3rem 1.5rem 1.5rem;
+  border: 1.5px solid $bark;
+  border-radius: $border-radius-lg;
+  background-color: $canvas;
+  color: $bark;
+
+  @include media-breakpoint-up(md) { padding: 3.25rem 2rem 2rem; }
+
+  // 金屬夾（裝飾）
+  &::before {
+    content: "";
+    position: absolute;
+    top: -.875rem;
+    left: 50%;
+    z-index: 1;
+    width: 7.5rem;
+    height: 2.25rem;
+    margin-left: -3.75rem;
+    border: 1.5px solid $bark;
+    border-radius: .5rem .5rem .875rem .875rem;
+    background:
+      radial-gradient(circle at 50% 38%, $bark 0 .3rem, transparent calc(.3rem + 1px)),
+      linear-gradient(180deg, #E4E0D6 0%, $stone 55%, #A9A291 100%);
+    box-shadow: inset 0 1px 0 rgba($white, .6);
+    pointer-events: none;
+  }
+}
+
+// ---------- 布標：收納袋卡左上的一片牛皮紙布標（標題寫在上面） ----------
+// <h2 class="cloth-label">購票人資訊</h2>
+.cloth-label {
+  display: inline-block;
+  margin: 0 0 1.25rem;
+  padding: .375rem 1rem .25rem;
+  border: 1.5px solid $bark;
+  border-radius: .25rem .25rem .25rem 1rem;
+  background-color: $kraft;
+  outline: 1.5px dashed rgba($bark, .45);
+  outline-offset: -5px;
+  font-family: $font-family-hand;
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+// ---------- 縫線圓布章（主辦方字母章）：牛皮紙圓＋內縮橄欖縫線＋芫荽字 ----------
+// 活動細節「關於主辦方」（96px）、追蹤的主辦方（72px，手機 56px）；CSS 畫的字母組合，不用圖片，aria-hidden
+// <span class="org-badge" aria-hidden="true">NC</span>；尺寸用 --badge-size、字級用 --badge-font 調
+.org-badge {
+  display: inline-grid;
+  place-items: center;
+  width: var(--badge-size, 6rem);
+  height: var(--badge-size, 6rem);
+  margin-bottom: 1.25rem;
+  border: 2px solid $bark;
+  border-radius: 50%;
+  background-color: $kraft;
+  outline: 2px dashed $olive;
+  outline-offset: -9px;
+  box-shadow: $shadow-paper;
+  font-family: $font-family-hand;
+  font-size: var(--badge-font, 2rem);
+  line-height: 1;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
