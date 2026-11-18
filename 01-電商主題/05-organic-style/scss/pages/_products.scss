@@ -1,0 +1,350 @@
+// ============================================================
+// 商品一覽（products.html）
+// 構圖：頁首（麵包屑、H1＋右側連結、說明）→ 黏性膠囊篩選列（top 88px）→ 件數
+//       → 商品格（xl 4 欄、lg 3 欄、以下 2 欄）＋最後一格跨 2 欄的薄荷方塊 → 已顯示全部 → 狀態示意
+// 沒有左側欄：分類 chip、只顯示有現貨、寬度、價格區間、排序都在上方同一條膠囊列裡
+// 992px 以下：膠囊列只留分類 chip（橫向捲動）與「篩選」鈕；開關、寬度、價格區間、排序收進底部抽屜（同一份標記，offcanvas-lg）
+// class 一律加 products- 前綴
+// ============================================================
+
+.products-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: 1.5rem;
+}
+
+// ---------- 黏性膠囊篩選列 ----------
+// 單列時是膠囊（圓角 32px 大於半高，看起來就是膠囊）；lg～xl 換成兩列時是 32px 圓角面板
+.products-bar {
+  position: sticky;
+  top: $sticky-top;
+  z-index: $zindex-sticky;
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  margin-bottom: 1.25rem;
+  padding: .375rem;
+  border: 1px solid $card-line;
+  border-radius: $radius-panel;
+  background-color: $white;
+  box-shadow: $shadow-float;
+
+  @include media-breakpoint-up(lg) {
+    flex-wrap: wrap;
+    row-gap: .375rem;
+    column-gap: .5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  // 底部抽屜寫在篩選列裡：抽屜開著時，篩選列的層級要高於遮罩（1040），抽屜才不會被蓋住
+  &:has(.offcanvas-lg.showing, .offcanvas-lg.show, .offcanvas-lg.hiding) {
+    z-index: $zindex-offcanvas;
+  }
+}
+
+// 分類 chip：992px 以下在膠囊裡橫向捲動（右緣淡出提示還有），lg 以上全部攤開
+.products-cats {
+  display: flex;
+  flex: 1 1 auto;
+  gap: .25rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  .chip-filter {
+    padding-inline: .75rem;
+    border-color: transparent;
+  }
+  .chip-filter:not(.active):not([aria-current]) {
+    background-color: transparent;
+    &:hover { background-color: $mist; border-color: transparent; }
+  }
+
+  @include media-breakpoint-down(lg) {
+    overflow-x: auto;
+    padding-right: 1.5rem;
+    scrollbar-width: none;
+    mask-image: linear-gradient(90deg, #000 calc(100% - 1.5rem), transparent);
+
+    &::-webkit-scrollbar { display: none; }
+    // 捲動容器會裁掉外擴的焦點環，改畫在內側
+    .chip-filter:focus-visible { outline: none; box-shadow: inset 0 0 0 3px $forest; }
+  }
+  // lg 以上：chip 之間不留縫、左右內距收成 10px（未選取的 chip 沒有底色，靠內距分開），
+  // 1440 以上分類、開關、寬度、價格、排序才排得進同一列
+  @include media-breakpoint-up(lg) {
+    flex: 0 1 auto;
+    flex-wrap: wrap;
+    gap: 0;
+
+    .chip-filter { padding-inline: .625rem; }
+  }
+}
+
+// 992px 以下才出現的「篩選」鈕
+.products-filter-btn {
+  flex: 0 0 auto;
+  gap: .375rem;
+  min-height: 2.75rem;
+  padding-inline: 1rem;
+}
+
+// ---------- 篩選與排序：lg 以上排在膠囊列右側；以下是底部抽屜 ----------
+.products-filter {
+  @include media-breakpoint-up(lg) {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+  @include media-breakpoint-down(lg) {
+    &.offcanvas-bottom { @include bottom-sheet; }
+  }
+}
+.products-filter-form {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+
+  @include media-breakpoint-down(lg) {
+    display: grid;
+    gap: 1.5rem;
+    width: 100%;
+  }
+}
+.products-divider {
+  align-self: stretch;
+  width: 1px;
+  margin-block: .5rem;
+  background-color: $card-line;
+}
+
+// 只顯示有現貨：開關在左、文字在右，整塊 44px 高
+.products-stock.form-switch {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: 0 .75rem;
+
+  .form-check-input {
+    float: none;
+    flex: 0 0 auto;
+    margin: 0;
+  }
+  .form-check-label {
+    font-family: $font-family-round;
+    font-size: .9375rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  @include media-breakpoint-up(lg) { padding: 0 .5rem; }
+  @include media-breakpoint-down(lg) {
+    justify-content: space-between;
+    flex-direction: row-reverse;
+    min-height: 3.5rem;
+    padding: 0 1.25rem;
+    border-radius: $radius-sm;
+    background-color: $mist;
+  }
+}
+
+// 霧薄荷小膠囊鈕（寬度、價格下拉）、膠囊下拉選單（排序）
+.products-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  padding: .5rem 1rem;
+  border: 0;
+  border-radius: $radius-pill;
+  background-color: $mist;
+  color: $ink;
+  font-family: $font-family-round;
+  font-size: .9375rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background-color .2s, color .2s;
+
+  &::after { display: none; } // 不用 Bootstrap 的三角形，改用 bi-chevron-down
+  .bi { font-size: .75rem; }
+  &:hover,
+  &[aria-expanded="true"] { background-color: $mint; color: $forest-deep; }
+}
+
+// 寬度、價格下拉：lg 以上是浮起的選單；以下在抽屜裡直接攤開（按鈕隱藏）
+.products-dropdown-menu {
+  --bs-dropdown-min-width: 17rem;
+  --bs-dropdown-padding-x: 1.25rem;
+  --bs-dropdown-padding-y: 1.125rem;
+  --bs-dropdown-border-radius: #{$radius-card};
+
+  .form-check {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    margin: 0;
+    gap: .625rem;
+    padding-left: 0;
+
+    .form-check-input { float: none; margin: 0; }
+    .form-check-label { display: flex; flex: 1 1 auto; align-items: center; justify-content: space-between; gap: 1rem; }
+  }
+
+  @include media-breakpoint-down(lg) {
+    position: static !important;
+    inset: auto !important;
+    display: block;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    transform: none !important;
+    background: transparent;
+  }
+}
+.products-dropdown .products-pill {
+  @include media-breakpoint-down(lg) { display: none; }
+}
+.products-filter-legend {
+  float: none;
+  margin-bottom: .25rem;
+  font-family: $font-family-round;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.products-filter-count {
+  min-width: 1.5rem;
+  color: $sage-text;
+  font-size: $small-font-size;
+  text-align: right;
+}
+
+// 排序：lg 以上「排序」小字＋膠囊下拉；抽屜裡是一般的標籤＋滿寬下拉
+.products-sort {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding-left: .25rem;
+
+  .form-select {
+    min-height: 2.75rem;
+    padding-block: .5rem;
+    padding-left: 1rem;
+    padding-right: 2.5rem;
+    background-position: right .875rem center;
+    border-color: $mist;
+    border-radius: $radius-pill;
+    background-color: $mist;
+    font-family: $font-family-round;
+    font-size: .9375rem;
+    font-weight: 700;
+
+    &:hover { border-color: $mint; background-color: $mint; }
+  }
+  @include media-breakpoint-down(lg) {
+    display: grid;
+    padding: 0;
+
+    .form-select { min-height: 3rem; border-color: $sage-dark; background-color: $white; }
+  }
+}
+.products-sort-label {
+  color: $sage-text;
+  font-size: $small-font-size;
+  white-space: nowrap;
+
+  // lg 以上膠囊列空間有限：下拉本身寫著「推薦排序」，標籤只留給螢幕閱讀器
+  @include media-breakpoint-up(lg) { @include visually-hidden; }
+
+  @include media-breakpoint-down(lg) {
+    color: $ink;
+    font-family: $font-family-round;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+}
+// 抽屜底部：清除＋顯示 N 件
+.products-filter-foot {
+  display: flex;
+  gap: .75rem;
+  padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom));
+  border-top: 1px solid $card-line;
+}
+
+// ---------- 件數 ----------
+.products-count {
+  margin-bottom: 1rem;
+  color: $sage-text;
+  font-size: $small-font-size;
+
+  @include media-breakpoint-up(lg) { margin-bottom: 1.5rem; }
+}
+
+// ---------- 商品格：xl 4 欄、lg 3 欄、以下 2 欄 ----------
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { gap: $tile-gap-lg; }
+  @include media-breakpoint-up(lg) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @include media-breakpoint-up(xl) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  // 手機 2 欄：卡片窄，品名縮成 15px、圖片內縮與內距收一點
+  @include media-breakpoint-down(sm) {
+    .product-card-body { padding: .75rem .625rem .375rem; } // 左右 10px，文字不貼框
+    .product-card-title { font-size: .9375rem; -webkit-line-clamp: 3; } // 窄卡片放寬到 3 行，完整品名不被截掉
+    .product-card-tag { top: .5rem; left: .5rem; }
+  }
+}
+
+// 最後一格：跨 2 欄的薄荷方塊（xl 剛好補滿第 3 列、lg 補滿第 4 列）
+.products-tip {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: .75rem;
+
+  @include media-breakpoint-up(lg) { padding: 2.5rem; }
+
+  .icon-circle {
+    margin-bottom: .25rem;
+    background-color: $white;
+  }
+  h3 { margin: 0; }
+  p {
+    max-width: 30em;
+    margin: 0 0 .5rem;
+    color: $ink;
+  }
+}
+
+// ---------- 清單尾端：滿格的小軌道＋已顯示全部 ----------
+.products-end {
+  display: grid;
+  justify-items: center;
+  gap: .75rem;
+  margin-top: map-get($spacers, 5);
+  text-align: center;
+
+  .track { width: 10rem; }
+  p { margin: 0; }
+}
+
+// ---------- 狀態示意 ----------
+.products-demo-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: 1rem;
+
+  p { margin: 0 0 0 .25rem; color: $sage-text; font-size: $small-font-size; }
+}

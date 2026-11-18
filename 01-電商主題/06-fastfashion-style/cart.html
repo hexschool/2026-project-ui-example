@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>購物車｜NestCraft 原創生活家居選物</title>
+  <meta name="description" content="NestCraft 購物車：3 項商品共 4 件，應付總計 NT$ 20,250，已達滿 NT$ 3,000 免運；再買 NT$ 4,750 可用限時折價券。設計稿 06｜平價快時尚。">
+  <meta name="theme-color" content="#FFE500">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="has-buybar">
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，先改本範本，再同步 10 個 .html，最後 npm run check。
+    - 每頁只需要調整一處「目前頁面」標示（scripts/check-layout.mjs 依這個規則比對）：
+      頁首導覽：目前頁的連結在 nav-link 後面加 active，並加 aria-current="page"
+      · index.html → 首頁；products.html → 商品一覽；orders.html → 我的訂單
+      · 商品詳情（product.html）：「商品一覽」標示 active，但不加 aria-current
+      · 購物車、結帳、付款結果、登入、註冊、Guideline：不標示
+    - 導覽連結的 class 只寫 nav-link（目前頁加 active），不要加別的 class，樣式從父層 .site-nav 選。
+    - body 的 class 每頁可以不同（不在比對範圍）：
+      · 購物車、結帳：has-buybar（固定在視窗底部的黑色結帳列）
+      · 商品詳情：has-buybar-sm（992px 以下的固定購買列）
+    - check-layout 比對的頁首區塊：從 skip-link 到 header 結束（黃色倒數條在 header 裡）；
+      頁尾區塊：從 site-footer 到檔案結尾（加入購物車的 toast 也在這段裡）。
+    ============================================================
+  -->
+  <a class="skip-link" href="#main">跳至主要內容</a>
+
+  <header class="site-header">
+    <!-- 黃色倒數條：折價券元件（不是公告列）。倒數數字由 js/main.js 每秒更新，HTML 先寫一個靜態值；不加 aria-live -->
+    <div class="site-countdown">
+      <div class="container">
+        <p class="site-countdown-line">
+          <span class="site-countdown-tag">限時券</span>
+          <span>滿 <span class="num">NT$&nbsp;25,000</span> 折 <span class="num">NT$&nbsp;1,000</span></span>
+          <span class="site-countdown-deadline" aria-hidden="true">今日 23:59 截止</span>
+          <span class="site-countdown-sep" aria-hidden="true">｜</span>
+          <span class="countdown">
+            <span class="visually-hidden">活動今日 23:59 截止</span>
+            <span class="countdown-num" data-countdown aria-hidden="true">05:42:18</span>
+          </span>
+          <a class="site-countdown-link" href="login.html">登入領取</a>
+        </p>
+      </div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg site-bar" aria-label="主要導覽">
+      <div class="container">
+        <button class="site-icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteMenu" aria-controls="siteMenu" aria-label="開啟選單">
+          <i class="bi bi-list" aria-hidden="true"></i>
+        </button>
+
+        <a class="navbar-brand site-brand" href="index.html">
+          <span class="site-brand-mark" aria-hidden="true">N</span>
+          <span class="site-brand-name">NestCraft</span>
+        </a>
+
+        <!-- 992px 以上直接排在黑列；以下是左側黑色抽屜（搜尋框在最上方）。導覽連結只寫這一份 -->
+        <div id="siteMenu" class="offcanvas offcanvas-start site-menu" tabindex="-1" aria-labelledby="siteMenuTitle">
+          <div class="offcanvas-header">
+            <p id="siteMenuTitle" class="offcanvas-title site-menu-title">選單</p>
+            <button class="btn-close btn-close-white" type="button" data-bs-dismiss="offcanvas" data-bs-target="#siteMenu" aria-label="關閉選單"></button>
+          </div>
+          <div class="offcanvas-body">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="products.html">商品一覽</a></li>
+              <li class="nav-item"><a class="nav-link" href="index.html#rooms">空間靈感</a></li>
+              <li class="nav-item"><a class="nav-link" href="orders.html">我的訂單</a></li>
+              <li class="nav-item d-sm-none"><a class="nav-link" href="login.html">會員登入</a></li>
+            </ul>
+            <form class="site-search" role="search" action="products.html">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input class="form-control" type="search" name="q" placeholder="搜尋家具、收納、尺寸…" aria-label="搜尋商品">
+            </form>
+          </div>
+        </div>
+
+        <div class="site-actions">
+          <!-- 992px 以下：打開抽屜並把焦點放進搜尋框（js/main.js） -->
+          <button class="site-icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteMenu" aria-controls="siteMenu" aria-label="搜尋商品" data-menu-search>
+            <i class="bi bi-search" aria-hidden="true"></i>
+          </button>
+          <!-- 576px 以下會員入口移到抽屜裡 -->
+          <a class="site-icon-btn d-none d-sm-inline-grid" href="login.html" aria-label="會員登入">
+            <i class="bi bi-person" aria-hidden="true"></i>
+          </a>
+          <a class="site-cart" href="cart.html" aria-label="購物車，4 件商品" data-cart-link>
+            <i class="bi bi-bag-fill" aria-hidden="true"></i>
+            <span class="site-cart-label">購物車</span>
+            <span class="site-cart-count" data-cart-count>4</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <!--
+      購物車（樣式見 scss/pages/_cart.scss）
+      - 左 8 欄品項列（128px 灰底縮圖｜品名、尺寸、單價、規格｜數量方鍵＋移除｜小計 28px）；右 4 欄折價券進度票券、折扣碼、服務說明
+      - 金額摘要不在頁面裡：固定在視窗底部的黑色結帳列（body 加 has-buybar），永遠看得到「應付總計」與「前往結帳」
+      - 金額與結帳、付款結果一致：3 項 4 件，小計 NT$ 20,250、免運、應付總計 NT$ 20,250（折價券沒有達到門檻，不折抵）
+    -->
+    <div class="container container-flow page-body">
+      <header class="page-header">
+        <!-- 結帳步驟：目前在第 1 步，後面的步驟還沒到，不放連結 -->
+        <ol class="chevron-steps" aria-label="結帳步驟">
+          <li class="is-current" aria-current="step"><span class="chevron-steps-num">1</span><span class="chevron-steps-label">購物車</span></li>
+          <li><span class="chevron-steps-num">2</span><span class="chevron-steps-label">填寫資料與付款</span></li>
+          <li><span class="chevron-steps-num">3</span><span class="chevron-steps-label">完成訂單</span></li>
+        </ol>
+        <div class="page-title-row">
+          <h1>購物車</h1>
+          <span class="count-chip"><span class="num">4</span> 件</span>
+        </div>
+        <p class="page-lead text-phrase">共 <span class="num">3</span> 項商品、<span class="num">4</span> 件。<wbr>數量與規格可以在這裡直接調整。</p>
+      </header>
+
+      <div class="row gx-lg-5 gy-6">
+        <!-- 品項 -->
+        <div class="col-lg-8">
+          <section aria-labelledby="cart-items-title">
+            <h2 id="cart-items-title" class="visually-hidden">購物車品項</h2>
+            <!--
+              每一列：縮圖｜品名、尺寸、單價、規格｜數量、移除｜小計
+              - 圖片與品名連到同一頁，圖片連結不進 Tab 順序、對螢幕閱讀器隱藏
+              - 數量為 1 時「−」停用；要刪除請用「移除」
+              - 規格選項為示意
+            -->
+            <ul class="cart-list list-unstyled mb-0">
+              <li class="cart-row">
+                <a class="cart-row-media img-frame" href="product.html" tabindex="-1" aria-hidden="true">
+                  <img src="images/p-1001.jpg" alt="" width="1200" height="1200">
+                </a>
+                <div class="cart-row-info">
+                  <h3 class="cart-row-name text-phrase"><a href="product.html">橡木餐桌</a></h3>
+                  <p class="cart-row-meta">W160&nbsp;×&nbsp;D80&nbsp;×&nbsp;H75&nbsp;cm</p>
+                  <p class="cart-row-meta">單價 <span class="num">NT$&nbsp;16,800</span></p>
+                  <div class="cart-row-spec">
+                    <label for="spec-p-1001">規格<span class="visually-hidden">（橡木餐桌）</span></label>
+                    <select id="spec-p-1001" class="form-select form-select-sm" autocomplete="off">
+                          <option>天然原木色</option>
+                          <option>淺灰洗白色</option>
+                    </select>
+                  </div>
+                    <p class="cart-row-note"><i class="bi bi-truck" aria-hidden="true"></i>大型家具，配送前一天會來電。</p>
+                </div>
+                <div class="cart-row-qty">
+                  <label class="visually-hidden" for="qty-p-1001">數量（橡木餐桌）</label>
+                  <div class="qty">
+                    <button class="qty-btn" type="button" aria-label="減少數量（橡木餐桌）" disabled><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
+                    <input id="qty-p-1001" class="qty-input" type="text" inputmode="numeric" autocomplete="off" value="1">
+                    <button class="qty-btn" type="button" aria-label="增加數量（橡木餐桌）"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
+                  </div>
+                  <button class="btn btn-text cart-row-remove" type="button" aria-label="移除 橡木餐桌"><i class="bi bi-x-lg" aria-hidden="true"></i>移除</button>
+                </div>
+                <p class="cart-row-sub"><span class="cart-row-sub-label">小計</span><span class="price-tag price-tag-card"><span class="price-cur">NT$</span><span class="price-num">16,800</span></span></p>
+              </li>
+              <li class="cart-row">
+                <a class="cart-row-media img-frame" href="product.html" tabindex="-1" aria-hidden="true">
+                  <img src="images/p-1007.jpg" alt="" width="1200" height="1200">
+                </a>
+                <div class="cart-row-info">
+                  <h3 class="cart-row-name text-phrase"><a href="product.html">NestBox 自由拼裝<wbr>收納方塊 (三入組)</a></h3>
+                  <p class="cart-row-meta">單入 W35&nbsp;×&nbsp;D35&nbsp;×&nbsp;H35&nbsp;cm</p>
+                  <p class="cart-row-meta">單價 <span class="num">NT$&nbsp;1,280</span></p>
+                  <div class="cart-row-spec">
+                    <label for="spec-p-1007">規格<span class="visually-hidden">（NestBox 自由拼裝收納方塊 (三入組)）</span></label>
+                    <select id="spec-p-1007" class="form-select form-select-sm" autocomplete="off">
+                          <option>米白</option>
+                          <option>淺原木</option>
+                          <option>亞麻灰</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="cart-row-qty">
+                  <label class="visually-hidden" for="qty-p-1007">數量（NestBox 自由拼裝收納方塊 (三入組)）</label>
+                  <div class="qty">
+                    <button class="qty-btn" type="button" aria-label="減少數量（NestBox 自由拼裝收納方塊 (三入組)）"><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
+                    <input id="qty-p-1007" class="qty-input" type="text" inputmode="numeric" autocomplete="off" value="2">
+                    <button class="qty-btn" type="button" aria-label="增加數量（NestBox 自由拼裝收納方塊 (三入組)）"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
+                  </div>
+                  <button class="btn btn-text cart-row-remove" type="button" aria-label="移除 NestBox 自由拼裝收納方塊 (三入組)"><i class="bi bi-x-lg" aria-hidden="true"></i>移除</button>
+                </div>
+                <p class="cart-row-sub"><span class="cart-row-sub-label">小計</span><span class="price-tag price-tag-card"><span class="price-cur">NT$</span><span class="price-num">2,560</span></span></p>
+              </li>
+              <li class="cart-row">
+                <a class="cart-row-media img-frame" href="product.html" tabindex="-1" aria-hidden="true">
+                  <img src="images/p-1008.jpg" alt="" width="1200" height="1200">
+                </a>
+                <div class="cart-row-info">
+                  <h3 class="cart-row-name text-phrase"><a href="product.html">SlimFit 夾縫<wbr>多功能推車</a></h3>
+                  <p class="cart-row-meta">W15&nbsp;×&nbsp;D45&nbsp;×&nbsp;H80&nbsp;cm</p>
+                  <p class="cart-row-meta">單價 <span class="num">NT$&nbsp;890</span></p>
+                  <div class="cart-row-spec">
+                    <label for="spec-p-1008">規格<span class="visually-hidden">（SlimFit 夾縫多功能推車）</span></label>
+                    <select id="spec-p-1008" class="form-select form-select-sm" autocomplete="off">
+                          <option>霧白</option>
+                          <option>炭灰</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="cart-row-qty">
+                  <label class="visually-hidden" for="qty-p-1008">數量（SlimFit 夾縫多功能推車）</label>
+                  <div class="qty">
+                    <button class="qty-btn" type="button" aria-label="減少數量（SlimFit 夾縫多功能推車）" disabled><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
+                    <input id="qty-p-1008" class="qty-input" type="text" inputmode="numeric" autocomplete="off" value="1">
+                    <button class="qty-btn" type="button" aria-label="增加數量（SlimFit 夾縫多功能推車）"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
+                  </div>
+                  <button class="btn btn-text cart-row-remove" type="button" aria-label="移除 SlimFit 夾縫多功能推車"><i class="bi bi-x-lg" aria-hidden="true"></i>移除</button>
+                </div>
+                <p class="cart-row-sub"><span class="cart-row-sub-label">小計</span><span class="price-tag price-tag-card"><span class="price-cur">NT$</span><span class="price-num">890</span></span></p>
+              </li>
+            </ul>
+
+            <!-- 992px 以下：小計與運費放在品項清單下方（桌機在底部的固定結帳列） -->
+            <dl class="cart-sum d-lg-none">
+              <div><dt>商品小計（<span class="num">4</span> 件）</dt><dd class="num">NT$ 20,250</dd></div>
+              <div><dt>運費</dt><dd>免運<span class="cart-sum-note">已達滿 <span class="num">NT$&nbsp;3,000</span> 免運門檻</span></dd></div>
+            </dl>
+          </section>
+        </div>
+
+        <!-- 右欄（不 sticky）：折價券進度票券 → 折扣碼 → 服務說明 → 繼續購物 -->
+        <div class="col-lg-4">
+          <aside class="cart-side" aria-label="優惠與服務">
+            <!-- 折價券進度：只是活動示意，購物車 NT$ 20,250 沒有達到門檻，總額照舊。票根只放標籤與倒數（高度固定），門檻標題放撕線下方，窄欄換行也不會壓到撕線 -->
+            <section class="coupon coupon-plain coupon-stack cart-coupon" aria-labelledby="cart-coupon-title">
+              <div class="coupon-stub">
+                <div class="cart-coupon-head">
+                  <span class="coupon-label">限時券</span>
+                  <span class="coupon-timer cart-coupon-timer">
+                    <span class="coupon-deadline" aria-hidden="true">今日 23:59 截止</span>
+                    <span class="countdown"><span class="visually-hidden">活動今日 23:59 截止</span><span class="countdown-num" data-countdown aria-hidden="true">05:42:18</span></span>
+                  </span>
+                </div>
+              </div>
+              <div class="coupon-main">
+                <h2 id="cart-coupon-title" class="cart-coupon-title">滿 <span class="num">NT$&nbsp;25,000</span> 折 <span class="num">NT$&nbsp;1,000</span></h2>
+                <div class="progress cart-coupon-bar" role="progressbar" aria-label="折價券門檻進度" aria-valuenow="81" aria-valuemin="0" aria-valuemax="100" aria-valuetext="81%，已累積 NT$ 20,250">
+                  <div class="progress-bar" style="width: 81%"></div>
+                </div>
+                <p class="cart-coupon-progress">
+                  <span>已累積 <span class="num">NT$&nbsp;20,250</span>，還差 <strong class="num">NT$&nbsp;4,750</strong></span>
+                  <span class="num cart-coupon-pct" aria-hidden="true">81%</span>
+                </p>
+                <a class="btn btn-dark w-100" href="products.html">去湊單</a>
+              </div>
+            </section>
+
+            <!-- 折扣碼：設計稿不實際套用，送出後回到本頁 -->
+            <form class="cart-code" action="cart.html">
+              <label class="form-label" for="cart-code">折扣碼<span class="form-label-optional">選填</span></label>
+              <div class="input-group">
+                <input id="cart-code" class="form-control" type="text" autocomplete="off" placeholder="輸入折扣碼">
+                <button class="btn btn-dark" type="submit">套用</button>
+              </div>
+            </form>
+
+            <ul class="cart-assure list-unstyled">
+              <li><i class="bi bi-truck" aria-hidden="true"></i><span>已達滿 <span class="num">NT$&nbsp;3,000</span> 免運門檻</span></li>
+              <li><i class="bi bi-arrow-repeat" aria-hidden="true"></i><span>14&nbsp;天租屋友善退換，搬家前後都適用</span></li>
+              <li><i class="bi bi-shield-lock-fill" aria-hidden="true"></i><span>付款資料加密傳輸，不會儲存完整卡號</span></li>
+            </ul>
+
+            <a class="btn btn-text" href="products.html">繼續購物</a>
+          </aside>
+        </div>
+      </div>
+
+      <!-- 設計稿狀態示意：購物車是空的（示意區裡不放固定結帳列） -->
+      <section class="demo-state" aria-labelledby="cart-state-title">
+        <p class="demo-state-tag">設計稿狀態示意</p>
+        <h2 id="cart-state-title" class="demo-state-title">購物車是空的時</h2>
+        <p class="text-secondary text-phrase">頁首只留標題「購物車」，<wbr>步驟、品項、右欄與底部的固定結帳列都隱藏，<wbr>標題下方改顯示以下區塊。</p>
+        <div class="demo-state-stage">
+          <div class="cart-empty">
+            <p class="empty-state-title">購物車目前是空的</p>
+            <p class="text-secondary">先逛逛人氣嚴選，<wbr>滿 <span class="num">NT$&nbsp;3,000</span> 就免運。</p>
+            <a class="btn btn-volt" href="products.html">去逛逛</a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!--
+      固定在視窗底部的黑色結帳列（樣式見 scss/components/_buybar.scss）
+      992px 以上：商品小計、運費｜應付總計 40px 黃字｜前往結帳；以下：應付總計＋前往結帳
+    -->
+    <section class="buybar on-dark" aria-labelledby="buybar-title">
+      <div class="container container-flow buybar-inner">
+        <h2 id="buybar-title" class="visually-hidden">金額摘要</h2>
+        <dl class="buybar-sub">
+          <div><dt>商品小計</dt><dd class="num">NT$ 20,250</dd></div>
+          <div><dt>運費</dt><dd>免運</dd></div>
+        </dl>
+        <p class="buybar-total"><span class="buybar-total-label">應付總計</span><span class="price-tag price-tag-total"><span class="price-cur">NT$</span><span class="price-num">20,250</span></span></p>
+        <a class="btn btn-volt buybar-cta" href="checkout.html">前往結帳</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <ul class="site-footer-services">
+        <li>
+          <span class="site-footer-icon"><i class="bi bi-tools" aria-hidden="true"></i></span>
+          <div>
+            <p class="site-footer-service-title">免工具組裝</p>
+            <p>90%&nbsp;商品採卡扣與簡易設計，單人也能輕鬆完成。</p>
+          </div>
+        </li>
+        <li>
+          <span class="site-footer-icon"><i class="bi bi-arrow-repeat" aria-hidden="true"></i></span>
+          <div>
+            <p class="site-footer-service-title">租屋友善退換</p>
+            <p>14&nbsp;天猶豫期，專人到府收件，試擺不將就。</p>
+          </div>
+        </li>
+        <li>
+          <span class="site-footer-icon"><i class="bi bi-truck" aria-hidden="true"></i></span>
+          <div>
+            <p class="site-footer-service-title">現貨極速派送</p>
+            <p>48&nbsp;小時內出貨，週末馬上動手改造。</p>
+          </div>
+        </li>
+      </ul>
+
+      <div class="row gy-4">
+        <div class="col-lg-4">
+          <a class="site-brand" href="index.html">
+            <span class="site-brand-mark" aria-hidden="true">N</span>
+            <span class="site-brand-name">NestCraft</span>
+          </a>
+          <p class="site-footer-lead">把有限的坪數，活出無限的講究。<br>專為租屋族與小空間打造的模組家具。</p>
+        </div>
+        <!-- 購物指南、品牌故事尚未設計頁面：不帶 href 的佔位連結 -->
+        <div class="col-6 col-md-4 col-lg-2">
+          <h2 class="site-footer-title">購物指南</h2>
+          <ul class="site-footer-links">
+            <li><a>運送與安裝</a></li>
+            <li><a>14 天退換說明</a></li>
+            <li><a>付款方式</a></li>
+          </ul>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <h2 class="site-footer-title">關於 NestCraft</h2>
+          <ul class="site-footer-links">
+            <li><a>品牌故事</a></li>
+            <li><a href="index.html#rooms">空間靈感</a></li>
+            <li><a href="products.html">全部商品</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4 col-lg-4">
+          <h2 class="site-footer-title">客服中心</h2>
+          <ul class="site-footer-links">
+            <li>週一至週五 10:00–18:00</li>
+            <li><a href="mailto:hello@nestcraft.example">hello@nestcraft.example</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="site-footer-copy">© 2026 NestCraft 原創生活家居選物｜本站為課程設計稿範例，商品與訂單皆為示意資料。</p>
+    </div>
+  </footer>
+
+  <!-- 加入購物車的提示：黑底白字，出現在固定結帳列上方（js/main.js 顯示） -->
+  <div class="site-toast-wrap">
+    <div id="cartToast" class="toast site-toast" role="status" aria-live="polite" aria-atomic="true">
+      <div class="toast-body">
+        <i class="bi bi-check-square-fill" aria-hidden="true"></i>
+        <span data-toast-text>已加入購物車</span>
+        <a href="cart.html">查看購物車</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

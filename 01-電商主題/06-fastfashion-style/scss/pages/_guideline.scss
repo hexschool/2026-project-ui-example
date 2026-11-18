@@ -1,0 +1,1521 @@
+// ============================================================
+// 設計 Guideline（guideline.html）
+// 構圖：滿版黃色海報封面 → 黏性黑色目錄列（橫向、可橫捲，目前章節黃字＋4px 黃底線）
+//      → 12 節：每節開頭一個黑方塊黃色編號＋螢光筆 H2；色彩一節用滿版黃／黑／白三大色塊
+// 示範一律用頁面真的在用的 class；這裡只寫 Guideline 自己的版面、說明文字與「強制顯示某個狀態」的示意類別
+// class 一律加 gl- 前綴；共用元件請用 _base.scss 與 components/，不要在這裡另寫一份
+// ============================================================
+
+$gl-toc-height: 3.25rem; // 52px：黏性目錄列高度
+
+// ---------- 海報封面：滿版黃塊 ----------
+.gl-cover {
+  padding-block: map-get($spacers, 5) map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) { padding-block: map-get($spacers, 5) map-get($spacers, 7); }
+
+  .breadcrumb a { color: $grey-600; } // 黃底上 5.24:1
+}
+.gl-cover-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  gap: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) { grid-template-columns: minmax(0, 1fr) auto; }
+}
+.gl-cover-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .75rem;
+  margin: map-get($spacers, 4) 0 map-get($spacers, 4);
+  font-weight: 700;
+}
+.gl-cover-title {
+  margin-bottom: map-get($spacers, 4);
+}
+.gl-cover-lead {
+  max-width: 34em;
+  margin: 0;
+  font-size: 1.0625rem;
+
+  @include media-breakpoint-up(lg) { font-size: $font-size-lg; }
+}
+// 右側超大編號（裝飾，aria-hidden）
+.gl-cover-num {
+  display: none;
+  margin: 0;
+  font-family: $font-family-num;
+  font-size: clamp(9rem, 15vw, 14rem);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  line-height: .78;
+  letter-spacing: -.05em;
+
+  @include media-breakpoint-up(lg) { display: block; }
+}
+// 封面下緣的規格列：上方 2px 黑線，手機兩欄、lg 以上五欄
+.gl-cover-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: map-get($spacers, 4) map-get($spacers, 5);
+  margin: map-get($spacers, 6) 0 0;
+  padding-top: map-get($spacers, 4);
+  border-top: $border-strong solid $black;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @include media-breakpoint-up(lg) { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+  dt {
+    margin-bottom: .125rem;
+    font-size: $font-size-sm;
+    font-weight: 400;
+  }
+  dd {
+    margin: 0;
+    font-weight: 700;
+  }
+}
+
+// ---------- 黏性黑色目錄列：停在頁首黑列下方 ----------
+.gl-toc {
+  position: sticky;
+  top: $site-bar-height;
+  z-index: $zindex-sticky;
+  border-top: 1px solid $grey-600; // 和頁首黑列分開
+  background-color: $black;
+  color: $white;
+}
+.gl-toc-list {
+  flex-wrap: nowrap;
+  gap: .25rem;
+  margin-inline: calc(var(--pad) * -1); // 捲動列貼齊版心兩側，第一項仍對齊內容左緣
+  padding-inline: calc(var(--pad) - .75rem);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: .375rem;
+    height: $gl-toc-height;
+    padding: 4px .75rem 0; // 上方 4px 和底線等高，文字仍垂直置中
+    border-bottom: 4px solid transparent;
+    color: $white;
+    font-weight: 700;
+    white-space: nowrap;
+
+    &:hover { color: $white; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: .35em; }
+    &:focus-visible { outline: $focus-ring-width solid $volt; outline-offset: -$focus-ring-width; }
+    &.active {
+      border-bottom-color: $volt;
+      color: $volt;
+
+      .gl-toc-no { color: $volt; }
+    }
+  }
+}
+.gl-toc-no {
+  color: $on-dark-muted;
+  font-family: $font-family-num;
+  font-size: .8125rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- 章節 ----------
+.gl-section {
+  padding-block: map-get($spacers, 7);
+  scroll-margin-top: $gl-toc-height; // 再加上 html 的 scroll-padding-top（72px），標題不會被目錄列蓋住
+
+  @include media-breakpoint-up(lg) { padding-block: map-get($spacers, 8); }
+
+  & + & { border-top: $border-strong solid $black; }
+}
+// 章節開頭：黑方塊黃色編號＋螢光筆 H2＋一句說明；右側寫數值來源
+.gl-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 6);
+
+  @include media-breakpoint-up(md) { gap: map-get($spacers, 5); }
+  @include media-breakpoint-up(lg) { grid-template-columns: auto minmax(0, 1fr) auto; }
+
+  h2 { margin-bottom: map-get($spacers, 2); }
+}
+.gl-head-no {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  background-color: $black;
+  color: $volt; // 黑底黃字 16.46:1
+  font-family: $font-family-num;
+  font-size: 1.375rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+
+  @include media-breakpoint-up(lg) {
+    width: 4rem;
+    height: 4rem;
+    font-size: 1.875rem;
+  }
+}
+.gl-head-lead {
+  max-width: 44em;
+  margin: 0;
+  color: $grey-600;
+}
+.gl-head-src {
+  grid-column: 2;
+  margin: 0;
+  color: $grey-600;
+  font-size: $font-size-sm;
+
+  @include media-breakpoint-up(lg) {
+    grid-column: auto;
+    padding-top: .5rem;
+    text-align: right;
+  }
+}
+
+// 章節內的小節（標題用共用的 .rule-title）
+.gl-block {
+  margin-top: map-get($spacers, 7);
+
+  @include media-breakpoint-up(lg) { margin-top: map-get($spacers, 8); }
+}
+.gl-block-first { margin-top: 0; }
+.gl-note {
+  max-width: 46em;
+  margin-bottom: map-get($spacers, 5);
+  color: $grey-600;
+}
+.gl-minor {
+  margin: map-get($spacers, 6) 0 map-get($spacers, 4);
+  font-family: $font-family-base;
+  font-size: 1.0625rem;
+  font-weight: 900;
+}
+// 規則清單：黑色小方塊項目符號
+.gl-rules {
+  display: grid;
+  gap: .5rem;
+  max-width: 52em;
+  margin: map-get($spacers, 5) 0 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    position: relative;
+    padding-left: 1.125rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: .62em;
+      left: 0;
+      width: .4375rem;
+      height: .4375rem;
+      background-color: $black;
+    }
+  }
+}
+// 示範下方的小字說明
+.gl-label {
+  margin: .625rem 0 0;
+  color: $grey-600;
+  font-size: $font-size-sm;
+  line-height: 1.5;
+
+  code { font-size: .8125rem; }
+
+  .band-dark & { color: $on-dark-muted; } // 黑色舞台裡的說明：#B3B3B3（10.02:1）
+}
+// 示範舞台：灰底；黃面、黑面用共用的 .band-volt、.band-dark（深色面的連結與焦點會自動切換）
+.gl-stage {
+  padding: map-get($spacers, 5) map-get($spacers, 4);
+  background-color: $grey-100;
+
+  @include media-breakpoint-up(md) { padding: map-get($spacers, 5); }
+
+  &.band-volt { background-color: $volt; }
+  &.band-dark {
+    background-color: $black;
+
+    code { color: $white; } // 黑色舞台上的 class 名稱改白字（21:1）
+  }
+  &.gl-stage-white {
+    background-color: $white;
+    box-shadow: inset 0 0 0 1px $black; // 白底舞台：1px 黑框（畫在內側，不佔空間）
+  }
+}
+.gl-stage-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: map-get($spacers, 4);
+}
+// 程式碼片段
+.gl-code {
+  margin: map-get($spacers, 4) 0 0;
+  padding: map-get($spacers, 4);
+  overflow-x: auto;
+  background-color: $black;
+  color: $white;
+  font-size: .8125rem;
+  line-height: 1.7;
+
+  code { color: inherit; white-space: pre; }
+}
+
+// ---------- 01 概覽 ----------
+.gl-spec {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  border-top: $border-strong solid $black;
+
+  > div {
+    display: grid;
+    gap: .25rem;
+    padding-block: map-get($spacers, 4);
+    border-bottom: 1px solid $grey-300;
+
+    @include media-breakpoint-up(sm) {
+      grid-template-columns: 7rem minmax(0, 1fr);
+      gap: map-get($spacers, 4);
+    }
+  }
+  dt { font-weight: 900; }
+  dd { margin: 0; }
+}
+.gl-quote {
+  margin: 0;
+  padding-left: .875rem;
+  border-left: 4px solid $black;
+  font-weight: 700;
+}
+.gl-figure {
+  margin: 0;
+
+  .img-frame { aspect-ratio: 3 / 2; }
+  figcaption {
+    margin-top: .625rem;
+    color: $grey-600;
+    font-size: $font-size-sm;
+  }
+}
+// 設計原則：四格，上方 2px 黑線，格內放一個真實元件
+.gl-principles {
+  display: grid;
+  gap: map-get($spacers, 5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @include media-breakpoint-up(xl) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  > li {
+    display: flex;
+    flex-direction: column;
+    padding-top: map-get($spacers, 4);
+    border-top: $border-strong solid $black;
+  }
+  h4 {
+    margin-bottom: .5rem;
+    font-family: $font-family-base;
+    font-size: 1.125rem;
+    font-weight: 900;
+  }
+  p { color: $grey-600; }
+}
+.gl-principle-demo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+  margin-top: auto;
+  padding: map-get($spacers, 4);
+  background-color: $grey-100;
+}
+// 色塊切分的縮圖：白底上一條黑帶與一塊黃
+.gl-mini-page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  height: 5.5rem;
+  border: 1px solid $black;
+  background-color: $white;
+
+  span:nth-child(1) { background-color: $volt; }
+  span:nth-child(3) { grid-column: 1 / -1; background-color: $black; }
+}
+// 固定結帳列的縮小版（原理示意）
+.gl-mini-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  width: 100%;
+  padding: .625rem .75rem;
+  background-color: $black;
+
+  .price-tag { color: $volt; font-size: 1.375rem; }
+  .btn { min-height: $btn-height-sm; }
+}
+
+// 頁面清單：編號＋頁名＋檔名＋構圖說明，列之間 1px 黑線
+.gl-pages {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  border-top: $border-strong solid $black;
+  list-style: none;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: map-get($spacers, 6);
+  }
+
+  > li {
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr);
+    gap: .25rem map-get($spacers, 4);
+    padding-block: map-get($spacers, 4);
+    border-bottom: 1px solid $black;
+
+    @include media-breakpoint-up(md) { grid-template-columns: 3.5rem minmax(0, 1fr); }
+  }
+  p { margin: 0; color: $grey-600; }
+}
+.gl-pages-no {
+  grid-row: 1 / 3;
+  font-family: $font-family-num;
+  font-size: 1.75rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -.02em;
+
+  @include media-breakpoint-up(md) { font-size: 2.25rem; }
+}
+.gl-pages-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .25rem .75rem;
+
+  a {
+    color: $black;
+    font-size: 1.125rem;
+    font-weight: 900;
+    text-decoration-thickness: 2px;
+  }
+  code { color: $grey-600; font-size: .8125rem; }
+}
+
+// ---------- 02 色彩 ----------
+// 滿版三大色塊：黃／黑／白各一欄；內容左緣與右緣對齊版心（外層 .bleed-split）
+.gl-trio {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  border-block: $border-strong solid $black;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.gl-trio-item {
+  display: flex;
+  flex-direction: column;
+  min-height: 15rem;
+  padding: map-get($spacers, 5) var(--pad);
+
+  @include media-breakpoint-up(md) {
+    min-height: 22rem;
+    padding: map-get($spacers, 6) map-get($spacers, 5);
+
+    &:first-child { @include shell-start; }
+    &:last-child { @include shell-end; }
+  }
+
+  &.is-volt  { background-color: $volt; color: $black; }
+  &.is-black { background-color: $black; color: $white; }
+  &.is-white { background-color: $white; color: $black; }
+
+  dl { margin: auto 0 0; padding-top: map-get($spacers, 5); font-size: $font-size-sm; }
+  dl > div { display: flex; gap: .75rem; padding-block: .25rem; }
+  dt { min-width: 3.5em; font-weight: 400; }
+  dd { margin: 0; font-weight: 700; }
+}
+.gl-trio-name {
+  margin-bottom: .25rem;
+  font-family: $font-family-base;
+  font-size: 1.125rem;
+  font-weight: 900;
+}
+.gl-trio-hex {
+  margin: 0;
+  font-family: $font-family-num;
+  font-size: 2.5rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -.02em;
+
+  @include media-breakpoint-up(xl) { font-size: 3rem; } // 48
+}
+.gl-trio-var {
+  margin-top: .5rem;
+  font-family: $font-family-num;
+  font-weight: 800;
+}
+.gl-trio-item.is-black .gl-trio-muted { color: $on-dark-muted; }
+
+// 面積比例條
+.gl-ratio {
+  display: flex;
+  height: 3.5rem;
+  border: 1px solid $black;
+
+  > span {
+    display: flex;
+    align-items: center;
+    padding-inline: .75rem;
+    font-family: $font-family-num;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .is-white { flex: 60; background-color: $white; }
+  .is-black { flex: 20; background-color: $black; color: $white; }
+  .is-volt  { flex: 20; background-color: $volt; }
+}
+
+// 完整色票：色塊｜名稱與變數｜hex｜用途｜對比
+$gl-swatches: (
+  "white": $white,
+  "black": $black,
+  "volt": $volt,
+  "volt-tint": $volt-tint,
+  "grey-100": $grey-100,
+  "grey-150": $grey-150,
+  "grey-200": $grey-200,
+  "grey-300": $grey-300,
+  "grey-400": $grey-400,
+  "grey-500": $grey-500,
+  "grey-600": $grey-600,
+  "grey-700": $grey-700,
+  "on-dark-muted": $on-dark-muted,
+  "green": $green,
+  "red": $red,
+  "blue": $blue,
+);
+@each $name, $color in $gl-swatches {
+  .gl-chip-#{$name} { background-color: $color; }
+}
+.gl-swatches {
+  margin: 0;
+  padding: 0;
+  border-top: $border-strong solid $black;
+  list-style: none;
+
+  > li {
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    gap: .25rem map-get($spacers, 4);
+    padding-block: map-get($spacers, 4);
+    border-bottom: 1px solid $grey-300;
+
+    @include media-breakpoint-up(lg) {
+      grid-template-columns: 4.5rem 12rem 7rem minmax(0, 1fr) 13rem;
+      align-items: center;
+      gap: map-get($spacers, 5);
+    }
+  }
+}
+.gl-swatches-head {
+  display: none !important;
+  color: $grey-600;
+  font-size: $font-size-sm;
+  font-weight: 700;
+
+  @include media-breakpoint-up(lg) { display: grid !important; }
+}
+.gl-chip {
+  grid-row: span 4;
+  width: 3.5rem;
+  height: 3.5rem;
+  box-shadow: inset 0 0 0 1px $black;
+
+  @include media-breakpoint-up(lg) {
+    grid-row: auto;
+    width: 4.5rem;
+    height: 3rem;
+  }
+}
+.gl-swatch-name {
+  margin: 0;
+  font-weight: 900;
+
+  code { display: block; color: $grey-600; font-size: .8125rem; font-weight: 400; }
+}
+.gl-swatch-hex {
+  margin: 0;
+  font-family: $font-family-num;
+  font-weight: 800;
+}
+.gl-swatch-role,
+.gl-swatch-ratio {
+  margin: 0;
+  font-size: $font-size-sm;
+}
+.gl-swatch-role { color: $grey-600; }
+.gl-swatch-ratio .num { font-size: .9375rem; }
+
+// 文字與底色的組合：實際色塊＋對比值＋通過與否
+.gl-pairs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: map-get($spacers, 3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @include media-breakpoint-up(xl) { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+  > li { display: flex; flex-direction: column; }
+}
+.gl-pair-sample {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 6.5rem;
+  padding: .75rem;
+  box-shadow: inset 0 0 0 1px $black;
+  font-weight: 700;
+
+  .gl-pair-aa {
+    font-family: $font-family-num;
+    font-size: 1.75rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+}
+.gl-pair-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .25rem .5rem;
+  padding-top: .5rem;
+  font-size: $font-size-sm;
+}
+
+// 表格（Bootstrap 對應、字級表、RWD）：表頭黑底白字
+.gl-table {
+  margin: 0;
+  font-size: $font-size-sm;
+
+  > thead th {
+    background-color: $black;
+    color: $white;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  > tbody th { font-weight: 700; }
+  code { font-size: .8125rem; }
+}
+
+// ---------- 03 字級 ----------
+.gl-fonts {
+  display: grid;
+  gap: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.gl-font {
+  display: flex;
+  flex-direction: column;
+  padding: map-get($spacers, 5);
+  border: $border-strong solid $black;
+
+  h4 { margin-bottom: .25rem; font-family: $font-family-base; font-size: 1.125rem; font-weight: 900; }
+}
+.gl-font-sample {
+  margin: map-get($spacers, 5) 0;
+  font-size: 2.5rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+
+  @include media-breakpoint-up(md) { font-size: 3.5rem; }
+
+  &.is-num { font-family: $font-family-num; font-weight: 900; letter-spacing: -.02em; }
+  &.is-cjk { font-family: $font-family-base; font-weight: 900; }
+}
+.gl-font-weights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem 1.25rem;
+  margin: auto 0 0;
+  padding: map-get($spacers, 4) 0 0;
+  border-top: 1px solid $grey-300;
+  list-style: none;
+
+  li { font-size: 1.125rem; }
+  span { margin-left: .25rem; color: $grey-600; font-size: $font-size-sm; font-weight: 400; }
+}
+.gl-font.is-num .gl-font-weights li { font-family: $font-family-num; }
+
+// 字級表：每一列左邊是真實的元素，右邊是規格
+.gl-scale {
+  margin: 0;
+  padding: 0;
+  border-top: $border-strong solid $black;
+  list-style: none;
+
+  > li {
+    display: grid;
+    gap: .5rem map-get($spacers, 5);
+    padding-block: map-get($spacers, 5);
+    border-bottom: 1px solid $grey-300;
+
+    @include media-breakpoint-up(lg) {
+      grid-template-columns: minmax(0, 1fr) 17rem;
+      align-items: center;
+    }
+  }
+}
+.gl-scale-sample { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.gl-scale-spec {
+  display: grid;
+  gap: .125rem;
+  margin: 0;
+  font-size: $font-size-sm;
+
+  dt { font-weight: 900; }
+  dd { margin: 0; color: $grey-600; }
+  code { font-size: .8125rem; }
+}
+
+// 價格字級階梯：左邊價格牌、右邊用途
+.gl-ladder {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: grid;
+    gap: .5rem map-get($spacers, 5);
+    align-items: end;
+    padding-block: map-get($spacers, 4);
+    border-bottom: 1px solid $grey-300;
+
+    @include media-breakpoint-up(md) { grid-template-columns: 14rem minmax(0, 1fr); }
+    @include media-breakpoint-up(lg) { grid-template-columns: 22rem minmax(0, 1fr); }
+  }
+  > li:first-child { border-top: $border-strong solid $black; }
+  p { margin: 0; font-size: $font-size-sm; }
+}
+.gl-ladder-size {
+  font-family: $font-family-num;
+  font-weight: 800;
+}
+
+// 換行示意：固定寬度的窄框
+.gl-narrow {
+  max-width: 11.5rem;
+  padding: .75rem;
+  border: 1px dashed $grey-400;
+  background-color: $white;
+}
+
+// ---------- 04 間距 ----------
+.gl-spacers {
+  margin: 0;
+  padding: 0;
+  border-top: $border-strong solid $black;
+  list-style: none;
+
+  > li {
+    display: grid;
+    grid-template-columns: 4.5rem 3rem minmax(0, 1fr);
+    align-items: center;
+    gap: map-get($spacers, 4);
+    padding-block: .625rem;
+    border-bottom: 1px solid $grey-300;
+    font-size: $font-size-sm;
+
+    @include media-breakpoint-up(md) { grid-template-columns: 5.5rem 4rem 4rem minmax(0, 1fr); }
+  }
+}
+.gl-spacer-bar {
+  display: block;
+  height: 1.5rem;
+  background-color: $black;
+}
+.gl-spacer-use {
+  grid-column: 1 / -1;
+  color: $grey-600;
+
+  @include media-breakpoint-up(md) { grid-column: auto; }
+}
+// 頁首節奏圖：倒數條 40＋黑列 64，標出 sticky 位移
+.gl-rhythm {
+  display: grid;
+  gap: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+}
+.gl-rhythm-bars {
+  border: 1px solid $black;
+
+  > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-inline: .75rem;
+    font-size: $font-size-sm;
+    font-weight: 700;
+  }
+  .is-countdown { height: 2.5rem; background-color: $volt; }
+  .is-bar { height: 4rem; background-color: $black; color: $white; }
+  .is-toc { height: 3.25rem; background-color: $black; color: $white; border-top: 1px solid $grey-600; }
+  .is-page { height: 4.5rem; background-color: $white; color: $grey-600; }
+  .num { font-size: 1rem; }
+}
+// 版心寬度：依比例畫出 1440／1280／1080
+.gl-widths {
+  display: grid;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li { font-size: $font-size-sm; }
+}
+.gl-width-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  min-height: 2.75rem;
+  padding-inline: .75rem;
+  background-color: $black;
+  color: $white;
+  font-weight: 700;
+
+  &.is-1280 { width: calc(1280 / 1440 * 100%); }
+  &.is-1080 { width: calc(1080 / 1440 * 100%); }
+  &.is-split {
+    background: linear-gradient(90deg, $grey-100 50%, $white 50%);
+    box-shadow: inset 0 0 0 1px $black;
+    color: $black;
+  }
+  .num { font-weight: 900; }
+}
+
+// ---------- 05 圓角與陰影 ----------
+.gl-lines {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: map-get($spacers, 4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @include media-breakpoint-up(xl) { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+  p { margin: 0; font-size: $font-size-sm; }
+  strong { display: block; }
+}
+.gl-line-sample {
+  display: block;
+  height: 4rem;
+  margin-bottom: .625rem;
+  background-color: $white;
+
+  &.is-1 { border-bottom: 1px solid $black; }
+  &.is-2 { border-bottom: $border-strong solid $black; }
+  &.is-4 { border-bottom: 4px solid $black; }
+  &.is-grey { border-bottom: 1px solid $grey-300; }
+  &.is-dash { border-bottom: $border-strong dashed $black; }
+  &.is-off { border-bottom: 1px dashed $grey-400; }
+}
+// 浮起的東西：黑色實面（熱點小卡、toast 在示意區裡改成靜態）
+// 每格至少和熱點小卡一樣寬（280px），放不下就換行
+.gl-float {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(17.5rem, 100%), 1fr));
+  align-items: start;
+  gap: map-get($spacers, 5);
+
+  .dropdown-menu,
+  .toast {
+    position: static;
+    display: block;
+    width: 100%;
+    max-width: 17.5rem;
+  }
+}
+// 我的訂單的票根卡：和 orders.html 一樣最寬 1080 版心（扣掉左右內距）
+.gl-orders-demo { max-width: 63.5rem; }
+// 熱點圓鈕：在示意區裡不定位在照片上
+.gl-spot {
+  position: relative;
+  display: inline-block;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+// ---------- 強制顯示某個狀態（只給 Guideline 的示範用） ----------
+// 按鈕 hover：直接套用 Bootstrap 的 hover 變數
+.btn.gl-is-hover {
+  border-color: var(--bs-btn-hover-border-color);
+  background-color: var(--bs-btn-hover-bg);
+  color: var(--bs-btn-hover-color);
+}
+.btn-text.gl-is-hover { text-decoration-thickness: 4px; }
+.option-card.gl-is-hover { background-color: $volt-tint; }
+.qty-btn.gl-is-hover { background-color: $volt; }
+.nav-underline .nav-link.gl-is-hover { color: $black; border-bottom-color: $grey-300; }
+.product-card.gl-is-hover {
+  .product-card-media::after { background-color: rgba($black, .03); }
+  .product-card-title a { text-decoration: underline; text-decoration-thickness: 2px; }
+}
+.look-spot-btn.gl-is-hover {
+  background-color: $volt;
+  color: $black;
+}
+// 焦點：白底、黃底 3px 黑實線＋2px 偏移；黑底 3px 黃實線
+.gl-is-focus {
+  outline: $focus-ring-width solid $black;
+  outline-offset: $focus-ring-offset;
+}
+.band-dark .gl-is-focus,
+.on-dark .gl-is-focus { outline-color: $volt; }
+.form-control.gl-is-focus { outline-offset: $focus-ring-offset; }
+.nav-underline .nav-link.gl-is-focus,
+.qty-btn.gl-is-focus,
+.btn-close.gl-is-focus { outline-offset: -$focus-ring-width; }
+.btn-close-white.gl-is-hover { outline: 2px solid $volt; outline-offset: -2px; }
+span.btn-close { display: inline-block; vertical-align: middle; } // 定格示意用 span，補上按鈕原本的 inline-block
+.look-spot-btn.gl-is-focus { box-shadow: 0 0 0 $focus-ring-offset $volt; }
+
+// 狀態格：每格一個元件＋狀態名稱
+.gl-states {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: map-get($spacers, 4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @include media-breakpoint-up(xl) { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+  > li {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+  }
+  .btn { max-width: 100%; }
+}
+// 狀態格放在黑色舞台上時，補回舞台的內距（.gl-states 的 padding: 0 寫在後面）
+.gl-states.gl-stage {
+  padding: map-get($spacers, 5) map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) { padding: map-get($spacers, 5); }
+}
+.gl-states-wide {
+  grid-template-columns: minmax(0, 1fr); // 選項卡內容較多，手機一張一列
+
+  @include media-breakpoint-up(sm) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @include media-breakpoint-up(xl) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  > li { align-items: stretch; }
+}
+.gl-variant + .gl-variant { margin-top: map-get($spacers, 6); }
+.gl-variant-head {
+  display: grid;
+  gap: .25rem;
+  margin-bottom: map-get($spacers, 4);
+
+  h4 {
+    margin: 0;
+    font-family: $font-family-base;
+    font-size: 1.0625rem;
+    font-weight: 900;
+  }
+  p { max-width: 46em; margin: 0; color: $grey-600; font-size: $font-size-sm; }
+}
+.band-dark .gl-label,
+.band-dark .gl-variant-head p { color: $on-dark-muted; }
+
+// 欄位示範：每格一個欄位
+.gl-fields {
+  display: grid;
+  gap: map-get($spacers, 5);
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @include media-breakpoint-up(xl) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.gl-field-state {
+  margin-bottom: .5rem;
+  padding: .125rem .5rem;
+  display: inline-block;
+  background-color: $black;
+  color: $white;
+  font-size: .8125rem;
+  font-weight: 700;
+}
+
+// ---------- 06 價格牌 ----------
+.gl-anatomy {
+  display: grid;
+  gap: map-get($spacers, 5);
+  align-items: center;
+
+  @include media-breakpoint-up(lg) { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
+}
+.gl-anatomy-stage {
+  display: grid;
+  place-items: center;
+  min-height: 14rem;
+  padding: map-get($spacers, 6) map-get($spacers, 4);
+  background-color: $grey-100;
+
+  .price-tag { font-size: clamp(3.5rem, 12vw, 7.5rem); }
+}
+.gl-anatomy-list {
+  margin: 0;
+  padding: 0;
+  counter-reset: gl-anatomy;
+  list-style: none;
+
+  > li {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: .75rem;
+    padding-block: .75rem;
+    border-bottom: 1px solid $grey-300;
+    counter-increment: gl-anatomy;
+
+    &::before {
+      content: counter(gl-anatomy);
+      display: grid;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      background-color: $black;
+      color: $white;
+      font-family: $font-family-num;
+      font-weight: 900;
+    }
+  }
+  > li:first-child { border-top: $border-strong solid $black; }
+  p { margin: 0; }
+  strong { display: block; }
+}
+
+// ---------- 07 折價券與倒數 ----------
+.gl-coupons {
+  display: grid;
+  gap: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  > div { min-width: 0; }
+  .coupon { max-width: 34rem; }
+
+  // 576px 以下：舞台貼齊視窗左右（抵掉版心 16px 內距），票券和頁面上一樣寬，倒數不會被擠出票券
+  @include media-breakpoint-down(sm) {
+    .gl-stage { margin-inline: -1rem; }
+  }
+}
+.gl-coupon-stack-demo {
+  max-width: 18rem;
+  height: 20rem;
+}
+.gl-coupon-cart-demo { max-width: 22rem; }
+// 活動規則：白底 2px 黑框，左側黑色票根
+.gl-offer {
+  display: grid;
+  border: $border-strong solid $black;
+
+  @include media-breakpoint-up(md) { grid-template-columns: 12rem minmax(0, 1fr); }
+
+  > div { padding: map-get($spacers, 4) map-get($spacers, 5); }
+  > div:first-child {
+    background-color: $black;
+    color: $white;
+  }
+  dl { margin: 0; }
+  dl > div {
+    display: grid;
+    gap: .125rem map-get($spacers, 4);
+    padding-block: .375rem;
+
+    @include media-breakpoint-up(sm) { grid-template-columns: 6rem minmax(0, 1fr); }
+  }
+  dt { font-weight: 900; }
+  dd { margin: 0; }
+}
+.gl-offer-amount {
+  margin: .25rem 0 0;
+  color: $volt; // 黑底黃字 16.46:1
+  font-size: 2.5rem;
+}
+// 倒數字級：條內 16、小票券 20、票券 28
+.gl-timers {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: map-get($spacers, 5) map-get($spacers, 6);
+
+  > div { display: grid; gap: .375rem; }
+  .countdown-num.is-16 { font-size: 1rem; }
+  .countdown-num.is-20 { font-size: 1.25rem; }
+}
+
+// ---------- 08 按鈕三階 ----------
+.gl-tiers {
+  margin: 0;
+  padding: 0;
+  border-top: $border-strong solid $black;
+  list-style: none;
+
+  > li {
+    display: grid;
+    gap: map-get($spacers, 3) map-get($spacers, 5);
+    align-items: center;
+    padding-block: map-get($spacers, 5);
+    border-bottom: 1px solid $grey-300;
+
+    @include media-breakpoint-up(md) { grid-template-columns: 3.5rem 15rem minmax(0, 1fr); }
+  }
+  h3 {
+    margin: 0 0 .25rem;
+    font-family: $font-family-base;
+    font-size: 1.0625rem;
+    font-weight: 900;
+  }
+  p { margin: 0; color: $grey-600; font-size: $font-size-sm; }
+  .btn { width: 100%; }
+}
+.gl-tier-no {
+  font-family: $font-family-num;
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1;
+}
+// 三種底色上的配法
+.gl-surfaces {
+  display: grid;
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: map-get($spacers, 4);
+    padding: map-get($spacers, 5);
+  }
+  h4 {
+    margin: 0;
+    font-family: $font-family-base;
+    font-size: 1.0625rem;
+    font-weight: 900;
+  }
+  p { margin: 0; font-size: $font-size-sm; }
+}
+.gl-surface-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+}
+.gl-sizes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: map-get($spacers, 5);
+
+  > div { display: grid; justify-items: start; }
+}
+
+// ---------- 09 固定結帳列（示意區裡改成靜態，不固定在視窗底部） ----------
+.gl-buybar-stage {
+  overflow: hidden;
+  border: 1px solid $black;
+  background-color: $grey-100;
+
+  .buybar {
+    position: static;
+    z-index: auto;
+  }
+  .buybar-light { display: flex; } // 實際頁面在 992px 以上隱藏
+  .buybar-inner { padding-inline: map-get($spacers, 4); }
+}
+.gl-buybar-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 5rem;
+  color: $grey-600;
+  font-size: $font-size-sm;
+}
+.gl-buybar-light-demo {
+  max-width: 26rem;
+}
+.gl-callouts {
+  display: grid;
+  gap: map-get($spacers, 4);
+  margin: map-get($spacers, 5) 0 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  > li {
+    padding-top: .75rem;
+    border-top: $border-strong solid $black;
+  }
+  strong { display: block; margin-bottom: .25rem; }
+  p { margin: 0; color: $grey-600; font-size: $font-size-sm; }
+}
+
+// ---------- 10 元件狀態 ----------
+.gl-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: map-get($spacers, 6) map-get($spacers, 3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { column-gap: map-get($spacers, 5); }
+  @include media-breakpoint-up(lg) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  > li { display: flex; flex-direction: column; }
+  .product-card { height: auto; flex: 1; }
+}
+.gl-tabs-demo {
+  flex-wrap: wrap;
+  border-bottom: 1px solid $grey-300;
+}
+// 頁首導覽：992px 以上是黑列（白字、目前頁黃字＋4px 黃底線），以下是抽屜（白色大字）
+.gl-nav-demo {
+  --bs-navbar-nav-link-padding-x: #{$navbar-nav-link-padding-x}; // 頁首由 .navbar 提供，示意區補上同一個值
+  padding: 0 map-get($spacers, 4);
+
+  .site-nav { margin: 0; }
+}
+.gl-demo-states {
+  display: grid;
+  gap: map-get($spacers, 4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  > li { min-width: 0; padding: map-get($spacers, 4) 0; border-bottom: 1px solid $grey-300; }
+  strong { display: block; }
+  p { margin: 0; color: $grey-600; font-size: $font-size-sm; }
+}
+.gl-alerts {
+  display: grid;
+  gap: map-get($spacers, 3);
+
+  @include media-breakpoint-up(lg) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .alert { margin: 0; }
+}
+
+// ---------- 11 RWD 斷點 ----------
+// 斷點列表：斷點名稱｜視窗寬度｜容器最大寬｜本專案的變化
+.gl-bp {
+  margin: 0;
+  padding: 0;
+  border-top: $border-strong solid $black;
+  list-style: none;
+
+  > li {
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 1fr);
+    gap: .25rem map-get($spacers, 4);
+    padding-block: map-get($spacers, 4);
+    border-bottom: 1px solid $grey-300;
+
+    @include media-breakpoint-up(lg) {
+      grid-template-columns: 5rem 8rem 10rem minmax(0, 1fr);
+      align-items: start;
+      gap: map-get($spacers, 5);
+    }
+  }
+}
+.gl-bp-name {
+  grid-row: span 3;
+  font-family: $font-family-num;
+  font-size: 1.75rem;
+  font-weight: 900;
+  line-height: 1;
+
+  @include media-breakpoint-up(lg) { grid-row: auto; }
+}
+.gl-bp-cell {
+  font-size: $font-size-sm;
+
+  .num { font-size: 1rem; }
+}
+.gl-bp-label {
+  margin-right: .375rem;
+  color: $grey-600;
+
+  @include media-breakpoint-up(lg) { @include visually-hidden; }
+}
+.gl-bp-head {
+  display: none !important;
+  color: $grey-600;
+  font-size: $font-size-sm;
+  font-weight: 700;
+
+  @include media-breakpoint-up(lg) { display: grid !important; }
+}
+// 檢查寬度的刻度尺：0～1920
+// 黃底標籤（檢查寬度）在刻度線上方；Bootstrap 斷點在下方，兩排不會互相蓋住
+.gl-ruler {
+  position: relative;
+  height: 3rem;
+  margin: 0 0 4.5rem;
+  border-bottom: $border-strong solid $black;
+}
+.gl-ruler-mark {
+  position: absolute;
+  top: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+  color: $grey-600;
+  font-size: .8125rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &::before {
+    content: "";
+    width: 2px;
+    height: .75rem;
+    margin-bottom: .25rem;
+    background-color: $grey-600;
+  }
+  &.is-check {
+    top: 0;
+    bottom: 0;
+    justify-content: flex-start;
+    color: $black;
+
+    &::before { order: 2; flex: 1; margin: .25rem 0 0; background-color: $black; }
+    span { padding: .125rem .375rem; background-color: $volt; }
+  }
+  // 最右端（1920）：靠右對齊，不超出刻度尺
+  &.is-end {
+    right: 0;
+    align-items: flex-end;
+    transform: none;
+  }
+}
+// 各頁的版型行為：每頁一列，手機／平板／桌機三欄
+.gl-layouts {
+  margin: 0;
+  border-top: $border-strong solid $black;
+
+  > div {
+    display: grid;
+    gap: .5rem map-get($spacers, 5);
+    padding-block: map-get($spacers, 4);
+    border-bottom: 1px solid $grey-300;
+
+    @include media-breakpoint-up(lg) { grid-template-columns: 8rem repeat(3, minmax(0, 1fr)); }
+  }
+  dt { font-weight: 900; }
+  dd { margin: 0; font-size: $font-size-sm; }
+}
+.gl-layouts-head {
+  display: none !important;
+  color: $grey-600;
+  font-size: $font-size-sm;
+  font-weight: 700;
+
+  @include media-breakpoint-up(lg) { display: grid !important; }
+}
+.gl-layouts-tag {
+  display: inline-block;
+  margin-right: .375rem;
+  padding: 0 .375rem;
+  background-color: $black;
+  color: $white;
+  font-size: .75rem;
+  font-weight: 700;
+
+  @include media-breakpoint-up(lg) { @include visually-hidden; }
+}
+.gl-grid-cell {
+  display: grid;
+  place-items: center;
+  min-height: 2.75rem;
+  background-color: $grey-100;
+  font-family: $font-family-num;
+  font-size: .8125rem;
+  font-weight: 800;
+
+  &.is-tall { min-height: 5rem; }
+  &.is-volt { background-color: $volt; }
+  &.is-dark { background-color: $black; color: $white; }
+}
+
+// ---------- 12 Do／Don't ----------
+.gl-dds {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: map-get($spacers, 6);
+}
+.gl-dd-title {
+  margin-bottom: map-get($spacers, 4);
+  font-family: $font-family-base;
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+.gl-dd-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.gl-dd-panel {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  border: $border-strong solid $black;
+
+  &.is-dont { border-color: $red; }
+}
+.gl-dd-tag {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  padding: .375rem .75rem;
+  background-color: $black;
+  color: $white;
+  font-size: $font-size-sm;
+  font-weight: 900;
+
+  .is-dont & { background-color: $red; } // 紅底白字 5.55:1
+}
+.gl-dd-stage {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+  min-height: 7.5rem;
+  padding: map-get($spacers, 5) map-get($spacers, 4);
+  background-color: $white;
+
+  &.is-grey { background-color: $grey-100; }
+  .gl-code { min-width: 0; } // 程式碼太長時在框內橫向捲動，不撐開版面
+}
+.gl-dd-note {
+  margin: 0;
+  padding: .75rem;
+  border-top: 1px solid $grey-300;
+  color: $grey-600;
+  font-size: $font-size-sm;
+}
+// 「避免」示範裡故意做錯的樣子（只出現在這一節）
+.gl-wrong-text-volt { color: $volt; font-size: 1.5rem; font-weight: 900; }
+.gl-wrong-line-volt { width: 100%; border-bottom: 3px solid $volt; }
+.gl-wrong-btn-noframe { --bs-btn-border-color: #{$volt}; }
+.gl-wrong-alert {
+  display: flex;
+  gap: .75rem;
+  width: 100%;
+  padding: .875rem 1rem;
+  background-color: $volt;
+  color: $red; // 黃底紅字只有 4.35:1
+  font-weight: 700;
+}
+.gl-wrong-box {
+  padding: 1rem 1.25rem;
+  border: 4px solid $black;
+  box-shadow: 6px 6px 0 $black;
+  font-weight: 900;
+}
+.gl-wrong-strike {
+  color: $grey-600;
+  text-decoration: line-through;
+}
+.gl-wrong-yellow-page {
+  display: grid;
+  gap: .5rem;
+  width: 100%;
+  padding: 1rem;
+  background-color: $volt;
+
+  p { margin: 0; font-size: $font-size-sm; line-height: 1.6; }
+}
+// hover 才出現的快速加入（靜態畫出來，不做真的 hover）
+.gl-wrong-quick {
+  position: relative;
+  width: 9rem;
+
+  .img-frame { aspect-ratio: 1; }
+  > span {
+    position: absolute;
+    right: .5rem;
+    bottom: .5rem;
+    left: .5rem;
+    padding: .375rem;
+    border: 1px dashed $grey-400;
+    color: $grey-600;
+    font-size: .75rem;
+    text-align: center;
+  }
+}
+.gl-good-card { width: 9.5rem; }
+.gl-proportion-good {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  border: 1px solid $black;
+
+  > span { min-height: 2.5rem; }
+  > span:nth-child(1) { background-color: $volt; }
+  > span:nth-child(2) { background-color: $grey-100; }
+  > p {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: .75rem;
+    font-size: $font-size-sm;
+  }
+}
+.gl-total-demo {
+  display: grid;
+  gap: .25rem;
+
+  p { margin: 0; font-size: $font-size-sm; }
+}

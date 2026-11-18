@@ -1,0 +1,274 @@
+// ============================================================
+// 登入、註冊（login.html、register.html 共用）
+// 構圖：霧薄荷大面板（xxl 以上收在版心外 64px、四角 40px；以下鋪滿）上一張浮起的白色圓角大卡（最寬 960、32px、柔陰影）
+//       卡片左 5/12 是照片方塊（卡內內縮 12px、24px 圓角、撐滿卡高），右 7/12 是表單
+//       狀態示意放在面板下方的白底
+// 768px 以下：照片隱藏，卡片滿寬、內距 24px
+// 和 01～03 的「照片與表單左右分欄直接放在頁面上」、04 的置中邀請卡、06 的滿版左右半拉開差距
+// class 一律加 auth- 前綴
+// ============================================================
+
+.auth-container {
+  @include media-breakpoint-up(lg) { max-width: $container-auth; }
+}
+
+// ---------- 霧薄荷大面板 ----------
+.auth-stage {
+  padding-block: 1.5rem 3rem;
+  border-radius: $radius-panel;
+  background-color: $mist;
+
+  @include media-breakpoint-up(md) { border-radius: $radius-sheet; }
+  @include media-breakpoint-up(lg) { padding-block: 3rem map-get($spacers, 6); }
+  @include media-breakpoint-up(xxl) {
+    max-width: calc(#{map-get($container-max-widths, xxl)} + 8rem);
+    margin-inline: auto;
+  }
+}
+
+// ---------- 圓角大卡：浮起來（柔陰影），照片方塊撐滿卡高 ----------
+.auth-card {
+  display: grid;
+  padding: .75rem;
+  border: 1px solid $card-line;
+  border-radius: $radius-panel;
+  background-color: $white;
+  box-shadow: $shadow-float;
+
+  @include media-breakpoint-up(md) { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+}
+// 照片方塊：不決定卡片高度（絕對定位），跟著表單的高度裁切
+.auth-photo {
+  position: relative;
+  display: none;
+  overflow: hidden;
+  margin: 0;
+  border-radius: $radius-card;
+  background-color: $mist;
+
+  @include media-breakpoint-up(md) { display: block; }
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 70%;
+  }
+}
+// 照片左上角的白色小卡：品牌語（白底墨綠字，不靠照片當底）
+.auth-photo-note {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  width: fit-content;
+  margin: 0;
+  padding: .625rem 1rem;
+  border-radius: $radius-sm;
+  background-color: rgba($white, .92);
+  color: $ink;
+  font-family: $font-family-round;
+  font-size: .9375rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.auth-body {
+  padding: 1.25rem .75rem .75rem; // 加上卡片的 12px，四周 24px
+
+  @include media-breakpoint-up(md) { padding: 2rem 1.75rem 1.75rem 2.25rem; }
+  @include media-breakpoint-up(lg) { padding: 2.5rem 2.5rem 2.25rem 3rem; }
+
+  .chip { margin-bottom: .75rem; }
+  h1 { margin-bottom: .5rem; }
+}
+.auth-lead {
+  margin-bottom: 1.5rem;
+  color: $body-secondary-color;
+
+  @include media-breakpoint-up(lg) { margin-bottom: 2rem; }
+}
+
+// 欄位之間的節奏
+.auth-field + .auth-field { margin-top: 1.25rem; }
+
+// 密碼欄：右側 44px 圓形「顯示密碼」按鈕放在輸入框內
+.auth-password {
+  position: relative;
+
+  .form-control { padding-right: 3.25rem; }
+}
+.auth-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: .125rem;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-top: -1.375rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: $sage-text;
+  font-size: 1.125rem;
+  transition: background-color .2s, color .2s;
+
+  &:hover {
+    background-color: $mist;
+    color: $forest-deep;
+  }
+  &[aria-pressed="true"] { color: $forest; }
+}
+
+// 記住我｜忘記密碼
+.auth-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  margin: .75rem 0 1.25rem;
+
+  .form-check { margin-bottom: 0; }
+}
+
+.auth-submit {
+  min-height: 3.25rem; // 52px
+}
+
+// 「或」分隔：兩側細線
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  color: $sage-text;
+  font-size: $small-font-size;
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1 1 auto;
+    height: 1px;
+    background-color: $card-line;
+  }
+}
+
+// LINE、Google：白底膠囊、深鼠尾草框（對白 3.33），sm 以上並排
+.auth-social-list {
+  display: grid;
+  gap: .75rem;
+
+  @include media-breakpoint-up(sm) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.auth-social {
+  --bs-btn-color: #{$ink};
+  --bs-btn-bg: #{$white};
+  --bs-btn-border-color: #{$sage-dark};
+  --bs-btn-hover-color: #{$forest-deep};
+  --bs-btn-hover-bg: #{$mist};
+  --bs-btn-hover-border-color: #{$forest};
+  --bs-btn-active-color: #{$forest-deep};
+  --bs-btn-active-bg: #{$mint};
+  --bs-btn-active-border-color: #{$forest};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+
+  .bi { font-size: 1.125rem; }
+}
+
+// 切換到註冊／登入：霧薄荷小方塊（16px）
+.auth-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 1rem;
+  margin: 1.5rem 0 0;
+  padding: .375rem .5rem .375rem 1.25rem;
+  border-radius: $radius-sm;
+  background-color: $mist;
+  color: $sage-text;
+  font-size: .9375rem;
+
+  .btn-text { font-size: .9375rem; }
+}
+
+// ---------- 註冊：加入會員的好處（霧薄荷方塊＋40px 白色圓形圖示） ----------
+.auth-perks {
+  display: grid;
+  gap: .625rem;
+  margin: 0 0 1.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: $radius-sm;
+  background-color: $mist;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    font-size: .9375rem;
+    line-height: 1.6;
+  }
+}
+
+// 密碼規則：葉形提示（未達成＝鼠尾草字＋空心圓、達成＝成功色＋勾），示意靜態即可
+.auth-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: .625rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+// 同意條款：方框靠上對齊，文字可換行
+.auth-agree {
+  margin: 1.25rem 0 1.5rem;
+
+  .form-check-label { font-size: .9375rem; }
+}
+
+// ---------- 狀態示意 ----------
+// lg 以上：左 5/12 是標籤、標題與說明，右 7/12 是示範畫面（和上方大卡的照片｜表單對齊）
+.auth-demo .demo-state {
+  margin-top: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-rows: auto auto auto 1fr;
+    column-gap: 2rem;
+
+    > * { grid-column: 1; }
+    .demo-state-tag { justify-self: start; }
+    .demo-state-stage {
+      grid-column: 2;
+      grid-row: 1 / -1;
+    }
+  }
+}
+// 示意舞台裡的白色小卡（表單的縮小版）
+.auth-demo-card {
+  padding: 1.25rem;
+  border-radius: $radius-card;
+  background-color: $white;
+
+  @include media-breakpoint-up(md) { padding: 1.75rem; }
+
+  .alert { margin-bottom: 1.25rem; }
+
+  // 手機上外框、舞台、卡片三層內距疊起來太窄，卡片與提示框的內距收小
+  @include media-breakpoint-down(md) {
+    padding: 1.25rem 1rem;
+
+    .alert { padding: .875rem 1rem; }
+  }
+}

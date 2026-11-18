@@ -1,0 +1,548 @@
+// ============================================================
+// 首頁 index.html
+// 1. Hero：滿版照片＋置中奶油徽框（cartouche）往上壓住照片下緣
+// 2. 四大價值：羊皮紙底、2×2 格、十字髮絲線、交叉點一枚小花飾
+// 3. 空間靈感：三個情境之字形攤開（A 圖左、B 圖右、C 圖左），圖片在雙線襯紙框、熱點點擊開小卡
+// 4. 人氣嚴選：4 張襯紙框卡（手機、平板橫向捲動）
+// 5. 見證＋承諾：左兩張明信片（芫荽手寫引言）、右三個置中承諾以菱形分隔
+// 6. 最終 CTA：滿版勃艮第帶，內縮一圈奶油雙線框，左文右圖
+// ============================================================
+
+// 情境圖的雙線襯紙框 .mat-double 與商品詳情主圖共用，寫在 _base.scss
+
+// ---------- 徽框 .cartouche：紙面、四角內凹切角、雙線框（線也跟著內凹） ----------
+// 外形用 mask 切出四角的內凹圓弧；雙線畫在 ::before，四角各一段同心圓弧＋四邊直線
+// 外線距邊 8px（弧半徑 20+8=28）、內線距邊 12px（弧半徑 32），之間 3px 間隙
+$cartouche-cut: 20px;
+.cartouche {
+  position: relative;
+  background-color: $paper;
+  text-align: center;
+  -webkit-mask:
+    radial-gradient(circle at top left, transparent $cartouche-cut, #000 ($cartouche-cut + .5px)) top left / 51% 51% no-repeat,
+    radial-gradient(circle at top right, transparent $cartouche-cut, #000 ($cartouche-cut + .5px)) top right / 51% 51% no-repeat,
+    radial-gradient(circle at bottom left, transparent $cartouche-cut, #000 ($cartouche-cut + .5px)) bottom left / 51% 51% no-repeat,
+    radial-gradient(circle at bottom right, transparent $cartouche-cut, #000 ($cartouche-cut + .5px)) bottom right / 51% 51% no-repeat;
+  mask:
+    radial-gradient(circle at top left, transparent $cartouche-cut, #000 ($cartouche-cut + .5px)) top left / 51% 51% no-repeat,
+    radial-gradient(circle at top right, transparent $cartouche-cut, #000 ($cartouche-cut + .5px)) top right / 51% 51% no-repeat,
+    radial-gradient(circle at bottom left, transparent $cartouche-cut, #000 ($cartouche-cut + .5px)) bottom left / 51% 51% no-repeat,
+    radial-gradient(circle at bottom right, transparent $cartouche-cut, #000 ($cartouche-cut + .5px)) bottom right / 51% 51% no-repeat;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    $c: $caramel;
+    background:
+      // 外線：四角弧（半徑 28px，角落 27px 方格）
+      radial-gradient(circle at top left, transparent 27.5px, $c 27.5px, $c 28.5px, transparent 28.5px) top left / 27px 27px no-repeat,
+      radial-gradient(circle at top right, transparent 27.5px, $c 27.5px, $c 28.5px, transparent 28.5px) top right / 27px 27px no-repeat,
+      radial-gradient(circle at bottom left, transparent 27.5px, $c 27.5px, $c 28.5px, transparent 28.5px) bottom left / 27px 27px no-repeat,
+      radial-gradient(circle at bottom right, transparent 27.5px, $c 27.5px, $c 28.5px, transparent 28.5px) bottom right / 27px 27px no-repeat,
+      // 外線：四邊（距邊 8px，兩端各讓出 27px 給圓弧）
+      linear-gradient($c, $c) center top 8px / calc(100% - 54px) 1px no-repeat,
+      linear-gradient($c, $c) center bottom 8px / calc(100% - 54px) 1px no-repeat,
+      linear-gradient($c, $c) left 8px center / 1px calc(100% - 54px) no-repeat,
+      linear-gradient($c, $c) right 8px center / 1px calc(100% - 54px) no-repeat,
+      // 內線：四角弧（半徑 32px，角落 30px 方格）
+      radial-gradient(circle at top left, transparent 31.5px, $c 31.5px, $c 32.5px, transparent 32.5px) top left / 30px 30px no-repeat,
+      radial-gradient(circle at top right, transparent 31.5px, $c 31.5px, $c 32.5px, transparent 32.5px) top right / 30px 30px no-repeat,
+      radial-gradient(circle at bottom left, transparent 31.5px, $c 31.5px, $c 32.5px, transparent 32.5px) bottom left / 30px 30px no-repeat,
+      radial-gradient(circle at bottom right, transparent 31.5px, $c 31.5px, $c 32.5px, transparent 32.5px) bottom right / 30px 30px no-repeat,
+      // 內線：四邊（距邊 12px，兩端各讓出 30px）
+      linear-gradient($c, $c) center top 12px / calc(100% - 60px) 1px no-repeat,
+      linear-gradient($c, $c) center bottom 12px / calc(100% - 60px) 1px no-repeat,
+      linear-gradient($c, $c) left 12px center / 1px calc(100% - 60px) no-repeat,
+      linear-gradient($c, $c) right 12px center / 1px calc(100% - 60px) no-repeat;
+  }
+}
+
+// ---------- 1. Hero ----------
+// 照片高度：桌機 clamp(360px, calc(100vh - 385px), 640px)；手機 4:3（只用 aspect-ratio，不加 max-height，避免卡住滿版寬度）
+.home-hero-photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: $parchment;
+
+  > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 45%;
+  }
+
+  @include media-breakpoint-up(md) {
+    aspect-ratio: auto;
+    height: clamp(420px, 56vh, 560px);
+  }
+  // 桌機高度跟著視窗高度走：主按鈕下緣 ≈ 頁首 142px＋照片高度，減徽框上壓 180px，再加徽框頂到主按鈕底約 391px。
+  // 照片取「視窗高減 385px」，主按鈕下緣離視窗底約 32px，1366×768、1280×800、1440×900 的筆電第一屏看得到按鈕；
+  // 視窗高 1025px 以上維持最高 640px
+  @include media-breakpoint-up(lg) {
+    height: clamp(360px, calc(100vh - 385px), 640px);
+  }
+}
+// 圖說小籤：照片右下角（桌機往上讓開徽框壓住的範圍）
+.home-hero-caption {
+  position: absolute;
+  right: .75rem;
+  bottom: 3.25rem;
+  margin: 0;
+  padding: .25rem .75rem;
+  background-color: rgba($paper, .94);
+  border: 1px solid $line;
+  color: $ink-soft;
+  font-size: $small-font-size;
+  line-height: 1.6;
+
+  @include media-breakpoint-up(md) {
+    right: 1.5rem;
+    bottom: 1.5rem;
+  }
+  @include media-breakpoint-up(lg) {
+    right: 2rem;
+    bottom: calc(180px + 1.5rem);
+  }
+}
+.home-hero-cartouche {
+  z-index: 1;
+  max-width: 42.5rem; // 680px
+  margin: -2.5rem auto 0; // 手機往上壓 40px
+  padding: 2.75rem 1.5rem 2.5rem;
+
+  @include media-breakpoint-up(md) {
+    margin-top: -7.5rem;
+    padding: 3.25rem 3rem;
+  }
+  @include media-breakpoint-up(lg) {
+    margin-top: -180px; // 往上壓住照片下緣約 180px
+    padding: 3.5rem 4rem;
+  }
+}
+.home-hero-title {
+  margin-bottom: 0;
+  color: $ink;
+
+  &::after {
+    @extend %ornament-line;
+    margin-top: 1.25rem;
+  }
+}
+.home-hero-lead {
+  margin: 1.25rem auto 0;
+  color: $ink-soft;
+  font-size: .9375rem; // 手機 15px：讓兩句各自一行
+  line-height: 1.9;
+
+  @include media-breakpoint-up(md) {
+    font-size: 1.0625rem;
+  }
+}
+.home-hero-actions {
+  display: grid;
+  gap: .75rem;
+  margin-top: 1.75rem;
+
+  @include media-breakpoint-up(sm) {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+}
+
+// ---------- 2. 四大價值：2×2 格＋十字髮絲線＋交叉點花飾 ----------
+.home-values-section {
+  margin-top: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    margin-top: map-get($spacers, 7);
+  }
+}
+.home-values {
+  position: relative;
+  max-width: 55rem; // 880px
+  margin-inline: auto;
+}
+.home-values-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.home-value {
+  padding: 2rem 1rem;
+  text-align: center;
+
+  + .home-value { border-top: 1px solid $line-strong; }
+
+  p {
+    max-width: 18em;
+    margin-inline: auto;
+    color: $ink-soft;
+  }
+
+  @include media-breakpoint-up(md) {
+    padding: 2.5rem 3rem;
+
+    + .home-value { border-top: 0; }
+    &:nth-child(odd) { border-right: 1px solid $line-strong; }
+    &:nth-child(-n + 2) { border-bottom: 1px solid $line-strong; }
+  }
+}
+.home-value-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid $caramel;
+  border-radius: 50%;
+  color: $caramel-deep;
+  font-size: 1.375rem;
+}
+.home-value-title {
+  margin-bottom: .625rem;
+}
+// 十字交叉點的小花飾：羊皮紙底把線斷開
+.home-values-fleuron {
+  display: none;
+
+  @include media-breakpoint-up(md) {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 3.5rem;
+    height: 1.75rem;
+    padding-inline: .375rem;
+    background-color: $parchment;
+    transform: translate(-50%, -50%);
+  }
+}
+
+// ---------- 3. 空間靈感：之字形 ----------
+.home-room + .home-room {
+  margin-top: map-get($spacers, 7);
+
+  @include media-breakpoint-up(lg) {
+    margin-top: map-get($spacers, 8);
+  }
+}
+.home-room-frame {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  background-color: $parchment;
+
+  > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 1px solid rgba($burgundy, .2);
+  }
+}
+.home-room-text {
+  max-width: 28rem;
+  margin-inline: auto;
+
+  > .eyebrow,
+  > .home-room-title {
+    text-align: center;
+  }
+}
+.home-room-title {
+  margin-bottom: 1.75rem;
+}
+.home-room-list {
+  margin: 0;
+}
+.home-room-item {
+  padding-block: .875rem;
+  border-top: 1px solid $line;
+
+  > .leader { font-weight: 600; }
+  &.is-soldout .leader > :last-child {
+    color: $ink-soft;
+    font-weight: 400;
+  }
+}
+.home-room-link {
+  display: block;
+  color: $ink;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: .3em;
+  transition: color .15s ease, text-decoration-color .15s ease;
+
+  &:hover {
+    color: $burgundy;
+    text-decoration-color: currentColor;
+  }
+}
+.home-room-dim {
+  margin: .125rem 0 0;
+  color: $ink-soft;
+  font-size: $small-font-size;
+  line-height: $line-height-sm;
+}
+// 整套金額：上方一條雙線（外線＋3px＋內線）
+.home-room-text > .home-room-total {
+  align-items: baseline;
+  margin-bottom: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid $ink;
+  box-shadow: inset 0 $double-gap 0 $cream, inset 0 ($double-gap + 1px) 0 $ink;
+  font-weight: 600;
+}
+.home-room-hint {
+  margin: .875rem 0 0;
+  text-align: center;
+}
+
+// 熱點：28px 奶油圓、1.5px 勃艮第圈、＋；展開時勃艮第實心
+.home-spot {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+}
+.home-spot-btn {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;  // 觸控範圍 44px
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: $burgundy;
+
+  .bi {
+    display: grid;
+    place-items: center;
+    width: 1.75rem; // 視覺 28px
+    height: 1.75rem;
+    border: 1.5px solid $burgundy;
+    border-radius: 50%;
+    background-color: $paper;
+    font-size: .875rem;
+    transition: background-color .15s ease, color .15s ease;
+  }
+  &:hover .bi {
+    background-color: $rose;
+  }
+  &[aria-expanded="true"] .bi {
+    background-color: $burgundy;
+    color: $on-burgundy;
+  }
+  &:focus-visible {
+    outline: none;
+
+    .bi { @include focus-ring; outline-offset: 3px; }
+  }
+}
+// 熱點小卡：奶油紙面雙線小卡
+.home-spot-card {
+  --bs-dropdown-padding-x: 1.25rem;
+  --bs-dropdown-padding-y: 1.25rem;
+  width: 18rem;
+  max-width: calc(100vw - 40px);
+  @include double-line($caramel, $paper);
+  box-shadow:
+    inset 0 0 0 $double-gap $paper,
+    inset 0 0 0 ($double-gap + $double-line) $caramel,
+    $box-shadow;
+}
+.home-spot-head {
+  display: flex;
+  gap: .875rem;
+  align-items: flex-start;
+}
+.home-spot-thumb {
+  flex: 0 0 4.5rem;
+  width: 4.5rem;
+}
+.home-spot-name {
+  margin-bottom: .25rem;
+  font-weight: 600;
+  line-height: 1.6;
+}
+.home-spot-price {
+  margin: 0;
+  font-size: 1.375rem;
+}
+.home-spot-dim {
+  margin: .875rem 0 1rem;
+  padding-top: .75rem;
+  border-top: 1px dotted $line-strong;
+  color: $ink-soft;
+  font-size: $small-font-size;
+}
+.home-spot-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+// ---------- 4. 人氣嚴選：桌機 4 欄；992px 以下橫向捲動 ----------
+.home-featured {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 78%;
+  gap: 1.25rem;
+  padding-bottom: .5rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+
+  > li { scroll-snap-align: start; }
+
+  @include media-breakpoint-up(sm) {
+    grid-auto-columns: 44%;
+    gap: 2rem;
+  }
+  @include media-breakpoint-up(md) {
+    grid-auto-columns: 31%;
+  }
+  @include media-breakpoint-up(lg) {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(4, 1fr);
+    overflow: visible;
+    padding-bottom: 0;
+  }
+}
+
+// ---------- 5. 見證＋承諾 ----------
+.home-postcard {
+  height: 100%;
+  margin: 0;
+  padding: .625rem .625rem 1.5rem;
+  background-color: $paper;
+  border: 1px solid $line;
+}
+.home-postcard-photo {
+  aspect-ratio: 1;
+  overflow: hidden;
+  background-color: $parchment;
+
+  > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+.home-postcard-quote {
+  margin: 1.25rem .75rem 1rem;
+
+  p {
+    margin: 0;
+    font-family: $font-family-hand;
+    font-size: 1.125rem; // 18px 手寫字
+    line-height: 1.85;
+    letter-spacing: .02em;
+  }
+}
+.home-postcard-caption {
+  margin-inline: .75rem;
+  padding-top: .75rem;
+  border-top: 1px dotted $line-strong;
+  color: $ink-soft;
+  font-size: $small-font-size;
+  line-height: $line-height-sm;
+}
+.home-postcard-author {
+  margin-bottom: .25rem;
+  color: $ink;
+  font-weight: 600;
+}
+
+.home-promises {
+  text-align: center;
+}
+.home-promise {
+  p {
+    max-width: 20em;
+    margin-inline: auto;
+    color: $ink-soft;
+  }
+  // 承諾之間的菱形分隔
+  + .home-promise::before {
+    content: "";
+    display: block;
+    width: .4375rem;
+    height: .4375rem;
+    margin: 2rem auto;
+    background-color: $caramel;
+    transform: rotate(45deg);
+  }
+}
+.home-promise-icon {
+  display: block;
+  margin-bottom: .5rem;
+  color: $caramel-deep;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+.home-promise-title {
+  margin-bottom: .5rem;
+}
+
+// ---------- 6. 最終 CTA：滿版勃艮第帶＋內縮 24px 奶油雙線框 ----------
+// 用 $burgundy（而非頁尾的 $burgundy-deep），和緊接在下面的頁尾分得出兩層
+.home-cta {
+  padding-block: 1rem;
+  background-color: $burgundy;
+  color: $on-burgundy;
+
+  @include media-breakpoint-up(md) {
+    padding-block: 1.5rem;
+  }
+
+  :focus-visible { outline-color: $on-burgundy; }
+}
+.home-cta-inner {
+  padding: 2.5rem 1.25rem;
+  @include double-line(rgba($on-burgundy, .7), $burgundy);
+
+  @include media-breakpoint-up(md) {
+    padding: 4rem 3rem;
+  }
+  @include media-breakpoint-up(lg) {
+    padding: 5rem 4rem;
+  }
+}
+.home-cta-photo {
+  border-color: $on-burgundy;
+
+  .mat-img { border-color: rgba($burgundy, .25); }
+}
+.home-cta-text {
+  text-align: center;
+}
+.home-cta-title {
+  margin-bottom: 0;
+  color: $on-burgundy;
+
+  &::after {
+    content: "";
+    display: block;
+    width: 7.5rem;
+    height: .75rem;
+    margin: 1.25rem auto 0;
+    background:
+      linear-gradient($caramel-light, $caramel-light) left center / 3rem 1px no-repeat,
+      linear-gradient($caramel-light, $caramel-light) right center / 3rem 1px no-repeat,
+      escape-svg(url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path d='M6 0.8 11.2 6 6 11.2 0.8 6Z' fill='#{$caramel-light}'/></svg>")) center / .75rem .75rem no-repeat;
+  }
+}
+.home-cta-note {
+  margin: 1.25rem auto 1.75rem;
+  color: $on-burgundy-soft;
+}

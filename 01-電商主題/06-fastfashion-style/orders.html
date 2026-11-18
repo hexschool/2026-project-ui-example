@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>我的訂單｜NestCraft 原創生活家居選物</title>
+  <meta name="description" content="NestCraft 會員中心：查看 5 筆訂單的付款、出貨與配送進度，依狀態篩選待付款、已付款、出貨中、已完成、已取消。設計稿 06｜平價快時尚。">
+  <meta name="theme-color" content="#FFE500">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，先改本範本，再同步 10 個 .html，最後 npm run check。
+    - 每頁只需要調整一處「目前頁面」標示（scripts/check-layout.mjs 依這個規則比對）：
+      頁首導覽：目前頁的連結在 nav-link 後面加 active，並加 aria-current="page"
+      · index.html → 首頁；products.html → 商品一覽；orders.html → 我的訂單
+      · 商品詳情（product.html）：「商品一覽」標示 active，但不加 aria-current
+      · 購物車、結帳、付款結果、登入、註冊、Guideline：不標示
+    - 導覽連結的 class 只寫 nav-link（目前頁加 active），不要加別的 class，樣式從父層 .site-nav 選。
+    - body 的 class 每頁可以不同（不在比對範圍）：
+      · 購物車、結帳：has-buybar（固定在視窗底部的黑色結帳列）
+      · 商品詳情：has-buybar-sm（992px 以下的固定購買列）
+    - check-layout 比對的頁首區塊：從 skip-link 到 header 結束（黃色倒數條在 header 裡）；
+      頁尾區塊：從 site-footer 到檔案結尾（加入購物車的 toast 也在這段裡）。
+    ============================================================
+  -->
+  <a class="skip-link" href="#main">跳至主要內容</a>
+
+  <header class="site-header">
+    <!-- 黃色倒數條：折價券元件（不是公告列）。倒數數字由 js/main.js 每秒更新，HTML 先寫一個靜態值；不加 aria-live -->
+    <div class="site-countdown">
+      <div class="container">
+        <p class="site-countdown-line">
+          <span class="site-countdown-tag">限時券</span>
+          <span>滿 <span class="num">NT$&nbsp;25,000</span> 折 <span class="num">NT$&nbsp;1,000</span></span>
+          <span class="site-countdown-deadline" aria-hidden="true">今日 23:59 截止</span>
+          <span class="site-countdown-sep" aria-hidden="true">｜</span>
+          <span class="countdown">
+            <span class="visually-hidden">活動今日 23:59 截止</span>
+            <span class="countdown-num" data-countdown aria-hidden="true">05:42:18</span>
+          </span>
+          <a class="site-countdown-link" href="login.html">登入領取</a>
+        </p>
+      </div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg site-bar" aria-label="主要導覽">
+      <div class="container">
+        <button class="site-icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteMenu" aria-controls="siteMenu" aria-label="開啟選單">
+          <i class="bi bi-list" aria-hidden="true"></i>
+        </button>
+
+        <a class="navbar-brand site-brand" href="index.html">
+          <span class="site-brand-mark" aria-hidden="true">N</span>
+          <span class="site-brand-name">NestCraft</span>
+        </a>
+
+        <!-- 992px 以上直接排在黑列；以下是左側黑色抽屜（搜尋框在最上方）。導覽連結只寫這一份 -->
+        <div id="siteMenu" class="offcanvas offcanvas-start site-menu" tabindex="-1" aria-labelledby="siteMenuTitle">
+          <div class="offcanvas-header">
+            <p id="siteMenuTitle" class="offcanvas-title site-menu-title">選單</p>
+            <button class="btn-close btn-close-white" type="button" data-bs-dismiss="offcanvas" data-bs-target="#siteMenu" aria-label="關閉選單"></button>
+          </div>
+          <div class="offcanvas-body">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="products.html">商品一覽</a></li>
+              <li class="nav-item"><a class="nav-link" href="index.html#rooms">空間靈感</a></li>
+              <li class="nav-item"><a class="nav-link active" href="orders.html" aria-current="page">我的訂單</a></li>
+              <li class="nav-item d-sm-none"><a class="nav-link" href="login.html">會員登入</a></li>
+            </ul>
+            <form class="site-search" role="search" action="products.html">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input class="form-control" type="search" name="q" placeholder="搜尋家具、收納、尺寸…" aria-label="搜尋商品">
+            </form>
+          </div>
+        </div>
+
+        <div class="site-actions">
+          <!-- 992px 以下：打開抽屜並把焦點放進搜尋框（js/main.js） -->
+          <button class="site-icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteMenu" aria-controls="siteMenu" aria-label="搜尋商品" data-menu-search>
+            <i class="bi bi-search" aria-hidden="true"></i>
+          </button>
+          <!-- 576px 以下會員入口移到抽屜裡 -->
+          <a class="site-icon-btn d-none d-sm-inline-grid" href="login.html" aria-label="會員登入">
+            <i class="bi bi-person" aria-hidden="true"></i>
+          </a>
+          <a class="site-cart" href="cart.html" aria-label="購物車，4 件商品" data-cart-link>
+            <i class="bi bi-bag-fill" aria-hidden="true"></i>
+            <span class="site-cart-label">購物車</span>
+            <span class="site-cart-count" data-cart-count>4</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <!--
+      我的訂單（樣式見 scss/pages/_orders.scss）
+      - 1080 窄版心：頁首 → 黑色會員列 → 粗字底線狀態分頁 → 票根式訂單卡 → 設計稿狀態示意
+      - 訂單依下單日期新到舊排列；最上面一筆就是付款結果頁剛成立的 NC-20260923-001
+      - 這頁不放折價券倒數（付款結果與我的訂單不出現票券）
+    -->
+    <div class="container container-narrow page-body">
+      <header class="page-header">
+        <nav aria-label="目前位置">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+            <!-- 會員中心沒有獨立頁面，不做成連結 -->
+            <li class="breadcrumb-item">會員中心</li>
+            <li class="breadcrumb-item active" aria-current="page">我的訂單</li>
+          </ol>
+        </nav>
+        <div class="page-title-row">
+          <h1>我的訂單</h1>
+          <span class="count-chip"><span class="num">5</span> 筆</span>
+        </div>
+        <!-- 一句一段：空間夠時兩句並排，窄螢幕在句號處換行 -->
+        <p class="page-lead text-phrase">
+          <span class="d-inline-block">大型家具出貨後，可在這裡查看配送進度。</span><span class="d-inline-block">出車前一天，我們會先來電確認到府時段。</span>
+        </p>
+      </header>
+
+      <!-- 黑色會員列：個人資料、收件地址尚未設計頁面，暫時連回本頁；登出是動作不是導覽，和選單分開 -->
+      <section class="orders-member on-dark" aria-labelledby="orders-member-title">
+        <h2 id="orders-member-title" class="visually-hidden">會員中心</h2>
+        <div class="orders-member-who">
+          <span class="orders-member-avatar" aria-hidden="true">王</span>
+          <div>
+            <p class="orders-member-name">王小明</p>
+            <p class="orders-member-mail">xiaoming@example.com</p>
+          </div>
+        </div>
+        <div class="orders-member-nav">
+          <nav aria-label="會員中心">
+            <ul>
+              <li><a href="orders.html"><i class="bi bi-person" aria-hidden="true"></i>個人資料</a></li>
+              <li><a href="orders.html"><i class="bi bi-geo-alt" aria-hidden="true"></i>收件地址</a></li>
+            </ul>
+          </nav>
+          <a href="login.html"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>登出</a>
+        </div>
+      </section>
+
+      <!--
+        狀態篩選：點按鈕切換下方顯示的訂單，可以逐一看到 5 種狀態的訂單長什麼樣子
+        js/main.js 依按鈕的 data-filter 與每筆訂單 <li> 的 data-status 切換；後面的黑方塊是該狀態的訂單數
+      -->
+      <ul class="nav nav-underline orders-filter" aria-label="依訂單狀態篩選" data-filter-list="#ordersList">
+            <li class="nav-item"><button class="nav-link active" type="button" aria-pressed="true" aria-controls="ordersList" data-filter="all">全部<span class="tab-count">5</span></button></li>
+            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false" aria-controls="ordersList" data-filter="待付款">待付款<span class="tab-count">1</span></button></li>
+            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false" aria-controls="ordersList" data-filter="已付款">已付款<span class="tab-count">1</span></button></li>
+            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false" aria-controls="ordersList" data-filter="出貨中">出貨中<span class="tab-count">1</span></button></li>
+            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false" aria-controls="ordersList" data-filter="已完成">已完成<span class="tab-count">1</span></button></li>
+            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false" aria-controls="ordersList" data-filter="已取消">已取消<span class="tab-count">1</span></button></li>
+      </ul>
+
+      <!--
+        票根式訂單卡：左側整條狀態色塊（手機是頂端色帶）→ 2px 黑虛線撕線 → 中段編號、品項、配送 → 右段金額與動作 → 訂單明細
+        訂單明細用 Bootstrap collapse 在原地展開；待付款的訂單預設展開（.show＋aria-expanded="true"），直接看到繳費資訊
+      -->
+      <ol id="ordersList" class="orders-list">
+          <!-- ========== 1. 已付款（剛成立的訂單＝付款結果頁的那一筆） ========== -->
+          <li data-status="已付款">
+            <article class="orders-card is-paid" aria-labelledby="order-NC-20260923-001">
+              <p class="orders-stub mb-0"><i class="bi bi-check-circle" aria-hidden="true"></i><span><span class="visually-hidden">訂單狀態：</span>已付款</span></p>
+              <div class="orders-body">
+                <div class="orders-main">
+                  <div class="orders-info">
+                    <header class="orders-head">
+                      <h2 id="order-NC-20260923-001" class="orders-no"><span class="visually-hidden">訂單編號</span><span class="num">NC-20260923-001</span></h2>
+                      <p class="orders-date">下單日期 <span class="num">2026-09-23</span></p>
+                    </header>
+                    <ul class="orders-items">
+                      <li>
+                        <span class="orders-thumb img-frame"><img src="images/p-1001.jpg" alt="" width="1200" height="1200" loading="lazy"></span>
+                        <span><a class="orders-item-name text-phrase" href="product.html">橡木餐桌</a><span class="orders-item-qty"><span class="visually-hidden">數量</span>×&nbsp;<span class="num">1</span></span></span>
+                      </li>
+                      <li>
+                        <span class="orders-thumb img-frame"><img src="images/p-1007.jpg" alt="" width="1200" height="1200" loading="lazy"></span>
+                        <span><a class="orders-item-name text-phrase" href="product.html">NestBox 自由拼裝<wbr>收納方塊 (三入組)</a><span class="orders-item-qty"><span class="visually-hidden">數量</span>×&nbsp;<span class="num">2</span></span></span>
+                      </li>
+                      <li>
+                        <span class="orders-thumb img-frame"><img src="images/p-1008.jpg" alt="" width="1200" height="1200" loading="lazy"></span>
+                        <span><a class="orders-item-name text-phrase" href="product.html">SlimFit 夾縫<wbr>多功能推車</a><span class="orders-item-qty"><span class="visually-hidden">數量</span>×&nbsp;<span class="num">1</span></span></span>
+                      </li>
+                    </ul>
+                    <dl class="orders-meta">
+                      <div><dt>配送方式</dt><dd>宅配到府（免運）</dd></div>
+                      <div><dt>預計到貨</dt><dd><span class="num">2026-10-02</span></dd></div>
+                    </dl>
+                  </div>
+
+                  <div class="orders-side">
+                    <div class="orders-total">
+                      <p><span class="visually-hidden">訂單金額</span><span class="price-tag price-tag-set"><span class="price-cur">NT$</span><span class="price-num">20,250</span></span></p>
+                      <p class="orders-count">共 <span class="num">4</span> 件</p>
+                    </div>
+                    <div class="orders-actions">
+                      <button class="btn btn-text orders-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#detail-NC-20260923-001" aria-expanded="false" aria-controls="detail-NC-20260923-001">訂單明細<span class="visually-hidden">（NC-20260923-001）</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 訂單明細 -->
+                <div id="detail-NC-20260923-001" class="collapse">
+                  <div class="orders-detail">
+                    <div class="row g-4 g-md-5">
+                      <section class="col-md-7" aria-labelledby="items-NC-20260923-001">
+                        <h3 id="items-NC-20260923-001" class="orders-detail-title">購買品項</h3>
+                        <ul class="orders-detail-lines">
+                          <li><span class="text-phrase">橡木餐桌 <span class="text-secondary text-nowrap">×&nbsp;<span class="num">1</span></span></span><span class="num text-nowrap">NT$ 16,800</span></li>
+                          <li><span class="text-phrase">NestBox 自由拼裝<wbr>收納方塊 (三入組) <span class="text-secondary text-nowrap">×&nbsp;<span class="num">2</span></span></span><span class="num text-nowrap">NT$ 2,560</span></li>
+                          <li><span class="text-phrase">SlimFit 夾縫<wbr>多功能推車 <span class="text-secondary text-nowrap">×&nbsp;<span class="num">1</span></span></span><span class="num text-nowrap">NT$ 890</span></li>
+                        </ul>
+                        <dl class="orders-detail-sum">
+                          <div><dt>商品小計</dt><dd class="num">NT$ 20,250</dd></div>
+                          <div><dt>運費</dt><dd>免運</dd></div>
+                          <div class="is-total"><dt>訂單金額</dt><dd><span class="price-tag price-tag-card"><span class="price-cur">NT$</span><span class="price-num">20,250</span></span></dd></div>
+                        </dl>
+                      </section>
+
+                      <div class="col-md-5 orders-detail-info">
+                        <h3 class="orders-detail-title">收件資訊</h3>
+                        <p>王小明<br><span class="num">0912 345 678</span><br>台北市大安區溫州街 18 號 3 樓</p>
+                        <h3 class="orders-detail-title">付款方式</h3>
+                        <p>信用卡（末四碼 <span class="num">4242</span>）</p>
+                        <h3 class="orders-detail-title">狀態歷程</h3>
+                        <ol class="orders-history">
+                          <li><span class="num">09/23</span><span>下單並完成付款</span></li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </li>
+          <!-- ========== 2. 待付款（明細預設展開，直接看到繳費資訊） ========== -->
+          <li data-status="待付款">
+            <article class="orders-card is-pending" aria-labelledby="order-NC-20260921-009">
+              <p class="orders-stub mb-0"><i class="bi bi-clock-fill" aria-hidden="true"></i><span><span class="visually-hidden">訂單狀態：</span>待付款</span></p>
+              <div class="orders-body">
+                <div class="orders-main">
+                  <div class="orders-info">
+                    <header class="orders-head">
+                      <h2 id="order-NC-20260921-009" class="orders-no"><span class="visually-hidden">訂單編號</span><span class="num">NC-20260921-009</span></h2>
+                      <p class="orders-date">下單日期 <span class="num">2026-09-21</span></p>
+                    </header>
+                    <ul class="orders-items">
+                      <li>
+                        <span class="orders-thumb img-frame"><img src="images/p-1004.jpg" alt="" width="1200" height="1200" loading="lazy"></span>
+                        <span><a class="orders-item-name text-phrase" href="product.html">極簡床頭櫃</a><span class="orders-item-qty"><span class="visually-hidden">數量</span>×&nbsp;<span class="num">1</span></span></span>
+                      </li>
+                    </ul>
+                    <dl class="orders-meta">
+                      <div><dt>配送方式</dt><dd>宅配到府</dd></div>
+                      <div><dt>付款期限</dt><dd><span class="tag tag-volt"><i class="bi bi-clock-fill" aria-hidden="true"></i><span class="num">2026-09-24</span></span></dd></div>
+                    </dl>
+                  </div>
+
+                  <div class="orders-side">
+                    <div class="orders-total">
+                      <p><span class="visually-hidden">訂單金額</span><span class="price-tag price-tag-set"><span class="price-cur">NT$</span><span class="price-num">7,800</span></span></p>
+                      <p class="orders-count">共 <span class="num">1</span> 件</p>
+                    </div>
+                    <div class="orders-actions">
+                      <button class="btn btn-text orders-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#detail-NC-20260921-009" aria-expanded="true" aria-controls="detail-NC-20260921-009">訂單明細<span class="visually-hidden">（NC-20260921-009）</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 訂單明細（預設展開） -->
+                <div id="detail-NC-20260921-009" class="collapse show">
+                  <div class="orders-detail">
+                    <div class="row g-4 g-md-5">
+                      <section class="col-md-7" aria-labelledby="items-NC-20260921-009">
+                        <h3 id="items-NC-20260921-009" class="orders-detail-title">購買品項</h3>
+                        <ul class="orders-detail-lines">
+                          <li><span class="text-phrase">極簡床頭櫃 <span class="text-secondary text-nowrap">×&nbsp;<span class="num">1</span></span></span><span class="num text-nowrap">NT$ 7,800</span></li>
+                        </ul>
+                        <dl class="orders-detail-sum">
+                          <div><dt>商品小計</dt><dd class="num">NT$ 7,800</dd></div>
+                          <div><dt>運費</dt><dd>免運</dd></div>
+                          <div class="is-total"><dt>應付金額</dt><dd><span class="price-tag price-tag-card"><span class="price-cur">NT$</span><span class="price-num">7,800</span></span></dd></div>
+                        </dl>
+                      </section>
+
+                      <div class="col-md-5 orders-detail-info">
+                        <h3 class="orders-detail-title">收件資訊</h3>
+                        <p>王小明<br><span class="num">0912 345 678</span><br>台北市大安區溫州街 18 號 3 樓</p>
+                        <h3 class="orders-detail-title">付款方式</h3>
+                        <p>ATM 轉帳</p>
+                        <!-- ATM 轉帳：繳費資訊與付款期限 -->
+                        <dl class="orders-atm">
+                          <div><dt>轉入銀行代碼</dt><dd class="num">812</dd></div>
+                          <div><dt>虛擬帳號</dt><dd class="num">9981 2345 6789 0123</dd></div>
+                        </dl>
+                        <p class="orders-due"><i class="bi bi-clock-fill" aria-hidden="true"></i><span>請於 <span class="num">2026-09-24</span> 前完成付款，逾期訂單會自動取消。</span></p>
+                        <h3 class="orders-detail-title">狀態歷程</h3>
+                        <ol class="orders-history">
+                          <li><span class="num">09/21</span><span>下單，等待轉帳</span></li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </li>
+          <!-- ========== 3. 出貨中（顯示 4 段配送進度） ========== -->
+          <li data-status="出貨中">
+            <article class="orders-card is-shipping" aria-labelledby="order-NC-20260918-001">
+              <p class="orders-stub mb-0"><i class="bi bi-truck" aria-hidden="true"></i><span><span class="visually-hidden">訂單狀態：</span>出貨中</span></p>
+              <div class="orders-body">
+                <div class="orders-main">
+                  <div class="orders-info">
+                    <header class="orders-head">
+                      <h2 id="order-NC-20260918-001" class="orders-no"><span class="visually-hidden">訂單編號</span><span class="num">NC-20260918-001</span></h2>
+                      <p class="orders-date">下單日期 <span class="num">2026-09-18</span></p>
+                    </header>
+                    <ul class="orders-items">
+                      <li>
+                        <span class="orders-thumb img-frame"><img src="images/p-1001.jpg" alt="" width="1200" height="1200" loading="lazy"></span>
+                        <span><a class="orders-item-name text-phrase" href="product.html">橡木餐桌</a><span class="orders-item-qty"><span class="visually-hidden">數量</span>×&nbsp;<span class="num">1</span></span></span>
+                      </li>
+                      <li>
+                        <span class="orders-thumb img-frame"><img src="images/p-1007.jpg" alt="" width="1200" height="1200" loading="lazy"></span>
+                        <span><a class="orders-item-name text-phrase" href="product.html">NestBox 自由拼裝<wbr>收納方塊 (三入組)</a><span class="orders-item-qty"><span class="visually-hidden">數量</span>×&nbsp;<span class="num">2</span></span></span>
+                      </li>
+                    </ul>
+                    <!--
+                      大型家具配送進度：4 段箭頭（用語與訂單狀態一致，示意目前在「出貨中」）
+                      已完成加 .is-done；目前加 .is-current 與 aria-current="step"；括號裡的完成狀態給螢幕閱讀器
+                    -->
+                    <h3 class="visually-hidden">配送進度</h3>
+                    <ol class="orders-track">
+                      <li class="is-done"><span class="orders-track-step"><i class="bi bi-check-lg" aria-hidden="true"></i>已付款<span class="visually-hidden">（已完成）</span></span><span class="orders-track-date num">09/18</span></li>
+                      <li class="is-done"><span class="orders-track-step"><i class="bi bi-check-lg" aria-hidden="true"></i>備貨中<span class="visually-hidden">（已完成）</span></span><span class="orders-track-date num">09/19</span></li>
+                      <li class="is-current" aria-current="step"><span class="orders-track-step">出貨中<span class="visually-hidden">（目前進度）</span></span><span class="orders-track-date num">09/22</span></li>
+                      <li><span class="orders-track-step">已完成<span class="visually-hidden">（尚未完成）</span></span><span class="orders-track-date"><span class="num">預計 09/25</span></span></li>
+                    </ol>
+                    <p class="orders-note"><i class="bi bi-telephone-fill" aria-hidden="true"></i><span>司機將於 <span class="num">09/24</span> 來電，確認到府時段。</span></p>
+                    <dl class="orders-meta">
+                      <div><dt>配送方式</dt><dd>宅配到府（大型家具）</dd></div>
+                      <div><dt>預計到貨</dt><dd><span class="num">2026-09-25</span></dd></div>
+                    </dl>
+                  </div>
+
+                  <div class="orders-side">
+                    <div class="orders-total">
+                      <p><span class="visually-hidden">訂單金額</span><span class="price-tag price-tag-set"><span class="price-cur">NT$</span><span class="price-num">19,360</span></span></p>
+                      <p class="orders-count">共 <span class="num">3</span> 件</p>
+                    </div>
+                    <div class="orders-actions">
+                      <button class="btn btn-text orders-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#detail-NC-20260918-001" aria-expanded="false" aria-controls="detail-NC-20260918-001">訂單明細<span class="visually-hidden">（NC-20260918-001）</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 訂單明細 -->
+                <div id="detail-NC-20260918-001" class="collapse">
+                  <div class="orders-detail">
+                    <div class="row g-4 g-md-5">
+                      <section class="col-md-7" aria-labelledby="items-NC-20260918-001">
+                        <h3 id="items-NC-20260918-001" class="orders-detail-title">購買品項</h3>
+                        <ul class="orders-detail-lines">
+                          <li><span class="text-phrase">橡木餐桌 <span class="text-secondary text-nowrap">×&nbsp;<span class="num">1</span></span></span><span class="num text-nowrap">NT$ 16,800</span></li>
+                          <li><span class="text-phrase">NestBox 自由拼裝<wbr>收納方塊 (三入組) <span class="text-secondary text-nowrap">×&nbsp;<span class="num">2</span></span></span><span class="num text-nowrap">NT$ 2,560</span></li>
+                        </ul>
+                        <dl class="orders-detail-sum">
+                          <div><dt>商品小計</dt><dd class="num">NT$ 19,360</dd></div>
+                          <div><dt>運費</dt><dd>免運</dd></div>
+                          <div class="is-total"><dt>訂單金額</dt><dd><span class="price-tag price-tag-card"><span class="price-cur">NT$</span><span class="price-num">19,360</span></span></dd></div>
+                        </dl>
+                      </section>
+
+                      <div class="col-md-5 orders-detail-info">
+                        <h3 class="orders-detail-title">收件資訊</h3>
+                        <p>王小明<br><span class="num">0912 345 678</span><br>台北市大安區溫州街 18 號 3 樓</p>
+                        <h3 class="orders-detail-title">付款方式</h3>
+                        <p>信用卡（末四碼 <span class="num">4242</span>）</p>
+                        <h3 class="orders-detail-title">狀態歷程</h3>
+                        <ol class="orders-history">
+                          <li><span class="num">09/18</span><span>下單並完成付款</span></li>
+                          <li><span class="num">09/19</span><span>開始備貨</span></li>
+                          <li><span class="num">09/22</span><span>出貨，由大型家具專車配送</span></li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </li>
+          <!-- ========== 4. 已完成（多一顆「再買一次」） ========== -->
+          <li data-status="已完成">
+            <article class="orders-card is-done" aria-labelledby="order-NC-20260830-017">
+              <p class="orders-stub mb-0"><i class="bi bi-check2-all" aria-hidden="true"></i><span><span class="visually-hidden">訂單狀態：</span>已完成</span></p>
+              <div class="orders-body">
+                <div class="orders-main">
+                  <div class="orders-info">
+                    <header class="orders-head">
+                      <h2 id="order-NC-20260830-017" class="orders-no"><span class="visually-hidden">訂單編號</span><span class="num">NC-20260830-017</span></h2>
+                      <p class="orders-date">下單日期 <span class="num">2026-08-30</span></p>
+                    </header>
+                    <ul class="orders-items">
+                      <li>
+                        <span class="orders-thumb img-frame"><img src="images/p-1008.jpg" alt="" width="1200" height="1200" loading="lazy"></span>
+                        <span><a class="orders-item-name text-phrase" href="product.html">SlimFit 夾縫<wbr>多功能推車</a><span class="orders-item-qty"><span class="visually-hidden">數量</span>×&nbsp;<span class="num">1</span></span></span>
+                      </li>
+                      <li>
+                        <span class="orders-thumb img-frame"><img src="images/p-1010.jpg" alt="" width="1200" height="1200" loading="lazy"></span>
+                        <span><a class="orders-item-name text-phrase" href="product.html">懸浮感<wbr>洞洞板<wbr>壁面收納組 (免釘牆)</a><span class="orders-item-qty"><span class="visually-hidden">數量</span>×&nbsp;<span class="num">1</span></span></span>
+                      </li>
+                    </ul>
+                    <dl class="orders-meta">
+                      <div><dt>配送方式</dt><dd>超商取貨</dd></div>
+                      <div><dt>送達日期</dt><dd><span class="num">2026-09-02</span></dd></div>
+                    </dl>
+                  </div>
+
+                  <div class="orders-side">
+                    <div class="orders-total">
+                      <p><span class="visually-hidden">訂單金額</span><span class="price-tag price-tag-set"><span class="price-cur">NT$</span><span class="price-num">2,400</span></span></p>
+                      <p class="orders-count">共 <span class="num">2</span> 件</p>
+                    </div>
+                    <div class="orders-actions">
+                      <button class="btn btn-text orders-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#detail-NC-20260830-017" aria-expanded="false" aria-controls="detail-NC-20260830-017">訂單明細<span class="visually-hidden">（NC-20260830-017）</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+                      <a class="btn btn-outline-dark btn-sm" href="cart.html">再買一次<span class="visually-hidden">（NC-20260830-017）</span></a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 訂單明細 -->
+                <div id="detail-NC-20260830-017" class="collapse">
+                  <div class="orders-detail">
+                    <div class="row g-4 g-md-5">
+                      <section class="col-md-7" aria-labelledby="items-NC-20260830-017">
+                        <h3 id="items-NC-20260830-017" class="orders-detail-title">購買品項</h3>
+                        <ul class="orders-detail-lines">
+                          <li><span class="text-phrase">SlimFit 夾縫<wbr>多功能推車 <span class="text-secondary text-nowrap">×&nbsp;<span class="num">1</span></span></span><span class="num text-nowrap">NT$ 890</span></li>
+                          <li><span class="text-phrase">懸浮感<wbr>洞洞板<wbr>壁面收納組 (免釘牆) <span class="text-secondary text-nowrap">×&nbsp;<span class="num">1</span></span></span><span class="num text-nowrap">NT$ 1,450</span></li>
+                        </ul>
+                        <dl class="orders-detail-sum">
+                          <div><dt>商品小計</dt><dd class="num">NT$ 2,340</dd></div>
+                          <div><dt>運費</dt><dd><span class="num">NT$ 60</span></dd></div>
+                          <div class="is-total"><dt>訂單金額</dt><dd><span class="price-tag price-tag-card"><span class="price-cur">NT$</span><span class="price-num">2,400</span></span></dd></div>
+                        </dl>
+                      </section>
+
+                      <div class="col-md-5 orders-detail-info">
+                        <h3 class="orders-detail-title">收件資訊</h3>
+                        <p>王小明<br><span class="num">0912 345 678</span><br>超商門市：大安和平店</p>
+                        <h3 class="orders-detail-title">付款方式</h3>
+                        <p>LINE Pay</p>
+                        <h3 class="orders-detail-title">狀態歷程</h3>
+                        <ol class="orders-history">
+                          <li><span class="num">08/30</span><span>下單並完成付款</span></li>
+                          <li><span class="num">08/31</span><span>出貨</span></li>
+                          <li><span class="num">09/02</span><span>已在門市取貨</span></li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </li>
+          <!-- ========== 5. 已取消（金額改灰字，降低視覺重量） ========== -->
+          <li data-status="已取消">
+            <article class="orders-card is-cancel" aria-labelledby="order-NC-20260803-002">
+              <p class="orders-stub mb-0"><i class="bi bi-x-circle" aria-hidden="true"></i><span><span class="visually-hidden">訂單狀態：</span>已取消</span></p>
+              <div class="orders-body">
+                <div class="orders-main">
+                  <div class="orders-info">
+                    <header class="orders-head">
+                      <h2 id="order-NC-20260803-002" class="orders-no"><span class="visually-hidden">訂單編號</span><span class="num">NC-20260803-002</span></h2>
+                      <p class="orders-date">下單日期 <span class="num">2026-08-03</span></p>
+                    </header>
+                    <ul class="orders-items">
+                      <li>
+                        <span class="orders-thumb img-frame"><img src="images/p-1005.jpg" alt="" width="1200" height="1200" loading="lazy"></span>
+                        <span><a class="orders-item-name text-phrase" href="product.html">弧形落地燈</a><span class="orders-item-qty"><span class="visually-hidden">數量</span>×&nbsp;<span class="num">1</span></span></span>
+                      </li>
+                    </ul>
+                    <dl class="orders-meta">
+                      <div><dt>取消日期</dt><dd><span class="num">2026-08-04</span></dd></div>
+                      <div><dt>款項</dt><dd>未扣款</dd></div>
+                    </dl>
+                  </div>
+
+                  <div class="orders-side">
+                    <div class="orders-total">
+                      <p><span class="visually-hidden">訂單金額</span><span class="price-tag price-tag-set"><span class="price-cur">NT$</span><span class="price-num">6,900</span></span></p>
+                      <p class="orders-count">共 <span class="num">1</span> 件</p>
+                    </div>
+                    <div class="orders-actions">
+                      <button class="btn btn-text orders-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#detail-NC-20260803-002" aria-expanded="false" aria-controls="detail-NC-20260803-002">訂單明細<span class="visually-hidden">（NC-20260803-002）</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 訂單明細 -->
+                <div id="detail-NC-20260803-002" class="collapse">
+                  <div class="orders-detail">
+                    <div class="row g-4 g-md-5">
+                      <section class="col-md-7" aria-labelledby="items-NC-20260803-002">
+                        <h3 id="items-NC-20260803-002" class="orders-detail-title">購買品項</h3>
+                        <ul class="orders-detail-lines">
+                          <li><span class="text-phrase">弧形落地燈 <span class="text-secondary text-nowrap">×&nbsp;<span class="num">1</span></span></span><span class="num text-nowrap">NT$ 6,900</span></li>
+                        </ul>
+                        <dl class="orders-detail-sum">
+                          <div><dt>商品小計</dt><dd class="num">NT$ 6,900</dd></div>
+                          <div><dt>運費</dt><dd>免運</dd></div>
+                          <div class="is-total"><dt>訂單金額</dt><dd><span class="price-tag price-tag-card"><span class="price-cur">NT$</span><span class="price-num">6,900</span></span></dd></div>
+                        </dl>
+                      </section>
+
+                      <div class="col-md-5 orders-detail-info">
+                        <h3 class="orders-detail-title">收件資訊</h3>
+                        <p>王小明<br><span class="num">0912 345 678</span><br>台北市大安區溫州街 18 號 3 樓</p>
+                        <h3 class="orders-detail-title">付款方式</h3>
+                        <p>貨到付款</p>
+                        <h3 class="orders-detail-title">狀態歷程</h3>
+                        <ol class="orders-history">
+                          <li><span class="num">08/03</span><span>下單</span></li>
+                          <li><span class="num">08/04</span><span>依你的申請取消訂單，未扣款</span></li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </li>
+      </ol>
+
+      <p class="orders-foot-note">
+        這裡會顯示近 12&nbsp;個月的訂單。需要更早的紀錄，請來信
+        <a href="mailto:hello@nestcraft.example">hello@nestcraft.example</a>。
+      </p>
+
+      <!-- 設計稿狀態示意：篩選後沒有訂單（篩選列保留，清單的位置改顯示空狀態） -->
+      <section class="demo-state" aria-labelledby="orders-state-title">
+        <p class="demo-state-tag">設計稿狀態示意</p>
+        <h2 id="orders-state-title" class="demo-state-title">篩選後沒有訂單時</h2>
+        <p class="text-secondary text-phrase">假設切換到「待付款」後沒有符合的訂單：<wbr>篩選列保留，<wbr>清單的位置改顯示以下區塊。</p>
+
+        <div class="demo-state-stage">
+          <ul class="nav nav-underline" aria-label="依訂單狀態篩選（示意）">
+            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false">全部<span class="tab-count">4</span></button></li>
+            <li class="nav-item"><button class="nav-link active" type="button" aria-pressed="true">待付款<span class="tab-count">0</span></button></li>
+            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false">已付款<span class="tab-count">1</span></button></li>
+            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false">出貨中<span class="tab-count">1</span></button></li>
+            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false">已完成<span class="tab-count">1</span></button></li>
+            <li class="nav-item"><button class="nav-link" type="button" aria-pressed="false">已取消<span class="tab-count">1</span></button></li>
+          </ul>
+          <div class="empty-state orders-empty">
+            <p class="empty-state-title">目前沒有待付款的訂單</p>
+            <p class="text-secondary">新的訂單成立後，<wbr>會依狀態出現在對應的分頁裡。</p>
+            <button class="btn btn-dark" type="button">查看全部訂單</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <ul class="site-footer-services">
+        <li>
+          <span class="site-footer-icon"><i class="bi bi-tools" aria-hidden="true"></i></span>
+          <div>
+            <p class="site-footer-service-title">免工具組裝</p>
+            <p>90%&nbsp;商品採卡扣與簡易設計，單人也能輕鬆完成。</p>
+          </div>
+        </li>
+        <li>
+          <span class="site-footer-icon"><i class="bi bi-arrow-repeat" aria-hidden="true"></i></span>
+          <div>
+            <p class="site-footer-service-title">租屋友善退換</p>
+            <p>14&nbsp;天猶豫期，專人到府收件，試擺不將就。</p>
+          </div>
+        </li>
+        <li>
+          <span class="site-footer-icon"><i class="bi bi-truck" aria-hidden="true"></i></span>
+          <div>
+            <p class="site-footer-service-title">現貨極速派送</p>
+            <p>48&nbsp;小時內出貨，週末馬上動手改造。</p>
+          </div>
+        </li>
+      </ul>
+
+      <div class="row gy-4">
+        <div class="col-lg-4">
+          <a class="site-brand" href="index.html">
+            <span class="site-brand-mark" aria-hidden="true">N</span>
+            <span class="site-brand-name">NestCraft</span>
+          </a>
+          <p class="site-footer-lead">把有限的坪數，活出無限的講究。<br>專為租屋族與小空間打造的模組家具。</p>
+        </div>
+        <!-- 購物指南、品牌故事尚未設計頁面：不帶 href 的佔位連結 -->
+        <div class="col-6 col-md-4 col-lg-2">
+          <h2 class="site-footer-title">購物指南</h2>
+          <ul class="site-footer-links">
+            <li><a>運送與安裝</a></li>
+            <li><a>14 天退換說明</a></li>
+            <li><a>付款方式</a></li>
+          </ul>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <h2 class="site-footer-title">關於 NestCraft</h2>
+          <ul class="site-footer-links">
+            <li><a>品牌故事</a></li>
+            <li><a href="index.html#rooms">空間靈感</a></li>
+            <li><a href="products.html">全部商品</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4 col-lg-4">
+          <h2 class="site-footer-title">客服中心</h2>
+          <ul class="site-footer-links">
+            <li>週一至週五 10:00–18:00</li>
+            <li><a href="mailto:hello@nestcraft.example">hello@nestcraft.example</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="site-footer-copy">© 2026 NestCraft 原創生活家居選物｜本站為課程設計稿範例，商品與訂單皆為示意資料。</p>
+    </div>
+  </footer>
+
+  <!-- 加入購物車的提示：黑底白字，出現在固定結帳列上方（js/main.js 顯示） -->
+  <div class="site-toast-wrap">
+    <div id="cartToast" class="toast site-toast" role="status" aria-live="polite" aria-atomic="true">
+      <div class="toast-body">
+        <i class="bi bi-check-square-fill" aria-hidden="true"></i>
+        <span data-toast-text>已加入購物車</span>
+        <a href="cart.html">查看購物車</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

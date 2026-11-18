@@ -1,0 +1,263 @@
+// ============================================================
+// 登入、註冊（login.html、register.html 共用）
+// 構圖：滿版左右半（.bleed-split，不在 .container 裡），高度＝第一個畫面（扣掉頁首，最少 640px）
+// - 992px 以上：左半 auth.jpg 出血，左下角壓一張票券（倒數）；右半白底，表單欄最寬 440px、垂直置中
+//   票券在照片上用白底黑框（.coupon-plain 的配色）：照片本身有一大面黃牆，黃色票券壓上去會融成一片
+// - 992px 以下：照片 200px 高帶 → 黃色票券滿寬（不壓在照片上）→ 表單
+// - 設計稿狀態示意在左右半下方，回到一般版心（.container）
+// ============================================================
+
+.auth {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: max(40rem, calc(100dvh - #{$site-countdown-height + $site-bar-height}));
+  }
+}
+
+// ---------- 左半：照片＋票券 ----------
+.auth-visual {
+  position: relative;
+  display: grid;
+  gap: 1rem;
+
+  @include media-breakpoint-up(lg) {
+    display: block;
+    min-height: 100%;
+  }
+}
+.auth-visual-media {
+  position: relative;
+  height: 12.5rem; // 手機 200px 高帶
+  margin: 0;
+  overflow: hidden;
+  background-color: $grey-100;
+
+  @include media-breakpoint-up(md) { height: 16rem; }
+
+  @include media-breakpoint-up(lg) {
+    position: absolute;
+    inset: 0;
+    height: auto;
+  }
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 6%; // 高帶：毛巾與黃色收納盒
+
+    @include media-breakpoint-up(lg) { object-position: 50% 11%; } // 毛巾在上緣，鐵凳與地板在下方
+  }
+}
+.auth-visual-ticket {
+  padding-inline: var(--pad);
+
+  @include media-breakpoint-up(lg) {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding-block: 0 2.5rem;
+    @include shell-start; // 票券左緣對齊版心（和頁首 logo 同一條線）
+    padding-inline-end: 2rem;
+  }
+}
+.auth-coupon {
+  .coupon-stub { min-width: 9.5rem; }
+
+  // 576～991px：和下方 440px 表單欄同寬、置中（576px 以下滿寬）
+  @include media-breakpoint-between(sm, lg) {
+    max-width: 27.5rem;
+    margin-inline: auto;
+  }
+
+  @include media-breakpoint-up(lg) {
+    --coupon-bg: #{$white}; // 照片上：白底黑框
+    max-width: 26rem;
+  }
+}
+.auth-coupon-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+// ---------- 右半：白底表單 ----------
+.auth-panel {
+  padding: 2rem var(--pad) 0;
+
+  @include media-breakpoint-up(lg) {
+    display: flex;
+    align-items: center;
+    padding: 3rem 0 3rem 3rem;
+    @include shell-end;
+  }
+  @include media-breakpoint-up(xl) { padding-left: 4rem; }
+}
+.auth-form {
+  width: 100%;
+  max-width: 27.5rem; // 440
+  margin-inline: auto;
+}
+.auth-head {
+  margin-bottom: 1.75rem;
+
+  h1 { margin-bottom: 0; }
+}
+
+// 加入會員的好處（註冊頁）：黑方塊白圖示＋粗字
+.auth-perks {
+  display: grid;
+  gap: .5rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    font-size: $font-size-sm;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+  .bi {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    background-color: $black;
+    color: $white;
+    font-size: 1rem;
+  }
+}
+
+.auth-field + .auth-field { margin-top: 1.25rem; }
+
+// 密碼欄：右側 48px 方鍵切換顯示（js/main.js 的 data-toggle-password）
+.auth-password {
+  position: relative;
+
+  .form-control { padding-right: 3.5rem; }
+}
+.auth-password-toggle {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  display: grid;
+  place-items: center;
+  width: 2.875rem;
+  height: calc(100% - 2px);
+  padding: 0;
+  border: 0;
+  border-left: 1px solid $black;
+  background-color: $white;
+  color: $black;
+  font-size: 1.125rem;
+  transition: background-color .12s ease, color .12s ease;
+
+  &:hover { background-color: $volt-tint; }
+  &:focus-visible { outline: $focus-ring-width solid $black; outline-offset: -$focus-ring-width; }
+  &[aria-pressed="true"] { background-color: $black; color: $white; }
+}
+
+// 密碼規則：黑框小方塊（.tag-outline）；狀態示意裡符合的規則改黑底白字＋勾
+.auth-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .375rem;
+  margin: .625rem 0 0;
+  padding: 0;
+  list-style: none;
+
+  .tag { font-size: .8125rem; }
+}
+
+// 記住我｜忘記密碼？
+.auth-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  margin-block: .75rem 1.25rem;
+}
+.auth-check {
+  display: flex;
+  align-items: flex-start;
+  gap: .625rem;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: 0;
+
+  .form-check-input {
+    flex-shrink: 0;
+    margin: .7em 0 0;
+    float: none;
+  }
+  .form-check-label { padding-block: .625rem; line-height: 1.5; }
+}
+.auth-agree {
+  margin-block: 1rem 1.25rem;
+
+  .form-check-input { margin-top: .25em; }
+  .form-check-label { padding-block: 0; }
+  a { font-weight: 700; }
+}
+
+// 「或」分隔：左右 1px 灰線
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+  font-weight: 700;
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    border-top: 1px solid $grey-300;
+  }
+}
+.auth-social {
+  display: grid;
+  gap: .75rem;
+
+  @include media-breakpoint-up(sm) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .btn { white-space: nowrap; }
+}
+.auth-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin: 1.5rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid $grey-300;
+  font-weight: 700;
+}
+
+// ---------- 狀態示意：左右半下方的一般版心；舞台內 768px 以上左右兩欄 ----------
+.auth-demo-grid {
+  display: grid;
+  gap: 1.5rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 2.5rem;
+  }
+
+  .alert { margin-bottom: 0; }
+}

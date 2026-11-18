@@ -1,0 +1,405 @@
+// ============================================================
+// 商品詳情（product.html，以橡木餐桌示範）
+// 構圖：麵包屑 → 主區（左 7 欄 bento 圖庫＋圖庫下方的家具履歷卡｜右 5 欄黏性卡堆疊：標題卡、購買卡）
+//       → 膠囊分段（商品詳情／規格／評價，內容 2/3＋1/3）→ 你可能也會喜歡（介紹方塊＋3 張圓角卡）→ 狀態示意
+// 沒有縮圖列、不做輪播：4 張圖同時攤開成方塊拼貼；992px 以下改成橫向捲動條
+// 黏性卡堆疊只放標題卡與購買卡（家具履歷卡在左欄跟著捲），900 高的視窗購買按鈕一直看得到
+// class 一律加 pd- 前綴
+// ============================================================
+
+// ---------- 主區：格線分區 ----------
+// 手機：圖庫 → 標題卡＋購買卡 → 家具履歷卡
+// lg 以上：「圖庫｜卡堆疊」「履歷卡｜卡堆疊」，卡堆疊跨兩列並黏在頁首下方
+.pd-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "gallery"
+    "stack"
+    "trace";
+  gap: $tile-gap;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-areas:
+      "gallery stack"
+      "trace   stack";
+    grid-template-rows: auto 1fr;
+    gap: $tile-gap-lg;
+    align-items: start;
+  }
+}
+
+// ---------- 圖庫：bento（lg 以上）／橫向捲動條（以下） ----------
+.pd-gallery {
+  grid-area: gallery;
+
+  // 992px 以下：每張 85% 寬、1:1，可左右捲動（.scroll-row 提供 scroll-snap）
+  --scroll-item: 85%;
+  @include media-breakpoint-up(md) { --scroll-item: 58%; }
+
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: $tile-gap-lg;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+}
+.pd-shot {
+  aspect-ratio: 1;
+  margin: 0;
+
+  @include media-breakpoint-up(lg) {
+    // A：商品照跨 1～2 欄、1～2 列；B、C：細節照在第 3 欄上下；D：情境照橫跨 3 欄（3:2）
+    &.is-a { grid-column: 1 / 3; grid-row: 1 / 3; }
+    &.is-b { grid-column: 3; grid-row: 1; }
+    &.is-c { grid-column: 3; grid-row: 2; }
+    &.is-d { grid-column: 1 / 4; grid-row: 3; aspect-ratio: 3 / 2; }
+    &.is-b,
+    &.is-c { aspect-ratio: auto; min-height: 0; }
+  }
+}
+
+// ---------- 黏性卡堆疊 ----------
+.pd-stack {
+  grid-area: stack;
+  display: grid;
+  gap: $tile-gap;
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top;
+    gap: $tile-gap-lg;
+  }
+}
+
+// 標題卡
+.pd-card {
+  .chip { margin-bottom: .75rem; }
+}
+.pd-title {
+  margin-bottom: .25rem;
+
+  @include media-breakpoint-up(lg) { font-size: 2rem; } // 32px
+}
+.pd-sku {
+  margin-bottom: 1rem;
+  color: $sage-text;
+  font-size: $small-font-size;
+}
+.pd-price-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1rem;
+  margin-bottom: 1.25rem;
+}
+.pd-price {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.2;
+
+  @include media-breakpoint-up(lg) { font-size: 2rem; } // 32px
+}
+.pd-desc {
+  margin: 1.25rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid $card-line;
+}
+
+// 購買卡（霧薄荷）
+.pd-buy {
+  display: grid;
+  gap: 1rem;
+}
+.pd-buy-qty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1rem;
+
+  .form-label { font-family: $font-family-round; font-weight: 700; }
+  .qty { border-color: $card-line; }
+}
+.pd-buy-stock {
+  margin: 0;
+  color: $sage-text;
+  font-size: $small-font-size;
+}
+// 兩顆等寬膠囊：576px 以下上下排
+.pd-buy-actions {
+  display: grid;
+  gap: .75rem;
+
+  @include media-breakpoint-up(sm) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.pd-buy-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: $sage-text;
+  font-size: $small-font-size;
+
+  li { display: inline-flex; align-items: center; gap: .375rem; }
+  .bi { color: $forest; }
+}
+
+// 家具履歷卡（.trace-card 在 components/）
+.pd-trace {
+  grid-area: trace;
+}
+
+// ---------- 分頁：膠囊分段＋內容 2/3＋1/3 ----------
+.pd-tabs-seg {
+  margin-bottom: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) { margin-bottom: map-get($spacers, 5); }
+}
+.pd-split {
+  display: grid;
+  gap: $tile-gap;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: $tile-gap-lg;
+    align-items: start;
+  }
+  // 評價：分數方塊在左（1/3）、評論在右（2/3）
+  &.is-reverse {
+    @include media-breakpoint-up(lg) { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+  }
+}
+.pd-story {
+  h2 { margin-bottom: 1rem; font-size: 1.25rem; }
+  > p { max-width: 40em; margin-bottom: 1.5rem; }
+  figure { margin: 0; }
+  img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: $radius-card;
+    background-color: $mist;
+
+    @include media-breakpoint-up(lg) { aspect-ratio: 16 / 9; }
+  }
+  figcaption { margin-top: .75rem; }
+}
+.pd-aside-title {
+  margin-bottom: .5rem;
+  font-size: 1.125rem;
+
+  @include media-breakpoint-up(lg) { font-size: 1.25rem; }
+}
+
+// 組裝步驟：32px 薄荷編號圓以 2px 直線相連（和結帳子步驟軌同一套語言）
+.pd-steps {
+  position: relative;
+  display: grid;
+  gap: 1.25rem;
+  margin: 1.25rem 0;
+  padding: 0;
+  list-style: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 1rem;
+    bottom: 1rem;
+    left: calc(1rem - 1px);
+    width: 2px;
+    border-radius: $radius-pill;
+    background-color: $white;
+  }
+  li {
+    position: relative;
+    display: flex;
+    gap: .875rem;
+    p { margin: .25rem 0 0; line-height: 1.7; }
+  }
+}
+.pd-steps-no {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: $forest;
+  color: $white;
+  font-size: .875rem;
+  font-weight: 800;
+}
+
+// 規格表：圓角表格（外框 24px，列之間 1px 線）
+.pd-spec {
+  overflow: hidden;
+  border: 1px solid $card-line;
+  border-radius: $radius-card;
+
+  table { margin: 0; }
+  tr:last-child > * { border-bottom: 0; }
+  th {
+    width: 32%;
+    padding-left: 1.5rem;
+    background-color: $mist;
+    color: $sage-text;
+    font-family: $font-family-round;
+    font-size: .9375rem;
+    font-weight: 700;
+  }
+  td { padding-right: 1.5rem; }
+}
+
+// 評價
+.pd-score {
+  display: grid;
+  gap: .5rem;
+}
+.pd-score-num {
+  margin: 0;
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  color: $ink;
+
+  span { font-size: 1.25rem; color: $sage-text; }
+}
+.pd-stars {
+  display: inline-flex;
+  gap: .125rem;
+  margin: 0;
+  color: $forest;
+}
+.pd-fit {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  margin: .5rem 0 0;
+  padding: .75rem 1rem;
+  border-radius: $radius-sm;
+  background-color: $white;
+  font-size: $small-font-size;
+
+  .bi { color: $forest; }
+}
+.pd-reviews {
+  display: grid;
+  gap: $tile-gap;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+.pd-review-head {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: .75rem;
+
+  > div { flex: 1 1 auto; min-width: 0; }
+  p { margin: 0; }
+}
+.pd-review-avatar {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: $mint;
+  color: $forest-deep;
+  font-family: $font-family-round;
+  font-weight: 700;
+}
+.pd-review-name {
+  font-family: $font-family-round;
+  font-weight: 700;
+}
+.pd-review-score {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .5rem;
+  font-size: $small-font-size;
+}
+
+// ---------- 你可能也會喜歡：介紹方塊＋3 張卡（lg 以上 4 欄等寬，和商品一覽同寬） ----------
+.pd-related {
+  display: grid;
+  gap: $tile-gap;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: $tile-gap-lg;
+  }
+}
+// lg 以上和右邊 3 張卡等高：圖示圓靠上（margin-bottom: auto），標題、說明、連結靠下，中間留白是刻意的
+// 992px 以下方塊在卡片列上方，只留文字
+.pd-related-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .25rem;
+
+  .icon-circle { display: none; }
+  h2 { margin-bottom: .25rem; }
+  p { margin: 0; color: $sage-text; }
+  .btn-text { margin-top: .5rem; }
+
+  @include media-breakpoint-up(lg) {
+    .icon-circle {
+      display: inline-grid;
+      margin-bottom: auto;
+      background-color: $white;
+    }
+    .btn-text { margin-top: 1rem; }
+  }
+}
+.pd-related-list {
+  --scroll-item: 72%;
+
+  @include media-breakpoint-up(sm) { --scroll-item: 46%; }
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-column: 2 / 5;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: $tile-gap-lg;
+    overflow: visible;
+  }
+}
+
+// ---------- 狀態示意 ----------
+.pd-demo-grid {
+  display: grid;
+  gap: $tile-gap;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: $tile-gap-lg;
+  }
+  > div { display: flex; flex-direction: column; }
+  .demo-state-stage { display: grid; flex: 1 1 auto; align-content: start; gap: $tile-gap; }
+  // 示意欄較窄：兩顆按鈕一律上下排
+  .pd-buy-actions { grid-template-columns: minmax(0, 1fr); }
+}
+.pd-demo-name {
+  margin-bottom: .5rem;
+  font-family: $font-family-round;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.pd-demo-price {
+  font-size: 1.5rem;
+}
+.pd-notify {
+  padding-top: .25rem;
+
+  .d-flex { gap: .5rem; }
+}

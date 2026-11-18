@@ -1,0 +1,452 @@
+// ============================================================
+// 商品詳情（product.html）
+// 構圖：992px 以上左 7 欄圖片直排（沒有縮圖、沒有輪播）＋右 5 欄資訊（黃色價格吊牌、小票券；視窗夠高時 sticky）
+//       992px 以下圖片滿版橫向捲動、資訊在下，底部固定白色購買列
+// 下方：三項服務一列 → 滿寬分頁（內容 2/3＋1/3）→ 相關商品 → 設計稿狀態示意
+// ============================================================
+
+.pd-top { padding-bottom: map-get($spacers, 7); }
+.pd-crumbs {
+  padding-block: map-get($spacers, 3);
+
+  @include media-breakpoint-up(lg) { padding-block: map-get($spacers, 4); }
+}
+
+// ---------- 圖片：992px 以上直排長捲，以下橫向捲動 ----------
+.pd-gallery {
+  display: flex;
+  gap: .5rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+  &:focus-visible { outline-offset: 2px; }
+
+  // 576px 以下貼齊螢幕兩側（滿版）
+  @include media-breakpoint-down(sm) {
+    margin-inline: calc(var(--pad) * -1);
+  }
+
+  @include media-breakpoint-up(lg) {
+    flex-direction: column;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+}
+.pd-shot {
+  flex: 0 0 100%;
+  aspect-ratio: 1;
+  margin: 0;
+  scroll-snap-align: start;
+
+  @include media-breakpoint-up(sm) { flex-basis: calc(50% - .25rem); } // 576～991px 一次看兩張
+
+  @include media-breakpoint-up(lg) { flex-basis: auto; }
+}
+// 情境照：直排時保留 3:2，橫向捲動時和其他張一樣裁成 1:1
+.pd-shot-wide {
+  @include media-breakpoint-up(lg) { aspect-ratio: 3 / 2; }
+}
+.pd-gallery-hint {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .375rem;
+  margin: .5rem 0 0;
+  color: $grey-600;
+  font-size: $font-size-sm;
+
+  @include media-breakpoint-up(lg) { display: none; }
+}
+
+// ---------- 黏性資訊 ----------
+// sticky 的資訊欄要比視窗矮（頂端 88px＋底下留 16px），否則按鈕會被切掉、要等圖片捲完才看得到。
+// 三項服務因此移到主區下方（.pd-services），資訊欄實測：1440 寬約 660px、1200～1399 寬約 685px、992～1199 寬約 760px。
+// 1200px 以上視窗高 800px 起 sticky（1280×800、1440×900 筆電都會黏住）；992～1199px 欄位較窄，視窗高 864px 起才 sticky
+.pd-info {
+  @media (min-width: 992px) and (min-height: 54rem) {
+    position: sticky;
+    top: $site-bar-height + 1.5rem; // 88px：停在黑色主列下方
+  }
+  @media (min-width: 1200px) and (min-height: 50rem) {
+    position: sticky;
+    top: $site-bar-height + 1.5rem;
+  }
+}
+.pd-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem 1.25rem;
+  margin-bottom: .5rem;
+  color: $grey-600;
+  font-size: $font-size-sm;
+
+  > div { display: flex; gap: .375rem; }
+  dt { font-weight: 400; }
+  dd { margin: 0; font-weight: 700; }
+  a {
+    color: $grey-600;
+
+    &:hover { color: $black; }
+  }
+}
+.pd-title {
+  margin-bottom: 1rem;
+  font-size: 1.75rem;
+  font-weight: 900;
+  line-height: 1.25;
+
+  @include media-breakpoint-up(lg) { font-size: 2rem; } // 32
+}
+// 價格吊牌＋庫存標籤
+.pd-price-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1rem;
+  margin-bottom: 1rem;
+}
+.pd-coupon { margin-bottom: 1.25rem; }
+
+// 尺寸：大字一行（Inter Tight 800 24px，不斷行）
+.pd-size {
+  display: grid;
+  gap: .375rem;
+  margin-bottom: 1rem;
+}
+.pd-size-label {
+  color: $grey-600;
+  font-size: $font-size-sm;
+  font-weight: 700;
+}
+// 單一尺寸：標籤和數值同一行（多尺寸模式維持標籤在上、一行一種）
+.pd-size-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .25rem .75rem;
+}
+.pd-size-value {
+  font-family: $font-family-num;
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+  white-space: nowrap;
+
+  @include media-breakpoint-up(sm) { font-size: 1.5rem; } // 24
+}
+// 多尺寸模式：黑標籤＋大字尺寸，一行一種
+.pd-size-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .75rem;
+}
+.pd-desc { margin-bottom: .25rem; }
+.pd-more { margin-bottom: .75rem; }
+
+// 數量＋兩顆等寬按鈕
+.pd-buy {
+  padding-top: 1.25rem;
+  border-top: 1px solid $black;
+}
+.pd-qty-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1rem;
+  margin-bottom: 1rem;
+}
+.pd-qty-stock {
+  color: $grey-600;
+  font-size: $font-size-sm;
+}
+.pd-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+
+  .btn { min-height: $btn-height-lg; padding-inline: .75rem; }
+}
+
+// ---------- 服務：主區下方一列三格（灰底條） ----------
+// 不放在 sticky 資訊欄裡：資訊欄要維持在一個視窗高以內
+.pd-services {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: map-get($spacers, 6) 0 0;
+  padding: 1.25rem 1rem;
+  background-color: $grey-100;
+
+  @include media-breakpoint-up(lg) {
+    gap: 2rem;
+    margin-top: map-get($spacers, 7);
+    padding: 1.75rem 2rem;
+  }
+
+  li {
+    display: grid;
+    align-content: start;
+    gap: .25rem .375rem;
+
+    @include media-breakpoint-up(sm) { grid-template-columns: auto minmax(0, 1fr); }
+    @include media-breakpoint-up(lg) {
+      grid-template-rows: auto auto;
+      align-items: center;
+      column-gap: 1rem;
+    }
+  }
+  // 576～991px 圖示和標題同一行（22px 黑方塊），說明在下一行；手機三欄太窄，圖示在標題上方；
+  // 992px 以上 44px 黑方塊佔兩行，標題與說明在右邊
+  .bi {
+    display: grid;
+    place-items: center;
+    width: 1.375rem;
+    height: 1.375rem;
+    margin-top: .0625rem;
+    background-color: $black;
+    color: $white;
+    font-size: .8125rem;
+
+    @include media-breakpoint-up(lg) {
+      grid-row: span 2;
+      width: 2.75rem;
+      height: 2.75rem;
+      margin-top: 0;
+      font-size: 1.25rem;
+    }
+  }
+  strong {
+    color: $black;
+    font-size: .9375rem;
+    font-weight: 900;
+    white-space: nowrap;
+
+    @include media-breakpoint-up(lg) { font-size: 1.125rem; }
+  }
+  .pd-services-note {
+    grid-column: 1 / -1;
+    color: $grey-600;
+    font-size: .875rem;
+    line-height: 1.5;
+
+    @include media-breakpoint-up(lg) { grid-column: 2; }
+  }
+}
+
+// ---------- 分頁：滿寬，上方 2px 黑線 ----------
+.pd-tabs {
+  padding-top: map-get($spacers, 7);
+
+  @include media-breakpoint-up(lg) { padding-top: map-get($spacers, 8); }
+}
+.pd-tablist {
+  --bs-nav-underline-gap: 2rem;
+  border-top: $border-strong solid $black;
+
+  .nav-link {
+    min-height: 3.5rem;
+    font-size: 1.0625rem;
+
+    @include media-breakpoint-up(lg) { font-size: 1.125rem; }
+  }
+}
+.pd-panes { padding-top: map-get($spacers, 6); }
+.pd-pane-title {
+  margin-bottom: 1rem;
+  font-family: $font-family-base;
+  font-size: 1.25rem;
+  font-weight: 900;
+
+  @include media-breakpoint-up(lg) { font-size: 1.5rem; }
+}
+.pd-pane-note {
+  color: $grey-600;
+  font-size: $font-size-sm;
+
+  a { font-weight: 700; }
+}
+.pd-story {
+  max-width: 44em;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+.pd-scene {
+  margin: 0;
+
+  figcaption {
+    padding: .625rem .875rem;
+    background-color: $black;
+    color: $white;
+    font-size: $font-size-sm;
+  }
+}
+.pd-scene-frame { aspect-ratio: 3 / 2; }
+
+// 組裝步驟：黑方塊白色大數字
+.pd-steps {
+  margin-bottom: 1.25rem;
+  border-top: 1px solid $black;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding-block: 1rem;
+    border-bottom: 1px solid $grey-300;
+  }
+  p { margin: 0; }
+}
+.pd-steps-no {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: $black;
+  color: $white;
+  font-family: $font-family-num;
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+// 規格表：表頭黑底白字，列之間 1px 灰線
+.pd-spec {
+  --bs-table-bg: transparent;
+  border-top: 0;
+
+  thead th {
+    background-color: $black;
+    color: $white;
+    font-weight: 700;
+  }
+  tbody th {
+    width: 8rem;
+    color: $grey-600;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  td, th { padding: .875rem 1rem; }
+}
+.pd-fit {
+  padding: 1.5rem;
+  background-color: $grey-100;
+}
+.pd-fit-size {
+  margin-bottom: .75rem;
+  font-family: $font-family-num;
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+// 評價
+.pd-score {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: .25rem;
+  font-family: $font-family-num;
+  font-weight: 900;
+  line-height: 1;
+}
+.pd-score-num { font-size: 4rem; letter-spacing: $letter-spacing-price; }
+.pd-score-max { font-size: 1.5rem; color: $grey-600; }
+.pd-stars {
+  color: $black;
+  letter-spacing: .125rem;
+}
+.pd-fit-note {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  padding: .5rem .75rem;
+  background-color: $volt;
+  font-weight: 700;
+}
+.pd-reviews {
+  margin-bottom: 1.25rem;
+  border-top: 1px solid $black;
+}
+.pd-review {
+  padding-block: 1.25rem;
+  border-bottom: 1px solid $grey-300;
+}
+.pd-review-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .5rem;
+
+  p { margin: 0; }
+}
+.pd-review-name { font-weight: 900; }
+.pd-review-room,
+.pd-review-date {
+  color: $grey-600;
+  font-size: $font-size-sm;
+}
+.pd-review-score {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .5rem;
+  font-size: $font-size-sm;
+}
+
+// ---------- 相關商品 ----------
+.pd-related { padding-bottom: 0; }
+
+// ---------- 狀態示意：每種狀態一列（左說明、右舞台） ----------
+.pd-demo {
+  display: grid;
+  gap: map-get($spacers, 6);
+  margin-top: map-get($spacers, 5);
+}
+.pd-demo-row {
+  display: grid;
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: 4fr 8fr;
+    gap: map-get($spacers, 6);
+  }
+}
+.pd-demo-stage {
+  > :last-child { margin-bottom: 0; }
+
+  .pd-actions { max-width: 32rem; }
+}
+.pd-notify {
+  max-width: 32rem;
+  margin-top: 1rem;
+  padding: 1.25rem;
+  border: 1px solid $black;
+  background-color: $white;
+}
+
+// ---------- 992px 以下：固定在視窗底部的白色購買列 ----------
+.pd-buybar {
+  .buybar-inner { gap: .5rem; }
+  .buybar-total {
+    margin-right: auto;
+
+    .price-tag {
+      font-size: 1.25rem; // 390px 寬也放得下兩顆按鈕
+
+      @include media-breakpoint-up(sm) { font-size: 1.5rem; } // 24
+    }
+  }
+  .btn {
+    flex-shrink: 0;
+    padding-inline: .75rem;
+    font-size: .9375rem;
+
+    @include media-breakpoint-up(sm) { padding-inline: 1.25rem; }
+  }
+  .btn-volt { min-height: $btn-height; }
+}

@@ -1,0 +1,129 @@
+// ============================================================
+// 結帳步驟條 .checkout-steps（購物車 1、結帳 2、付款結果 3）
+// 置中；三個 32px 圓圈寫宋體數字「一、二、三」＋文字，圓圈之間是中央有菱形的髮絲線
+// 已完成：勃艮第實心＋奶油勾；目前：勃艮第圈＋粗體；未到：焦糖細圈＋褐灰字
+// 手機（< 576px）只顯示目前步驟的文字，其他步驟的文字留給螢幕閱讀器；連接線縮成 24px、間距收窄，
+// 360px 寬時「填寫資料與付款」那一列約 297px，放得進 320px 的版心
+// 付款結果「三步全部完成」：三個都是 .is-done，最後一步另加 aria-current="step"（文字加粗，手機上仍顯示）
+//
+// <nav class="checkout-steps" aria-label="結帳步驟">
+//   <ol>
+//     <li class="is-done"><span class="checkout-steps-dot" aria-hidden="true"><i class="bi bi-check-lg"></i></span><span class="checkout-steps-label">購物車<span class="visually-hidden">（已完成）</span></span></li>
+//     <li class="is-current" aria-current="step"><span class="checkout-steps-dot" aria-hidden="true">二</span><span class="checkout-steps-label">填寫資料與付款</span></li>
+//     <li><span class="checkout-steps-dot" aria-hidden="true">三</span><span class="checkout-steps-label">完成訂單</span></li>
+//   </ol>
+// </nav>
+// ============================================================
+
+.checkout-steps ol {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.checkout-steps li {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  min-height: 2.75rem;
+  color: $ink-soft;
+  font-size: .9375rem;
+  white-space: nowrap;
+
+  // 連接線：髮絲線中央一顆菱形
+  & + li::before {
+    content: "";
+    flex: 0 0 auto;
+    width: 2.5rem;
+    height: .5rem;
+    margin-right: .625rem;
+    margin-left: 0;
+    background:
+      linear-gradient($line-strong, $line-strong) left center / calc(50% - .5rem) 1px no-repeat,
+      linear-gradient($line-strong, $line-strong) right center / calc(50% - .5rem) 1px no-repeat,
+      escape-svg(url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><path d='M4 0.5 7.5 4 4 7.5 0.5 4Z' fill='#{$caramel}'/></svg>")) center / .5rem .5rem no-repeat;
+
+    @include media-breakpoint-up(md) {
+      width: 4.5rem;
+      margin-right: 1rem;
+    }
+  }
+  & + li {
+    margin-left: .625rem;
+
+    @include media-breakpoint-up(md) { margin-left: 1rem; }
+  }
+}
+// 已完成且可以點回去的步驟（結帳頁的「購物車」）：<li class="is-done"><a href="cart.html">圓圈＋文字</a></li>
+.checkout-steps li > a {
+  display: inline-flex;
+  align-items: center;
+  gap: .625rem;
+  min-height: 2.75rem;
+  color: inherit;
+  text-decoration: none;
+
+  .checkout-steps-label {
+    text-decoration: underline;
+    text-decoration-color: $line-strong;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .35em;
+  }
+  &:hover .checkout-steps-label {
+    color: $burgundy;
+    text-decoration-color: currentColor;
+    text-decoration-thickness: 2px;
+  }
+}
+
+.checkout-steps-dot {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid $caramel;
+  border-radius: 50%;
+  background-color: $paper;
+  color: $ink-soft;
+  font-size: .9375rem;
+  font-weight: 600;
+  line-height: 1;
+
+  .is-done & {
+    border-color: $burgundy;
+    background-color: $burgundy;
+    color: $on-burgundy;
+  }
+  .is-current & {
+    border: 2px solid $burgundy;
+    color: $burgundy;
+  }
+}
+.checkout-steps-label {
+  letter-spacing: $letter-spacing-label;
+
+  .is-done & { color: $ink; }
+  .is-current &,
+  .is-done[aria-current="step"] & {
+    color: $ink;
+    font-weight: 700;
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  .checkout-steps li {
+    gap: .5rem;
+
+    & + li { margin-left: .5rem; }
+    & + li::before {
+      width: 1.5rem;
+      margin-right: 0; // 和圓圈的距離交給 li 的 gap，連接線左右各 8px
+    }
+  }
+  .checkout-steps li:not(.is-current):not([aria-current="step"]) .checkout-steps-label {
+    @include visually-hidden;
+  }
+}

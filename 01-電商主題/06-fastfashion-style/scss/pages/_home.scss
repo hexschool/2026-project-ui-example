@@ -1,0 +1,439 @@
+// ============================================================
+// 首頁（index.html）
+// 構圖：左右半版滿版色塊 Hero → 黑帶四大價值 → 三張 lookbook 同時攤開 → 4 欄商品 → 見證＋承諾 → 黑帶左右半 CTA
+// ============================================================
+
+// ---------- 區塊一：Hero（lg 以上左黃塊、右照片出血；以下照片在上） ----------
+.home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.home-hero-panel {
+  display: flex;
+  align-items: center;
+  padding-block: 2rem 2.5rem;
+  @include shell-start;
+  @include shell-end;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: 3.5rem;
+    padding-inline-end: 3rem;
+  }
+}
+.home-hero-body { width: 100%; }
+.home-hero-title {
+  margin-bottom: 1.25rem;
+  font-size: clamp(2.5rem, 4.8vw, 4.5rem); // 第二行 8 個字：992px 時約 48px 才不會換成 3 行
+
+  @include media-breakpoint-up(xxl) { font-size: 4.5rem; } // 72
+}
+.home-hero-lead {
+  max-width: 30em;
+  margin-bottom: 1.75rem;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+
+  @include media-breakpoint-up(lg) { font-size: $font-size-lg; }
+}
+.home-hero-actions {
+  display: grid;
+  gap: .75rem;
+  margin-bottom: 2rem;
+
+  @include media-breakpoint-up(sm) {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+.home-hero-coupon {
+  max-width: 34rem;
+}
+
+.home-hero-media {
+  position: relative;
+  order: -1; // 992px 以下照片在上
+  aspect-ratio: 4 / 3;
+  margin: 0;
+  overflow: hidden;
+  background-color: $grey-100;
+
+  @include media-breakpoint-up(lg) {
+    order: 0;
+    aspect-ratio: auto;
+    min-height: clamp(560px, 72vh, 720px);
+  }
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 60%;
+  }
+}
+// 照片左下角的黑底白字圖說
+.home-hero-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  margin: 0;
+  padding: .5rem .875rem;
+  background-color: $black;
+  color: $white;
+  font-size: $font-size-sm;
+  font-weight: 700;
+}
+
+// ---------- 區塊二：四大價值（滿版黑帶） ----------
+.home-values-title {
+  margin-bottom: 2rem;
+  color: $volt !important; // 黑帶上的黃字 16.46:1
+
+  @include media-breakpoint-up(lg) { margin-bottom: 2.5rem; }
+}
+.home-value-icon {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 1rem;
+  background-color: $volt;
+  color: $black;
+  font-size: 1.5rem;
+}
+.home-value-title {
+  margin-bottom: .375rem;
+  font-family: $font-family-base;
+  font-weight: 900;
+}
+.home-value-text {
+  margin: 0;
+  color: $on-dark-muted;
+}
+
+// ---------- 區塊三：空間靈感 lookbook（lg 以上 3 欄並排；以下橫向捲動 80% 寬） ----------
+.home-looks {
+  display: flex;
+  gap: .75rem;
+  padding-bottom: .5rem; // 捲軸與卡片之間的空隙
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  @include bleed-x;
+
+  @include media-breakpoint-up(md) { gap: 1.5rem; }
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding-bottom: 0;
+    overflow: visible;
+  }
+}
+.look-card {
+  display: flex;
+  flex: 0 0 80%;
+  flex-direction: column;
+  align-self: flex-start; // 橫向捲動時每張卡照內容高度，不留空白
+  scroll-snap-align: start;
+
+  @include media-breakpoint-up(lg) { align-self: stretch; }
+
+  @include media-breakpoint-up(md) { flex-basis: 46%; }
+}
+.look-stage { position: relative; }
+.look-media {
+  aspect-ratio: 4 / 5;
+}
+
+// 熱點：28px 黑圓＋黃色加號（觸控範圍放大到 44px，不影響排版）
+.look-spot {
+  position: absolute;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: -.875rem 0 0 -.875rem; // 圓心對準座標（不用 transform，避免 fixed 小卡被困在圖片框裡）
+}
+.look-spot-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background-color: $black;
+  color: $volt;
+  font-size: 1rem;
+  transition: background-color .12s ease, color .12s ease;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -.5rem;
+    border-radius: 50%;
+  }
+  &:hover,
+  &[aria-expanded="true"] {
+    background-color: $volt;
+    color: $black;
+  }
+  // 照片上的焦點：黑框外再加一圈黃，任何底色都看得見
+  &:focus-visible {
+    outline: $focus-ring-width solid $black;
+    outline-offset: $focus-ring-offset;
+    box-shadow: 0 0 0 $focus-ring-offset $volt;
+  }
+}
+// 熱點小卡：黑色實面、白字、黃色價格
+.look-spot-card {
+  --bs-dropdown-min-width: 17.5rem;
+  --bs-dropdown-bg: #{$black};
+  --bs-dropdown-color: #{$white};
+  --bs-dropdown-border-color: #{$black};
+  width: 17.5rem;
+  padding: 1rem;
+}
+.look-spot-head {
+  display: flex;
+  gap: .75rem;
+}
+.look-spot-thumb {
+  flex-shrink: 0;
+  width: 4rem;
+  height: 4rem;
+}
+.look-spot-name {
+  margin: 0 0 .25rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.look-spot-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  color: $volt;
+}
+.look-spot-size {
+  margin: .75rem 0;
+  color: $on-dark-muted;
+  font-size: $font-size-sm;
+}
+.look-spot-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .btn-card { flex: 1; width: auto; }
+}
+
+// 空間名稱、商品清單、整套價
+.look-title {
+  margin: 1rem 0 .75rem;
+  font-family: $font-family-base;
+  line-height: 1.45;
+}
+.look-room {
+  display: block;
+  font-weight: 900;
+}
+.look-name {
+  display: block;
+  color: $grey-600;
+  font-size: .9375rem;
+  font-weight: 700;
+}
+.look-items {
+  margin: 0 0 1rem;
+  border-top: 1px solid $black;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .75rem;
+    padding-block: .5rem;
+    border-bottom: 1px solid $grey-300;
+    font-size: $font-size-sm;
+  }
+  a {
+    color: $black;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+  }
+}
+.look-item-price {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: .5rem;
+
+  .tag { font-size: .8125rem; padding-block: .125rem; }
+}
+// 整套價與按鈕貼齊卡片底部，三張卡的按鈕對齊
+.look-foot { margin-top: auto; }
+.look-total {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 .75rem;
+  font-weight: 700;
+}
+.look-note {
+  margin: -.25rem 0 1rem;
+  color: $grey-600;
+  font-size: $font-size-sm;
+}
+.look-hint {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 1.25rem 0 0;
+  color: $grey-600;
+  font-size: $font-size-sm;
+}
+.look-hint-dot {
+  display: inline-grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background-color: $black;
+  color: $volt;
+  font-size: .75rem;
+}
+
+// ---------- 區塊四：人氣嚴選 ----------
+.home-featured { padding-top: 0; } // 緊接在空間靈感後面，共用上方留白
+
+// ---------- 區塊五：見證＋承諾（上方 2px 黑線） ----------
+.home-proof { border-top: $border-strong solid $black; }
+.home-ugc {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+}
+.home-ugc-media { aspect-ratio: 1; }
+// 黑色引言卡：壓在照片下緣
+.home-ugc-card {
+  position: relative;
+  flex: 1;
+  margin: -2.5rem 1.25rem 0 0;
+  padding: 1.25rem;
+  background-color: $black;
+  color: $white;
+
+  a { color: $white; }
+  :focus-visible { outline-color: $volt; }
+}
+.home-ugc-quote {
+  margin: 0 0 1rem;
+
+  p {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.65;
+  }
+}
+.home-ugc-caption {
+  display: grid;
+  gap: .25rem;
+  font-size: $font-size-sm;
+}
+.home-ugc-author {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  color: $volt; // 黑底黃字 16.46:1
+  font-family: $font-family-num;
+  font-weight: 800;
+}
+.home-ugc-product { color: $on-dark-muted; }
+
+.home-promises { border-top: 1px solid $black; }
+.home-promise {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding-block: 1.25rem;
+  border-bottom: 1px solid $black;
+
+  p { color: $grey-600; }
+}
+.home-promise-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  background-color: $black;
+  color: $white;
+  font-size: 1.5rem;
+}
+.home-promise-title {
+  margin-bottom: .25rem;
+  font-family: $font-family-base;
+  font-weight: 900;
+}
+
+// ---------- 底部 CTA（滿版黑帶左右半） ----------
+.home-cta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.home-cta-body {
+  padding-block: 2.5rem 3rem;
+  @include shell-start;
+  @include shell-end;
+
+  @include media-breakpoint-up(lg) {
+    align-self: center;
+    padding-block: 4rem;
+    padding-inline-end: 3rem;
+  }
+}
+.home-cta-title {
+  margin-bottom: 1rem;
+  font-size: 2.25rem;
+  line-height: 1.15;
+
+  @include media-breakpoint-up(lg) { font-size: 3.5rem; } // 56
+}
+.home-cta-note {
+  margin-bottom: 1.75rem;
+  color: $on-dark-muted;
+}
+.home-cta-media {
+  position: relative;
+  order: -1;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+
+  @include media-breakpoint-up(lg) {
+    order: 0;
+    aspect-ratio: auto;
+    min-height: 26rem;
+  }
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 75% 50%;
+  }
+}

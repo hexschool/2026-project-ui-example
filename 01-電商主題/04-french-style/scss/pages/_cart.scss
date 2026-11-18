@@ -1,0 +1,257 @@
+// ============================================================
+// 購物車 cart.html（1040 寬）：像一張發票
+// 1. 置中頁首：步驟條（第 1 步）→ H1 → 說明
+// 2. 帳冊：整寬表格，欄頭（商品｜單價｜數量｜小計）下方一條雙線，列之間髮絲線
+//    < 992px：每列變成「縮圖左、資訊右，數量與小計在底行」，單價與小計的文字標籤看得到
+// 3. 帳冊下方：左 折扣碼＋服務說明；右 點線總計＋運費火漆印＋前往結帳
+// 4. 設計稿狀態示意：購物車是空的時
+// ============================================================
+
+// ---------- 手機、平板：頂部一行應付總計 ----------
+.cart-quick {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: .875rem 1.125rem;
+  background-color: $paper;
+  @include double-line($caramel, $paper);
+
+  .price { font-size: 1.5rem; }
+}
+
+// ---------- 帳冊 ----------
+// 欄寬：縮圖 96px｜商品（撐開）｜單價｜數量｜小計
+$cart-cols-lg: 6rem minmax(0, 1fr) 8rem 9.5rem 8.5rem;
+
+.cart-row {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr) auto;
+  grid-template-areas:
+    "thumb item  item"
+    "thumb price price"
+    "qty   qty   sub";
+  column-gap: 1rem;
+  row-gap: .5rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 6rem minmax(0, 1fr) auto;
+    column-gap: 1.5rem;
+  }
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: $cart-cols-lg;
+    grid-template-areas: "thumb item price qty sub";
+    align-items: center;
+    column-gap: 1.5rem;
+  }
+}
+.cart-thumb { grid-area: thumb; align-self: start; }
+.cart-cell-item { grid-area: item; min-width: 0; }
+.cart-cell-price { grid-area: price; }
+.cart-cell-qty { grid-area: qty; }
+.cart-cell-sub { grid-area: sub; }
+
+// 欄頭：眉標樣式，下方一條墨褐雙線（只在 lg 以上出現）
+.cart-ledger-head {
+  position: relative;
+  margin-bottom: 4px;
+  padding-bottom: .75rem;
+  color: $caramel-deep;
+  font-size: $eyebrow-font-size;
+  font-weight: 600;
+  letter-spacing: $letter-spacing-eyebrow;
+
+  .cart-cell-item { grid-column: 1 / 3; }
+  .cart-cell-price,
+  .cart-cell-qty { text-align: center; }
+  .cart-cell-sub { text-align: right; }
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 4px;
+    border-block: 1px solid $ink;
+  }
+}
+
+.cart-list {
+  margin: 0;
+  border-top: 1px solid $ink;
+
+  @include media-breakpoint-up(lg) {
+    border-top: 0;
+  }
+}
+.cart-item {
+  padding-block: 1.5rem;
+  border-bottom: 1px solid $line;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: 1.75rem;
+  }
+  &:last-child {
+    border-bottom-color: $ink-soft;
+  }
+}
+.cart-item-name {
+  margin-bottom: .25rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: .04em;
+
+  @include media-breakpoint-up(md) {
+    font-size: 1.125rem;
+  }
+  a {
+    color: $ink;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: .3em;
+    transition: color .15s ease, text-decoration-color .15s ease;
+
+    &:hover {
+      color: $burgundy;
+      text-decoration-color: currentColor;
+    }
+  }
+}
+.cart-item-dim {
+  margin-bottom: .625rem;
+  color: $ink-soft;
+  font-size: $small-font-size;
+  line-height: $line-height-sm;
+}
+.cart-spec {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+
+  label { flex: 0 0 auto; }
+  .form-select {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 2.75rem;
+  }
+}
+
+// 單價、小計：手機與平板上有文字標籤；lg 以上標籤只給螢幕閱讀器（欄頭已經寫了）
+.cart-label {
+  margin-right: .5rem;
+  color: $ink-soft;
+  font-size: $small-font-size;
+
+  @include media-breakpoint-up(lg) {
+    @include visually-hidden;
+  }
+}
+.cart-cell-price {
+  margin: 0;
+  font-size: .9375rem;
+
+  @include media-breakpoint-up(lg) {
+    font-size: 1rem;
+    text-align: center;
+  }
+}
+.cart-cell-qty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem 1rem;
+
+  @include media-breakpoint-up(lg) {
+    flex-direction: column;
+    gap: .25rem;
+  }
+}
+.cart-cell-sub {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  margin: 0;
+  text-align: right;
+
+  .cart-label { margin-right: 0; }
+}
+// 手機、平板：數量與小計在底行，上方一條貫穿整列的點線（畫在列的 ::after，放進第三列的格線）
+@include media-breakpoint-down(lg) {
+  .cart-item::after {
+    content: "";
+    grid-column: 1 / -1;
+    grid-row: 3;
+    align-self: start;
+    border-top: 1px dotted $line-strong;
+  }
+  .cart-cell-qty,
+  .cart-cell-sub {
+    padding-top: 1.25rem;
+  }
+}
+
+// ---------- 帳冊下方 ----------
+.cart-foot {
+  margin-top: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    margin-top: map-get($spacers, 6);
+  }
+}
+.cart-coupon {
+  max-width: 26rem;
+
+  .input-group .btn {
+    position: relative;
+    z-index: 2;
+  }
+}
+.cart-assure {
+  margin: 2rem 0 0;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    color: $ink-soft;
+    font-size: .9375rem;
+
+    & + li { margin-top: .75rem; }
+  }
+  .bi {
+    flex: 0 0 auto;
+    color: $caramel;
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+}
+
+// 點線總計（像發票的合計欄）
+.cart-total {
+  .leader-list { margin-bottom: .5rem; }
+}
+.cart-total-title {
+  margin-bottom: 1rem;
+  color: $caramel-deep;
+  font-size: $eyebrow-font-size;
+  font-weight: 600;
+  letter-spacing: $letter-spacing-eyebrow;
+  text-align: center;
+}
+// 運費列下方的火漆印，靠右（蓋在免運那一列底下）
+.cart-total-seal {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 1.25rem;
+}
+.cart-total-sum {
+  margin: 1rem 0 1.5rem;
+  font-weight: 600;
+
+  .price-total { line-height: 1; }
+}

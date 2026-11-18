@@ -1,0 +1,241 @@
+// ============================================================
+// 購物車（cart.html）
+// 構圖：箭頭步驟 → H1＋「4 件」→ 左 8 欄品項列＋右 4 欄折價券進度票券（不 sticky）
+//       金額摘要不在頁面裡，固定在視窗底部的黑色結帳列（components/_buybar.scss）
+// ============================================================
+
+// ---------- 品項列：上方 2px 黑線，列之間 1px 灰線 ----------
+.cart-list { border-top: $border-strong solid $black; }
+
+// 手機：縮圖左、資訊右，數量與小計在底行；768px 以上：縮圖｜資訊｜數量｜小計 一列
+.cart-row {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr) auto;
+  grid-template-areas:
+    "media info info"
+    "qty   qty  sub";
+  align-items: start;
+  gap: 1rem .875rem;
+  padding-block: 1.25rem;
+  border-bottom: 1px solid $grey-300;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 6.5rem minmax(0, 1fr) auto 9rem;
+    grid-template-areas: "media info qty sub";
+    gap: 1.25rem;
+    padding-block: 1.5rem;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: 8rem minmax(0, 1fr) auto 10rem; // 縮圖 128px
+  }
+}
+.cart-row-media {
+  grid-area: media;
+  display: block;
+  aspect-ratio: 1;
+}
+.cart-row-info { grid-area: info; min-width: 0; }
+.cart-row-name {
+  margin-bottom: .375rem;
+  font-family: $font-family-base;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.45;
+
+  @include media-breakpoint-up(md) { font-size: 1.125rem; } // 18
+
+  a {
+    color: $black;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: .2em; }
+  }
+}
+.cart-row-meta {
+  margin: 0;
+  color: $grey-600;
+  font-size: $font-size-sm;
+  line-height: 1.6;
+}
+.cart-row-spec {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .625rem;
+
+  label {
+    flex-shrink: 0;
+    color: $grey-600;
+    font-size: $font-size-sm;
+    font-weight: 700;
+  }
+  .form-select {
+    width: auto;
+    min-width: 9rem;
+    min-height: $btn-height-sm;
+  }
+}
+.cart-row-note {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin: .625rem 0 0;
+  font-size: $font-size-sm;
+  font-weight: 700;
+}
+
+// 數量方鍵＋移除
+.cart-row-qty {
+  grid-area: qty;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem 1rem;
+
+  @include media-breakpoint-up(md) {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+.cart-row-remove {
+  gap: .25rem;
+  font-size: $font-size-sm;
+  text-decoration-thickness: 1px;
+
+  &:hover { text-decoration-thickness: 2px; }
+}
+
+// 小計：價格牌 28px，靠右
+.cart-row-sub {
+  grid-area: sub;
+  display: grid;
+  justify-items: end;
+  align-self: center;
+  gap: .25rem;
+  margin: 0;
+
+  @include media-breakpoint-up(md) { align-self: start; padding-top: .25rem; }
+}
+.cart-row-sub-label {
+  color: $grey-600;
+  font-size: $font-size-sm;
+  font-weight: 700;
+}
+
+// 992px 以下：清單下方的小計與運費
+.cart-sum {
+  margin: 1.25rem 0 0;
+
+  > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: .25rem 1rem;
+    padding-block: .375rem;
+  }
+  dt { font-weight: 400; color: $grey-600; }
+  dd {
+    display: grid;
+    justify-items: end;
+    margin: 0;
+    font-weight: 700;
+  }
+}
+.cart-sum-note {
+  color: $grey-600;
+  font-size: $font-size-sm;
+  font-weight: 400;
+}
+
+// ---------- 右欄：折價券進度票券 → 折扣碼 → 服務說明 → 繼續購物 ----------
+.cart-side {
+  display: grid;
+  justify-items: start;
+  gap: 1.75rem;
+
+  > * { width: 100%; }
+  > .btn-text { width: auto; }
+}
+
+// 進度票券（直式、白底 2px 黑框）：票根放標籤與倒數，撕線下方是門檻標題、進度與「去湊單」
+// 票根內容高度固定（約 5.1rem），撕線位置用 5.5rem，內容垂直置中
+.cart-coupon {
+  --coupon-split: 5.5rem;
+
+  .coupon-stub { justify-content: center; }
+}
+.cart-coupon-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.cart-coupon-timer {
+  justify-items: end;
+  text-align: right;
+
+  .countdown-num { font-size: 1.25rem; }
+}
+.cart-coupon-title {
+  margin: 0 0 .5rem;
+  font-family: $font-family-base;
+  font-size: 1.25rem;
+  font-weight: 900;
+  line-height: 1.3;
+
+  .num { font-weight: 900; }
+}
+.cart-coupon-bar { width: 100%; margin-bottom: .625rem; } // 票券主體是 flex 直排靠左，進度條要撐滿寬
+.cart-coupon-progress {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .75rem;
+  width: 100%;
+  margin-bottom: .75rem;
+  font-size: $font-size-sm;
+
+  strong { font-size: 1rem; font-weight: 900; }
+}
+.cart-coupon-pct {
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.cart-code {
+  .input-group .btn { min-height: 0; padding-inline: 1.25rem; }
+}
+
+.cart-assure {
+  display: grid;
+  gap: .625rem;
+  margin: 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid $grey-300;
+  font-size: $font-size-sm;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: .625rem;
+  }
+  .bi {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    background-color: $black;
+    color: $white;
+    font-size: .8125rem;
+  }
+}
+
+// ---------- 狀態示意：購物車是空的 ----------
+.cart-empty {
+  display: grid;
+  justify-items: start;
+
+  .empty-state-title { margin-bottom: .5rem; }
+  .text-secondary { margin-bottom: 1.5rem; }
+}

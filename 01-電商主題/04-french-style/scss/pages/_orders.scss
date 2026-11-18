@@ -1,0 +1,381 @@
+// ============================================================
+// 我的訂單 orders.html：880 寬單欄、全部置中，沒有會員側欄
+// 頁首（麵包屑 → H1 → 說明 → 一行會員資訊＋一行文字連結）→ 置中狀態分頁 → 一張張雙線收據 → 狀態示意
+// 每張收據（.sheet.orders-receipt）：頭列（Cormorant 編號、日期｜狀態徽章）→ 品項＋金額
+// →（出貨中）菱形節點配送進度 → 底列（配送資訊｜訂單明細、再買一次）→ 訂單明細（點線明細＋收件付款資訊）
+// 共用：.receipt-no、.leader-total（components/_receipt.scss）、.leader、.mat、.badge-status、.nav-underline（_base.scss）
+// ============================================================
+
+// ---------- 頁首下方的會員資訊 ----------
+.orders-member {
+  margin-top: 1.75rem;
+}
+.orders-member-who {
+  margin: 0;
+}
+.orders-member-name {
+  font-weight: 600;
+}
+.orders-member-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 2rem;
+  margin: .25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------- 狀態分頁 ----------
+.orders-filter {
+  margin-bottom: map-get($spacers, 5);
+}
+
+// ---------- 收據清單 ----------
+.orders-list {
+  display: grid;
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    gap: 2.5rem;
+  }
+}
+.orders-receipt {
+  padding: 1.5rem 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 2rem 2.5rem;
+  }
+}
+
+// 頭列：左編號與日期、右狀態徽章，下方一條髮絲線
+.orders-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid $line;
+
+  .receipt-no {
+    margin-bottom: .125rem;
+  }
+  .badge-status {
+    margin-top: .25rem;
+  }
+}
+
+// 品項＋金額：md 以上金額在右側靠底；手機金額移到品項下方，用點線引過去
+.orders-body {
+  @include media-breakpoint-up(md) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: 2.5rem;
+  }
+}
+.orders-items {
+  display: grid;
+  gap: .875rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+.orders-thumb {
+  flex: 0 0 auto;
+  width: 4rem; // 64px 襯紙框（圖片 50px）
+}
+.orders-item {
+  min-width: 0;
+  margin: 0;
+  line-height: 1.6;
+}
+.orders-item-name {
+  color: $ink;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: .3em;
+  transition: color .15s ease, text-decoration-color .15s ease;
+
+  &:hover {
+    color: $burgundy;
+    text-decoration-color: currentColor;
+  }
+}
+.orders-item-qty {
+  margin-left: .25rem;
+  color: $ink-soft;
+  white-space: nowrap;
+}
+.orders-sum {
+  display: flex;
+  align-items: baseline;
+  margin: 1.25rem 0 0;
+
+  // 手機：共 N 件……金額
+  &::after {
+    content: "";
+    order: 1;
+    flex: 1 1 1.5rem;
+    margin-inline: .625rem;
+    border-bottom: 1px dotted $line-strong;
+    transform: translateY(-.3em);
+  }
+  > .orders-amount { order: 2; }
+
+  @include media-breakpoint-up(md) {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .375rem;
+    margin: 0;
+
+    &::after { display: none; }
+  }
+}
+.orders-amount {
+  font-size: 1.75rem; // 28px
+  line-height: 1.1;
+
+  .is-cancel & { color: $ink-soft; }
+}
+
+// ---------- 配送進度（出貨中）：4 個菱形節點 ----------
+// 已到：勃艮第實心；目前：勃艮第實心＋外圈；還沒到：焦糖細框。節點之間：已走過的是勃艮第實線，還沒走的是點線
+.orders-track-wrap {
+  margin-top: 1.75rem;
+  padding: 1.5rem 0 0;
+  border-top: 1px solid $line;
+}
+.orders-track {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 1.75rem;
+    text-align: center;
+
+    // 節點
+    &::before {
+      content: "";
+      position: absolute;
+      z-index: 1;
+      top: .25rem;
+      left: 50%;
+      width: .75rem;
+      height: .75rem;
+      border: 1px solid $caramel;
+      background-color: $paper;
+      transform: translateX(-50%) rotate(45deg);
+    }
+    // 到下一個節點的線
+    &:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: .625rem;
+      left: 50%;
+      width: 100%;
+      border-top: 1px dotted $line-strong;
+    }
+  }
+  .is-done,
+  .is-current {
+    &::before {
+      border-color: $burgundy;
+      background-color: $burgundy;
+    }
+  }
+  .is-done:not(:last-child)::after {
+    border-top: 1px solid $burgundy;
+  }
+  .is-current::before {
+    box-shadow: 0 0 0 3px $paper, 0 0 0 4px $burgundy;
+  }
+}
+.orders-track-label {
+  color: $ink-soft;
+  font-size: .9375rem;
+  font-weight: 600;
+  line-height: 1.5;
+
+  .is-done & { color: $ink; }
+  .is-current & {
+    color: $burgundy;
+    font-weight: 700;
+  }
+}
+.orders-track-date {
+  color: $ink-soft;
+  font-size: $small-font-size;
+  line-height: 1.6;
+}
+.orders-track-note {
+  margin: 0;
+  text-align: center;
+
+  .bi { color: $caramel-deep; }
+}
+
+// ---------- 底列：配送資訊｜按鈕 ----------
+.orders-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid $line;
+}
+.orders-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem 2rem;
+  margin: 0;
+  font-size: .9375rem;
+
+  > div {
+    display: flex;
+    align-items: baseline;
+    gap: .625rem;
+  }
+  dt {
+    color: $ink-soft;
+    font-size: $small-font-size;
+    font-weight: 400;
+  }
+  dd { margin: 0; }
+  .is-due dd {
+    color: $caramel-deep;
+    font-weight: 700;
+  }
+}
+.orders-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1.5rem;
+  margin-left: auto;
+}
+.orders-toggle {
+  .bi {
+    margin-left: .375rem;
+    font-size: .875em;
+    transition: transform .15s ease;
+  }
+  &[aria-expanded="true"] .bi {
+    transform: rotate(180deg);
+  }
+}
+
+// ---------- 訂單明細（collapse 展開） ----------
+// 上方一條點線；lg 以上左 7 點線明細、右 5 收件付款資訊（中間一條髮絲直線）
+// lg 以下上下排：右欄只剩 200px 左右時，「虛擬帳號……9981 2345 6789 0123」放不下
+.orders-detail {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px dotted $line-strong;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 2.5rem;
+  }
+}
+.orders-detail-lines {
+  .leader-list {
+    font-size: .9375rem;
+
+    > .leader + .leader { margin-top: .5rem; }
+  }
+  dt { font-weight: 400; }
+  .orders-detail-sum {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid $line;
+
+    dt { color: $ink-soft; }
+  }
+  .rule-double { margin-top: 1rem; }
+  .leader-total { margin-top: .75rem; }
+}
+.orders-qty {
+  color: $ink-soft;
+  white-space: nowrap;
+}
+.orders-detail-info {
+  font-size: .9375rem;
+  line-height: $line-height-sm;
+
+  padding-top: 1.5rem;
+  border-top: 1px solid $line;
+
+  @include media-breakpoint-up(lg) {
+    padding-top: 0;
+    padding-left: 2.5rem;
+    border-top: 0;
+    border-left: 1px solid $line;
+  }
+  > p { margin-bottom: 1.25rem; }
+  > :last-child { margin-bottom: 0; }
+}
+.orders-atm {
+  margin-bottom: .75rem;
+
+  > .leader + .leader { margin-top: .375rem; }
+  dt {
+    color: $ink-soft;
+    font-weight: 400;
+    white-space: nowrap;
+  }
+}
+// 付款期限提醒：深焦糖字＋淺焦糖底（5.07）
+.orders-due {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  padding: .625rem .875rem;
+  background-color: $caramel-wash;
+  color: $caramel-deep;
+  font-size: $small-font-size;
+  font-weight: 600;
+
+  .bi { margin-top: .2em; }
+}
+.orders-history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+    gap: .75rem;
+  }
+  > li + li { margin-top: .25rem; }
+  .num {
+    flex: 0 0 auto;
+    color: $ink-soft;
+  }
+}
+
+.orders-note {
+  margin: 2.5rem auto 0;
+  text-align: center;
+}

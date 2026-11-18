@@ -1,0 +1,178 @@
+// ============================================================
+// 招牌元素 1：折價券票券 .coupon＋倒數 .countdown
+// - 活動只有一張：滿 NT$ 25,000 折 NT$ 1,000，今日 23:59 截止，登入後領取
+// - 不套用在任何金額上（購物車 NT$ 20,250 沒達門檻，總額照舊）
+// - 左右兩側中間各一個 16px 半圓缺口（mask 挖空＋背景畫出 2px 弧線），票根與主體之間 2px 黑虛線
+// - 白面上：黃底＋2px 黑框（預設）；黃面上：白底、不加框（.coupon-on-volt）
+// - 白底黑框（.coupon-plain）：旁邊已經有黃色大面時用（商品詳情的價格吊牌下方、購物車右欄的進度票券）
+// - 直式（.coupon-stack）：票根在上、主體在下，撕線改成橫的，缺口跟著移到撕線兩端（商品列表的票券方塊、購物車進度票券）
+// - 小版（.coupon-sm）：商品詳情價格下方
+//
+// <div class="coupon">
+//   <div class="coupon-stub">
+//     <span class="coupon-label">限時券</span>
+//     <span class="price-tag coupon-amount"><span class="price-cur">NT$</span><span class="price-num">1,000</span></span>
+//     <span class="coupon-rule">滿 <span class="num">NT$&nbsp;25,000</span> 可用</span>
+//   </div>
+//   <div class="coupon-main">
+//     <span class="coupon-deadline" aria-hidden="true">今日 23:59 截止</span>
+//     <span class="countdown countdown-lg">
+//       <span class="visually-hidden">活動今日 23:59 截止</span>
+//       <span class="countdown-num" data-countdown aria-hidden="true">05:42:18</span>
+//     </span>
+//     <a class="btn btn-dark btn-sm" href="login.html">登入領取</a>
+//   </div>
+// </div>
+// ============================================================
+
+$coupon-notch: 8px;   // 缺口半徑（直徑 16px）
+$coupon-line:  $border-strong;
+
+.coupon {
+  --coupon-bg: #{$volt};
+  --coupon-line: #{$black};
+  --coupon-dash: #{$black};
+  --coupon-notch-y: 50%; // 缺口的垂直位置（直式票券 .coupon-stack 改成撕線的位置）
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  border: $coupon-line solid var(--coupon-line);
+  background:
+    radial-gradient(circle at 0 var(--coupon-notch-y), transparent #{$coupon-notch - .5px}, var(--coupon-line) $coupon-notch, var(--coupon-line) #{$coupon-notch + $coupon-line}, transparent #{$coupon-notch + $coupon-line + .5px}) left center / 50% 100% no-repeat border-box,
+    radial-gradient(circle at 100% var(--coupon-notch-y), transparent #{$coupon-notch - .5px}, var(--coupon-line) $coupon-notch, var(--coupon-line) #{$coupon-notch + $coupon-line}, transparent #{$coupon-notch + $coupon-line + .5px}) right center / 50% 100% no-repeat border-box,
+    var(--coupon-bg);
+  color: $black;
+  -webkit-mask:
+    radial-gradient(circle at 0 var(--coupon-notch-y), transparent $coupon-notch, #000 #{$coupon-notch + .5px}) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% var(--coupon-notch-y), transparent $coupon-notch, #000 #{$coupon-notch + .5px}) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle at 0 var(--coupon-notch-y), transparent $coupon-notch, #000 #{$coupon-notch + .5px}) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% var(--coupon-notch-y), transparent $coupon-notch, #000 #{$coupon-notch + .5px}) right / 51% 100% no-repeat;
+}
+// 黃面上的白色票券（首頁 Hero）
+.coupon-on-volt {
+  --coupon-bg: #{$white};
+  --coupon-line: transparent;
+}
+// 白底黑框票券：旁邊已經有黃色大面時用，避免黃面連成一片
+.coupon-plain {
+  --coupon-bg: #{$white};
+}
+
+// 票根：面額與門檻
+.coupon-stub {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: .25rem;
+  padding: 1rem 1.25rem 1rem 1.5rem;
+  border-right: $coupon-line dashed var(--coupon-dash);
+}
+.coupon-label {
+  align-self: flex-start;
+  padding: .125rem .5rem;
+  background-color: $black;
+  color: $volt;
+  font-size: .8125rem;
+  font-weight: 700;
+}
+.coupon-amount { font-size: 2.25rem; } // 36（Hero 版 48，見 .coupon-lg）
+.coupon-rule {
+  font-size: $font-size-sm;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+// 主體：截止時間、倒數、動作
+.coupon-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: .375rem;
+  min-width: 0;
+  padding: 1rem 1.5rem 1rem 1.25rem;
+
+  .btn { margin-top: .25rem; }
+}
+.coupon-deadline {
+  font-size: $font-size-sm;
+  font-weight: 700;
+}
+// 截止時間＋倒數疊成一組（小版、直式票券用）
+.coupon-timer {
+  display: grid;
+  gap: .125rem;
+}
+
+// 大版（首頁 Hero、商品列表的票券方塊）
+.coupon-lg {
+  .coupon-amount {
+    font-size: 2.5rem;
+
+    @include media-breakpoint-up(md) { font-size: 3rem; } // 48
+  }
+}
+
+// ---------- 倒數：HH:MM:SS，等寬數字，每秒更新不推擠版面 ----------
+// 數字 aria-hidden，旁邊放 visually-hidden 的截止時間；不加 aria-live（會每秒朗讀）
+.countdown {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+}
+.countdown-num {
+  display: inline-block;
+  min-width: 8ch;
+  font-family: $font-family-num;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: 0;
+}
+.countdown-lg .countdown-num { font-size: 1.75rem; } // 28：票券裡的倒數
+
+// 大版票券在 576px 以下：主體只剩約 120px 寬，倒數縮成 24px、票根左右內距收窄，
+// 倒數右緣和右側缺口（半徑 8px）之間至少留 16px
+@include media-breakpoint-down(sm) {
+  .coupon-lg {
+    .coupon-stub { padding-inline: 1.25rem 1rem; }
+    .countdown-lg .countdown-num { font-size: 1.5rem; }
+  }
+}
+
+// ---------- 直式票券：票根在上、主體在下，橫向撕線兩端各一個缺口 ----------
+// --coupon-split：票根高度（撕線位置），預設 50%（外層要有固定高度，例如商品格裡的方塊）；
+// 內容高度不固定時改成長度，例如 style="--coupon-split: 7.5rem"
+.coupon-stack {
+  --coupon-split: 50%;
+  --coupon-notch-y: calc(var(--coupon-split) + 1px); // 對準撕線（2px 虛線）的中心
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: var(--coupon-split) auto;
+
+  .coupon-stub {
+    justify-content: flex-end;
+    padding: 1.25rem 1.25rem 1rem;
+    border-right: 0;
+    border-bottom: $coupon-line dashed var(--coupon-dash);
+  }
+  .coupon-main {
+    justify-content: flex-start;
+    padding: 1rem 1.25rem 1.25rem;
+  }
+}
+
+// ---------- 小版：商品詳情價格下方 ----------
+.coupon-sm {
+  .coupon-stub { padding: .75rem 1rem .75rem 1.25rem; }
+  .coupon-main {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 1rem;
+    padding: .75rem 1.25rem .75rem 1rem;
+
+    .btn { margin: 0 0 0 auto; }
+  }
+  .coupon-amount { font-size: 1.75rem; } // 28
+  .countdown-num { font-size: 1.25rem; } // 20
+}

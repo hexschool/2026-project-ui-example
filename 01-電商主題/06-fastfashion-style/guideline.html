@@ -1,0 +1,2360 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>設計 Guideline｜NestCraft 原創生活家居選物</title>
+  <meta name="description" content="NestCraft 設計稿 06｜平價快時尚的設計 Guideline：色彩、字級、間距、線條、價格牌、折價券與倒數、按鈕三階、固定結帳列、元件狀態、RWD 斷點與 Do／Don’t。">
+  <meta name="theme-color" content="#FFE500">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，先改本範本，再同步 10 個 .html，最後 npm run check。
+    - 每頁只需要調整一處「目前頁面」標示（scripts/check-layout.mjs 依這個規則比對）：
+      頁首導覽：目前頁的連結在 nav-link 後面加 active，並加 aria-current="page"
+      · index.html → 首頁；products.html → 商品一覽；orders.html → 我的訂單
+      · 商品詳情（product.html）：「商品一覽」標示 active，但不加 aria-current
+      · 購物車、結帳、付款結果、登入、註冊、Guideline：不標示
+    - 導覽連結的 class 只寫 nav-link（目前頁加 active），不要加別的 class，樣式從父層 .site-nav 選。
+    - body 的 class 每頁可以不同（不在比對範圍）：
+      · 購物車、結帳：has-buybar（固定在視窗底部的黑色結帳列）
+      · 商品詳情：has-buybar-sm（992px 以下的固定購買列）
+    - check-layout 比對的頁首區塊：從 skip-link 到 header 結束（黃色倒數條在 header 裡）；
+      頁尾區塊：從 site-footer 到檔案結尾（加入購物車的 toast 也在這段裡）。
+    ============================================================
+  -->
+  <a class="skip-link" href="#main">跳至主要內容</a>
+
+  <header class="site-header">
+    <!-- 黃色倒數條：折價券元件（不是公告列）。倒數數字由 js/main.js 每秒更新，HTML 先寫一個靜態值；不加 aria-live -->
+    <div class="site-countdown">
+      <div class="container">
+        <p class="site-countdown-line">
+          <span class="site-countdown-tag">限時券</span>
+          <span>滿 <span class="num">NT$&nbsp;25,000</span> 折 <span class="num">NT$&nbsp;1,000</span></span>
+          <span class="site-countdown-deadline" aria-hidden="true">今日 23:59 截止</span>
+          <span class="site-countdown-sep" aria-hidden="true">｜</span>
+          <span class="countdown">
+            <span class="visually-hidden">活動今日 23:59 截止</span>
+            <span class="countdown-num" data-countdown aria-hidden="true">05:42:18</span>
+          </span>
+          <a class="site-countdown-link" href="login.html">登入領取</a>
+        </p>
+      </div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg site-bar" aria-label="主要導覽">
+      <div class="container">
+        <button class="site-icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteMenu" aria-controls="siteMenu" aria-label="開啟選單">
+          <i class="bi bi-list" aria-hidden="true"></i>
+        </button>
+
+        <a class="navbar-brand site-brand" href="index.html">
+          <span class="site-brand-mark" aria-hidden="true">N</span>
+          <span class="site-brand-name">NestCraft</span>
+        </a>
+
+        <!-- 992px 以上直接排在黑列；以下是左側黑色抽屜（搜尋框在最上方）。導覽連結只寫這一份 -->
+        <div id="siteMenu" class="offcanvas offcanvas-start site-menu" tabindex="-1" aria-labelledby="siteMenuTitle">
+          <div class="offcanvas-header">
+            <p id="siteMenuTitle" class="offcanvas-title site-menu-title">選單</p>
+            <button class="btn-close btn-close-white" type="button" data-bs-dismiss="offcanvas" data-bs-target="#siteMenu" aria-label="關閉選單"></button>
+          </div>
+          <div class="offcanvas-body">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="products.html">商品一覽</a></li>
+              <li class="nav-item"><a class="nav-link" href="index.html#rooms">空間靈感</a></li>
+              <li class="nav-item"><a class="nav-link" href="orders.html">我的訂單</a></li>
+              <li class="nav-item d-sm-none"><a class="nav-link" href="login.html">會員登入</a></li>
+            </ul>
+            <form class="site-search" role="search" action="products.html">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input class="form-control" type="search" name="q" placeholder="搜尋家具、收納、尺寸…" aria-label="搜尋商品">
+            </form>
+          </div>
+        </div>
+
+        <div class="site-actions">
+          <!-- 992px 以下：打開抽屜並把焦點放進搜尋框（js/main.js） -->
+          <button class="site-icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteMenu" aria-controls="siteMenu" aria-label="搜尋商品" data-menu-search>
+            <i class="bi bi-search" aria-hidden="true"></i>
+          </button>
+          <!-- 576px 以下會員入口移到抽屜裡 -->
+          <a class="site-icon-btn d-none d-sm-inline-grid" href="login.html" aria-label="會員登入">
+            <i class="bi bi-person" aria-hidden="true"></i>
+          </a>
+          <a class="site-cart" href="cart.html" aria-label="購物車，4 件商品" data-cart-link>
+            <i class="bi bi-bag-fill" aria-hidden="true"></i>
+            <span class="site-cart-label">購物車</span>
+            <span class="site-cart-count" data-cart-count>4</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <!--
+      設計 Guideline：數值對應 scss/_variables.scss、scss/_base.scss、scss/components/*。
+      改 token 時，本頁的 hex、字級、對比度文字要一起改（對比度依 WCAG 2.x 相對亮度公式計算，兩位小數）。
+      示範都用頁面真的在用的 class；gl- 開頭的是本頁自己的版面（scss/pages/_guideline.scss），
+      gl-is-hover／gl-is-focus 只用來把 hover、焦點「定格」給人看，正式頁面不要用。
+      目錄的「目前章節」由 Bootstrap ScrollSpy（data-bs-spy）標示；目錄列橫向捲動時，js/main.js 會把目前項目捲進畫面。
+    -->
+
+    <!-- 海報封面：滿版黃塊 -->
+    <section class="gl-cover band-volt" aria-labelledby="gl-title">
+      <div class="container">
+        <nav aria-label="目前位置">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+            <li class="breadcrumb-item active" aria-current="page">設計 Guideline</li>
+          </ol>
+        </nav>
+        <div class="gl-cover-grid">
+          <div>
+            <p class="gl-cover-kicker"><span class="tag">設計稿 06</span><span>平價快時尚</span></p>
+            <h1 id="gl-title" class="display-hero gl-cover-title">設計 Guideline</h1>
+            <p class="gl-cover-lead text-phrase">NestCraft 限時快閃的色彩、字級、間距、線條與元件規範。<wbr>頁面上的數值都對應 <code>scss/</code> 裡的 token 與共用 class，<wbr>改 token 時兩邊一起改。</p>
+          </div>
+          <p class="gl-cover-num" aria-hidden="true">06</p>
+        </div>
+        <dl class="gl-cover-meta">
+          <div>
+            <dt>品牌</dt>
+            <dd class="text-phrase">NestCraft <wbr>原創生活家居選物</dd>
+          </div>
+          <div>
+            <dt>風格</dt>
+            <dd>06 平價快時尚</dd>
+          </div>
+          <div>
+            <dt>技術</dt>
+            <dd class="text-phrase">Bootstrap 5.3＋Sass，<wbr>無打包工具</dd>
+          </div>
+          <div>
+            <dt>頁面</dt>
+            <dd><span class="num">10</span> 頁（Guideline＋前台 <span class="num">9</span> 頁）</dd>
+          </div>
+          <div>
+            <dt>更新</dt>
+            <dd class="num">2026-11-18</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- 黏性黑色目錄列：停在頁首黑列下方，橫向捲動；目前章節＝黃字＋4px 黃底線（ScrollSpy 加 .active） -->
+    <nav id="gl-toc" class="gl-toc" aria-label="Guideline 目錄">
+      <div class="container">
+        <ul class="nav gl-toc-list">
+          <li class="nav-item"><a class="nav-link" href="#gl-overview"><span class="gl-toc-no">01</span>概覽</a></li>
+          <li class="nav-item"><a class="nav-link" href="#gl-color"><span class="gl-toc-no">02</span>色彩</a></li>
+          <li class="nav-item"><a class="nav-link" href="#gl-type"><span class="gl-toc-no">03</span>字級</a></li>
+          <li class="nav-item"><a class="nav-link" href="#gl-space"><span class="gl-toc-no">04</span>間距</a></li>
+          <li class="nav-item"><a class="nav-link" href="#gl-shape"><span class="gl-toc-no">05</span>圓角與陰影</a></li>
+          <li class="nav-item"><a class="nav-link" href="#gl-price"><span class="gl-toc-no">06</span>價格牌</a></li>
+          <li class="nav-item"><a class="nav-link" href="#gl-coupon"><span class="gl-toc-no">07</span>折價券與倒數</a></li>
+          <li class="nav-item"><a class="nav-link" href="#gl-buttons"><span class="gl-toc-no">08</span>按鈕三階</a></li>
+          <li class="nav-item"><a class="nav-link" href="#gl-buybar"><span class="gl-toc-no">09</span>固定結帳列</a></li>
+          <li class="nav-item"><a class="nav-link" href="#gl-component"><span class="gl-toc-no">10</span>元件狀態</a></li>
+          <li class="nav-item"><a class="nav-link" href="#gl-rwd"><span class="gl-toc-no">11</span>RWD 斷點</a></li>
+          <li class="nav-item"><a class="nav-link" href="#gl-dodont"><span class="gl-toc-no">12</span>Do／Don't</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="page-body" data-bs-spy="scroll" data-bs-target="#gl-toc" data-bs-root-margin="-130px 0px -55%" data-bs-threshold="0,0.5">
+
+      <!-- ==================== 01 概覽 ==================== -->
+      <section id="gl-overview" class="gl-section" aria-labelledby="gl-overview-title">
+        <div class="container">
+          <header class="gl-head">
+            <span class="gl-head-no" aria-hidden="true">01</span>
+            <div>
+              <h2 id="gl-overview-title"><span class="marker">概覽</span></h2>
+              <p class="gl-head-lead text-phrase">像週末快閃特賣會的入口：<wbr>黃黑色塊、超大的價格牌、倒數中的折價券，<wbr>一眼就知道多少錢、還剩多久、該按哪裡。<wbr>價格是主角，按鈕是第二主角；<wbr>購物車與結帳的動作都固定在視窗底部。</p>
+            </div>
+          </header>
+
+          <div class="row gx-lg-5 gy-5">
+            <div class="col-lg-7">
+              <dl class="gl-spec">
+                <div>
+                  <dt>風格定位</dt>
+                  <dd>06 平價快時尚</dd>
+                </div>
+                <div>
+                  <dt>色系搭配</dt>
+                  <dd>高飽和＋暖色系（電光亮黃、極致純黑、白底）</dd>
+                </div>
+                <div>
+                  <dt>UI 視覺特點</dt>
+                  <dd><blockquote class="gl-quote">折價券倒數、大字號金額標籤，CTA 吸睛</blockquote></dd>
+                </div>
+                <div>
+                  <dt>品牌</dt>
+                  <dd>專為租屋族與小資家庭設計的模組化家居電商，主打「靈活收納、小坪數友善」。</dd>
+                </div>
+              </dl>
+              <p class="gl-label">以上文字引用自課程規格文件（Notion）的風格表。</p>
+            </div>
+            <div class="col-lg-5">
+              <figure class="gl-figure">
+                <div class="img-frame">
+                  <img src="images/hero.jpg" alt="明亮的小套房：左邊是鋪白色寢具的原木床架，中間是淺灰雙人沙發與黑色弧形落地燈，背後牆面漆成一大塊黃色，右側是原木收納格櫃" width="1600" height="1066" loading="lazy">
+                </div>
+                <figcaption class="text-phrase">攝影調性：白牆、黑色金屬細節、正面硬閃光；<wbr>每張空間照只有一個黃色元素，<wbr>商品照完全不放黃色，<wbr>黃色留給介面。</figcaption>
+              </figure>
+            </div>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">設計原則</h3>
+            <ul class="gl-principles">
+              <li>
+                <h4>色塊切分版面</h4>
+                <p>不用卡片陰影分組，用滿版的黃塊、黑帶與白底切開區塊。黃色每個畫面約佔 <span class="num">15～25%</span>，內文一律放在白底。</p>
+                <div class="gl-principle-demo" aria-hidden="true">
+                  <span class="gl-mini-page"><span></span><span></span><span></span></span>
+                </div>
+              </li>
+              <li>
+                <h4>價格是主角</h4>
+                <p>每個畫面最大的字是價格或標題。所有金額都用價格牌 <code>.price-tag</code>：<code>NT$</code> 縮小、數字用 Inter Tight <span class="num">900</span>。</p>
+                <div class="gl-principle-demo">
+                  <span class="price-tag price-tag-set"><span class="price-cur">NT$</span><span class="price-num">16,800</span></span>
+                </div>
+              </li>
+              <li>
+                <h4>一個區塊一顆黃按鈕</h4>
+                <p>黃底黑框的 <code>.btn-volt</code> 只給最重要的那一個行動；其他行動退成黑底或白底黑框。</p>
+                <div class="gl-principle-demo">
+                  <a class="btn btn-volt btn-sm" href="checkout.html">直接購買</a>
+                  <button class="btn btn-outline-dark btn-sm" type="button" data-add-cart="橡木餐桌">加入購物車</button>
+                </div>
+              </li>
+              <li>
+                <h4>行動固定在底部</h4>
+                <p>購物車與結帳的金額與按鈕，固定在視窗底部的黑色結帳列 <code>.buybar</code>，捲到哪裡都看得到。</p>
+                <div class="gl-principle-demo">
+                  <div class="gl-mini-bar on-dark">
+                    <span class="price-tag"><span class="price-cur">NT$</span><span class="price-num">20,250</span></span>
+                    <a class="btn btn-volt btn-sm" href="checkout.html">前往結帳</a>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 10 個頁面：描述照實際做出來的構圖 -->
+          <div class="gl-block">
+            <h3 class="rule-title">頁面清單<span class="rule-title-aside">共 <span class="num">10</span> 頁</span></h3>
+            <p class="gl-note text-phrase">頁首、頁尾在每一頁都完整寫一份。<wbr>頁尾不放頁面索引，各頁從首頁依購物流程點進去；<wbr>Guideline 直接開 <code>guideline.html</code>。<wbr>編號照課程規格（<span class="num">00</span> 是 Guideline）。</p>
+            <ol class="gl-pages">
+              <li>
+                <span class="gl-pages-no" aria-hidden="true">00</span>
+                <p class="gl-pages-name"><a href="guideline.html" aria-current="page">設計 Guideline</a><code>guideline.html</code></p>
+                <p>本頁：滿版黃色海報封面、黏性黑色目錄列，<span class="num">12</span> 節規範（必含的 <span class="num">6</span> 項，加上價格牌、折價券與倒數、按鈕三階、固定結帳列四節元件規格）。</p>
+              </li>
+              <li>
+                <span class="gl-pages-no" aria-hidden="true">01</span>
+                <p class="gl-pages-name"><a href="index.html">首頁</a><code>index.html</code></p>
+                <p>左右半版滿版 Hero：左半電光黃塊放兩行 H1、兩顆按鈕與白色票券倒數，右半照片出血到右緣。接著黑帶四大堅持、三張 lookbook 同時攤開（熱點點開商品小卡、整套價）、人氣嚴選 <span class="num">4</span> 欄閃電結帳、見證與承諾，最後是黑帶左右半 CTA。</p>
+              </li>
+              <li>
+                <span class="gl-pages-no" aria-hidden="true">02</span>
+                <p class="gl-pages-name"><a href="products.html">商品一覽</a><code>products.html</code></p>
+                <p>沒有側欄：H1 旁黃底「<span class="num">10</span> 件」，黏性分類列（分類按鈕、篩選抽屜、排序）停在黑列下方；<span class="num">4</span> 欄無框密集卡，第 <span class="num">5</span> 格是黃色直式票券、最後一格是黑色「先量尺寸，再挑家具」，共 <span class="num">12</span> 格 <span class="num">3</span> 列。</p>
+              </li>
+              <li>
+                <span class="gl-pages-no" aria-hidden="true">03</span>
+                <p class="gl-pages-name"><a href="product.html">商品詳情</a><code>product.html</code></p>
+                <p>以橡木餐桌示範。左 <span class="num">7</span> 欄四張圖片直排長捲（沒有縮圖、沒有輪播），右 <span class="num">5</span> 欄資訊：黃色價格吊牌 <span class="num">64px</span>、庫存黑框標籤、小票券、尺寸大字、數量與兩顆等寬按鈕；下方滿寬分頁與相關商品。<span class="num">992px</span> 以下底部固定白色購買列。</p>
+              </li>
+              <li>
+                <span class="gl-pages-no" aria-hidden="true">04</span>
+                <p class="gl-pages-name"><a href="cart.html">購物車</a><code>cart.html</code></p>
+                <p><span class="num">1280</span> 版心：箭頭步驟第 <span class="num">1</span> 段、H1 旁「<span class="num">4</span> 件」；左 <span class="num">8</span> 欄品項列（小計 <span class="num">28px</span>），右 <span class="num">4</span> 欄直式折價券進度票券（<span class="num">81%</span>、還差 <span class="num">NT$&nbsp;4,750</span>）、折扣碼與服務說明。金額摘要在視窗底部的黑色結帳列。</p>
+              </li>
+              <li>
+                <span class="gl-pages-no" aria-hidden="true">05</span>
+                <p class="gl-pages-name"><a href="checkout.html">結帳</a><code>checkout.html</code></p>
+                <p><span class="num">1280</span> 版心：箭頭步驟第 <span class="num">2</span> 段、灰底訂單摘要條（三項商品橫排＋折價券提示），收件｜配送｜付款三欄並排，每欄頂端 <span class="num">64px</span> 大數字；發票與備註在下方，「確認付款」在固定結帳列。</p>
+              </li>
+              <li>
+                <span class="gl-pages-no" aria-hidden="true">06</span>
+                <p class="gl-pages-name"><a href="order-result.html">付款結果</a><code>order-result.html</code></p>
+                <p><span class="num">1080</span> 版心：箭頭步驟三段全黑，黑色成功帶（黃方塊黑勾＋H1，右側付款金額 <span class="num">64px</span> 黃字），四欄資訊格、購買品項、「接下來會發生什麼」三欄與兩顆等寬按鈕。</p>
+              </li>
+              <li>
+                <span class="gl-pages-no" aria-hidden="true">07</span>
+                <p class="gl-pages-name"><a href="login.html">登入</a><code>login.html</code></p>
+                <p>滿版左右半：左半照片，左下角壓一張白底黑框票券（倒數）；右半白底表單，最寬 <span class="num">440</span>、垂直置中。Email、密碼（右側顯示密碼方鍵）、記住我、LINE 與 Google 登入。</p>
+              </li>
+              <li>
+                <span class="gl-pages-no" aria-hidden="true">08</span>
+                <p class="gl-pages-name"><a href="register.html">註冊</a><code>register.html</code></p>
+                <p>和登入同一個左右半版型；說明下方多三個加入會員的好處，欄位是姓名、Email、密碼、確認密碼，密碼規則用黑框小方塊提示，最後是同意條款與黃色「註冊」。</p>
+              </li>
+              <li>
+                <span class="gl-pages-no" aria-hidden="true">09</span>
+                <p class="gl-pages-name"><a href="orders.html">我的訂單</a><code>orders.html</code></p>
+                <p><span class="num">1080</span> 版心、沒有會員側欄：黑色會員列、粗字底線狀態分頁（可以實際切換），<span class="num">5</span> 筆票根式訂單卡，左側 <span class="num">120px</span> 整條狀態色塊＋<span class="num">2px</span> 黑虛線撕線，出貨中多一條 <span class="num">4</span> 段箭頭進度。</p>
+              </li>
+            </ol>
+          </div>
+
+          <!-- 給要修改這套設計稿的人：檔案怎麼分工 -->
+          <div class="gl-block">
+            <h3 class="rule-title">修改這套設計稿</h3>
+            <ul class="gl-rules">
+              <li>每一頁都是一份完整的 HTML，用 <code>&lt;a href="products.html"&gt;</code> 這類相對連結換頁，瀏覽器直接打開就能看；商品詳情只有一頁 <code>product.html</code>。</li>
+              <li>頁首（黃色倒數條＋黑列）與頁尾在 <span class="num">10</span> 頁都完整寫一份。要改時先改 <code>templates/page.html</code>，再貼到每一頁，最後執行 <code>npm run check</code>，應輸出「全部 <span class="num">10</span> 個頁面的共用區塊都與範本一致」。</li>
+              <li>導覽連結的 class 只能是 <code>nav-link</code> 或 <code>nav-link active</code>，樣式從父層 <code>.site-nav</code> 選；目前頁加 <code>aria-current="page"</code>（首頁、商品一覽、我的訂單），商品詳情標「商品一覽」但不加 <code>aria-current</code>。</li>
+              <li><code>body</code> 的 class 每頁可以不同：購物車、結帳加 <code>has-buybar</code>，商品詳情加 <code>has-buybar-sm</code>（固定結帳列的留白，見第 <span class="num">09</span> 節）。</li>
+              <li>價格、尺寸、品名等假資料直接寫在 HTML。同一件商品會出現在商品卡、商品詳情、購物車與訂單，改資料時要一起改。</li>
+              <li>樣式寫在 <code>scss/</code>，執行 <code>npm run css</code> 編譯成 <code>css/style.css</code>；互動只用 Bootstrap 的 <code>data-bs-*</code> 與 <code>js/main.js</code> 的六個小功能（手機搜尋聚焦、顯示密碼、分頁籤與目錄捲進畫面、我的訂單的狀態篩選、折價券倒數、加入購物車示意）。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 02 色彩 ==================== -->
+      <!--
+        色塊由 _guideline.scss 的 $gl-swatches 產生；hex、對比度寫在本頁，改色時兩邊要同步
+        對比度依 WCAG 2.x 相對亮度公式計算（兩位小數）
+      -->
+      <section id="gl-color" class="gl-section" aria-labelledby="gl-color-title">
+        <div class="container">
+          <header class="gl-head">
+            <span class="gl-head-no" aria-hidden="true">02</span>
+            <div>
+              <h2 id="gl-color-title"><span class="marker">色彩</span></h2>
+              <p class="gl-head-lead text-phrase">白底打底、純黑切分、電光黃只當「面」。<wbr>黃色是整套最吵的顏色，<wbr>所以只出現在按鈕底、價格吊牌、倒數條、標籤底、螢光筆與大色塊，<wbr>從不當文字或線條放在白底上。</p>
+            </div>
+            <p class="gl-head-src"><span class="visually-hidden">數值來源：</span><code>_variables.scss</code> 1. 色彩</p>
+          </header>
+        </div>
+
+        <!-- 滿版三大色塊：內容左右緣對齊版心 -->
+        <div class="gl-trio bleed-split">
+          <div class="gl-trio-item is-volt">
+            <p class="gl-trio-name">電光亮黃</p>
+            <p class="gl-trio-hex">#FFE500</p>
+            <p class="gl-trio-var mb-0">$volt</p>
+            <dl>
+              <div><dt>角色</dt><dd>主要 CTA 底、價格吊牌、倒數條、選中狀態、Hero 色塊、頁尾</dd></div>
+              <div><dt>對比</dt><dd>黃底黑字 <span class="num">16.46:1</span></dd></div>
+              <div><dt>限制</dt><dd>白底上只有 <span class="num">1.28:1</span>，不當文字、線條、圖示</dd></div>
+            </dl>
+          </div>
+          <div class="gl-trio-item is-black">
+            <p class="gl-trio-name">極致純黑</p>
+            <p class="gl-trio-hex">#000000</p>
+            <p class="gl-trio-var mb-0">$black</p>
+            <dl>
+              <div><dt class="gl-trio-muted">角色</dt><dd>主文字、頁首黑列、黑帶、深色按鈕、框線</dd></div>
+              <div><dt class="gl-trio-muted">對比</dt><dd>黑底白字 <span class="num">21.00:1</span>、黑底黃字 <span class="num">16.46:1</span></dd></div>
+              <div><dt class="gl-trio-muted">說明字</dt><dd>黑底上的次要字用 <span class="num">#B3B3B3</span>（<span class="num">10.02:1</span>）</dd></div>
+            </dl>
+          </div>
+          <div class="gl-trio-item is-white">
+            <p class="gl-trio-name">白底</p>
+            <p class="gl-trio-hex">#FFFFFF</p>
+            <p class="gl-trio-var mb-0">$white</p>
+            <dl>
+              <div><dt>角色</dt><dd>頁面底、卡片、輸入框；所有內文區塊</dd></div>
+              <div><dt>對比</dt><dd>白底黑字 <span class="num">21.00:1</span>、次要文字 <span class="num">6.69:1</span></dd></div>
+              <div><dt>面積</dt><dd>每個畫面最大的一塊，約 <span class="num">60%</span></dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="container">
+          <div class="gl-block">
+            <h3 class="rule-title">每個畫面的面積</h3>
+            <p class="gl-note">白底最大、黑帶次之，黃色控制在 <span class="num">15～25%</span>（Hero 左半、主要按鈕、價格吊牌、倒數條、頁尾）。黃塊上不放長段落；空間照每張只有一個黃色元素，商品照不放黃色。</p>
+            <div class="gl-ratio" role="img" aria-label="面積比例：白約 60%、黑約 20%、黃 15 到 25%">
+              <span class="is-white">白 約 60%</span>
+              <span class="is-black">黑 約 20%</span>
+              <span class="is-volt">黃 15～25%</span>
+            </div>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">完整色票</h3>
+            <ul class="gl-swatches">
+              <li class="gl-swatches-head" aria-hidden="true"><span>色塊</span><span>名稱與變數</span><span>hex</span><span>用途</span><span>對比</span></li>
+              <li>
+                <span class="gl-chip gl-chip-white" aria-hidden="true"></span>
+                <p class="gl-swatch-name">白底<code>$white</code></p>
+                <p class="gl-swatch-hex">#FFFFFF</p>
+                <p class="gl-swatch-role">頁面底、卡片、輸入框</p>
+                <p class="gl-swatch-ratio">黑字 <span class="num">21.00</span></p>
+              </li>
+              <li>
+                <span class="gl-chip gl-chip-black" aria-hidden="true"></span>
+                <p class="gl-swatch-name">極致純黑<code>$black</code></p>
+                <p class="gl-swatch-hex">#000000</p>
+                <p class="gl-swatch-role">主文字、頁首黑列、黑帶、深色按鈕、輸入框框線</p>
+                <p class="gl-swatch-ratio">白字 <span class="num">21.00</span>、黃字 <span class="num">16.46</span></p>
+              </li>
+              <li>
+                <span class="gl-chip gl-chip-volt" aria-hidden="true"></span>
+                <p class="gl-swatch-name">電光亮黃<code>$volt</code></p>
+                <p class="gl-swatch-hex">#FFE500</p>
+                <p class="gl-swatch-role">主要 CTA 底、價格吊牌、倒數條、選中狀態、Hero 色塊、頁尾、螢光筆</p>
+                <p class="gl-swatch-ratio">黑字 <span class="num">16.46</span>；對白 <span class="num">1.28</span></p>
+              </li>
+              <li>
+                <span class="gl-chip gl-chip-volt-tint" aria-hidden="true"></span>
+                <p class="gl-swatch-name">亮黃淺<code>$volt-tint</code></p>
+                <p class="gl-swatch-hex">#FFF59E</p>
+                <p class="gl-swatch-role">選項卡、商品分類、顯示密碼鈕的 hover 底；付款處理中的按鈕底</p>
+                <p class="gl-swatch-ratio">黑字 <span class="num">18.81</span>、灰字 <span class="num">5.99</span></p>
+              </li>
+              <li>
+                <span class="gl-chip gl-chip-grey-100" aria-hidden="true"></span>
+                <p class="gl-swatch-name">商品圖底<code>$grey-100</code></p>
+                <p class="gl-swatch-hex">#F3F3F3</p>
+                <p class="gl-swatch-role">商品圖底、訂單摘要條、狀態示意舞台、未到的箭頭步驟</p>
+                <p class="gl-swatch-ratio">黑字 <span class="num">18.93</span>、灰字 <span class="num">6.03</span></p>
+              </li>
+              <li>
+                <span class="gl-chip gl-chip-grey-150" aria-hidden="true"></span>
+                <p class="gl-swatch-name">hover 圖底<code>$grey-150</code></p>
+                <p class="gl-swatch-hex">#EDEDED</p>
+                <p class="gl-swatch-role">商品卡 hover 時的圖底；實作是在圖片上疊一層 <span class="num">3%</span> 黑，看起來接近這個值</p>
+                <p class="gl-swatch-ratio">黑字 <span class="num">17.94</span></p>
+              </li>
+              <li>
+                <span class="gl-chip gl-chip-grey-200" aria-hidden="true"></span>
+                <p class="gl-swatch-name">停用底<code>$grey-200</code></p>
+                <p class="gl-swatch-hex">#E6E6E6</p>
+                <p class="gl-swatch-role">停用按鈕、已售完、已取消、停用的選項卡</p>
+                <p class="gl-swatch-ratio">停用字 <span class="num">5.97</span></p>
+              </li>
+              <li>
+                <span class="gl-chip gl-chip-grey-300" aria-hidden="true"></span>
+                <p class="gl-swatch-name">分隔線<code>$grey-300</code></p>
+                <p class="gl-swatch-hex">#D6D6D6</p>
+                <p class="gl-swatch-role">清單之間的髮絲線、進度條軌道底</p>
+                <p class="gl-swatch-ratio">黑色填色對它 <span class="num">14.45</span></p>
+              </li>
+              <li>
+                <span class="gl-chip gl-chip-grey-400" aria-hidden="true"></span>
+                <p class="gl-swatch-name">停用虛線<code>$grey-400</code></p>
+                <p class="gl-swatch-hex">#8A8A8A</p>
+                <p class="gl-swatch-role">停用、已售完、已取消的虛線框；只當框線，不當文字</p>
+                <p class="gl-swatch-ratio">對白 <span class="num">3.45</span>（非文字 <span class="num">3:1</span>）</p>
+              </li>
+              <li>
+                <span class="gl-chip gl-chip-grey-500" aria-hidden="true"></span>
+                <p class="gl-swatch-name">placeholder<code>$grey-500</code></p>
+                <p class="gl-swatch-hex">#6E6E6E</p>
+                <p class="gl-swatch-role">輸入框的提示文字（只寫範例格式，不取代標籤）</p>
+                <p class="gl-swatch-ratio">對白 <span class="num">5.10</span></p>
+              </li>
+              <li>
+                <span class="gl-chip gl-chip-grey-600" aria-hidden="true"></span>
+                <p class="gl-swatch-name">次要文字<code>$grey-600</code></p>
+                <p class="gl-swatch-hex">#5C5C5C</p>
+                <p class="gl-swatch-role">分類、尺寸、說明、麵包屑；<code>$secondary</code></p>
+                <p class="gl-swatch-ratio">白 <span class="num">6.69</span>、灰底 <span class="num">6.03</span>、黃底 <span class="num">5.24</span></p>
+              </li>
+              <li>
+                <span class="gl-chip gl-chip-grey-700" aria-hidden="true"></span>
+                <p class="gl-swatch-name">停用文字<code>$grey-700</code></p>
+                <p class="gl-swatch-hex">#555555</p>
+                <p class="gl-swatch-role">停用按鈕、停用欄位、已售完的價格吊牌</p>
+                <p class="gl-swatch-ratio">停用底 <span class="num">5.97</span>、白 <span class="num">7.46</span></p>
+              </li>
+              <li>
+                <span class="gl-chip gl-chip-on-dark-muted" aria-hidden="true"></span>
+                <p class="gl-swatch-name">黑底次要字<code>$on-dark-muted</code></p>
+                <p class="gl-swatch-hex">#B3B3B3</p>
+                <p class="gl-swatch-role">黑帶、黑色結帳列、會員列、熱點小卡上的說明文字</p>
+                <p class="gl-swatch-ratio">對黑 <span class="num">10.02</span></p>
+              </li>
+              <li>
+                <span class="gl-chip gl-chip-green" aria-hidden="true"></span>
+                <p class="gl-swatch-name">成功<code>$green</code></p>
+                <p class="gl-swatch-hex">#0A7A3B</p>
+                <p class="gl-swatch-role">成功提示（實心綠底白字）</p>
+                <p class="gl-swatch-ratio">白字 <span class="num">5.44</span></p>
+              </li>
+              <li>
+                <span class="gl-chip gl-chip-red" aria-hidden="true"></span>
+                <p class="gl-swatch-name">錯誤<code>$red</code></p>
+                <p class="gl-swatch-hex">#D3001C</p>
+                <p class="gl-swatch-role">錯誤提示、欄位紅框與錯誤訊息、付款未完成的紅色帶；不放黃底</p>
+                <p class="gl-swatch-ratio">白 <span class="num">5.55</span>；黃底只有 <span class="num">4.35</span></p>
+              </li>
+              <li>
+                <span class="gl-chip gl-chip-blue" aria-hidden="true"></span>
+                <p class="gl-swatch-name">資訊<code>$blue</code></p>
+                <p class="gl-swatch-hex">#0047BB</p>
+                <p class="gl-swatch-role">資訊提示（實心藍底白字）</p>
+                <p class="gl-swatch-ratio">白字 <span class="num">8.02</span></p>
+              </li>
+            </ul>
+            <p class="gl-label">警示與低庫存不另設顏色：用黃底黑字（<code>.tag-volt</code>、<code>.alert-warning</code>，<span class="num">16.46:1</span>），只放提醒，不放錯誤。</p>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">文字與底色的組合</h3>
+            <p class="gl-note">內文至少 <span class="num">4.5:1</span>，大字與圖示至少 <span class="num">3:1</span>。最後兩格是不准出現的組合。</p>
+            <ul class="gl-pairs">
+              <li>
+                <div class="gl-pair-sample gl-chip-white"><span class="gl-pair-aa">Aa</span>白底黑字</div>
+                <p class="gl-pair-meta"><span class="num">21.00:1</span><span class="tag">通過</span></p>
+              </li>
+              <li>
+                <div class="gl-pair-sample gl-chip-black text-white"><span class="gl-pair-aa">Aa</span>黑底白字</div>
+                <p class="gl-pair-meta"><span class="num">21.00:1</span><span class="tag">通過</span></p>
+              </li>
+              <li>
+                <div class="gl-pair-sample gl-chip-volt"><span class="gl-pair-aa">Aa</span>黃底黑字</div>
+                <p class="gl-pair-meta"><span class="num">16.46:1</span><span class="tag">通過</span></p>
+              </li>
+              <li>
+                <div class="gl-pair-sample gl-chip-black text-volt"><span class="gl-pair-aa">Aa</span>黑底黃字</div>
+                <p class="gl-pair-meta"><span class="num">16.46:1</span><span class="tag">通過</span></p>
+              </li>
+              <li>
+                <div class="gl-pair-sample gl-chip-black text-muted-dark"><span class="gl-pair-aa">Aa</span>黑底次要字</div>
+                <p class="gl-pair-meta"><span class="num">10.02:1</span><span class="tag">通過</span></p>
+              </li>
+              <li>
+                <div class="gl-pair-sample gl-chip-white text-secondary"><span class="gl-pair-aa">Aa</span>白底次要字</div>
+                <p class="gl-pair-meta"><span class="num">6.69:1</span><span class="tag">通過</span></p>
+              </li>
+              <li>
+                <div class="gl-pair-sample gl-chip-grey-100 text-secondary"><span class="gl-pair-aa">Aa</span>灰底次要字</div>
+                <p class="gl-pair-meta"><span class="num">6.03:1</span><span class="tag">通過</span></p>
+              </li>
+              <li>
+                <div class="gl-pair-sample gl-chip-volt text-secondary"><span class="gl-pair-aa">Aa</span>黃底次要字</div>
+                <p class="gl-pair-meta"><span class="num">5.24:1</span><span class="tag">通過</span></p>
+              </li>
+              <li>
+                <div class="gl-pair-sample gl-chip-red text-white"><span class="gl-pair-aa">Aa</span>紅底白字</div>
+                <p class="gl-pair-meta"><span class="num">5.55:1</span><span class="tag">通過</span></p>
+              </li>
+              <li>
+                <div class="gl-pair-sample gl-chip-green text-white"><span class="gl-pair-aa">Aa</span>綠底白字</div>
+                <p class="gl-pair-meta"><span class="num">5.44:1</span><span class="tag">通過</span></p>
+              </li>
+              <li>
+                <div class="gl-pair-sample gl-chip-blue text-white"><span class="gl-pair-aa">Aa</span>藍底白字</div>
+                <p class="gl-pair-meta"><span class="num">8.02:1</span><span class="tag">通過</span></p>
+              </li>
+              <li>
+                <div class="gl-pair-sample gl-chip-grey-200 text-body"><span class="gl-pair-aa" style="color: #555555">Aa</span><span style="color: #555555">停用底停用字</span></div>
+                <p class="gl-pair-meta"><span class="num">5.97:1</span><span class="tag">通過</span></p>
+              </li>
+              <li>
+                <div class="gl-pair-sample gl-chip-white"><span class="gl-pair-aa" style="color: #6E6E6E">Aa</span><span style="color: #6E6E6E">白底 placeholder</span></div>
+                <p class="gl-pair-meta"><span class="num">5.10:1</span><span class="tag">通過</span></p>
+              </li>
+              <li>
+                <div class="gl-pair-sample gl-chip-volt text-danger"><span class="gl-pair-aa">Aa</span>黃底紅字</div>
+                <p class="gl-pair-meta"><span class="num">4.35:1</span><span class="tag tag-off">不准用</span></p>
+              </li>
+              <li>
+                <div class="gl-pair-sample gl-chip-white text-volt"><span class="gl-pair-aa">Aa</span>白底黃字</div>
+                <p class="gl-pair-meta"><span class="num">1.28:1</span><span class="tag tag-off">不准用</span></p>
+              </li>
+            </ul>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">Bootstrap 主題色與語意變數</h3>
+            <p class="gl-note"><code>$primary</code> 是黑色，所以 Bootstrap 的 <code>.text-primary</code>、<code>.btn-primary</code> 都是黑；黃色另外加成 <code>"volt"</code>（產生 <code>.bg-volt</code>、<code>.text-bg-volt</code>），黃色按鈕用自訂的 <code>.btn-volt</code>。</p>
+            <div class="table-responsive">
+              <table class="table gl-table">
+                <caption class="visually-hidden">Bootstrap 變數與本風格色票的對應</caption>
+                <thead>
+                  <tr><th scope="col">變數</th><th scope="col">值</th><th scope="col">用在哪裡</th></tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row"><code>$primary</code>、<code>$dark</code></th><td><code>$black</code></td><td>主要文字、深色按鈕、選中的列表項目</td></tr>
+                  <tr><th scope="row"><code>$secondary</code></th><td><code>$grey-600</code></td><td><code>.text-secondary</code>：說明、尺寸、分類</td></tr>
+                  <tr><th scope="row"><code>$warning</code>、<code>"volt"</code></th><td><code>$volt</code></td><td>低庫存標籤、提醒提示、<code>.bg-volt</code></td></tr>
+                  <tr><th scope="row"><code>$success</code>／<code>$info</code>／<code>$danger</code></th><td><code>$green</code>／<code>$blue</code>／<code>$red</code></td><td>實心色帶提示 <code>.alert-*</code>，白字</td></tr>
+                  <tr><th scope="row"><code>$light</code></th><td><code>$grey-100</code></td><td><code>.alert-light</code>、淺灰面</td></tr>
+                  <tr><th scope="row"><code>$body-color</code>、<code>$border-color</code>、<code>$link-color</code></th><td><code>$black</code></td><td>內文、所有框線、連結（底線 <code>.2em</code> 偏移）</td></tr>
+                  <tr><th scope="row"><code>$body-secondary-color</code></th><td><code>$grey-600</code></td><td>次要文字</td></tr>
+                  <tr><th scope="row"><code>$focus-ring-color</code></th><td><code>$black</code></td><td>焦點環（黑色面上由 <code>.on-dark</code> 改成黃色）</td></tr>
+                  <tr><th scope="row"><code>$input-placeholder-color</code></th><td><code>$grey-500</code></td><td>輸入框提示文字</td></tr>
+                  <tr><th scope="row"><code>$input-disabled-bg</code>／<code>-color</code>／<code>-border-color</code></th><td><code>$grey-200</code>／<code>$grey-700</code>／<code>$grey-400</code></td><td>停用欄位</td></tr>
+                  <tr><th scope="row"><code>$dropdown-link-hover-bg</code></th><td><code>$volt-tint</code></td><td>下拉選單 hover 底</td></tr>
+                  <tr><th scope="row"><code>$progress-bg</code>／<code>$progress-bar-bg</code></th><td><code>$grey-300</code>／<code>$black</code></td><td>購物車的折價券進度條</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 03 字級 ==================== -->
+      <section id="gl-type" class="gl-section" aria-labelledby="gl-type-title">
+        <div class="container">
+          <header class="gl-head">
+            <span class="gl-head-no" aria-hidden="true">03</span>
+            <div>
+              <h2 id="gl-type-title"><span class="marker">字級</span></h2>
+              <p class="gl-head-lead text-phrase">粗黑體喊出重點：<wbr>中文標題用 Noto Sans TC <span class="num">900</span>，<wbr>數字、價格、倒數用字距緊的 Inter Tight <span class="num">800</span>／<span class="num">900</span>。<wbr>手機與桌機各一組固定數值（不用 RFS 自動縮放），<wbr>在 <span class="num">992px</span> 切換。</p>
+            </div>
+            <p class="gl-head-src"><span class="visually-hidden">數值來源：</span><code>_variables.scss</code> 2. 字體與字級</p>
+          </header>
+
+          <div class="gl-fonts">
+            <div class="gl-font is-num">
+              <h3 class="h4">Inter Tight</h3>
+              <p class="gl-label mt-0">數字、價格、倒數、logo、標題裡的西文；<code>$font-family-num</code>、<code>.num</code></p>
+              <p class="gl-font-sample is-num" aria-hidden="true">NT$ 16,800<br>05:42:18</p>
+              <ul class="gl-font-weights">
+                <li style="font-weight: 600">0123<span>600</span></li>
+                <li style="font-weight: 800">0123<span>800</span></li>
+                <li style="font-weight: 900">0123<span>900</span></li>
+              </ul>
+            </div>
+            <div class="gl-font is-cjk">
+              <h3 class="h4">Noto Sans TC</h3>
+              <p class="gl-label mt-0">中文標題、品名、按鈕、內文；<code>$font-family-base</code></p>
+              <p class="gl-font-sample is-cjk" aria-hidden="true">把有限的坪數，<br>活出無限的講究。</p>
+              <ul class="gl-font-weights">
+                <li style="font-weight: 400">內文<span>400</span></li>
+                <li style="font-weight: 500">強調<span>500</span></li>
+                <li style="font-weight: 700">品名<span>700</span></li>
+                <li style="font-weight: 900">標題<span>900</span></li>
+              </ul>
+            </div>
+          </div>
+          <p class="gl-label">Google Fonts：<code>Inter+Tight:wght@600;800;900</code>、<code>Noto+Sans+TC:wght@400;500;700;900</code>。所有數字加 <code>font-variant-numeric: tabular-nums</code>，倒數每秒變化時寬度不變。</p>
+
+          <div class="gl-block">
+            <h3 class="rule-title">字級表<span class="rule-title-aside">桌機／手機，<span class="num">992px</span> 切換</span></h3>
+            <ul class="gl-scale">
+              <li>
+                <p class="gl-scale-sample display-hero">把有限的坪數，</p>
+                <dl class="gl-scale-spec">
+                  <dt>Display：首頁 H1</dt>
+                  <dd><span class="num">72／40px</span>、<span class="num">900</span>、行高 <span class="num">1.1</span></dd>
+                  <dd><code>.display-hero</code>（首頁用 <code>clamp()</code> 保持兩行）</dd>
+                </dl>
+              </li>
+              <li>
+                <p class="gl-scale-sample h1">填寫資料與付款</p>
+                <dl class="gl-scale-spec">
+                  <dt>H1：頁面標題</dt>
+                  <dd><span class="num">44／32px</span>、<span class="num">900</span>、行高 <span class="num">1.2</span></dd>
+                  <dd><code>h1</code>、<code>.h1</code></dd>
+                </dl>
+              </li>
+              <li>
+                <p class="gl-scale-sample h2"><span class="marker">人氣嚴選｜空間放大的秘密武器</span></p>
+                <dl class="gl-scale-spec">
+                  <dt>H2：區塊標題</dt>
+                  <dd><span class="num">36／26px</span>、<span class="num">900</span>、行高 <span class="num">1.25</span></dd>
+                  <dd>黃色螢光筆底 <code>.marker</code>；黑帶上改黃字、不加螢光筆</dd>
+                </dl>
+              </li>
+              <li>
+                <p class="gl-scale-sample rule-title mb-0 pb-0 border-0">購買品項</p>
+                <dl class="gl-scale-spec">
+                  <dt>小節標題</dt>
+                  <dd><span class="num">24／22px</span>、<span class="num">900</span>，下方 <span class="num">2px</span> 黑線</dd>
+                  <dd><code>.rule-title</code>（付款結果、本頁小節）</dd>
+                </dl>
+              </li>
+              <li>
+                <p class="gl-scale-sample h3">自由模組變化</p>
+                <dl class="gl-scale-spec">
+                  <dt>H3：卡片與欄位群組標題</dt>
+                  <dd><span class="num">20／18px</span>、<span class="num">700</span>、行高 <span class="num">1.4</span></dd>
+                  <dd><code>h3</code>、<code>.h3</code></dd>
+                </dl>
+              </li>
+              <li>
+                <p class="gl-scale-sample">嚴選北美 FAS 級白橡木打造，保留天然溫潤的木紋肌理與原木觸感。</p>
+                <dl class="gl-scale-spec">
+                  <dt>內文</dt>
+                  <dd><span class="num">15px</span>、<span class="num">400</span>、行高 <span class="num">1.7</span></dd>
+                  <dd>密度高，但內文不小於 <span class="num">15px</span></dd>
+                </dl>
+              </li>
+              <li>
+                <p class="gl-scale-sample small text-secondary">餐桌椅｜W160&nbsp;×&nbsp;D80&nbsp;×&nbsp;H75&nbsp;cm</p>
+                <dl class="gl-scale-spec">
+                  <dt>輔助文字</dt>
+                  <dd><span class="num">14px</span>、<span class="num">400</span>、行高 <span class="num">1.6</span></dd>
+                  <dd>分類、尺寸、說明；<code>.small</code>、<code>.form-text</code></dd>
+                </dl>
+              </li>
+              <li>
+                <p class="gl-scale-sample"><span class="tag">現貨</span> <span class="tag tag-volt">僅剩 5 件</span></p>
+                <dl class="gl-scale-spec">
+                  <dt>標籤、按鈕</dt>
+                  <dd>標籤 <span class="num">14px</span>、按鈕 <span class="num">16px</span>，都是 <span class="num">700</span>；<code>.btn-volt</code> <span class="num">17px 900</span></dd>
+                </dl>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 字級用價格示範：價格是每個畫面最大的字 -->
+          <div class="gl-block">
+            <h3 class="rule-title">價格字級<span class="rule-title-aside"><code>.price-tag</code> 的尺寸</span></h3>
+            <p class="gl-note">本風格的字級階梯，最上層不是標題而是價格。同一個畫面裡，越接近付款的金額越大。</p>
+            <ul class="gl-ladder">
+              <li>
+                <span class="price-tag price-tag-sm"><span class="price-cur">NT$</span><span class="price-num">7,800</span></span>
+                <p><span class="gl-ladder-size">18px</span>　<code>.price-tag-sm</code>：首頁 lookbook 卡的商品清單、熱點商品小卡</p>
+              </li>
+              <li>
+                <span class="price-tag price-tag-card"><span class="price-cur">NT$</span><span class="price-num">16,800</span></span>
+                <p><span class="gl-ladder-size">28／22px</span>　<code>.price-tag-card</code>：商品卡、購物車與付款結果的品項小計、訂單明細</p>
+              </li>
+              <li>
+                <span class="price-tag price-tag-set"><span class="price-cur">NT$</span><span class="price-num">26,680</span></span>
+                <p><span class="gl-ladder-size">32px</span>　<code>.price-tag-set</code>：首頁整套價、我的訂單金額、付款結果的付款金額列</p>
+              </li>
+              <li>
+                <span class="price-tag price-tag-total"><span class="price-cur">NT$</span><span class="price-num">20,250</span></span>
+                <p><span class="gl-ladder-size">40／28px</span>　<code>.price-tag-total</code>：固定結帳列的應付總計（黑底黃字）</p>
+              </li>
+              <li>
+                <span class="price-tag price-tag-hero"><span class="price-cur">NT$</span><span class="price-num">20,250</span></span>
+                <p><span class="gl-ladder-size">64／44px</span>　<code>.price-tag-hero</code>：商品詳情的黃色吊牌、付款結果成功帶的付款金額</p>
+              </li>
+            </ul>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">數字與換行</h3>
+            <div class="row gx-lg-5 gy-5">
+              <div class="col-lg-6">
+                <h4 class="gl-minor mt-0">等寬數字 <code>.num</code></h4>
+                <div class="gl-stage">
+                  <p class="mb-2"><span class="num fs-5">NC-20260923-001</span></p>
+                  <p class="mb-2">共 <span class="num">4</span> 件，預計到貨 <span class="num">2026-10-02</span></p>
+                  <p class="mb-0">滿 <span class="num">NT$&nbsp;25,000</span> 折 <span class="num">NT$&nbsp;1,000</span></p>
+                </div>
+                <ul class="gl-rules">
+                  <li>訂單編號、件數、日期、倒數、門檻金額都包 <code>.num</code>（Inter Tight <span class="num">800</span>、等寬）。</li>
+                  <li>數字與單位之間用不換行空白 <code>&amp;nbsp;</code>：<span class="num">NT$&nbsp;4,750</span>、<span class="num">14</span>&nbsp;天、<span class="num">48</span>&nbsp;小時。</li>
+                </ul>
+              </div>
+              <div class="col-lg-6">
+                <h4 class="gl-minor mt-0">品名換行 <code>.text-phrase</code>＋<code>&lt;wbr&gt;</code></h4>
+                <div class="gl-stage">
+                  <p class="gl-narrow product-card-title mb-0">日暮亞麻｜<wbr>雙人沙發床 (底座隱藏收納)</p>
+                </div>
+                <ul class="gl-rules">
+                  <li>長品名在詞組之間放 <code>&lt;wbr&gt;</code>，配合 <code>.text-phrase</code>（<code>word-break: keep-all</code>），只在這些位置換行，「沙發床」不會被拆開。</li>
+                  <li>商品卡品名最多 <span class="num">2</span> 行，完整品名在商品詳情看得到。</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 04 間距 ==================== -->
+      <section id="gl-space" class="gl-section" aria-labelledby="gl-space-title">
+        <div class="container">
+          <header class="gl-head">
+            <span class="gl-head-no" aria-hidden="true">04</span>
+            <div>
+              <h2 id="gl-space-title"><span class="marker">間距</span></h2>
+              <p class="gl-head-lead text-phrase">密度高、節奏快：<wbr>區塊上下 <span class="num">48／64px</span>，<wbr>卡片之間 <span class="num">24px</span>、列距 <span class="num">40px</span>。<wbr>Bootstrap 的 <code>$spacers</code> 改成八階，<wbr>手機 <span class="num">12px</span> gutter 與 <span class="num">40px</span> 列距都有對應的工具類別。</p>
+            </div>
+            <p class="gl-head-src"><span class="visually-hidden">數值來源：</span><code>_variables.scss</code> 3. 間距</p>
+          </header>
+
+          <ul class="gl-spacers">
+            <li class="d-none d-md-grid" aria-hidden="true"><strong>工具類別</strong><strong>數值</strong><strong></strong><strong>用在哪裡</strong></li>
+            <li><code>*-1</code><span class="num">4px</span><span class="gl-spacer-bar" style="width: 4px"></span><span class="gl-spacer-use">圖示與文字、標籤之間</span></li>
+            <li><code>*-2</code><span class="num">8px</span><span class="gl-spacer-bar" style="width: 8px"></span><span class="gl-spacer-use">H2 與說明、商品詳情的圖片直排間距</span></li>
+            <li><code>*-3</code><span class="num">12px</span><span class="gl-spacer-bar" style="width: 12px"></span><span class="gl-spacer-use">手機商品格的 gutter（<code>gx-3</code>）、按鈕之間</span></li>
+            <li><code>*-4</code><span class="num">16px</span><span class="gl-spacer-bar" style="width: 16px"></span><span class="gl-spacer-use">手機版心左右內距、頁首上方、欄位群組之間</span></li>
+            <li><code>*-5</code><span class="num">24px</span><span class="gl-spacer-bar" style="width: 24px"></span><span class="gl-spacer-use">桌機卡片 gutter（<code>gx-md-5</code>）、區塊標題列下方（手機）</span></li>
+            <li><code>*-6</code><span class="num">40px</span><span class="gl-spacer-bar" style="width: 40px"></span><span class="gl-spacer-use">商品格列距（<code>gy-6</code>）、區塊標題列下方（桌機）</span></li>
+            <li><code>*-7</code><span class="num">48px</span><span class="gl-spacer-bar" style="width: 48px"></span><span class="gl-spacer-use">手機區塊上下（<code>.section</code>）、<code>.page-body</code> 下緣</span></li>
+            <li><code>*-8</code><span class="num">64px</span><span class="gl-spacer-bar" style="width: 64px"></span><span class="gl-spacer-use">桌機區塊上下、設計稿狀態示意上方</span></li>
+          </ul>
+
+          <div class="gl-block">
+            <h3 class="rule-title">頁首節奏與黏性位移</h3>
+            <div class="gl-rhythm">
+              <div class="gl-rhythm-bars" role="img" aria-label="頁首由上而下：黃色倒數條 40px、黑色主列 64px；本頁另有 52px 黑色目錄列">
+                <div class="is-countdown"><span>黃色倒數條</span><span class="num">40px</span></div>
+                <div class="is-bar"><span>純黑主列（捲動後留在頂端）</span><span class="num">64px</span></div>
+                <div class="is-toc"><span>本頁目錄列（只在 Guideline）</span><span class="num">52px</span></div>
+                <div class="is-page"><span>頁面內容</span></div>
+              </div>
+              <ul class="gl-rules mt-0">
+                <li><code>.site-header</code> 是 sticky，<code>top: -40px</code>（<code>$site-countdown-height</code>）：往下捲時倒數條離開，黑列（<code>$site-bar-height</code> <span class="num">64px</span>）留在頂端。</li>
+                <li><code>html { scroll-padding-top: 72px }</code>（<code>$sticky-top-offset</code>）：錨點與 Tab 到的欄位不會被黑列蓋住。</li>
+                <li>停在黑列下方的元件：商品一覽的分類列 <code>top: 64px</code>、本頁目錄列 <code>top: 64px</code>、商品詳情的資訊欄 <code>top: 88px</code>（<span class="num">1200px</span> 以上視窗高 <span class="num">800px</span> 起、<span class="num">992～1199px</span> 視窗高 <span class="num">864px</span> 起；資訊欄要比視窗矮才黏）。</li>
+                <li>本頁章節另加 <code>scroll-margin-top: 52px</code>，點目錄跳過去時標題不會被目錄列蓋住。</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">版心與區塊</h3>
+            <ul class="gl-widths">
+              <li><span class="gl-width-bar"><span><code class="text-white">.container</code> 首頁、商品一覽、商品詳情、Guideline</span><span class="num">1440</span></span></li>
+              <li><span class="gl-width-bar is-1280"><span><code class="text-white">.container-flow</code> 購物車、結帳</span><span class="num">1280</span></span></li>
+              <li><span class="gl-width-bar is-1080"><span><code class="text-white">.container-narrow</code> 付款結果、我的訂單</span><span class="num">1080</span></span></li>
+              <li><span class="gl-width-bar is-split"><span><code>.bleed-split</code> 登入、註冊、首頁 Hero 與 CTA</span><span>滿版左右半</span></span></li>
+            </ul>
+            <ul class="gl-rules">
+              <li>版心最寬 <span class="num">1440px</span>（比其他風格寬，商品一次放得多）。<code>.container</code> 左右內距：手機各 <span class="num">16px</span>、<span class="num">768px</span> 以上各 <span class="num">32px</span>，都不小於 gutter 的一半，<code>.row</code> 不會溢出。</li>
+              <li>滿版左右半不放在 <code>.container</code> 裡：外層加 <code>.bleed-split</code>，文字欄用 mixin <code>shell-start</code>／<code>shell-end</code>，內容左緣和頁首 logo 對齊；<span class="num">1920</span> 寬時色塊滿版、文字仍對齊 <span class="num">1440</span> 版心。本頁的三大色塊也是這樣做。</li>
+              <li>區塊：<code>.section</code> 上下 <span class="num">48／64px</span>；區塊標題列 <code>.section-head</code> 下方 <span class="num">24／40px</span>；首頁以外各頁的頁首 <code>.page-header</code> 上 <span class="num">16／24px</span>、下 <span class="num">24／40px</span>；內容外層 <code>.page-body</code> 下緣 <span class="num">48／64px</span>。</li>
+              <li>元件：按鈕 <span class="num">56／48／44px</span>、輸入框與數量方鍵 <span class="num">48px</span>、選項卡內距 <span class="num">16px</span> 且彼此相隔 <span class="num">12px</span>；設計稿狀態示意上方 <span class="num">64px</span>、舞台內距 <span class="num">24／40px</span>。</li>
+              <li>固定結帳列：桌機 <span class="num">88px</span>、手機 <span class="num">72px</span>；頁尾底部內距加上「列高＋<span class="num">16px</span>」，最後一段內容與頁尾不會被蓋住（見第 <span class="num">09</span> 節）。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 05 圓角與陰影 ==================== -->
+      <section id="gl-shape" class="gl-section" aria-labelledby="gl-shape-title">
+        <div class="container">
+          <header class="gl-head">
+            <span class="gl-head-no" aria-hidden="true">05</span>
+            <div>
+              <h2 id="gl-shape-title"><span class="marker">圓角與陰影</span></h2>
+              <p class="gl-head-lead text-phrase">圓角一律 <span class="num">0</span>，陰影完全不用。<wbr>分層靠色塊與線：<wbr>黑 <span class="num">1px</span> 分隔、黑 <span class="num">2px</span> 圍出可以按的東西，<wbr>浮起來的東西用黑色實面或 <span class="num">1px</span> 黑框。</p>
+            </div>
+            <p class="gl-head-src"><span class="visually-hidden">數值來源：</span><code>_variables.scss</code> 4. 邊框、圓角、陰影</p>
+          </header>
+
+          <div class="row gx-lg-5 gy-5">
+            <div class="col-lg-6">
+              <h3 class="rule-title">圓角一律 0</h3>
+              <div class="gl-stage gl-stage-row">
+                <button class="btn btn-volt btn-sm" type="button" tabindex="-1">直接購買</button>
+                <span class="tag">現貨</span>
+                <span class="qty" aria-hidden="true">
+                  <span class="qty-btn"><i class="bi bi-dash-lg"></i></span>
+                  <span class="qty-input d-grid align-items-center">2</span>
+                  <span class="qty-btn"><i class="bi bi-plus-lg"></i></span>
+                </span>
+                <span class="d-inline-flex align-items-center gap-2">
+                  <input class="form-check-input mt-0" type="radio" name="gl-radio-shape" id="gl-radio-shape" checked>
+                  <label class="form-check-label small" for="gl-radio-shape">radio 是圓的</label>
+                </span>
+                <span class="gl-spot"><button class="look-spot-btn" type="button" tabindex="-1" aria-label="熱點圓鈕（示意）"><i class="bi bi-plus-lg" aria-hidden="true"></i></button></span>
+              </div>
+              <ul class="gl-rules">
+                <li><code>$enable-rounded: false</code>，所有 <code>$border-radius*</code> 都是 <span class="num">0</span>；按鈕、輸入框、標籤、票券、抽屜、Toast 一律直角。數量增減也是方塊。</li>
+                <li>例外只有兩個：radio 與首頁情境圖上的熱點圓鈕（<code>$border-radius-pill</code>）。</li>
+              </ul>
+            </div>
+            <div class="col-lg-6">
+              <h3 class="rule-title">陰影：不用</h3>
+              <div class="gl-float">
+                <div>
+                  <div class="dropdown-menu look-spot-card on-dark">
+                    <div class="look-spot-head">
+                      <div class="look-spot-thumb img-frame"><img src="images/p-1004.jpg" alt="" width="1200" height="1200" loading="lazy"></div>
+                      <div>
+                        <p class="look-spot-name text-phrase">極簡床頭櫃</p>
+                        <p class="look-spot-price"><span class="price-tag price-tag-sm"><span class="price-cur">NT$</span><span class="price-num">7,800</span></span></p>
+                      </div>
+                    </div>
+                    <p class="look-spot-size">W45&nbsp;×&nbsp;D40&nbsp;×&nbsp;H50&nbsp;cm</p>
+                    <div class="look-spot-actions">
+                      <button class="btn btn-volt btn-card" type="button" data-add-cart="極簡床頭櫃">加入購物車</button>
+                      <a class="btn btn-text" href="product.html">查看商品</a>
+                    </div>
+                  </div>
+                  <p class="gl-label">首頁熱點小卡：黑色實面</p>
+                </div>
+                <div>
+                  <div class="toast site-toast show" aria-hidden="true">
+                    <div class="toast-body"><i class="bi bi-check-square-fill"></i><span>已加入購物車</span></div>
+                  </div>
+                  <p class="gl-label">Toast：黑色實面</p>
+                </div>
+                <div>
+                  <div class="gl-mini-bar">
+                    <span class="price-tag"><span class="price-cur">NT$</span><span class="price-num">20,250</span></span>
+                  </div>
+                  <p class="gl-label">固定結帳列：黑色實面</p>
+                </div>
+              </div>
+              <ul class="gl-rules">
+                <li><code>$enable-shadows: false</code>，<code>$box-shadow*</code> 都是 <code>none</code>。</li>
+                <li>浮起的東西：熱點小卡、Toast、固定結帳列、手機選單是黑色實面；商品一覽的篩選抽屜是白底＋黑色標題列，和頁面之間靠 <span class="num">60%</span> 黑色遮罩分開。<code>_variables.scss</code> 也把一般下拉設成白底 <span class="num">1px</span> 黑框、Modal 設成 <span class="num">2px</span> 黑框，目前 <span class="num">10</span> 頁沒有用到。</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">線</h3>
+            <ul class="gl-lines">
+              <li><span class="gl-line-sample is-1" aria-hidden="true"></span><p><strong>黑 <span class="num">1px</span></strong>輸入框、清單分隔、頁尾分隔</p></li>
+              <li><span class="gl-line-sample is-2" aria-hidden="true"></span><p><strong>黑 <span class="num">2px</span></strong>按鈕框、選項卡、票券、訂單票卡、區塊上緣</p></li>
+              <li><span class="gl-line-sample is-4" aria-hidden="true"></span><p><strong>黑 <span class="num">4px</span>（只當底線）</strong>分頁籤選中、導覽目前頁（黃色）</p></li>
+              <li><span class="gl-line-sample is-grey" aria-hidden="true"></span><p><strong>灰 <span class="num">1px</span></strong><code>#D6D6D6</code>：品項列、表格列之間</p></li>
+              <li><span class="gl-line-sample is-dash" aria-hidden="true"></span><p><strong>黑 <span class="num">2px</span> 虛線</strong>票券與訂單卡的撕線</p></li>
+              <li><span class="gl-line-sample is-off" aria-hidden="true"></span><p><strong>灰 <span class="num">1px</span> 虛線</strong><code>#8A8A8A</code>：停用、已售完、已取消</p></li>
+            </ul>
+            <ul class="gl-rules">
+              <li>不用 <span class="num">3px</span> 以上的粗框盒、不用硬陰影、不用規格銘牌（那是 03 街頭機能風的語言）。<code>$border-widths</code> 裡的 <span class="num">4px</span> 只拿來畫底線。</li>
+              <li>框線一開始就存在：按鈕、選項卡 hover 時只換顏色，不加框、不變粗，尺寸不變。</li>
+            </ul>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">鍵盤焦點</h3>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="gl-stage gl-stage-white gl-stage-row">
+                  <button class="btn btn-outline-dark gl-is-focus" type="button" tabindex="-1">繼續購物</button>
+                </div>
+                <p class="gl-label">白底：<span class="num">3px</span> 黑實線＋<span class="num">2px</span> 偏移</p>
+              </div>
+              <div class="col-md-4">
+                <div class="gl-stage band-volt gl-stage-row">
+                  <button class="btn btn-dark gl-is-focus" type="button" tabindex="-1">探索空間靈感</button>
+                </div>
+                <p class="gl-label">黃底：同樣是 <span class="num">3px</span> 黑實線</p>
+              </div>
+              <div class="col-md-4">
+                <div class="gl-stage band-dark gl-stage-row">
+                  <button class="btn btn-volt gl-is-focus" type="button" tabindex="-1">前往結帳</button>
+                  <span class="gl-spot"><button class="look-spot-btn gl-is-focus" type="button" tabindex="-1" aria-label="熱點圓鈕（示意：焦點）"><i class="bi bi-plus-lg" aria-hidden="true"></i></button></span>
+                </div>
+                <p class="gl-label">黑底：<span class="num">3px</span> 黃實線；照片上的熱點：黑框外加一圈黃</p>
+              </div>
+            </div>
+            <ul class="gl-rules">
+              <li>焦點用 <code>outline</code>，不用 <code>box-shadow</code> 模擬，也不改變元件尺寸。黑色面（頁首黑列、黑帶、結帳列、熱點小卡）加 <code>.on-dark</code> 或 <code>.band-dark</code>，焦點自動改成黃色。</li>
+              <li>放在容器裡、外側會被切掉的元件（分頁籤、數量方鍵、箭頭步驟的連結、目錄列）改成內縮焦點框（<code>outline-offset: -3px</code>）。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 06 價格牌 ==================== -->
+      <section id="gl-price" class="gl-section" aria-labelledby="gl-price-title">
+        <div class="container">
+          <header class="gl-head">
+            <span class="gl-head-no" aria-hidden="true">06</span>
+            <div>
+              <h2 id="gl-price-title"><span class="marker">價格牌</span></h2>
+              <p class="gl-head-lead text-phrase">招牌元素之一「大字號金額標籤」。<wbr>全站所有金額都用同一個 <code>.price-tag</code>，<wbr>只換尺寸；商品詳情再掛上一張黃色吊牌。</p>
+            </div>
+            <p class="gl-head-src"><span class="visually-hidden">數值來源：</span><code>_base.scss</code> 大字號金額標籤</p>
+          </header>
+
+          <div class="gl-anatomy">
+            <div class="gl-anatomy-stage">
+              <span class="price-tag"><span class="price-cur">NT$</span><span class="price-num">16,800</span></span>
+            </div>
+            <ol class="gl-anatomy-list">
+              <li><p><strong>幣別 <code>.price-cur</code></strong>數字的 <span class="num">0.42</span> 倍（小價格時至少 <span class="num">11px</span>）、Inter Tight <span class="num">800</span>，上緣和數字對齊，像價格牌上的小字。</p></li>
+              <li><p><strong>數字 <code>.price-num</code></strong>Inter Tight <span class="num">900</span>、等寬數字、字距 <code>-0.02em</code>，行高 <span class="num">1</span>。</p></li>
+              <li><p><strong>不斷行</strong><code>white-space: nowrap</code>；<span class="num">390px</span> 寬時最長的「NT$ 32,800」在 <span class="num">44px</span> 也放得下。</p></li>
+              <li><p><strong>朗讀</strong>讀出來就是「NT$16,800」，不需要另外加 <code>aria-label</code>；吊牌前面加一個 <code>visually-hidden</code> 的「售價」。</p></li>
+            </ol>
+          </div>
+          <pre class="gl-code"><code>&lt;span class="price-tag price-tag-card"&gt;&lt;span class="price-cur"&gt;NT$&lt;/span&gt;&lt;span class="price-num"&gt;16,800&lt;/span&gt;&lt;/span&gt;</code></pre>
+
+          <div class="gl-block">
+            <h3 class="rule-title">黃色價格吊牌 <code>.price-hangtag</code></h3>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="gl-stage gl-stage-white">
+                  <p class="price-hangtag"><span class="visually-hidden">售價</span><span class="price-tag price-tag-hero"><span class="price-cur">NT$</span><span class="price-num">16,800</span></span></p>
+                </div>
+                <p class="gl-label">有庫存：黃底黑字（<span class="num">16.46:1</span>），左側尖角＋<span class="num">12px</span> 黑色穿繩孔</p>
+              </div>
+              <div class="col-md-6">
+                <div class="gl-stage gl-stage-white">
+                  <p class="price-hangtag is-off"><span class="visually-hidden">售價</span><span class="price-tag price-tag-hero"><span class="price-cur">NT$</span><span class="price-num">12,600</span></span></p>
+                </div>
+                <p class="gl-label"><code>.is-off</code>：已售完（藤編收納櫃），停用灰底、數字仍清楚（<span class="num">5.97:1</span>）</p>
+              </div>
+            </div>
+            <ul class="gl-rules">
+              <li>吊牌只用在商品詳情（橡木餐桌 <span class="num">NT$&nbsp;16,800</span>），包住 <code>.price-tag-hero</code>：桌機 <span class="num">64px</span>、手機 <span class="num">44px</span>。旁邊接庫存標籤（<code>.tag-outline</code>「庫存 <span class="num">12</span> 件」或 <code>.tag-volt</code>「僅剩 <span class="num">5</span> 件」）。</li>
+              <li>黑色面上的大金額改成黃字：固定結帳列的應付總計、付款結果成功帶的付款金額（黑底黃字 <span class="num">16.46:1</span>）。</li>
+              <li>不做原價刪除線、不做「省下多少」：折價券不改任何金額，總額一律是實際要付的 <span class="num">NT$&nbsp;20,250</span>。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 07 折價券與倒數 ==================== -->
+      <section id="gl-coupon" class="gl-section" aria-labelledby="gl-coupon-title">
+        <div class="container">
+          <header class="gl-head">
+            <span class="gl-head-no" aria-hidden="true">07</span>
+            <div>
+              <h2 id="gl-coupon-title"><span class="marker">折價券與倒數</span></h2>
+              <p class="gl-head-lead text-phrase">招牌元素之二。<wbr>一張票券（左右各一個半圓缺口、票根與主體之間 <span class="num">2px</span> 黑虛線）<wbr>加上一個真的會走的倒數。<wbr>下面的倒數和頁首一樣，由 <code>js/main.js</code> 每秒更新。</p>
+            </div>
+            <p class="gl-head-src"><span class="visually-hidden">數值來源：</span><code>components/_coupon.scss</code></p>
+          </header>
+
+          <div class="gl-offer">
+            <div>
+              <p class="mb-0 fw-bold">活動只有一張</p>
+              <p class="gl-offer-amount price-tag"><span class="price-cur">NT$</span><span class="price-num">1,000</span></p>
+            </div>
+            <div>
+              <dl>
+                <div><dt>內容</dt><dd>滿 <span class="num">NT$&nbsp;25,000</span> 折 <span class="num">NT$&nbsp;1,000</span>，登入（或完成註冊）後領取</dd></div>
+                <div><dt>截止</dt><dd>今日 <span class="num">23:59</span>；倒數算到當天 <span class="num">23:59:59</span>，不做歸零就重來的假倒數</dd></div>
+                <div><dt>金額</dt><dd>設計稿示意，<strong>不套用在任何金額上</strong>：購物車 <span class="num">NT$&nbsp;20,250</span> 沒有達到門檻（還差 <span class="num">NT$&nbsp;4,750</span>），總額、付款結果、訂單金額都和其他風格相同。</dd></div>
+              </dl>
+            </div>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">票券的五種樣子</h3>
+            <div class="gl-coupons">
+              <div>
+                <h4 class="gl-minor mt-0">白面上：黃底＋<span class="num">2px</span> 黑框 <code>.coupon</code></h4>
+                <div class="gl-stage gl-stage-white">
+                  <div class="coupon">
+                    <div class="coupon-stub">
+                      <span class="coupon-label">限時券</span>
+                      <span class="price-tag coupon-amount"><span class="price-cur">NT$</span><span class="price-num">1,000</span></span>
+                      <span class="coupon-rule">滿 <span class="num">NT$&nbsp;25,000</span> 可用</span>
+                    </div>
+                    <div class="coupon-main">
+                      <span class="coupon-deadline" aria-hidden="true">今日 23:59 截止</span>
+                      <span class="countdown countdown-lg">
+                        <span class="visually-hidden">活動今日 23:59 截止</span>
+                        <span class="countdown-num" data-countdown aria-hidden="true">05:42:18</span>
+                      </span>
+                      <a class="btn btn-dark btn-sm" href="login.html">登入領取</a>
+                    </div>
+                  </div>
+                </div>
+                <p class="gl-label">登入、註冊在 <span class="num">992px</span> 以下（照片下方、白色頁面上）</p>
+              </div>
+              <div>
+                <h4 class="gl-minor mt-0">黃面上：白底不加框 <code>.coupon-on-volt</code>＋<code>.coupon-lg</code></h4>
+                <div class="gl-stage band-volt">
+                  <div class="coupon coupon-on-volt coupon-lg">
+                    <div class="coupon-stub">
+                      <span class="coupon-label">限時券</span>
+                      <span class="price-tag coupon-amount"><span class="price-cur">NT$</span><span class="price-num">1,000</span></span>
+                      <span class="coupon-rule">滿 <span class="num">NT$&nbsp;25,000</span> 可用</span>
+                    </div>
+                    <div class="coupon-main">
+                      <span class="coupon-deadline" aria-hidden="true">今日 23:59 截止</span>
+                      <span class="countdown countdown-lg">
+                        <span class="visually-hidden">活動今日 23:59 截止</span>
+                        <span class="countdown-num" data-countdown aria-hidden="true">05:42:18</span>
+                      </span>
+                      <a class="btn btn-dark btn-sm" href="login.html">登入領取</a>
+                    </div>
+                  </div>
+                </div>
+                <p class="gl-label">首頁 Hero 的左半黃塊（面額 <span class="num">48px</span>，手機 <span class="num">40px</span>）</p>
+              </div>
+              <div>
+                <h4 class="gl-minor mt-0">旁邊已有黃色大面：白底黑框 <code>.coupon-plain</code>＋小版 <code>.coupon-sm</code></h4>
+                <div class="gl-stage gl-stage-white">
+                  <div class="coupon coupon-plain coupon-sm">
+                    <div class="coupon-stub">
+                      <span class="coupon-label">限時券</span>
+                      <span class="price-tag coupon-amount"><span class="price-cur">NT$</span><span class="price-num">1,000</span></span>
+                      <span class="coupon-rule">滿 <span class="num">NT$&nbsp;25,000</span> 可用</span>
+                    </div>
+                    <div class="coupon-main">
+                      <span class="coupon-timer">
+                        <span class="coupon-deadline" aria-hidden="true">今日 23:59 截止</span>
+                        <span class="countdown"><span class="visually-hidden">活動今日 23:59 截止</span><span class="countdown-num" data-countdown aria-hidden="true">05:42:18</span></span>
+                      </span>
+                      <a class="btn btn-dark btn-sm" href="login.html">登入領取</a>
+                    </div>
+                  </div>
+                </div>
+                <p class="gl-label">商品詳情：黃色吊牌正下方。照片有一大面黃牆的登入、註冊（<span class="num">992px</span> 以上）也改用白底黑框</p>
+              </div>
+              <div>
+                <h4 class="gl-minor mt-0">直式 <code>.coupon-stack</code>（撕線位置 <code>--coupon-split</code>）</h4>
+                <div class="gl-stage gl-stage-white">
+                  <div class="row g-3">
+                    <div class="col-sm-6">
+                      <section class="coupon coupon-stack products-promo gl-coupon-stack-demo" aria-labelledby="gl-promo-title">
+                        <div class="coupon-stub">
+                          <span class="coupon-label">限時券</span>
+                          <h5 id="gl-promo-title" class="products-promo-amount"><span class="price-tag coupon-amount"><span class="price-cur">NT$</span><span class="price-num">1,000</span></span><span class="visually-hidden">折價券</span></h5>
+                          <span class="coupon-rule">滿 <span class="num">NT$&nbsp;25,000</span> 可用</span>
+                        </div>
+                        <div class="coupon-main">
+                          <span class="coupon-timer">
+                            <span class="coupon-deadline" aria-hidden="true">今日 23:59 截止</span>
+                            <span class="countdown countdown-lg"><span class="visually-hidden">活動今日 23:59 截止</span><span class="countdown-num" data-countdown aria-hidden="true">05:42:18</span></span>
+                          </span>
+                          <a class="btn btn-dark btn-sm" href="login.html">登入領取</a>
+                        </div>
+                      </section>
+                    </div>
+                    <div class="col-sm-6">
+                      <section class="coupon coupon-plain coupon-stack cart-coupon gl-coupon-cart-demo" aria-labelledby="gl-cart-coupon-title">
+                        <div class="coupon-stub">
+                          <div class="cart-coupon-head">
+                            <span class="coupon-label">限時券</span>
+                            <span class="coupon-timer cart-coupon-timer">
+                              <span class="coupon-deadline" aria-hidden="true">今日 23:59 截止</span>
+                              <span class="countdown"><span class="visually-hidden">活動今日 23:59 截止</span><span class="countdown-num" data-countdown aria-hidden="true">05:42:18</span></span>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="coupon-main">
+                          <h5 id="gl-cart-coupon-title" class="cart-coupon-title">滿 <span class="num">NT$&nbsp;25,000</span> 折 <span class="num">NT$&nbsp;1,000</span></h5>
+                          <div class="progress cart-coupon-bar" role="progressbar" aria-label="折價券門檻進度" aria-valuenow="81" aria-valuemin="0" aria-valuemax="100" aria-valuetext="81%，已累積 NT$ 20,250">
+                            <div class="progress-bar" style="width: 81%"></div>
+                          </div>
+                          <p class="cart-coupon-progress">
+                            <span>已累積 <span class="num">NT$&nbsp;20,250</span>，還差 <strong class="num">NT$&nbsp;4,750</strong></span>
+                            <span class="num cart-coupon-pct" aria-hidden="true">81%</span>
+                          </p>
+                          <a class="btn btn-dark w-100" href="products.html">去湊單</a>
+                        </div>
+                      </section>
+                    </div>
+                  </div>
+                </div>
+                <p class="gl-label">左：商品一覽第 <span class="num">5</span> 格（黃底、撕線在正中間；高度跟著同列商品卡，「限時券」在頂端、面額貼著撕線，滿寬「登入領取」貼齊底部）；右：購物車右欄的進度票券（白底黑框、<code>--coupon-split: 5.5rem</code>）</p>
+              </div>
+            </div>
+            <ul class="gl-rules">
+              <li>選哪一種只看「放在什麼面上」：白面上用黃底黑框；黃面上改白底不加框；旁邊已經有黃色大面（吊牌、黃牆照片）時用白底黑框，避免黃色連成一片。</li>
+              <li>缺口用 <code>mask</code> 挖出 <span class="num">16px</span> 半圓，再用背景畫出 <span class="num">2px</span> 弧線，和外框接成一圈；直式票券的缺口跟著撕線移到兩端。</li>
+              <li>票根放「限時券」標籤（黑底黃字）與面額；主體放截止時間、倒數與動作（黑色 <code>.btn-dark</code>，不搶黃按鈕的位置）。</li>
+            </ul>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">倒數 <code>.countdown</code></h3>
+            <div class="row gx-lg-5 gy-4">
+              <div class="col-lg-6">
+                <div class="gl-stage gl-timers">
+                  <div><span class="gl-label mt-0">頁首倒數條 <span class="num">16px</span></span><span class="countdown"><span class="visually-hidden">活動今日 23:59 截止</span><span class="countdown-num is-16" data-countdown aria-hidden="true">05:42:18</span></span></div>
+                  <div><span class="gl-label mt-0">小票券、進度票券 <span class="num">20px</span></span><span class="countdown"><span class="visually-hidden">活動今日 23:59 截止</span><span class="countdown-num is-20" data-countdown aria-hidden="true">05:42:18</span></span></div>
+                  <div><span class="gl-label mt-0">票券 <code>.countdown-lg</code> <span class="num">28px</span></span><span class="countdown countdown-lg"><span class="visually-hidden">活動今日 23:59 截止</span><span class="countdown-num" data-countdown aria-hidden="true">05:42:18</span></span></div>
+                </div>
+                <pre class="gl-code"><code>&lt;span class="coupon-deadline" aria-hidden="true"&gt;今日 23:59 截止&lt;/span&gt;
+&lt;span class="countdown countdown-lg"&gt;
+  &lt;span class="visually-hidden"&gt;活動今日 23:59 截止&lt;/span&gt;
+  &lt;span class="countdown-num" data-countdown aria-hidden="true"&gt;05:42:18&lt;/span&gt;
+&lt;/span&gt;</code></pre>
+              </div>
+              <div class="col-lg-6">
+                <ul class="gl-rules mt-0">
+                  <li>HTML 先寫一個靜態值（<span class="num">05:42:18</span>），<code>js/main.js</code> 載入後每秒把所有 <code>[data-countdown]</code> 換成到今天 <span class="num">23:59:59</span> 的 <code>HH:MM:SS</code>。JS 失效時，旁邊仍有「今日 23:59 截止」。</li>
+                  <li>數字加 <code>aria-hidden="true"</code>，旁邊放 <code>visually-hidden</code> 的「活動今日 23:59 截止」；<strong>不加 <code>aria-live</code></strong>，否則螢幕閱讀器會每秒朗讀一次。</li>
+                  <li>Inter Tight <span class="num">800</span>、等寬數字、<code>min-width: 8ch</code>：每秒變化時寬度不變，不推擠旁邊的文字。</li>
+                  <li>不做翻牌、冒號不閃、歸零不重來。倒數是資訊不是動畫，<code>prefers-reduced-motion</code> 時照常更新。</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">出現在哪些頁面</h3>
+            <div class="table-responsive">
+              <table class="table gl-table">
+                <caption class="visually-hidden">折價券與倒數在 10 個頁面的位置</caption>
+                <thead>
+                  <tr><th scope="col">頁面</th><th scope="col">位置與樣子</th></tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row">全部 <span class="num">10</span> 頁</th><td>頁首的黃色倒數條（<span class="num">40px</span>）：黑底黃字「限時券」＋門檻＋「今日 23:59 截止」＋倒數＋「登入領取」。<span class="num">992px</span> 以下拿掉截止文字、改用「｜」分隔，<span class="num">768px</span> 以下拿掉「限時券」，<span class="num">576px</span> 以下再拿掉「｜」，一直維持一行。這是折價券元件，不是公告列。</td></tr>
+                  <tr><th scope="row">首頁</th><td>Hero 左半黃塊上的白色票券 <code>.coupon-on-volt.coupon-lg</code></td></tr>
+                  <tr><th scope="row">商品一覽</th><td>商品格第 <span class="num">5</span> 格的黃色直式票券方塊（面額依方塊寬度 <span class="num">32～56px</span>）</td></tr>
+                  <tr><th scope="row">商品詳情</th><td>黃色價格吊牌下方的白底黑框小票券 <code>.coupon-plain.coupon-sm</code></td></tr>
+                  <tr><th scope="row">購物車</th><td>右欄的白底黑框直式進度票券：<span class="num">81%</span> 黑色進度條、還差 <span class="num">NT$&nbsp;4,750</span>、「去湊單」</td></tr>
+                  <tr><th scope="row">結帳</th><td>訂單摘要條最後一行：黑底「折價券」標籤＋「還差 <span class="num">NT$&nbsp;4,750</span>，本次不折抵」（沒有倒數）</td></tr>
+                  <tr><th scope="row">登入、註冊</th><td>左半照片的左下角（<span class="num">992px</span> 以上白底黑框；以下在照片下方，黃底黑框）；文字分別是「登入領取限時券」「完成註冊即可領取」</td></tr>
+                  <tr><th scope="row">付款結果、我的訂單、Guideline</th><td>頁面內容不放票券（只有頁首倒數條）：已經付款或是在查訂單，不再推促銷</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 08 按鈕三階 ==================== -->
+      <section id="gl-buttons" class="gl-section" aria-labelledby="gl-buttons-title">
+        <div class="container">
+          <header class="gl-head">
+            <span class="gl-head-no" aria-hidden="true">08</span>
+            <div>
+              <h2 id="gl-buttons-title"><span class="marker">按鈕三階</span></h2>
+              <p class="gl-head-lead text-phrase">招牌元素之三「CTA 吸睛」。<wbr>吸睛靠的是稀少：<wbr>黃按鈕每張卡、每個區塊只有一顆，<wbr>其他行動退成黑底或白底黑框。<wbr>各階的 hover、焦點、停用見第 <span class="num">10</span> 節。</p>
+            </div>
+            <p class="gl-head-src"><span class="visually-hidden">數值來源：</span><code>_base.scss</code> 按鈕三階</p>
+          </header>
+
+          <ol class="gl-tiers">
+            <li>
+              <span class="gl-tier-no" aria-hidden="true">1</span>
+              <a class="btn btn-volt" href="checkout.html">前往結帳</a>
+              <div>
+                <h3><code>.btn-volt</code>：主要行動</h3>
+                <p>黃底、<span class="num">2px</span> 黑框、黑字 <span class="num">900</span>、高 <span class="num">56px</span>；hover 反轉成黑底黃字。每張卡、每個區塊只有一顆。</p>
+              </div>
+            </li>
+            <li>
+              <span class="gl-tier-no" aria-hidden="true">2</span>
+              <button class="btn btn-dark" type="button" data-add-cart="橡木餐桌">加入購物車</button>
+              <div>
+                <h3><code>.btn-dark</code>：次要行動</h3>
+                <p>黑底白字 <span class="num">700</span>、高 <span class="num">48px</span>；hover 變黃底黑字。商品卡「加入購物車」、票券「登入領取」、「去湊單」、折扣碼「套用」。</p>
+              </div>
+            </li>
+            <li>
+              <span class="gl-tier-no" aria-hidden="true">3</span>
+              <a class="btn btn-outline-dark" href="products.html">繼續購物</a>
+              <div>
+                <h3><code>.btn-outline-dark</code>：第三順位</h3>
+                <p>白底、<span class="num">2px</span> 黑框、黑字；hover 變黑底白字。和黃按鈕並排時的另一個選擇（「加入購物車」與「直接購買」、「繼續購物」與「查看我的訂單」）。</p>
+              </div>
+            </li>
+          </ol>
+          <p class="gl-label">另外兩種：<code>.btn-text</code> 文字連結型（粗體＋<span class="num">2px</span> 底線，hover 底線加粗到 <span class="num">4px</span>，高 <span class="num">44px</span>）；<code>.btn-card</code> 卡片裡的滿寬 <span class="num">48px</span> 按鈕。</p>
+
+          <div class="gl-block">
+            <h3 class="rule-title">三種底色上的配法</h3>
+            <div class="gl-surfaces">
+              <div class="gl-stage gl-stage-white">
+                <h4>白面</h4>
+                <div class="gl-surface-actions">
+                  <a class="btn btn-volt" href="checkout.html">直接購買</a>
+                  <button class="btn btn-outline-dark" type="button" data-add-cart="橡木餐桌">加入購物車</button>
+                  <a class="btn btn-text" href="products.html">繼續購物</a>
+                </div>
+                <p>黃按鈕一定有 <span class="num">2px</span> 黑框（黃色對白只有 <span class="num">1.28:1</span>，沒有框就看不出按鈕的邊）。</p>
+              </div>
+              <div class="gl-stage band-volt">
+                <h4>黃面 <code>.band-volt</code></h4>
+                <div class="gl-surface-actions">
+                  <a class="btn btn-dark" href="index.html#rooms">探索空間靈感</a>
+                  <a class="btn btn-outline-dark" href="index.html#featured">立即打造專屬角落</a>
+                </div>
+                <p>黃按鈕放在黃面上會看不見，主要行動改用 <code>.btn-dark</code>（hover 改白底）。首頁 Hero 的做法。</p>
+              </div>
+              <div class="gl-stage band-dark">
+                <h4>黑面 <code>.band-dark</code>／<code>.on-dark</code></h4>
+                <div class="gl-surface-actions">
+                  <button class="btn btn-volt" type="button" data-add-cart="極簡床頭櫃">加入購物車</button>
+                  <a class="btn btn-text" href="product.html">查看商品</a>
+                </div>
+                <p>黃按鈕不需要黑框，hover 改白底黑字；次要行動用 <code>.btn-text</code>，在黑面上自動改成白字。首頁熱點小卡、CTA 黑帶、固定結帳列。<code>_base.scss</code> 另備有白框白字的 <code>.btn-outline-light</code>，目前頁面沒有用到。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">高度</h3>
+            <div class="gl-stage gl-sizes">
+              <div><a class="btn btn-volt" href="checkout.html">直接購買</a><p class="gl-label"><code>.btn-volt</code>、<code>.btn-lg</code> 高 <span class="num">56px</span></p></div>
+              <div><button class="btn btn-dark" type="button" data-add-cart="橡木餐桌">加入購物車</button><p class="gl-label">預設、<code>.btn-card</code> 高 <span class="num">48px</span></p></div>
+              <div><a class="btn btn-dark btn-sm" href="login.html">登入領取</a><p class="gl-label"><code>.btn-sm</code> 高 <span class="num">44px</span></p></div>
+              <div><a class="btn btn-volt btn-card" href="checkout.html"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i>閃電結帳</a><p class="gl-label"><code>.btn-volt.btn-card</code> 降成 <span class="num">48px</span></p></div>
+            </div>
+            <ul class="gl-rules">
+              <li>三種高度都達到 <span class="num">44px</span> 觸控目標。框線一開始就存在，hover 只換顏色（<span class="num">120ms</span>），不加框、不放大、不位移。</li>
+              <li>圖示寫在文字前面（<code>&lt;i class="bi bi-lock-fill" aria-hidden="true"&gt;&lt;/i&gt;確認付款</code>），間距由 <code>.btn</code> 的 <code>gap: 8px</code> 處理。只有閃電結帳、確認付款、貨到通知我這類意義明確的動作才放圖示。</li>
+            </ul>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">每頁唯一的黃按鈕</h3>
+            <div class="table-responsive">
+              <table class="table gl-table">
+                <caption class="visually-hidden">各頁使用 .btn-volt 的位置</caption>
+                <thead>
+                  <tr><th scope="col">頁面</th><th scope="col"><code class="text-white">.btn-volt</code></th><th scope="col">同一區塊的其他行動</th></tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row">首頁</th><td>每張 lookbook 卡的「整套加入購物車」、熱點小卡「加入購物車」、人氣嚴選每張卡的「閃電結帳」、CTA 黑帶「立即開始我的改造」</td><td>Hero 在黃塊上，主要行動是黑底「探索空間靈感」</td></tr>
+                  <tr><th scope="row">商品一覽</th><td>篩選抽屜底部「顯示 <span class="num">10</span> 件商品」</td><td>商品卡「加入購物車」是 <code>.btn-dark</code></td></tr>
+                  <tr><th scope="row">商品詳情</th><td>「直接購買」（手機固定購買列也是）</td><td>白底黑框「加入購物車」；售完時改成黑底「貨到通知我」</td></tr>
+                  <tr><th scope="row">購物車</th><td>固定結帳列「前往結帳」；空狀態「去逛逛」</td><td>黑底「去湊單」「套用」、文字「繼續購物」</td></tr>
+                  <tr><th scope="row">結帳</th><td>固定結帳列「確認付款」</td><td>文字「返回購物車」</td></tr>
+                  <tr><th scope="row">付款結果</th><td>「查看我的訂單」；付款未完成時「重新付款」</td><td>白底黑框「繼續購物」「返回購物車」</td></tr>
+                  <tr><th scope="row">登入／註冊</th><td>「登入」／「註冊」</td><td>白底黑框 LINE、Google（登入）；文字「立即註冊」「前往登入」</td></tr>
+                  <tr><th scope="row">我的訂單</th><td>沒有（查詢頁，沒有要催促的行動）</td><td>文字「訂單明細」、白底黑框「再買一次」</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 09 固定結帳列 ==================== -->
+      <section id="gl-buybar" class="gl-section" aria-labelledby="gl-buybar-title">
+        <div class="container">
+          <header class="gl-head">
+            <span class="gl-head-no" aria-hidden="true">09</span>
+            <div>
+              <h2 id="gl-buybar-title"><span class="marker">固定結帳列</span></h2>
+              <p class="gl-head-lead text-phrase">購物車與結帳的金額摘要不在頁面裡，<wbr>而是固定在視窗底部的黑色結帳列 <code>.buybar</code>：<wbr>不管捲到哪裡，都看得到要付多少、下一步按哪裡。<wbr>下面的示意改成靜態，不固定在視窗底部。</p>
+            </div>
+            <p class="gl-head-src"><span class="visually-hidden">數值來源：</span><code>components/_buybar.scss</code></p>
+          </header>
+
+          <div class="gl-buybar-stage">
+            <p class="gl-buybar-page">頁面內容（品項、表單）</p>
+            <section class="buybar on-dark" aria-labelledby="gl-buybar-demo-title">
+              <div class="container container-flow buybar-inner">
+                <h3 id="gl-buybar-demo-title" class="visually-hidden">金額摘要（示意）</h3>
+                <dl class="buybar-sub">
+                  <div><dt>商品小計</dt><dd class="num">NT$ 20,250</dd></div>
+                  <div><dt>運費</dt><dd>免運</dd></div>
+                </dl>
+                <p class="buybar-total"><span class="buybar-total-label">應付總計</span><span class="price-tag price-tag-total"><span class="price-cur">NT$</span><span class="price-num">20,250</span></span></p>
+                <a class="btn btn-volt buybar-cta" href="checkout.html">前往結帳</a>
+              </div>
+            </section>
+          </div>
+          <ol class="gl-callouts">
+            <li><strong>商品小計、運費</strong><p>兩行白色小字，標籤是 <code>#B3B3B3</code>。<span class="num">992px</span> 以上才顯示；以下改放在購物車品項清單下方。</p></li>
+            <li><strong>應付總計</strong><p>黑底黃字 <code>.price-tag-total</code>：桌機 <span class="num">40px</span>、手機 <span class="num">28px</span>（<span class="num">16.46:1</span>）。</p></li>
+            <li><strong>主要行動</strong><p><code>.btn-volt</code>（黑面上不加框）：購物車「前往結帳」、結帳「確認付款」（<code>bi-lock-fill</code>）；最小寬 <span class="num">240／144px</span>。</p></li>
+          </ol>
+
+          <div class="gl-block">
+            <h3 class="rule-title">商品詳情的手機購買列 <code>.buybar-light</code></h3>
+            <div class="row gx-lg-5 gy-4 align-items-center">
+              <div class="col-lg-6">
+                <div class="gl-buybar-stage gl-buybar-light-demo">
+                  <p class="gl-buybar-page">商品圖片與資訊</p>
+                  <section class="buybar buybar-light pd-buybar" aria-labelledby="gl-pd-buybar-title">
+                    <div class="container buybar-inner">
+                      <h4 id="gl-pd-buybar-title" class="visually-hidden">快速購買：橡木餐桌（示意）</h4>
+                      <p class="buybar-total"><span class="price-tag"><span class="price-cur">NT$</span><span class="price-num">16,800</span></span></p>
+                      <button class="btn btn-outline-dark" type="button" data-add-cart="橡木餐桌">加入購物車</button>
+                      <a class="btn btn-volt" href="checkout.html">直接購買</a>
+                    </div>
+                  </section>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <ul class="gl-rules mt-0">
+                  <li>只在 <span class="num">992px</span> 以下出現（<code>body.has-buybar-sm</code>）：白底、上方 <span class="num">2px</span> 黑線、高 <span class="num">72px</span>；左價格 <span class="num">24px</span>（<span class="num">576px</span> 以下 <span class="num">20px</span>），右兩顆按鈕。</li>
+                  <li><span class="num">992px</span> 以上資訊欄就在圖片旁邊，購買按鈕一直看得到，所以不需要固定列。</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">規則</h3>
+            <ul class="gl-rules mt-0">
+              <li><code>&lt;body class="has-buybar"&gt;</code>（購物車、結帳）：頁尾底部內距加上「列高＋<span class="num">16px</span>」（桌機 <span class="num">104px</span>、手機 <span class="num">88px</span>），<code>html</code> 的 <code>scroll-padding-bottom</code> 同值。捲到底時頁尾不會被蓋住，Tab 到的欄位也不會躲在列後面。留白加在頁尾而不是 <code>body</code>，黃色頁尾和固定列之間不會露出白邊。</li>
+              <li>底色滿版，內容對齊版心（<code>.container.container-flow</code>，最寬 <span class="num">1280</span>）；<span class="num">1920</span> 寬時黑色鋪滿整個視窗寬度。</li>
+              <li>層級：<code>z-index: 1030</code>，高於頁面內容，低於頁首（<span class="num">1041</span>）、Offcanvas（<span class="num">1045</span>）、Modal（<span class="num">1055</span>）與 Toast（<span class="num">1090</span>）。加入購物車的 Toast 出現在列的上方（<code>bottom</code> 加上列高）。</li>
+              <li>列內有一個 <code>visually-hidden</code> 的 H2「金額摘要」，螢幕閱讀器可以用標題跳到這裡。</li>
+              <li>付款處理中：按鈕停用、改成亮黃淺底＋<code>spinner-border</code>＋「付款處理中…」，避免重複付款（結帳頁的設計稿狀態示意）。</li>
+              <li>設計稿狀態示意區裡的空購物車不放固定列。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 10 元件狀態 ==================== -->
+      <section id="gl-component" class="gl-section" aria-labelledby="gl-component-title">
+        <div class="container">
+          <header class="gl-head">
+            <span class="gl-head-no" aria-hidden="true">10</span>
+            <div>
+              <h2 id="gl-component-title"><span class="marker">元件狀態</span></h2>
+              <p class="gl-head-lead text-phrase">預設、hover、焦點、停用、錯誤。<wbr>hover 只換顏色、底線或底色，<wbr>不放大、不位移、不推擠版面，<wbr>也不靠 hover 才顯示資訊。<wbr>停用用灰底灰字＋虛線框，不靠透明度。</p>
+            </div>
+            <p class="gl-head-src"><span class="visually-hidden">數值來源：</span><code>_variables.scss</code> 5. 元件、<code>_base.scss</code></p>
+          </header>
+
+          <!-- 按鈕 -->
+          <div class="gl-block gl-block-first">
+            <h3 class="rule-title">按鈕</h3>
+
+            <div class="gl-variant">
+              <div class="gl-variant-head">
+                <h4><code>.btn-volt</code></h4>
+                <p>hover 與按下：黑底黃字，框線同色存在，尺寸不變。送出後的處理中狀態：亮黃淺底＋轉圈＋文字，停用但看得清楚。</p>
+              </div>
+              <ul class="gl-states">
+                <li><a class="btn btn-volt" href="checkout.html">前往結帳</a><p class="gl-label">預設</p></li>
+                <li><span class="btn btn-volt gl-is-hover" aria-hidden="true">前往結帳</span><p class="gl-label">滑過 hover</p></li>
+                <li><span class="btn btn-volt gl-is-focus" aria-hidden="true">前往結帳</span><p class="gl-label">鍵盤焦點 focus</p></li>
+                <li><button class="btn btn-volt" type="button" disabled>前往結帳</button><p class="gl-label">停用 disabled</p></li>
+                <li><button class="btn btn-volt" type="button" disabled><span class="spinner-border spinner-border-sm" aria-hidden="true"></span>付款處理中…</button><p class="gl-label">處理中</p></li>
+              </ul>
+            </div>
+
+            <div class="gl-variant">
+              <div class="gl-variant-head">
+                <h4><code>.btn-dark</code>／<code>.btn-outline-dark</code></h4>
+                <p>黑底 hover 變黃底黑字；白底黑框 hover 變黑底白字。停用都是 <code>#E6E6E6</code> 底、<code>#555555</code> 字、<code>#8A8A8A</code> 虛線框。</p>
+              </div>
+              <ul class="gl-states">
+                <li><button class="btn btn-dark" type="button" data-add-cart="橡木餐桌">加入購物車</button><p class="gl-label">預設</p></li>
+                <li><span class="btn btn-dark gl-is-hover" aria-hidden="true">加入購物車</span><p class="gl-label">滑過 hover</p></li>
+                <li><span class="btn btn-dark gl-is-focus" aria-hidden="true">加入購物車</span><p class="gl-label">鍵盤焦點 focus</p></li>
+                <li><button class="btn btn-dark" type="button" disabled>已售完</button><p class="gl-label">停用（商品卡的已售完）</p></li>
+                <li><a class="btn btn-outline-dark" href="products.html">繼續購物</a><p class="gl-label">白底黑框：預設</p></li>
+                <li><span class="btn btn-outline-dark gl-is-hover" aria-hidden="true">繼續購物</span><p class="gl-label">白底黑框：hover</p></li>
+                <li><span class="btn btn-outline-dark gl-is-focus" aria-hidden="true">繼續購物</span><p class="gl-label">白底黑框：焦點</p></li>
+                <li><button class="btn btn-outline-dark" type="button" disabled>已顯示全部商品</button><p class="gl-label">白底黑框：停用</p></li>
+              </ul>
+            </div>
+
+            <div class="gl-variant">
+              <div class="gl-variant-head">
+                <h4><code>.btn-text</code></h4>
+                <p>粗體＋<span class="num">2px</span> 底線，hover 底線加粗到 <span class="num">4px</span>（只變裝飾，不變尺寸）。黑色面上自動改白字。</p>
+              </div>
+              <ul class="gl-states">
+                <li><a class="btn btn-text" href="products.html">繼續購物</a><p class="gl-label">預設</p></li>
+                <li><span class="btn btn-text gl-is-hover" aria-hidden="true">繼續購物</span><p class="gl-label">滑過 hover</p></li>
+                <li><span class="btn btn-text gl-is-focus" aria-hidden="true">繼續購物</span><p class="gl-label">鍵盤焦點 focus</p></li>
+              </ul>
+            </div>
+
+            <div class="gl-variant">
+              <div class="gl-variant-head">
+                <h4>黑色面上 <code>.on-dark</code></h4>
+                <p>黃按鈕不加黑框、hover 改白底黑字；焦點改成 <span class="num">3px</span> 黃實線。</p>
+              </div>
+              <ul class="gl-states gl-stage band-dark">
+                <li><a class="btn btn-volt" href="checkout.html">確認付款</a><p class="gl-label">預設</p></li>
+                <li><span class="btn btn-volt gl-is-hover" aria-hidden="true">確認付款</span><p class="gl-label">滑過 hover</p></li>
+                <li><span class="btn btn-volt gl-is-focus" aria-hidden="true">確認付款</span><p class="gl-label">鍵盤焦點 focus</p></li>
+                <li><a class="btn btn-text" href="product.html">查看商品</a><p class="gl-label">文字按鈕</p></li>
+              </ul>
+            </div>
+
+            <div class="gl-variant">
+              <div class="gl-variant-head">
+                <h4><code>.btn-close.btn-close-white</code></h4>
+                <p>手機選單與篩選抽屜的標題列都是黑底，關閉鈕用白色 ×：<span class="num">44 × 44px</span>，hover 出現 <span class="num">2px</span> 黃框，焦點是內縮的 <span class="num">3px</span> 黃框。一定要寫 <code>aria-label</code>（「關閉選單」「關閉篩選條件」）。<code>_base.scss</code> 另備有白底版（hover 亮黃淺底），目前沒有用到。</p>
+              </div>
+              <ul class="gl-states gl-stage band-dark">
+                <li><button class="btn-close btn-close-white" type="button" aria-label="關閉（示意）"></button><p class="gl-label">預設</p></li>
+                <li><span class="btn-close btn-close-white gl-is-hover" aria-hidden="true"></span><p class="gl-label">滑過 hover</p></li>
+                <li><span class="btn-close btn-close-white gl-is-focus" aria-hidden="true"></span><p class="gl-label">鍵盤焦點 focus</p></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 表單 -->
+          <div class="gl-block">
+            <h3 class="rule-title">表單欄位</h3>
+            <p class="gl-note">每個欄位都有看得見的標籤（<span class="num">15px 700</span>）；說明與錯誤用 <code>aria-describedby</code> 連到欄位。輸入框高 <span class="num">48px</span>、<span class="num">1px</span> 黑框、白底；placeholder 只寫範例格式。Email、密碼、卡號這類欄位不加 <code>name</code>（設計稿用 GET 換頁），但都有 <code>id</code>、<code>&lt;label for&gt;</code> 與 <code>autocomplete</code>。</p>
+            <div class="gl-fields">
+              <div>
+                <p class="gl-field-state">預設</p>
+                <label class="form-label" for="gl-f-name">收件人姓名</label>
+                <input id="gl-f-name" class="form-control" type="text" autocomplete="off" placeholder="王小明">
+              </div>
+              <div>
+                <p class="gl-field-state">焦點</p>
+                <label class="form-label" for="gl-f-tel">手機號碼</label>
+                <input id="gl-f-tel" class="form-control gl-is-focus" type="tel" autocomplete="off" placeholder="0912 345 678" aria-describedby="gl-f-tel-help">
+                <p id="gl-f-tel-help" class="form-text mb-0">只用於配送當天聯繫。</p>
+              </div>
+              <div>
+                <p class="gl-field-state">已填寫</p>
+                <label class="form-label" for="gl-f-email">Email</label>
+                <input id="gl-f-email" class="form-control" type="email" autocomplete="off" value="xiaoming@example.com">
+              </div>
+              <div>
+                <p class="gl-field-state">錯誤</p>
+                <label class="form-label" for="gl-f-err">收件人姓名</label>
+                <input id="gl-f-err" class="form-control is-invalid" type="text" autocomplete="off" aria-invalid="true" aria-describedby="gl-f-err-msg">
+                <p id="gl-f-err-msg" class="invalid-feedback mb-0"><i class="bi bi-x-square-fill" aria-hidden="true"></i>請填寫收件人姓名。</p>
+              </div>
+              <div>
+                <p class="gl-field-state">停用</p>
+                <label class="form-label" for="gl-f-off">折扣碼</label>
+                <input id="gl-f-off" class="form-control" type="text" autocomplete="off" value="本次無法使用" disabled>
+              </div>
+              <div>
+                <p class="gl-field-state">下拉選單</p>
+                <label class="form-label" for="gl-f-city">縣市</label>
+                <select id="gl-f-city" class="form-select" autocomplete="off">
+                  <option value="" selected disabled>請選擇</option>
+                  <option>台北市</option>
+                  <option>新北市</option>
+                </select>
+              </div>
+              <div>
+                <p class="gl-field-state">密碼＋顯示密碼</p>
+                <label class="form-label" for="gl-f-pw">密碼</label>
+                <div class="auth-password">
+                  <input id="gl-f-pw" class="form-control" type="password" autocomplete="off" value="nestcraft">
+                  <button class="auth-password-toggle" type="button" data-toggle-password="#gl-f-pw" aria-label="顯示密碼" aria-controls="gl-f-pw" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                </div>
+                <ul class="auth-rules" aria-label="密碼規則">
+                  <li class="tag tag-outline">至少 8&nbsp;碼</li>
+                  <li class="tag"><i class="bi bi-check-lg" aria-hidden="true"></i>包含英文字母</li>
+                </ul>
+              </div>
+              <div>
+                <p class="gl-field-state">勾選</p>
+                <div class="form-check auth-check">
+                  <input id="gl-f-remember" class="form-check-input" type="checkbox" checked>
+                  <label class="form-check-label" for="gl-f-remember">記住我</label>
+                </div>
+                <div class="form-check auth-check">
+                  <input id="gl-f-agree" class="form-check-input is-invalid" type="checkbox" aria-invalid="true" aria-describedby="gl-f-agree-msg">
+                  <label class="form-check-label" for="gl-f-agree">我已閱讀並同意服務條款</label>
+                </div>
+                <p id="gl-f-agree-msg" class="invalid-feedback d-block mb-0"><i class="bi bi-x-square-fill" aria-hidden="true"></i>請先勾選同意，才能建立帳號。</p>
+              </div>
+              <div>
+                <p class="gl-field-state">數量 <code class="text-white">.qty</code></p>
+                <span class="form-label d-block">數量為 <span class="num">1</span>（「−」停用）</span>
+                <div class="qty">
+                  <button class="qty-btn" type="button" aria-label="減少數量（示意）" disabled><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
+                  <input class="qty-input" type="text" inputmode="numeric" autocomplete="off" value="1" aria-label="數量（示意）">
+                  <button class="qty-btn gl-is-hover" type="button" aria-label="增加數量（示意：滑過）"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
+                </div>
+                <p class="gl-label">「＋」是 hover：黃底。已售完時整組停用、外框改虛線。</p>
+              </div>
+            </div>
+            <ul class="gl-rules">
+              <li>焦點：<span class="num">3px</span> 黑實線＋<span class="num">2px</span> 偏移，框線本身不變色。錯誤：紅框（內側再加 <span class="num">1px</span>，尺寸不變）＋紅字訊息，訊息前面放 <code>bi-x-square-fill</code>，不只靠顏色；表單最上方另放紅底白字的提示，寫出還有幾個欄位要處理。</li>
+              <li>停用欄位：<code>#E6E6E6</code> 底、<code>#555555</code> 字、<code>#8A8A8A</code> 框。</li>
+              <li>顯示密碼：輸入框右側 <span class="num">48px</span> 方鍵，按下後改黑底白字並切換 <code>aria-pressed</code>（<code>js/main.js</code> 的 <code>data-toggle-password</code>）。</li>
+            </ul>
+          </div>
+
+          <!-- 選項卡 -->
+          <div class="gl-block">
+            <h3 class="rule-title">選項卡 <code>.option-card</code></h3>
+            <p class="gl-note">結帳的配送與付款方式。整張卡都是 <code>&lt;label&gt;</code>，radio 用相同的 <code>name</code> 互斥。</p>
+            <ul class="gl-states gl-states-wide">
+              <li>
+                <label class="option-card" for="gl-ship-a">
+                  <input id="gl-ship-a" class="form-check-input" type="radio" name="gl-ship" checked>
+                  <span class="option-card-body"><span class="option-card-title">宅配到府</span><span class="option-card-note">3–5&nbsp;個工作天送達</span></span>
+                  <span class="option-card-aside">免運</span>
+                </label>
+                <p class="gl-label">選中：黃底、實心 radio</p>
+              </li>
+              <li>
+                <label class="option-card" for="gl-ship-b">
+                  <input id="gl-ship-b" class="form-check-input" type="radio" name="gl-ship">
+                  <span class="option-card-body"><span class="option-card-title">門市自取</span><span class="option-card-note">7&nbsp;天內到台北門市取貨</span></span>
+                  <span class="option-card-aside">免運</span>
+                </label>
+                <p class="gl-label">預設：白底、<span class="num">2px</span> 黑框</p>
+              </li>
+              <li>
+                <label class="option-card gl-is-hover" for="gl-ship-c">
+                  <input id="gl-ship-c" class="form-check-input" type="radio" name="gl-ship">
+                  <span class="option-card-body"><span class="option-card-title">大型家具到府安裝</span><span class="option-card-note">專人組裝並帶走包材</span></span>
+                  <span class="option-card-aside"><span class="num">+NT$&nbsp;800</span></span>
+                </label>
+                <p class="gl-label">滑過 hover：亮黃淺底</p>
+              </li>
+              <li>
+                <label class="option-card" for="gl-ship-d">
+                  <input id="gl-ship-d" class="form-check-input" type="radio" name="gl-ship" disabled>
+                  <span class="option-card-body"><span class="option-card-title">超商取貨</span><span class="option-card-note">橡木餐桌屬大型家具，無法以超商寄送。</span></span>
+                  <span class="option-card-aside">不適用</span>
+                </label>
+                <p class="gl-label">停用：虛線灰框，寫出原因</p>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 導覽與分頁 -->
+          <div class="gl-block">
+            <h3 class="rule-title">導覽、分頁籤與箭頭步驟</h3>
+            <div class="row gx-lg-5 gy-5">
+              <div class="col-lg-6">
+                <h4 class="gl-minor mt-0">頁首導覽 <code>.site-nav</code></h4>
+                <div class="gl-stage band-dark gl-nav-demo navbar-expand-lg">
+                  <ul class="navbar-nav site-nav">
+                    <li class="nav-item"><a class="nav-link active" href="index.html">首頁</a></li>
+                    <li class="nav-item"><a class="nav-link" href="products.html">商品一覽</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#rooms">空間靈感</a></li>
+                    <li class="nav-item"><a class="nav-link" href="orders.html">我的訂單</a></li>
+                  </ul>
+                </div>
+                <p class="gl-label"><span class="num">992px</span> 以上是黑列：白字 <span class="num">700</span>，目前頁黃字＋<span class="num">4px</span> 黃底線（底線一開始就以透明色存在），hover 文字加 <span class="num">2px</span> 底線。以下是左側黑色抽屜：白色 <span class="num">22px</span> 大字、每項 <span class="num">56px</span> 高。本例的「首頁」是目前頁的樣子。</p>
+              </div>
+              <div class="col-lg-6">
+                <h4 class="gl-minor mt-0">底線分頁籤 <code>.nav-underline</code>＋<code>.tab-count</code></h4>
+                <div class="gl-stage gl-stage-white">
+                  <div class="nav nav-underline gl-tabs-demo" aria-hidden="true">
+                    <span class="nav-link active">全部<span class="tab-count">5</span></span>
+                    <span class="nav-link">待付款<span class="tab-count">1</span></span>
+                    <span class="nav-link gl-is-hover">已付款<span class="tab-count">1</span></span>
+                    <span class="nav-link gl-is-focus">出貨中<span class="tab-count">1</span></span>
+                  </div>
+                </div>
+                <p class="gl-label">選中：<span class="num">4px</span> 黑底線＋<span class="num">900</span>；未選：灰字；hover（已付款）：黑字＋灰底線；焦點（出貨中）：內縮黑框。數量是小黑方塊。商品詳情的「商品詳情／規格／評價」與我的訂單的狀態篩選都用這個。</p>
+              </div>
+              <div class="col-12">
+                <h4 class="gl-minor mt-0">箭頭步驟 <code>.chevron-steps</code></h4>
+                <div class="gl-stage gl-stage-white d-grid gap-3">
+                  <ol class="chevron-steps" aria-label="結帳步驟（示意：購物車頁）">
+                    <li class="is-current" aria-current="step"><span class="chevron-steps-num">1</span><span class="chevron-steps-label">購物車</span></li>
+                    <li><span class="chevron-steps-num">2</span><span class="chevron-steps-label">填寫資料與付款</span></li>
+                    <li><span class="chevron-steps-num">3</span><span class="chevron-steps-label">完成訂單</span></li>
+                  </ol>
+                  <ol class="chevron-steps" aria-label="結帳步驟（示意：結帳頁）">
+                    <li class="is-done"><a href="cart.html"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="chevron-steps-label">購物車<span class="visually-hidden">（已完成）</span></span></a></li>
+                    <li class="is-current" aria-current="step"><span class="chevron-steps-num">2</span><span class="chevron-steps-label">填寫資料與付款</span></li>
+                    <li><span class="chevron-steps-num">3</span><span class="chevron-steps-label">完成訂單</span></li>
+                  </ol>
+                  <ol class="chevron-steps" aria-label="結帳步驟（示意：付款結果頁）">
+                    <li class="is-done"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="chevron-steps-label">購物車<span class="visually-hidden">（已完成）</span></span></li>
+                    <li class="is-done"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="chevron-steps-label">填寫資料與付款<span class="visually-hidden">（已完成）</span></span></li>
+                    <li class="is-done" aria-current="step"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="chevron-steps-label">完成訂單<span class="visually-hidden">（已完成）</span></span></li>
+                  </ol>
+                </div>
+                <p class="gl-label">三段 <code>clip-path</code> 箭頭色塊：已完成＝黑底白字＋勾；目前＝黃底黑字、加寬、<code>aria-current="step"</code>；未到＝<code>#F3F3F3</code> 底灰字。結帳頁的「購物車」可以點回去（hover 文字加底線，焦點是內縮黃框）。<span class="num">576px</span> 以下只有目前步驟顯示文字，其他步驟縮到只包住勾或數字，目前步驟的文字完整顯示、不加刪節號。</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 標籤、狀態 -->
+          <div class="gl-block">
+            <h3 class="rule-title">標籤與訂單狀態</h3>
+            <h4 class="gl-minor mt-0">庫存與商品標籤 <code>.tag</code></h4>
+            <div class="gl-stage gl-stage-row">
+              <span class="tag">現貨</span>
+              <span class="tag tag-volt">僅剩 5 件</span>
+              <span class="tag tag-off">已售完</span>
+              <span class="tag tag-outline">庫存 <span class="num">12</span> 件</span>
+              <span class="count-chip"><span class="num">10</span> 件</span>
+            </div>
+            <p class="gl-label">矩形，不加圓角。庫存少於 <span class="num">10</span> 件時用黃底黑字「僅剩 N 件」（商品一覽、商品詳情同一個門檻）；已售完是灰底虛線框；H1 旁的黃底數字方塊是 <code>.count-chip</code>。</p>
+
+            <h4 class="gl-minor">訂單狀態：票根色塊 <code>.orders-card.is-*</code>＋<code>.orders-stub</code></h4>
+            <div class="gl-stage gl-stage-white">
+              <article class="orders-card is-pending gl-orders-demo" aria-labelledby="gl-order-no">
+                <p class="orders-stub mb-0"><i class="bi bi-clock-fill" aria-hidden="true"></i><span><span class="visually-hidden">訂單狀態：</span>待付款</span></p>
+                <div class="orders-body">
+                  <div class="orders-main">
+                    <div class="orders-info">
+                      <header class="orders-head">
+                        <h5 id="gl-order-no" class="orders-no"><span class="visually-hidden">訂單編號</span><span class="num">NC-20260921-009</span></h5>
+                        <p class="orders-date">下單日期 <span class="num">2026-09-21</span></p>
+                      </header>
+                      <ul class="orders-items">
+                        <li>
+                          <span class="orders-thumb img-frame"><img src="images/p-1004.jpg" alt="" width="1200" height="1200" loading="lazy"></span>
+                          <span><a class="orders-item-name text-phrase" href="product.html">極簡床頭櫃</a><span class="orders-item-qty"><span class="visually-hidden">數量</span>×&nbsp;<span class="num">1</span></span></span>
+                        </li>
+                      </ul>
+                      <dl class="orders-meta">
+                        <div><dt>配送方式</dt><dd>宅配到府</dd></div>
+                        <div><dt>付款期限</dt><dd><span class="tag tag-volt"><i class="bi bi-clock-fill" aria-hidden="true"></i><span class="num">2026-09-24</span></span></dd></div>
+                      </dl>
+                    </div>
+                    <div class="orders-side">
+                      <div class="orders-total">
+                        <p><span class="visually-hidden">訂單金額</span><span class="price-tag price-tag-set"><span class="price-cur">NT$</span><span class="price-num">7,800</span></span></p>
+                        <p class="orders-count">共 <span class="num">1</span> 件</p>
+                      </div>
+                      <div class="orders-actions">
+                        <a class="btn btn-text" href="orders.html">到我的訂單看明細</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+            <div class="table-responsive mt-4">
+              <table class="table gl-table">
+                <caption class="visually-hidden">五種訂單狀態的色塊</caption>
+                <thead>
+                  <tr><th scope="col">狀態</th><th scope="col">色塊</th><th scope="col">圖示</th><th scope="col">對比</th></tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row"><code>.is-pending</code> 待付款</th><td>黃底黑字</td><td><i class="bi bi-clock-fill" aria-hidden="true"></i> <code>bi-clock-fill</code></td><td class="num">16.46:1</td></tr>
+                  <tr><th scope="row"><code>.is-paid</code> 已付款</th><td>白底黑字（靠卡片的 <span class="num">2px</span> 黑框圍出色塊）</td><td><i class="bi bi-check-circle" aria-hidden="true"></i> <code>bi-check-circle</code></td><td class="num">21.00:1</td></tr>
+                  <tr><th scope="row"><code>.is-shipping</code> 出貨中</th><td>黑底黃字</td><td><i class="bi bi-truck" aria-hidden="true"></i> <code>bi-truck</code></td><td class="num">16.46:1</td></tr>
+                  <tr><th scope="row"><code>.is-done</code> 已完成</th><td>黑底白字</td><td><i class="bi bi-check2-all" aria-hidden="true"></i> <code>bi-check2-all</code></td><td class="num">21.00:1</td></tr>
+                  <tr><th scope="row"><code>.is-cancel</code> 已取消</th><td><code>#E6E6E6</code> 底、<code>#555555</code> 字、內側灰色虛線；金額改灰字</td><td><i class="bi bi-x-circle" aria-hidden="true"></i> <code>bi-x-circle</code></td><td class="num">5.97:1</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="gl-label">五種狀態用底色＋圖示＋文字區分，不只靠顏色；色塊裡另有 <code>visually-hidden</code> 的「訂單狀態：」。手機是卡片頂端 <span class="num">40px</span> 色帶，<span class="num">768px</span> 以上是左側 <span class="num">120px</span> 整條。<code>_base.scss</code> 另備有同一組配色的小標籤 <code>.badge-status</code>，目前 <span class="num">10</span> 頁沒有用到。</p>
+          </div>
+
+          <!-- 提示 -->
+          <div class="gl-block">
+            <h3 class="rule-title">提示訊息 <code>.alert</code></h3>
+            <div class="gl-alerts">
+              <div>
+                <div class="alert alert-danger">
+                  <i class="bi bi-x-square-fill" aria-hidden="true"></i>
+                  <div><p class="alert-title">沒有登入成功</p><p class="text-phrase">Email 或密碼不正確。<wbr>請再確認一次，<wbr>或用「忘記密碼？」重新設定。</p></div>
+                </div>
+                <p class="gl-label">登入：帳密錯誤（<code>bi-x-square-fill</code>）</p>
+              </div>
+              <div>
+                <div class="alert alert-danger">
+                  <i class="bi bi-exclamation-square-fill" aria-hidden="true"></i>
+                  <div><p class="alert-title">有 <span class="num">2</span> 個欄位還沒填好</p><p class="text-phrase">請修正標示紅框的欄位，<wbr>再按一次「確認付款」。</p></div>
+                </div>
+                <p class="gl-label">結帳、註冊：表單最上方（<code>bi-exclamation-square-fill</code>），寫出幾個欄位要處理</p>
+              </div>
+            </div>
+            <ul class="gl-rules">
+              <li>實心色帶、直角，不加左側色條。錯誤一律紅底白字（<span class="num">5.55:1</span>），<strong>不放黃底</strong>（黃底紅字只有 <span class="num">4.35:1</span>）。</li>
+              <li>錯誤訊息說明怎麼修，不用驚嘆號或全大寫。正式使用時，送出後才插入的提示要加 <code>role="alert"</code>。</li>
+              <li><code>_base.scss</code> 另備有 <code>.alert-success</code>（綠底白字 <span class="num">5.44:1</span>）、<code>.alert-info</code>（藍底白字 <span class="num">8.02:1</span>）、<code>.alert-warning</code>（黃底黑字，只放提醒）與 <code>.alert-light</code>，目前 <span class="num">10</span> 個頁面只用到 <code>.alert-danger</code>。</li>
+            </ul>
+          </div>
+
+          <!-- 商品卡 -->
+          <div class="gl-block">
+            <h3 class="rule-title">商品卡 <code>.product-card</code></h3>
+            <p class="gl-note">無框無圓角、灰底 <span class="num">1:1</span> 圖、左上角矩形標籤、品名最多兩行、價格 <span class="num">28px</span>、滿寬 <span class="num">48px</span> 按鈕。hover 只讓圖底深一點（疊 <span class="num">3%</span> 黑）、品名加底線；不放大圖片，不浮出「快速加入」。</p>
+            <ul class="gl-cards">
+              <li>
+                <article class="product-card">
+                  <a class="product-card-media" href="product.html" tabindex="-1" aria-hidden="true">
+                    <img src="images/p-1001.jpg" alt="" width="1200" height="1200" loading="lazy">
+                  </a>
+                  <div class="product-card-badges"><span class="tag">現貨</span></div>
+                  <div class="product-card-body">
+                    <h4 class="product-card-title"><a href="product.html">橡木餐桌</a></h4>
+                    <p class="product-card-meta">餐桌椅</p>
+                    <p class="product-card-meta">W160&nbsp;×&nbsp;D80&nbsp;×&nbsp;H75&nbsp;cm</p>
+                    <p class="product-card-price"><span class="price-tag price-tag-card"><span class="price-cur">NT$</span><span class="price-num">16,800</span></span></p>
+                    <button class="btn btn-dark btn-card" type="button" data-add-cart="橡木餐桌">加入購物車</button>
+                  </div>
+                </article>
+                <p class="gl-label">預設（現貨）</p>
+              </li>
+              <li>
+                <article class="product-card gl-is-hover">
+                  <a class="product-card-media" href="product.html" tabindex="-1" aria-hidden="true">
+                    <img src="images/p-1004.jpg" alt="" width="1200" height="1200" loading="lazy">
+                  </a>
+                  <div class="product-card-badges"><span class="tag">現貨</span></div>
+                  <div class="product-card-body">
+                    <h4 class="product-card-title"><a href="product.html">極簡床頭櫃</a></h4>
+                    <p class="product-card-meta">臥室家具</p>
+                    <p class="product-card-meta">W45&nbsp;×&nbsp;D40&nbsp;×&nbsp;H50&nbsp;cm</p>
+                    <p class="product-card-price"><span class="price-tag price-tag-card"><span class="price-cur">NT$</span><span class="price-num">7,800</span></span></p>
+                    <button class="btn btn-dark btn-card" type="button" data-add-cart="極簡床頭櫃">加入購物車</button>
+                  </div>
+                </article>
+                <p class="gl-label">滑過 hover：圖底深一點、品名底線</p>
+              </li>
+              <li>
+                <article class="product-card">
+                  <a class="product-card-media" href="product.html" tabindex="-1" aria-hidden="true">
+                    <img src="images/p-1002.jpg" alt="" width="1200" height="1200" loading="lazy">
+                  </a>
+                  <div class="product-card-badges"><span class="tag tag-volt">僅剩 5 件</span></div>
+                  <div class="product-card-body">
+                    <h4 class="product-card-title"><a href="product.html">亞麻雙人沙發</a></h4>
+                    <p class="product-card-meta">沙發</p>
+                    <p class="product-card-meta">W180&nbsp;×&nbsp;D90&nbsp;×&nbsp;H85&nbsp;cm</p>
+                    <p class="product-card-price"><span class="price-tag price-tag-card"><span class="price-cur">NT$</span><span class="price-num">32,800</span></span></p>
+                    <button class="btn btn-dark btn-card" type="button" data-add-cart="亞麻雙人沙發">加入購物車</button>
+                  </div>
+                </article>
+                <p class="gl-label">庫存少於 <span class="num">10</span> 件</p>
+              </li>
+              <li>
+                <article class="product-card">
+                  <a class="product-card-media" href="product.html" tabindex="-1" aria-hidden="true">
+                    <img src="images/p-1003.jpg" alt="" width="1200" height="1200" loading="lazy">
+                  </a>
+                  <div class="product-card-badges"><span class="tag tag-off">已售完</span></div>
+                  <div class="product-card-body">
+                    <h4 class="product-card-title"><a href="product.html">藤編收納櫃</a></h4>
+                    <p class="product-card-meta">收納家具</p>
+                    <p class="product-card-meta">W80&nbsp;×&nbsp;D40&nbsp;×&nbsp;H110&nbsp;cm</p>
+                    <p class="product-card-price"><span class="price-tag price-tag-card"><span class="price-cur">NT$</span><span class="price-num">12,600</span></span></p>
+                    <button class="btn btn-dark btn-card" type="button" disabled>已售完</button>
+                  </div>
+                </article>
+                <p class="gl-label">已售完：標籤與按鈕都停用</p>
+              </li>
+            </ul>
+            <p class="gl-label">首頁人氣嚴選的卡片把按鈕換成 <code>.btn-volt.btn-card</code>「閃電結帳」（<code>bi-lightning-charge-fill</code>），一張卡仍只有一顆黃按鈕。</p>
+          </div>
+
+          <!-- 空狀態與設計稿狀態示意 -->
+          <div class="gl-block">
+            <h3 class="rule-title">空狀態與設計稿狀態示意</h3>
+            <div class="row gx-lg-5 gy-5">
+              <div class="col-lg-5">
+                <section class="demo-state mt-0" aria-labelledby="gl-demo-state-title">
+                  <p class="demo-state-tag">設計稿狀態示意</p>
+                  <h4 id="gl-demo-state-title" class="demo-state-title">購物車是空的時</h4>
+                  <div class="demo-state-stage">
+                    <div class="empty-state py-0">
+                      <p class="empty-state-title">購物車目前是空的</p>
+                      <p class="text-secondary">先逛逛人氣嚴選，滿 <span class="num">NT$&nbsp;3,000</span> 就免運。</p>
+                      <a class="btn btn-volt" href="products.html">去逛逛</a>
+                    </div>
+                  </div>
+                </section>
+                <p class="gl-label"><code>.demo-state</code>：上方 <span class="num">2px</span> 黑線＋黑底黃字標籤＋灰底舞台，和正式內容分開。空狀態 <code>.empty-state</code> 是一句 <span class="num">32／24px</span> 大字、一句說明、一個動作，不放「<span class="num">0</span> 件」方塊或大插圖。</p>
+              </div>
+              <div class="col-lg-7">
+                <h4 class="gl-minor mt-0">每頁底部的狀態示意</h4>
+                <ul class="gl-demo-states">
+                  <li><strong>商品一覽：篩選後沒有商品時</strong><p>列出套用中的條件標籤，一句說明＋黑底「清除篩選條件」。</p></li>
+                  <li><strong>商品詳情：已售完時／庫存少於 10 件時／有多種尺寸模式時</strong><p>每種一列（左說明、右舞台）：灰色吊牌＋「貨到通知我」、黃底「僅剩 5 件」、沙發床兩行尺寸。</p></li>
+                  <li><strong>購物車：購物車是空的時</strong><p>一句大字＋黃色「去逛逛」；示意區裡不放固定結帳列。</p></li>
+                  <li><strong>結帳：必填驗證與付款處理中</strong><p>紅底白字提示＋兩個紅框欄位；固定列縮小版的按鈕改成處理中。</p></li>
+                  <li><strong>付款結果：付款未完成時</strong><p>成功帶換成錯誤紅帶（白方塊紅色驚嘆號），「重新付款」「返回購物車」。</p></li>
+                  <li><strong>登入：登入失敗時</strong><p>表單上方紅底白字「沒有登入成功」。</p></li>
+                  <li><strong>註冊：送出後有欄位需要修正時</strong><p>確認密碼紅框、密碼規則符合的變黑底白字＋勾、同意條款的錯誤訊息。</p></li>
+                  <li><strong>我的訂單：篩選後沒有訂單時</strong><p>切到「待付款」後沒有訂單：分頁保留，清單改成一句大字＋黑底「查看全部訂單」。</p></li>
+                </ul>
+                <p class="gl-label">首頁與 Guideline 沒有狀態示意。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 11 RWD 斷點 ==================== -->
+      <section id="gl-rwd" class="gl-section" aria-labelledby="gl-rwd-title">
+        <div class="container">
+          <header class="gl-head">
+            <span class="gl-head-no" aria-hidden="true">11</span>
+            <div>
+              <h2 id="gl-rwd-title"><span class="marker">RWD 斷點</span></h2>
+              <p class="gl-head-lead text-phrase">斷點沿用 Bootstrap 預設，<wbr>最主要的切換點是 <span class="num">992px</span>：<wbr>頁首導覽收進抽屜、左右滿版色塊改成上下堆疊、<wbr>固定結帳列縮成「總計＋按鈕」。<wbr>每頁都在下面六個寬度檢查過，沒有橫向捲軸。</p>
+            </div>
+            <p class="gl-head-src"><span class="visually-hidden">數值來源：</span><code>_variables.scss</code> 6. 版面</p>
+          </header>
+
+          <div class="gl-ruler" role="img" aria-label="斷點刻度：576、768、992、1200、1400；檢查寬度：390、768、992、1200、1440、1920">
+            <span class="gl-ruler-mark is-check" style="left: 20.3%"><span>390</span></span>
+            <span class="gl-ruler-mark" style="left: 30%">576</span>
+            <span class="gl-ruler-mark is-check" style="left: 40%"><span>768</span></span>
+            <span class="gl-ruler-mark is-check" style="left: 51.7%"><span>992</span></span>
+            <span class="gl-ruler-mark is-check" style="left: 62.5%"><span>1200</span></span>
+            <span class="gl-ruler-mark" style="left: 72.9%">1400</span>
+            <span class="gl-ruler-mark is-check" style="left: 75%"><span>1440</span></span>
+            <span class="gl-ruler-mark is-check is-end"><span>1920</span></span>
+          </div>
+
+          <ul class="gl-bp">
+            <li class="gl-bp-head" aria-hidden="true"><span>斷點</span><span>視窗寬度</span><span>容器最大寬</span><span>本專案的變化</span></li>
+            <li>
+              <span class="gl-bp-name">xs</span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">視窗寬度</span><span class="num">&lt; 576</span></span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">容器最大寬</span>滿版，左右 <span class="num">16px</span></span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">變化</span>倒數條只留門檻、倒數與「登入領取」；購物車方塊只顯示數字；商品格兩欄（gutter <span class="num">12px</span>）；商品詳情圖片一次一張滿版；付款結果按鈕上下堆疊。</span>
+            </li>
+            <li>
+              <span class="gl-bp-name">sm</span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">視窗寬度</span><span class="num">≥ 576</span></span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">容器最大寬</span><span class="num">540</span></span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">變化</span>倒數條加「｜」分隔；購物車方塊加上「購物車」文字；商品詳情圖片一次兩張；登入、註冊的票券置中、最寬 <span class="num">440px</span>；箭頭步驟三段都顯示文字。</span>
+            </li>
+            <li>
+              <span class="gl-bp-name">md</span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">視窗寬度</span><span class="num">≥ 768</span></span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">容器最大寬</span><span class="num">720</span>，左右 <span class="num">32px</span></span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">變化</span>倒數條加「限時券」；商品一覽分類列不再橫向捲動，放不下時換成兩行；商品格三欄、gutter <span class="num">24px</span>；購物車品項排成一列；我的訂單的票根移到左側 <span class="num">120px</span>；頁尾服務三欄。</span>
+            </li>
+            <li>
+              <span class="gl-bp-name">lg</span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">視窗寬度</span><span class="num">≥ 992</span></span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">容器最大寬</span><span class="num">960</span></span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">變化</span><strong>主要切換點</strong>：導覽、搜尋框排進黑列；字級換成桌機值；首頁 Hero、CTA、登入註冊改成左右滿版半塊；商品格四欄；商品一覽分類回到一行；購物車與結帳變成兩欄；固定結帳列顯示小計、高 <span class="num">88px</span>；商品詳情手機購買列消失，資訊欄黏在右側（視窗高 <span class="num">864px</span> 以上）。</span>
+            </li>
+            <li>
+              <span class="gl-bp-name">xl</span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">視窗寬度</span><span class="num">≥ 1200</span></span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">容器最大寬</span><span class="num">1200</span></span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">變化</span>商品一覽排序下拉移進分類列右側；商品詳情資訊欄在視窗高 <span class="num">800px</span> 以上就黏在右側；結帳三個步驟並排；購物車縮圖 <span class="num">128px</span>。</span>
+            </li>
+            <li>
+              <span class="gl-bp-name">xxl</span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">視窗寬度</span><span class="num">≥ 1400</span></span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">容器最大寬</span><span class="num">1440</span></span>
+              <span class="gl-bp-cell"><span class="gl-bp-label">變化</span>購物車、結帳的版心停在 <span class="num">1280</span>（<code>.container-flow</code>），付款結果、我的訂單停在 <span class="num">1080</span>（<code>.container-narrow</code>）；首頁 H1 固定 <span class="num">72px</span>；<span class="num">1920</span> 寬時色塊、黑帶、頁尾、固定結帳列鋪滿整個視窗，內容停在版心。</span>
+            </li>
+          </ul>
+
+          <div class="gl-block">
+            <h3 class="rule-title">格線示意</h3>
+            <div class="row gx-lg-5 gy-5">
+              <div class="col-lg-6">
+                <h4 class="gl-minor mt-0">商品格 <code>row-cols-2 row-cols-md-3 row-cols-lg-4</code></h4>
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 gx-3 gy-3" aria-hidden="true">
+                  <div class="col"><span class="gl-grid-cell is-tall">01</span></div>
+                  <div class="col"><span class="gl-grid-cell is-tall">02</span></div>
+                  <div class="col"><span class="gl-grid-cell is-tall">03</span></div>
+                  <div class="col"><span class="gl-grid-cell is-tall">04</span></div>
+                  <div class="col"><span class="gl-grid-cell is-tall is-volt">券</span></div>
+                  <div class="col"><span class="gl-grid-cell is-tall">06</span></div>
+                </div>
+                <p class="gl-label">商品一覽第 <span class="num">5</span> 格是黃色票券方塊，任何欄數都佔一格，不打亂商品順序。</p>
+              </div>
+              <div class="col-lg-6">
+                <h4 class="gl-minor mt-0">購物車、結帳 <code>col-lg-8</code>＋<code>col-lg-4</code></h4>
+                <div class="row gx-3 gy-3" aria-hidden="true">
+                  <div class="col-lg-8"><span class="gl-grid-cell is-tall">品項清單 8</span></div>
+                  <div class="col-lg-4"><span class="gl-grid-cell is-tall">票券、折扣碼 4</span></div>
+                  <div class="col-12"><span class="gl-grid-cell is-dark">固定結帳列</span></div>
+                </div>
+                <p class="gl-label"><span class="num">992px</span> 以下右欄排到品項下方，金額明細也移到頁面裡，結帳列只留總計與按鈕。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">頁首與頁尾</h3>
+            <dl class="gl-layouts">
+              <div class="gl-layouts-head" aria-hidden="true"><span>區塊</span><span>手機 <span class="num">&lt; 768</span></span><span>平板 <span class="num">768–991</span></span><span>桌機 <span class="num">≥ 992</span></span></div>
+              <div>
+                <dt>頁首</dt>
+                <dd><span class="gl-layouts-tag">手機</span>倒數條一行（門檻＋倒數＋登入領取）；黑列：漢堡｜置中 logo｜搜尋鈕＋黃色購物車方塊（<span class="num">576px</span> 以上加文字）。導覽與搜尋在左側黑色抽屜。</dd>
+                <dd><span class="gl-layouts-tag">平板</span>同手機，倒數條加「限時券」與「｜」。</dd>
+                <dd><span class="gl-layouts-tag">桌機</span>倒數條完整；黑列：logo｜導覽｜大搜尋框（最寬 <span class="num">520px</span>）｜會員｜黃色「購物車 4」。捲動後只留黑列。</dd>
+              </div>
+              <div>
+                <dt>頁尾</dt>
+                <dd><span class="gl-layouts-tag">手機</span>黃底：三個服務上下堆疊，品牌一列、兩組連結並排兩欄、聯絡資訊一列，最下方版權。</dd>
+                <dd><span class="gl-layouts-tag">平板</span>服務三欄並排；連結與聯絡資訊三欄。</dd>
+                <dd><span class="gl-layouts-tag">桌機</span>品牌 <span class="num">4</span> 欄＋兩組連結各 <span class="num">2</span> 欄＋聯絡 <span class="num">4</span> 欄；有固定結帳列的頁面底部多留列高＋<span class="num">16px</span>。</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">十個頁面的版型變化</h3>
+            <dl class="gl-layouts">
+              <div class="gl-layouts-head" aria-hidden="true"><span>頁面</span><span>手機 <span class="num">&lt; 768</span></span><span>平板 <span class="num">768–991</span></span><span>桌機 <span class="num">≥ 992</span></span></div>
+              <div>
+                <dt>首頁</dt>
+                <dd><span class="gl-layouts-tag">手機</span>Hero：情境照（<span class="num">4:3</span>）在上、黃色塊在下，H1 兩行＋黑白兩顆按鈕＋白色票券；價值四點 <span class="num">2×2</span> 黑帶；lookbook 卡橫向捲動（每張 <span class="num">80%</span> 寬）；人氣嚴選兩欄；CTA 照片在上、黑帶在下。</dd>
+                <dd><span class="gl-layouts-tag">平板</span>同手機，lookbook 卡每張 <span class="num">46%</span> 寬（一次看到兩張多）；買家實拍兩欄。</dd>
+                <dd><span class="gl-layouts-tag">桌機</span>Hero 左黃右照片各半（高 <span class="num">560～720px</span>）；價值四欄；lookbook 三欄，照片上有熱點圓鈕；人氣嚴選四欄；買家實拍 <span class="num">7</span>＋承諾 <span class="num">5</span>；CTA 左右各半。</dd>
+              </div>
+              <div>
+                <dt>商品一覽</dt>
+                <dd><span class="gl-layouts-tag">手機</span>分類列（右端是「篩選」鈕）黏在黑列下方、分類可橫向捲動，右側淡出提示還有；件數與排序下拉在商品格上方一列；商品兩欄，第 <span class="num">5</span> 格是黃色票券、最後一格是黑色選購提示。</dd>
+                <dd><span class="gl-layouts-tag">平板</span>分類不再橫向捲動，放不下時換成兩行；商品三欄、gutter <span class="num">24px</span>。</dd>
+                <dd><span class="gl-layouts-tag">桌機</span>分類一行排完；<span class="num">1200px</span> 以上排序移進分類列右側；商品四欄，<span class="num">12</span> 格剛好排滿三列；篩選在所有寬度都是右側抽屜，不常駐側欄。</dd>
+              </div>
+              <div>
+                <dt>商品詳情</dt>
+                <dd><span class="gl-layouts-tag">手機</span>圖片橫向滑動、一次一張滿版；資訊依序是分類、H1、黃色吊牌＋庫存、小票券、尺寸、說明、數量與按鈕，下面是灰底三項服務；底部白色購買列。</dd>
+                <dd><span class="gl-layouts-tag">平板</span>圖片一次兩張；分頁籤內容上下排；相關商品三欄。</dd>
+                <dd><span class="gl-layouts-tag">桌機</span>圖片 <span class="num">7</span> 欄直排、資訊 <span class="num">5</span> 欄（視窗夠高時黏在右側）；兩顆按鈕並排；三項服務在主區下方排成灰底一列；「商品詳情」分頁是介紹 <span class="num">8</span> 欄＋組裝說明 <span class="num">4</span> 欄。</dd>
+              </div>
+              <div>
+                <dt>購物車</dt>
+                <dd><span class="gl-layouts-tag">手機</span>品項：縮圖在左、資訊在右，數量與小計排在下一列；金額明細在品項下方；票券、折扣碼在最後；固定列只有總計＋「前往結帳」。</dd>
+                <dd><span class="gl-layouts-tag">平板</span>每個品項排成一列（縮圖｜品名｜數量與移除｜小計）。</dd>
+                <dd><span class="gl-layouts-tag">桌機</span>品項 <span class="num">8</span> 欄＋右欄 <span class="num">4</span> 欄（進度票券、折扣碼、保障、繼續購物）；金額明細移進固定結帳列。</dd>
+              </div>
+              <div>
+                <dt>結帳</dt>
+                <dd><span class="gl-layouts-tag">手機</span>訂單摘要條上下排；三個步驟（收件、配送、付款）上下堆疊，步驟數字 <span class="num">40px</span>；發票與備註一欄。</dd>
+                <dd><span class="gl-layouts-tag">平板</span>摘要條的品項排成三欄；發票與備註兩欄。</dd>
+                <dd><span class="gl-layouts-tag">桌機</span><span class="num">992–1199</span> 時步驟一、二並排，步驟三滿寬且內容分兩欄；<span class="num">1200px</span> 以上三步驟並排，數字 <span class="num">64px</span>；摘要條是「標題｜品項｜件數」，下方一行折價券說明。</dd>
+              </div>
+              <div>
+                <dt>付款結果</dt>
+                <dd><span class="gl-layouts-tag">手機</span>黑色成功帶：黃方塊勾、H1、付款金額（<span class="num">44px</span>）上下排；訂單資訊兩欄，訂單編號與到貨日各佔一列；按鈕上下堆疊（<span class="num">576px</span> 以上並排等寬）。</dd>
+                <dd><span class="gl-layouts-tag">平板</span>接下來的三個步驟排成三欄。</dd>
+                <dd><span class="gl-layouts-tag">桌機</span>成功帶一列「圖示｜標題｜金額 <span class="num">64px</span>」；訂單資訊四欄。付款未完成時改成紅帶。</dd>
+              </div>
+              <div>
+                <dt>登入</dt>
+                <dd><span class="gl-layouts-tag">手機</span>照片橫幅（高 <span class="num">200px</span>）→ 黃底黑框票券滿寬 → 表單。</dd>
+                <dd><span class="gl-layouts-tag">平板</span>照片高 <span class="num">256px</span>；票券最寬 <span class="num">440px</span> 置中。</dd>
+                <dd><span class="gl-layouts-tag">桌機</span>左照片右表單各半、至少一個視窗高；票券改白底黑框，壓在照片左下角；表單最寬 <span class="num">440px</span>、垂直置中。</dd>
+              </div>
+              <div>
+                <dt>註冊</dt>
+                <dd><span class="gl-layouts-tag">手機</span>和登入同一套：照片 → 票券 → 會員好處三點 → 表單（密碼規則用標籤方塊即時顯示）。</dd>
+                <dd><span class="gl-layouts-tag">平板</span>同登入的平板。</dd>
+                <dd><span class="gl-layouts-tag">桌機</span>同登入的左右各半；表單較長，右欄跟著變高，照片一起延伸。</dd>
+              </div>
+              <div>
+                <dt>我的訂單</dt>
+                <dd><span class="gl-layouts-tag">手機</span>黑色會員列；狀態分頁籤可橫向捲動；訂單票卡頂端 <span class="num">40px</span> 狀態色帶，金額與動作排在卡片底部。</dd>
+                <dd><span class="gl-layouts-tag">平板</span>狀態色帶移到左側 <span class="num">120px</span> 票根，中間 <span class="num">2px</span> 撕線。</dd>
+                <dd><span class="gl-layouts-tag">桌機</span>右側再分出 <span class="num">13rem</span> 一段放金額與動作。展開的明細（<span class="num">768px</span> 以上）分成品項 <span class="num">7</span> 欄＋收件與付款 <span class="num">5</span> 欄。</dd>
+              </div>
+              <div>
+                <dt>Guideline</dt>
+                <dd><span class="gl-layouts-tag">手機</span>黃色封面；黑色目錄列黏在黑列下方、可橫向捲動；三大色塊上下堆疊；表格可橫向捲動。</dd>
+                <dd><span class="gl-layouts-tag">平板</span>三大色塊並排；色票兩欄。</dd>
+                <dd><span class="gl-layouts-tag">桌機</span>章節標題列三欄（編號｜標題與說明｜數值來源）；Do／Don't 左右對照；目錄跟著捲動標出目前章節。</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="gl-block">
+            <h3 class="rule-title">和 wireframe 刻意不同的地方</h3>
+            <ul class="gl-rules mt-0">
+              <li>商品一覽的篩選在所有寬度都是右側抽屜，不做常駐側欄：快時尚要讓商品格佔滿版心，一次看到四欄。</li>
+              <li>購物車與結帳沒有右側金額摘要卡，改成固定在視窗底部的黑色結帳列（第 <span class="num">09</span> 節）。</li>
+              <li>結帳三個步驟並排成三欄，而不是一條直向表單：一眼看完要填的東西，快速結帳。</li>
+              <li>我的訂單用票根式卡片代替表格，狀態放大成整條色塊。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 12 Do／Don't ==================== -->
+      <section id="gl-dodont" class="gl-section" aria-labelledby="gl-dodont-title">
+        <div class="container">
+          <header class="gl-head">
+            <span class="gl-head-no" aria-hidden="true">12</span>
+            <div>
+              <h2 id="gl-dodont-title"><span class="marker">Do／Don't</span></h2>
+              <p class="gl-head-lead text-phrase">新增區塊或改頁面時最容易走樣的九件事。<wbr>左邊是這套設計稿的做法，<wbr>右邊紅框是要避免的樣子（右邊是故意做錯的示範，只出現在這一節）。</p>
+            </div>
+            <p class="gl-head-src"><span class="visually-hidden">適用：</span>全部 <span class="num">10</span> 頁</p>
+          </header>
+
+          <div class="gl-dds">
+            <!-- 1 黃色只當面 -->
+            <div>
+              <h3 class="gl-dd-title"><span class="num">1</span>　黃色只當「面」，白底上不放黃字、黃線、黃圖示</h3>
+              <div class="gl-dd-pair">
+                <div class="gl-dd-panel">
+                  <p class="gl-dd-tag"><i class="bi bi-check-lg" aria-hidden="true"></i>這樣做</p>
+                  <div class="gl-dd-stage">
+                    <p class="h3 mb-0"><span class="marker">人氣嚴選</span></p>
+                    <span class="tag tag-volt">僅剩 5 件</span>
+                  </div>
+                  <p class="gl-dd-note">黃色當底：螢光筆底線、黃底黑字標籤（<span class="num">16.46:1</span>）。</p>
+                </div>
+                <div class="gl-dd-panel is-dont">
+                  <p class="gl-dd-tag"><i class="bi bi-x-lg" aria-hidden="true"></i>避免</p>
+                  <div class="gl-dd-stage">
+                    <p class="gl-wrong-text-volt mb-0">人氣嚴選</p>
+                    <span class="gl-wrong-line-volt" aria-hidden="true"></span>
+                  </div>
+                  <p class="gl-dd-note">黃字、黃線放在白底上只有 <span class="num">1.28:1</span>，幾乎看不見。</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2 黃按鈕要有黑框 -->
+            <div>
+              <h3 class="gl-dd-title"><span class="num">2</span>　白底上的黃按鈕一定有 <span class="num">2px</span> 黑框</h3>
+              <div class="gl-dd-pair">
+                <div class="gl-dd-panel">
+                  <p class="gl-dd-tag"><i class="bi bi-check-lg" aria-hidden="true"></i>這樣做</p>
+                  <div class="gl-dd-stage">
+                    <a class="btn btn-volt" href="checkout.html">直接購買</a>
+                  </div>
+                  <p class="gl-dd-note">黑框讓按鈕的邊界清楚；在黑色面上才拿掉框。</p>
+                </div>
+                <div class="gl-dd-panel is-dont">
+                  <p class="gl-dd-tag"><i class="bi bi-x-lg" aria-hidden="true"></i>避免</p>
+                  <div class="gl-dd-stage">
+                    <span class="btn btn-volt gl-wrong-btn-noframe" aria-hidden="true">直接購買</span>
+                  </div>
+                  <p class="gl-dd-note">沒有框的黃按鈕在白底上，邊界只剩 <span class="num">1.28:1</span>，看起來像一塊色塊而不是按鈕。</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3 錯誤不放黃底 -->
+            <div>
+              <h3 class="gl-dd-title"><span class="num">3</span>　錯誤訊息一律紅底白字，不放在黃底上</h3>
+              <div class="gl-dd-pair">
+                <div class="gl-dd-panel">
+                  <p class="gl-dd-tag"><i class="bi bi-check-lg" aria-hidden="true"></i>這樣做</p>
+                  <div class="gl-dd-stage">
+                    <div class="alert alert-danger w-100 mb-0">
+                      <i class="bi bi-x-square-fill" aria-hidden="true"></i>
+                      <div><p class="alert-title">沒有登入成功</p><p>Email 或密碼不正確。</p></div>
+                    </div>
+                  </div>
+                  <p class="gl-dd-note">紅底白字 <span class="num">5.55:1</span>，加上圖示，不只靠顏色。</p>
+                </div>
+                <div class="gl-dd-panel is-dont">
+                  <p class="gl-dd-tag"><i class="bi bi-x-lg" aria-hidden="true"></i>避免</p>
+                  <div class="gl-dd-stage">
+                    <div class="gl-wrong-alert" aria-hidden="true"><i class="bi bi-x-square-fill"></i><span>沒有登入成功</span></div>
+                  </div>
+                  <p class="gl-dd-note">黃底紅字只有 <span class="num">4.35:1</span>，而且黃色在這套設計稿代表「促銷、主要行動」，放錯誤會混淆。</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4 一顆黃按鈕 -->
+            <div>
+              <h3 class="gl-dd-title"><span class="num">4</span>　一張卡、一個區塊只有一顆黃按鈕</h3>
+              <div class="gl-dd-pair">
+                <div class="gl-dd-panel">
+                  <p class="gl-dd-tag"><i class="bi bi-check-lg" aria-hidden="true"></i>這樣做</p>
+                  <div class="gl-dd-stage">
+                    <button class="btn btn-outline-dark" type="button" data-add-cart="橡木餐桌">加入購物車</button>
+                    <a class="btn btn-volt" href="checkout.html">直接購買</a>
+                  </div>
+                  <p class="gl-dd-note">只有最接近付款的那一步是黃色，其他退成白底黑框或黑底。</p>
+                </div>
+                <div class="gl-dd-panel is-dont">
+                  <p class="gl-dd-tag"><i class="bi bi-x-lg" aria-hidden="true"></i>避免</p>
+                  <div class="gl-dd-stage">
+                    <span class="btn btn-volt" aria-hidden="true">加入購物車</span>
+                    <span class="btn btn-volt" aria-hidden="true">直接購買</span>
+                  </div>
+                  <p class="gl-dd-note">兩顆都是黃的，就分不出哪一個是主要行動。</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5 倒數不加 aria-live -->
+            <div>
+              <h3 class="gl-dd-title"><span class="num">5</span>　倒數不加 <code>aria-live</code></h3>
+              <div class="gl-dd-pair">
+                <div class="gl-dd-panel">
+                  <p class="gl-dd-tag"><i class="bi bi-check-lg" aria-hidden="true"></i>這樣做</p>
+                  <div class="gl-dd-stage is-grey">
+                    <pre class="gl-code w-100 m-0"><code>&lt;span class="countdown"&gt;
+  &lt;span class="visually-hidden"&gt;活動今日 23:59 截止&lt;/span&gt;
+  &lt;span class="countdown-num" data-countdown
+        aria-hidden="true"&gt;05:42:18&lt;/span&gt;
+&lt;/span&gt;</code></pre>
+                  </div>
+                  <p class="gl-dd-note">數字對輔助科技隱藏，改讀一次固定的截止時間。</p>
+                </div>
+                <div class="gl-dd-panel is-dont">
+                  <p class="gl-dd-tag"><i class="bi bi-x-lg" aria-hidden="true"></i>避免</p>
+                  <div class="gl-dd-stage is-grey">
+                    <pre class="gl-code w-100 m-0"><code>&lt;span class="countdown-num" data-countdown
+      aria-live="polite"&gt;05:42:18&lt;/span&gt;</code></pre>
+                  </div>
+                  <p class="gl-dd-note">每秒變一次，螢幕閱讀器就每秒朗讀一次，蓋掉其他內容。</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6 不做 hover 才出現的加入購物車 -->
+            <div>
+              <h3 class="gl-dd-title"><span class="num">6</span>　「加入購物車」一直顯示，不做滑過才出現的快速加入</h3>
+              <div class="gl-dd-pair">
+                <div class="gl-dd-panel">
+                  <p class="gl-dd-tag"><i class="bi bi-check-lg" aria-hidden="true"></i>這樣做</p>
+                  <div class="gl-dd-stage">
+                    <article class="product-card gl-good-card">
+                      <a class="product-card-media" href="product.html" tabindex="-1" aria-hidden="true">
+                        <img src="images/p-1004.jpg" alt="" width="1200" height="1200" loading="lazy">
+                      </a>
+                      <div class="product-card-body">
+                        <h4 class="product-card-title"><a href="product.html">極簡床頭櫃</a></h4>
+                        <p class="product-card-price"><span class="price-tag price-tag-card"><span class="price-cur">NT$</span><span class="price-num">7,800</span></span></p>
+                        <button class="btn btn-dark btn-card" type="button" data-add-cart="極簡床頭櫃">加入購物車</button>
+                      </div>
+                    </article>
+                  </div>
+                  <p class="gl-dd-note">手機沒有 hover、鍵盤使用者也看得到；按鈕位置固定，卡片高度不跳動。</p>
+                </div>
+                <div class="gl-dd-panel is-dont">
+                  <p class="gl-dd-tag"><i class="bi bi-x-lg" aria-hidden="true"></i>避免</p>
+                  <div class="gl-dd-stage">
+                    <div class="gl-wrong-quick" aria-hidden="true">
+                      <div class="img-frame"><img src="images/p-1004.jpg" alt="" width="1200" height="1200" loading="lazy"></div>
+                      <span>滑過才出現「快速加入」</span>
+                    </div>
+                  </div>
+                  <p class="gl-dd-note">只有滑鼠使用者找得到；hover 時浮出按鈕、放大圖片，也違反「hover 不改尺寸、不顯示隱藏資訊」。</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 7 黃色面積 -->
+            <div>
+              <h3 class="gl-dd-title"><span class="num">7</span>　黃色佔畫面約 <span class="num">15～25%</span>，留白給商品</h3>
+              <div class="gl-dd-pair">
+                <div class="gl-dd-panel">
+                  <p class="gl-dd-tag"><i class="bi bi-check-lg" aria-hidden="true"></i>這樣做</p>
+                  <div class="gl-dd-stage">
+                    <div class="gl-proportion-good">
+                      <span aria-hidden="true"></span>
+                      <span aria-hidden="true"></span>
+                      <p>一塊黃（Hero 左半、票券、吊牌）配一塊照片或白，其餘是白底黑字。</p>
+                    </div>
+                  </div>
+                  <p class="gl-dd-note">一個畫面裡只有一兩個黃色焦點，眼睛知道先看哪裡。</p>
+                </div>
+                <div class="gl-dd-panel is-dont">
+                  <p class="gl-dd-tag"><i class="bi bi-x-lg" aria-hidden="true"></i>避免</p>
+                  <div class="gl-dd-stage">
+                    <div class="gl-wrong-yellow-page" aria-hidden="true">
+                      <p>整頁黃底，票券、按鈕、標籤也都是黃的。</p>
+                      <p>沒有一個東西跳得出來，而且長時間閱讀很刺眼。</p>
+                    </div>
+                  </div>
+                  <p class="gl-dd-note">黃色鋪滿整頁（頁尾例外，它是頁面的收尾色塊）。</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 8 不用粗框盒與硬陰影 -->
+            <div>
+              <h3 class="gl-dd-title"><span class="num">8</span>　分層靠色塊與 <span class="num">1～2px</span> 線，不用粗框盒和硬陰影</h3>
+              <div class="gl-dd-pair">
+                <div class="gl-dd-panel">
+                  <p class="gl-dd-tag"><i class="bi bi-check-lg" aria-hidden="true"></i>這樣做</p>
+                  <div class="gl-dd-stage">
+                    <div class="w-100">
+                      <p class="rule-title mb-2">購買品項</p>
+                      <p class="small text-secondary mb-0">下方 <span class="num">2px</span> 黑線的小節標題，內容直接排在白底上。</p>
+                    </div>
+                  </div>
+                  <p class="gl-dd-note">框只圍住可以按的東西（按鈕、選項卡、票券）。</p>
+                </div>
+                <div class="gl-dd-panel is-dont">
+                  <p class="gl-dd-tag"><i class="bi bi-x-lg" aria-hidden="true"></i>避免</p>
+                  <div class="gl-dd-stage">
+                    <div class="gl-wrong-box" aria-hidden="true">購買品項</div>
+                  </div>
+                  <p class="gl-dd-note"><span class="num">4px</span> 粗框加偏移的實心陰影，是另一套風格（街頭機能）的語言，混用會讓兩套風格分不開。</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 9 折價券不改金額 -->
+            <div>
+              <h3 class="gl-dd-title"><span class="num">9</span>　折價券只是活動示意，不改任何金額</h3>
+              <div class="gl-dd-pair">
+                <div class="gl-dd-panel">
+                  <p class="gl-dd-tag"><i class="bi bi-check-lg" aria-hidden="true"></i>這樣做</p>
+                  <div class="gl-dd-stage">
+                    <div class="gl-total-demo">
+                      <p>應付總計</p>
+                      <span class="price-tag price-tag-set"><span class="price-cur">NT$</span><span class="price-num">20,250</span></span>
+                      <p><span class="tag">折價券</span> 還差 <span class="num">NT$&nbsp;4,750</span>，本次不折抵</p>
+                    </div>
+                  </div>
+                  <p class="gl-dd-note">總額和其他風格的同一筆訂單一致；折價券只說明還差多少。</p>
+                </div>
+                <div class="gl-dd-panel is-dont">
+                  <p class="gl-dd-tag"><i class="bi bi-x-lg" aria-hidden="true"></i>避免</p>
+                  <div class="gl-dd-stage">
+                    <div class="gl-total-demo" aria-hidden="true">
+                      <p>應付總計</p>
+                      <p class="gl-wrong-strike num">NT$ 20,250</p>
+                      <span class="price-tag price-tag-set"><span class="price-cur">NT$</span><span class="price-num">19,250</span></span>
+                    </div>
+                  </div>
+                  <p class="gl-dd-note">沒達門檻卻畫出刪除線和折後價，購物車、結帳、訂單的金額就對不起來。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <ul class="site-footer-services">
+        <li>
+          <span class="site-footer-icon"><i class="bi bi-tools" aria-hidden="true"></i></span>
+          <div>
+            <p class="site-footer-service-title">免工具組裝</p>
+            <p>90%&nbsp;商品採卡扣與簡易設計，單人也能輕鬆完成。</p>
+          </div>
+        </li>
+        <li>
+          <span class="site-footer-icon"><i class="bi bi-arrow-repeat" aria-hidden="true"></i></span>
+          <div>
+            <p class="site-footer-service-title">租屋友善退換</p>
+            <p>14&nbsp;天猶豫期，專人到府收件，試擺不將就。</p>
+          </div>
+        </li>
+        <li>
+          <span class="site-footer-icon"><i class="bi bi-truck" aria-hidden="true"></i></span>
+          <div>
+            <p class="site-footer-service-title">現貨極速派送</p>
+            <p>48&nbsp;小時內出貨，週末馬上動手改造。</p>
+          </div>
+        </li>
+      </ul>
+
+      <div class="row gy-4">
+        <div class="col-lg-4">
+          <a class="site-brand" href="index.html">
+            <span class="site-brand-mark" aria-hidden="true">N</span>
+            <span class="site-brand-name">NestCraft</span>
+          </a>
+          <p class="site-footer-lead">把有限的坪數，活出無限的講究。<br>專為租屋族與小空間打造的模組家具。</p>
+        </div>
+        <!-- 購物指南、品牌故事尚未設計頁面：不帶 href 的佔位連結 -->
+        <div class="col-6 col-md-4 col-lg-2">
+          <h2 class="site-footer-title">購物指南</h2>
+          <ul class="site-footer-links">
+            <li><a>運送與安裝</a></li>
+            <li><a>14 天退換說明</a></li>
+            <li><a>付款方式</a></li>
+          </ul>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <h2 class="site-footer-title">關於 NestCraft</h2>
+          <ul class="site-footer-links">
+            <li><a>品牌故事</a></li>
+            <li><a href="index.html#rooms">空間靈感</a></li>
+            <li><a href="products.html">全部商品</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4 col-lg-4">
+          <h2 class="site-footer-title">客服中心</h2>
+          <ul class="site-footer-links">
+            <li>週一至週五 10:00–18:00</li>
+            <li><a href="mailto:hello@nestcraft.example">hello@nestcraft.example</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="site-footer-copy">© 2026 NestCraft 原創生活家居選物｜本站為課程設計稿範例，商品與訂單皆為示意資料。</p>
+    </div>
+  </footer>
+
+  <!-- 加入購物車的提示：黑底白字，出現在固定結帳列上方（js/main.js 顯示） -->
+  <div class="site-toast-wrap">
+    <div id="cartToast" class="toast site-toast" role="status" aria-live="polite" aria-atomic="true">
+      <div class="toast-body">
+        <i class="bi bi-check-square-fill" aria-hidden="true"></i>
+        <span data-toast-text>已加入購物車</span>
+        <a href="cart.html">查看購物車</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

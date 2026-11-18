@@ -1,0 +1,89 @@
+// ============================================================
+// 招牌元素 1：火漆印折抵標籤 .seal
+// 意思永遠是「已經折抵／已經成立」：免運、付款成功。失敗、警示、售完一律不用印
+// 同一個畫面 56px 以上的印最多 1 枚
+//
+// 形狀：16 瓣波浪邊的圓（inline SVG <symbol id="seal-wax">，每頁在頁首區塊定義一次）
+// 中心是真文字（螢幕閱讀器讀得到），SVG 本身 aria-hidden
+//
+// <span class="seal seal-sm">                                 ← 40px：商品卡
+//   <svg class="seal-wax" aria-hidden="true" focusable="false"><use href="#seal-wax"></use></svg>
+//   <span class="seal-text">免運</span>
+// </span>
+// .seal（56px）：商品詳情、購物車、結帳；.seal-lg（96px）：付款結果，中心放 <i class="bi bi-check-lg">
+// ============================================================
+
+.seal {
+  --seal-size: 3.5rem;   // 56px
+  --seal-font: .875rem;  // 14px
+  position: relative;
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: var(--seal-size);
+  height: var(--seal-size);
+  color: $on-burgundy;
+  vertical-align: middle;
+}
+.seal-sm {
+  --seal-size: 2.5rem;  // 40px
+  --seal-font: .75rem;  // 12px（印上文字的最小字級）
+}
+.seal-lg {
+  --seal-size: 6rem;    // 96px
+  --seal-font: 2.5rem;  // 勾勾圖示
+}
+
+.seal-wax {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: url(#seal-grad); // symbol 裡的蠟面沒有寫 fill，從這裡繼承；頁尾改成奶油色蠟
+  // 只用一層很淡的落影，讓印像壓在紙上（不是浮起來的卡片陰影）
+  filter: drop-shadow(0 1px 1px rgba($ink, .28));
+}
+
+.seal-text {
+  position: relative;
+  padding-left: .1em; // 抵銷最後一個字的字距，讓文字視覺置中
+  font-size: var(--seal-font);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .1em;
+  white-space: nowrap;
+  text-shadow: 0 -1px 0 rgba($ink, .35); // 壓印感：字像被壓進蠟裡
+}
+.seal-lg .bi {
+  position: relative;
+  font-size: var(--seal-font);
+  line-height: 1;
+  text-shadow: 0 -1px 0 rgba($ink, .35);
+}
+
+// 印＋旁邊一行說明（商品詳情「單件即享免運」、購物車與結帳「已達滿 NT$ 3,000 免運門檻」）
+.seal-note {
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  color: $ink-soft;
+  font-size: $small-font-size;
+  line-height: $line-height-sm;
+}
+
+// ---------- 蓋印回彈（付款結果 .seal-lg，載入時播一次） ----------
+// 容器固定 96×96，只動 transform 與 opacity，版面不跳
+.seal-stamp {
+  animation: seal-stamp 560ms cubic-bezier(.2, .9, .3, 1.3) 200ms both;
+}
+@keyframes seal-stamp {
+  0%   { opacity: 0; transform: scale(1.18) rotate(-8deg); }
+  70%  { opacity: 1; transform: scale(.96) rotate(0); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .seal-stamp {
+    animation: none;
+  }
+}

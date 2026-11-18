@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>結帳｜NestCraft 原創生活家居選物</title>
+  <meta name="description" content="NestCraft 結帳：填寫收件資訊、選擇配送與付款方式，確認 NT$ 20,250 的訂單。設計稿 05｜親和無毒風。">
+  <meta name="theme-color" content="#FFFFFF">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Chiron+GoRound+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-bs-spy="scroll" data-bs-target="#coRail" data-bs-root-margin="-170px 0px -50%">
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，10 個 .html 要一起改，改完執行 npm run check。
+    - 每頁只需要調整一處「目前頁面」標示（scripts/check-layout.mjs 依這個規則比對）：
+      頁首導覽：目前頁的 <a class="nav-link"> 改成 class="nav-link active"，並加 aria-current="page"
+      · index.html → 首頁；products.html → 商品一覽；orders.html → 我的訂單
+      · product.html：「商品一覽」只加 active，不加 aria-current
+      · 購物車、結帳、付款結果、登入、註冊、Guideline 不標示目前頁
+    - 導覽連結的 class 只寫 nav-link（目前頁加 active），不要加別的 class，樣式從父層 .site-nav 選。
+    - 頁首是懸浮膠囊：header 本身透明且 pointer-events: none，膠囊與抽屜設回 auto。
+      992px 以下，導覽（同一份 #siteMenu）變成底部抽屜；放大鏡按鈕也開這個抽屜，並把焦點放進搜尋框（js/main.js）。
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <div class="container">
+        <div class="site-header-pill">
+          <a class="site-brand" href="index.html" aria-label="NestCraft 首頁">
+            <svg class="site-brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+              <circle class="mark-bg" cx="16" cy="16" r="16" />
+              <path class="mark-ink" d="M6.5 15.5C8.2 10.4 11.6 7.4 16 6.6c4.4.8 7.8 3.8 9.5 8.9z" />
+              <path class="mark-vein" d="M16 14.6V9.2M16 13.2l-3.4-2.4M16 13.2l3.4-2.4" />
+              <path class="mark-ink" d="M9.75 17h12.5v7a1.5 1.5 0 0 1-1.5 1.5h-9.5a1.5 1.5 0 0 1-1.5-1.5z" />
+              <path class="mark-bg" d="M14.25 25.5v-3.25a1.75 1.75 0 0 1 3.5 0v3.25z" />
+            </svg>
+            <span class="site-brand-name">NestCraft</span>
+          </a>
+
+          <!-- 導覽：lg 以上在膠囊中間；992px 以下是底部抽屜（offcanvas-lg，同一份標記） -->
+          <div id="siteMenu" class="offcanvas-lg offcanvas-bottom site-menu" tabindex="-1" aria-labelledby="siteMenuLabel">
+            <div class="offcanvas-header">
+              <h2 id="siteMenuLabel" class="offcanvas-title">選單</h2>
+              <button class="btn-close" type="button" data-bs-dismiss="offcanvas" data-bs-target="#siteMenu" aria-label="關閉選單"></button>
+            </div>
+            <div class="offcanvas-body">
+              <form class="site-search d-lg-none" role="search" action="products.html">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control" type="search" name="q" placeholder="搜尋家具、收納、尺寸…" aria-label="搜尋商品">
+              </form>
+              <nav aria-label="主要導覽">
+                <ul class="site-nav">
+                  <li><a class="nav-link" href="index.html">首頁</a></li>
+                  <li><a class="nav-link" href="products.html">商品一覽</a></li>
+                  <li><a class="nav-link" href="index.html#rooms">空間靈感</a></li>
+                  <li><a class="nav-link" href="orders.html">我的訂單</a></li>
+                  <li class="d-lg-none"><a class="nav-link" href="login.html">會員登入</a></li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+
+          <form class="site-search site-search-desktop d-none d-lg-flex" role="search" action="products.html">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input class="form-control" type="search" name="q" placeholder="搜尋家具、收納、尺寸…" aria-label="搜尋商品">
+          </form>
+
+          <!-- 圖示列：桌機 會員 → 購物車；992px 以下 搜尋 → 購物車 → 選單 -->
+          <div class="site-actions">
+            <button class="site-icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteMenu" aria-controls="siteMenu" aria-label="搜尋商品" data-focus-search>
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <a class="site-icon-btn d-none d-lg-inline-grid" href="login.html" aria-label="會員登入">
+              <i class="bi bi-person" aria-hidden="true"></i>
+            </a>
+            <a class="site-icon-btn" href="cart.html" aria-label="購物車，4 件商品">
+              <i class="bi bi-bag" aria-hidden="true"></i>
+              <span class="site-cart-count">4</span>
+            </a>
+            <button class="site-icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteMenu" aria-controls="siteMenu" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!--
+        結帳（樣式見 scss/pages/_checkout.scss）
+        - 三欄：左子步驟軌（Bootstrap Scrollspy，設定寫在 <body> 的 data-bs-* 屬性）｜中四張段落卡｜右黏性摘要卡
+        - 子步驟軌的連結就是一般的錨點：捲動交給 html 的 scroll-behavior: smooth 與 scroll-padding-top（扣掉懸浮頁首）
+        - 信用卡欄位只在選「信用卡」時顯示（CSS :has()，不需要 JS）
+        - 金額與購物車一致：3 項 4 件，商品小計 NT$ 20,250、免運、應付總額 NT$ 20,250
+      -->
+      <div class="container">
+        <header class="page-header">
+          <!-- 結帳步驟：連續軌道從第一節點長到第二節點；已完成的「購物車」可以點回去修改 -->
+          <ol class="flow-track" style="--from: .1667; --to: .5" aria-label="結帳步驟">
+            <li class="flow-step is-done">
+              <a class="flow-link" href="cart.html">
+                <span class="flow-node"><i class="bi bi-check-lg" aria-hidden="true"></i></span>
+                <span class="flow-label"><span class="visually-hidden">已完成：</span>購物車</span>
+              </a>
+            </li>
+            <li class="flow-step is-current" aria-current="step">
+              <span class="flow-node num">2</span><span class="flow-label">填寫資料與付款</span>
+            </li>
+            <li class="flow-step">
+              <span class="flow-node num">3</span><span class="flow-label">完成訂單</span>
+            </li>
+          </ol>
+          <h1>填寫資料與付款</h1>
+          <p class="page-lead text-phrase">除了標示「選填」的欄位，其他都需要填寫。<wbr>資料只會用於這筆訂單的配送與聯繫。</p>
+        </header>
+
+        <div class="co-layout">
+          <div class="co-main">
+            <!-- 子步驟軌：xl 以上在左欄直向；以下是黏在頂部的橫向膠囊列。目前段落由 Scrollspy 加上 .active -->
+            <nav id="coRail" class="step-rail co-rail" aria-label="結帳表單段落">
+              <ol class="step-rail-list">
+                <li><a class="step-rail-link active" href="#co-recipient"><span class="step-rail-node num" aria-hidden="true">1</span><span class="step-rail-label">收件資訊</span></a></li>
+                <li><a class="step-rail-link" href="#co-shipping"><span class="step-rail-node num" aria-hidden="true">2</span><span class="step-rail-label">配送方式</span></a></li>
+                <li><a class="step-rail-link" href="#co-payment"><span class="step-rail-node num" aria-hidden="true">3</span><span class="step-rail-label">付款方式</span></a></li>
+                <li><a class="step-rail-link" href="#co-invoice"><span class="step-rail-node num" aria-hidden="true">4</span><span class="step-rail-label">發票與備註</span></a></li>
+              </ol>
+              <p class="step-rail-foot"><i class="bi bi-arrow-right-circle" aria-hidden="true"></i>最後在右側確認付款</p>
+            </nav>
+
+            <!--
+              設計稿示意（不需要 JS）：
+              - 表單裡沒有送出按鈕，「確認付款」是連到付款結果頁的連結。
+                欄位不只一個又沒有送出按鈕時，瀏覽器不會因為按 Enter 而送出，也就不會把填寫內容帶進網址。
+              - 欄位不寫 name（設計稿用不到這些值）；瀏覽器自動填入看的是 autocomplete，不需要 name。
+                配送、付款的 radio 保留 name：同一組 radio 靠相同的 name 互斥。
+              正式串接時：改成 <form id="checkoutForm" action="（後端網址）" method="post">，欄位補上 name；
+              「確認付款」改回 <button type="submit" form="checkoutForm">；卡號、有效期限、安全碼交給金流商的付款頁或 hosted fields。
+            -->
+            <form class="co-form">
+              <!-- 1 收件資訊 -->
+              <section id="co-recipient" class="co-section tile" aria-labelledby="co-recipient-title">
+                <h2 id="co-recipient-title" class="co-section-title"><span class="co-section-no num" aria-hidden="true">1</span>收件資訊</h2>
+                <div class="row g-3 g-md-4">
+                  <div class="col-md-6">
+                    <label class="form-label" for="co-name">收件人姓名</label>
+                    <input id="co-name" class="form-control" type="text" autocomplete="shipping name" placeholder="王小明" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="co-tel">手機號碼</label>
+                    <input id="co-tel" class="form-control" type="tel" inputmode="tel" autocomplete="shipping tel" placeholder="0912 345 678" aria-describedby="co-tel-help" required>
+                    <p id="co-tel-help" class="form-text mb-0">只用於配送當天聯繫。</p>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label" for="co-email">Email</label>
+                    <input id="co-email" class="form-control" type="email" inputmode="email" autocomplete="email" value="xiaoming@example.com" placeholder="name@example.com" aria-describedby="co-email-help" required>
+                    <p id="co-email-help" class="form-text mb-0">訂單確認信與出貨通知會寄到這裡。</p>
+                  </div>
+                  <!-- 縣市、鄉鎮市區的選項為示意 -->
+                  <div class="col-6">
+                    <label class="form-label" for="co-city">縣市</label>
+                    <select id="co-city" class="form-select" autocomplete="shipping address-level1" required>
+                      <option value="" selected disabled>請選擇</option>
+                      <option>台北市</option>
+                      <option>新北市</option>
+                      <option>桃園市</option>
+                      <option>台中市</option>
+                      <option>台南市</option>
+                      <option>高雄市</option>
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label" for="co-district">鄉鎮市區</label>
+                    <select id="co-district" class="form-select" autocomplete="shipping address-level2" required>
+                      <option value="" selected disabled>請選擇</option>
+                      <option>中正區</option>
+                      <option>大安區</option>
+                      <option>信義區</option>
+                      <option>松山區</option>
+                      <option>中山區</option>
+                      <option>內湖區</option>
+                    </select>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label" for="co-address">詳細地址</label>
+                    <input id="co-address" class="form-control" type="text" autocomplete="shipping address-line1" placeholder="路名、巷弄、門牌與樓層" aria-describedby="co-address-help" required>
+                    <p id="co-address-help" class="form-text mb-0">若沒有電梯，請一併寫上樓層，我們會安排足夠的搬運人力。</p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- 2 配送方式：購物車有大型家具，超商取貨停用並寫明原因 -->
+              <section id="co-shipping" class="co-section tile" aria-labelledby="co-shipping-title">
+                <h2 id="co-shipping-title" class="co-section-title"><span class="co-section-no num" aria-hidden="true">2</span>配送方式</h2>
+                <fieldset class="co-options">
+                  <legend class="visually-hidden">選擇配送方式</legend>
+                  <label class="option-card">
+                    <input id="ship-home" class="form-check-input" type="radio" name="shipping" value="ship-home" checked>
+                    <span class="option-card-body">
+                      <span class="option-card-title"><i class="bi bi-truck" aria-hidden="true"></i>宅配到府</span>
+                      <span class="option-card-note">3–5&nbsp;個工作天送達，大型家具由兩位專人搬運進屋。</span>
+                    </span>
+                    <span class="option-card-meta">免運</span>
+                  </label>
+                  <label class="option-card">
+                    <input id="ship-pickup" class="form-check-input" type="radio" name="shipping" value="ship-pickup">
+                    <span class="option-card-body">
+                      <span class="option-card-title"><i class="bi bi-shop-window" aria-hidden="true"></i>門市自取</span>
+                      <span class="option-card-note">到貨後以簡訊通知，7&nbsp;天內到台北門市取貨。</span>
+                    </span>
+                    <span class="option-card-meta">免運</span>
+                  </label>
+                  <label class="option-card">
+                    <input id="ship-install" class="form-check-input" type="radio" name="shipping" value="ship-install">
+                    <span class="option-card-body">
+                      <span class="option-card-title"><i class="bi bi-tools" aria-hidden="true"></i>大型家具到府安裝</span>
+                      <span class="option-card-note">專人組裝並帶走包材，沒有工具也不用擔心。</span>
+                    </span>
+                    <span class="option-card-meta num">+NT$ 800</span>
+                  </label>
+                  <label class="option-card is-disabled">
+                    <input id="ship-store" class="form-check-input" type="radio" name="shipping" value="ship-store" disabled>
+                    <span class="option-card-body">
+                      <span class="option-card-title"><i class="bi bi-shop" aria-hidden="true"></i>超商取貨</span>
+                      <span class="option-card-note">購物車內的橡木餐桌屬大型家具，無法以超商寄送。</span>
+                    </span>
+                    <span class="option-card-meta">不適用</span>
+                  </label>
+                </fieldset>
+              </section>
+
+              <!-- 3 付款方式 -->
+              <section id="co-payment" class="co-section co-pay tile" aria-labelledby="co-payment-title">
+                <h2 id="co-payment-title" class="co-section-title"><span class="co-section-no num" aria-hidden="true">3</span>付款方式</h2>
+                <fieldset class="co-options is-2col">
+                  <legend class="visually-hidden">選擇付款方式</legend>
+                  <label class="option-card">
+                    <input id="pay-card" class="form-check-input" type="radio" name="payment" value="card" checked>
+                    <span class="option-card-body">
+                      <span class="option-card-title"><i class="bi bi-credit-card" aria-hidden="true"></i>信用卡</span>
+                      <span class="option-card-note">一次付清，立即完成付款</span>
+                    </span>
+                  </label>
+                  <label class="option-card">
+                    <input id="pay-atm" class="form-check-input" type="radio" name="payment" value="atm">
+                    <span class="option-card-body">
+                      <span class="option-card-title"><i class="bi bi-bank" aria-hidden="true"></i>ATM 轉帳</span>
+                      <span class="option-card-note">取得虛擬帳號，3&nbsp;天內轉帳</span>
+                    </span>
+                  </label>
+                  <label class="option-card">
+                    <input id="pay-cod" class="form-check-input" type="radio" name="payment" value="cod">
+                    <span class="option-card-body">
+                      <span class="option-card-title"><i class="bi bi-cash-coin" aria-hidden="true"></i>貨到付款</span>
+                      <span class="option-card-note">商品送達時付款給物流人員</span>
+                    </span>
+                  </label>
+                  <label class="option-card">
+                    <input id="pay-mobile" class="form-check-input" type="radio" name="payment" value="mobile">
+                    <span class="option-card-body">
+                      <span class="option-card-title"><i class="bi bi-phone" aria-hidden="true"></i>行動支付</span>
+                      <span class="option-card-note">Apple Pay、LINE Pay</span>
+                    </span>
+                  </label>
+                </fieldset>
+
+                <!--
+                  信用卡欄位：選「信用卡」時才顯示。這三欄不加 required：選其他付款方式時欄位只是被隱藏，
+                  若仍是 required，瀏覽器會擋下送出；以 aria-required 告知螢幕閱讀器必填，實際檢查交給金流頁
+                -->
+                <fieldset class="co-card-fields">
+                  <legend class="visually-hidden">信用卡資料</legend>
+                  <div class="row g-3 g-md-4">
+                    <div class="col-12">
+                      <div class="d-flex flex-wrap justify-content-between align-items-baseline column-gap-3">
+                        <label class="form-label" for="co-cc-number">卡號</label>
+                        <p class="text-note mb-2"><i class="bi bi-lock me-1" aria-hidden="true"></i>資料以 SSL 加密傳輸</p>
+                      </div>
+                      <input id="co-cc-number" class="form-control num" type="text" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000" aria-required="true">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label" for="co-cc-exp">有效期限</label>
+                      <input id="co-cc-exp" class="form-control num" type="text" inputmode="numeric" autocomplete="cc-exp" placeholder="MM / YY" aria-required="true">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label" for="co-cc-csc">安全碼</label>
+                      <input id="co-cc-csc" class="form-control num" type="text" inputmode="numeric" autocomplete="cc-csc" placeholder="123" aria-describedby="co-cc-csc-help" aria-required="true">
+                      <p id="co-cc-csc-help" class="form-text mb-0">卡片背面末 3&nbsp;碼</p>
+                    </div>
+                  </div>
+                </fieldset>
+                <!-- 選其他付款方式時，信用卡欄位的位置改顯示對應說明 -->
+                <p class="co-pay-note is-atm"><i class="bi bi-info-circle" aria-hidden="true"></i>下單後會提供虛擬帳號，請在 3&nbsp;天內完成轉帳。</p>
+                <p class="co-pay-note is-cod"><i class="bi bi-info-circle" aria-hidden="true"></i>商品送達時，請以現金付款給物流人員。</p>
+                <p class="co-pay-note is-mobile"><i class="bi bi-info-circle" aria-hidden="true"></i>按下確認付款後，會轉到 Apple Pay 或 LINE Pay 完成付款。</p>
+              </section>
+
+              <!-- 4 發票與備註 -->
+              <section id="co-invoice" class="co-section tile" aria-labelledby="co-invoice-title">
+                <h2 id="co-invoice-title" class="co-section-title"><span class="co-section-no num" aria-hidden="true">4</span>發票與備註</h2>
+                <div class="row g-3 g-md-4">
+                  <div class="col-12">
+                    <label class="form-label" for="co-invoice-type">電子發票</label>
+                    <select id="co-invoice-type" class="form-select" autocomplete="off" aria-describedby="co-invoice-help">
+                      <option selected>會員載具（寄送至 Email）</option>
+                      <option>手機條碼載具</option>
+                      <option>自然人憑證載具</option>
+                      <option>公司報帳（需填統一編號）</option>
+                      <option>捐贈發票</option>
+                    </select>
+                    <p id="co-invoice-help" class="form-text mb-0">發票會在出貨後開立，若中獎將以 Email 通知。</p>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label" for="co-note">備註<span class="form-label-optional">選填</span></label>
+                    <textarea id="co-note" class="form-control" rows="3" autocomplete="off" placeholder="例如：平日 18:00 後方便收貨、社區需要先登記"></textarea>
+                  </div>
+                </div>
+              </section>
+            </form>
+          </div>
+
+          <!-- 訂單摘要：lg 以上在右欄黏住；以下放在表單之後（含確認付款） -->
+          <aside class="co-summary sum-card is-floating" aria-labelledby="co-summary-title">
+            <h2 id="co-summary-title" class="sum-card-title">訂單摘要</h2>
+            <ul class="sum-items">
+                <li class="sum-item">
+                  <img class="sum-item-thumb" src="images/p-1001.jpg" alt="">
+                  <div class="sum-item-body">
+                    <p class="sum-item-name text-phrase">橡木餐桌</p>
+                    <p class="sum-item-meta"><span>數量 <span class="num">1</span></span><span class="price"><span class="visually-hidden">小計</span>NT$ 16,800</span></p>
+                  </div>
+                </li>
+                <li class="sum-item">
+                  <img class="sum-item-thumb" src="images/p-1007.jpg" alt="">
+                  <div class="sum-item-body">
+                    <p class="sum-item-name text-phrase">NestBox 自由拼裝<wbr>收納方塊 (三入組)</p>
+                    <p class="sum-item-meta"><span>數量 <span class="num">2</span></span><span class="price"><span class="visually-hidden">小計</span>NT$ 2,560</span></p>
+                  </div>
+                </li>
+                <li class="sum-item">
+                  <img class="sum-item-thumb" src="images/p-1008.jpg" alt="">
+                  <div class="sum-item-body">
+                    <p class="sum-item-name text-phrase">SlimFit 夾縫<wbr>多功能推車</p>
+                    <p class="sum-item-meta"><span>數量 <span class="num">1</span></span><span class="price"><span class="visually-hidden">小計</span>NT$ 890</span></p>
+                  </div>
+                </li>
+            </ul>
+            <dl class="sum-rows">
+              <div class="sum-row"><dt>商品小計</dt><dd class="num">NT$ 20,250</dd></div>
+              <div class="sum-row"><dt>運費</dt><dd>免運</dd></div>
+              <div class="sum-row sum-total"><dt>應付總額</dt><dd class="price">NT$ 20,250</dd></div>
+            </dl>
+            <div class="co-summary-actions">
+              <a class="btn btn-primary btn-lg w-100" href="order-result.html">確認付款</a>
+              <a class="btn btn-text" href="cart.html"><i class="bi bi-chevron-left" aria-hidden="true"></i>返回購物車</a>
+            </div>
+            <ul class="co-secure">
+              <li><i class="bi bi-shield-lock" aria-hidden="true"></i><span>付款資料加密傳輸，不會儲存完整卡號。</span></li>
+              <li><i class="bi bi-pencil-square" aria-hidden="true"></i><span>確認付款前，你都可以返回修改。</span></li>
+            </ul>
+          </aside>
+        </div>
+
+        <!-- 設計稿狀態示意：必填驗證、付款處理中（Bootstrap 的 .alert、.is-invalid、.spinner-border） -->
+        <section class="demo-state" aria-labelledby="co-state-title">
+          <p class="demo-state-tag">設計稿狀態示意</p>
+          <h2 id="co-state-title" class="demo-state-title">必填驗證與付款處理中</h2>
+          <p class="demo-state-note text-phrase">按下「確認付款」後先檢查必填欄位：<wbr>段落卡最上方的提示寫出還有幾個欄位要處理，<wbr>欄位加上紅框並在下方寫出原因。<wbr>檢查通過後，<wbr>按鈕改成處理中並停用，<wbr>避免重複付款。</p>
+
+          <div class="co-demo-grid">
+            <div class="demo-state-stage">
+              <h3 class="co-demo-sub">必填欄位沒有填好</h3>
+              <div class="tile">
+                <!-- 正式使用時，這則提示在送出後才插入段落卡最上方，並加上 role="alert" -->
+                <div class="alert alert-danger d-flex gap-3 mb-4">
+                  <i class="bi bi-x-circle" aria-hidden="true"></i>
+                  <div>
+                    <p class="fw-medium mb-1">有 <span class="num">2</span> 個欄位還沒填好</p>
+                    <p class="small text-phrase mb-0">請修正標示紅框的欄位，<wbr>再按一次「確認付款」。</p>
+                  </div>
+                </div>
+                <div class="row g-3 g-md-4">
+                  <div class="col-md-6">
+                    <label class="form-label" for="co-demo-name">收件人姓名</label>
+                    <input id="co-demo-name" class="form-control is-invalid" type="text" autocomplete="off" aria-invalid="true" aria-describedby="co-demo-name-error">
+                    <p id="co-demo-name-error" class="invalid-feedback mb-0">請填寫收件人姓名。</p>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="co-demo-tel">手機號碼</label>
+                    <input id="co-demo-tel" class="form-control is-invalid num" type="tel" value="0912-345" autocomplete="off" aria-invalid="true" aria-describedby="co-demo-tel-error">
+                    <p id="co-demo-tel-error" class="invalid-feedback mb-0">手機號碼需要 10&nbsp;碼數字，例如 0912&nbsp;345&nbsp;678。</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="demo-state-stage">
+              <h3 class="co-demo-sub">付款處理中</h3>
+              <div class="sum-card bg-white">
+                <dl class="sum-rows">
+                  <div class="sum-row sum-total mt-0 pt-0 border-0"><dt>應付總額</dt><dd class="price">NT$ 20,250</dd></div>
+                </dl>
+                <button class="btn btn-primary btn-lg w-100 mt-4" type="button" disabled>
+                  <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span><span role="status">付款處理中…</span>
+                </button>
+                <p class="text-note text-phrase text-center mt-3 mb-0">付款完成前，<wbr>請不要關閉或重新整理頁面。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="row gy-4 gx-4">
+          <div class="col-lg-4">
+            <a class="site-brand" href="index.html" aria-label="NestCraft 首頁">
+              <svg class="site-brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+                <circle class="mark-bg" cx="16" cy="16" r="16" />
+                <path class="mark-ink" d="M6.5 15.5C8.2 10.4 11.6 7.4 16 6.6c4.4.8 7.8 3.8 9.5 8.9z" />
+                <path class="mark-vein" d="M16 14.6V9.2M16 13.2l-3.4-2.4M16 13.2l3.4-2.4" />
+                <path class="mark-ink" d="M9.75 17h12.5v7a1.5 1.5 0 0 1-1.5 1.5h-9.5a1.5 1.5 0 0 1-1.5-1.5z" />
+                <path class="mark-bg" d="M14.25 25.5v-3.25a1.75 1.75 0 0 1 3.5 0v3.25z" />
+              </svg>
+              <span class="site-brand-name">NestCraft</span>
+            </a>
+            <p class="site-footer-lead">
+              把有限的坪數，活出無限的講究。<br>
+              專為租屋族與小空間打造的模組家具。
+            </p>
+          </div>
+          <!-- 購物指南、品牌故事尚未設計頁面：不帶 href 的佔位連結 -->
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">購物指南</h2>
+            <ul class="list-unstyled site-footer-links">
+              <li><a>運送與安裝</a></li>
+              <li><a>14 天退換說明</a></li>
+              <li><a>付款方式</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">關於 NestCraft</h2>
+            <ul class="list-unstyled site-footer-links">
+              <li><a>品牌故事</a></li>
+              <li><a href="index.html#rooms">空間靈感</a></li>
+              <li><a href="products.html">全部商品</a></li>
+            </ul>
+          </div>
+          <div class="col-md-4 col-lg-4">
+            <h2 class="site-footer-title">客服中心</h2>
+            <ul class="list-unstyled site-footer-links">
+              <li>週一至週五 10:00–18:00</li>
+              <li><a href="mailto:hello@nestcraft.example">hello@nestcraft.example</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 NestCraft 原創生活家居選物｜本站為課程設計稿範例，商品與訂單皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

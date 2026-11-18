@@ -1,0 +1,870 @@
+// ============================================================
+// 全站基礎：字體、版心、區塊節奏、按鈕、標籤、表單、提示與共用小工具
+// 排版核心：色塊（黃塊、黑帶、白底）切分版面、超大數字、固定行動
+// ============================================================
+
+// ---------- 版心：md 以上左右各 32px；滿版色塊用 --shell／--pad 對齊版心 ----------
+// 滿版左右半（首頁 Hero、底部 CTA、登入頁）不在 .container 內，
+// 文字欄用 @include shell-start 讓內容左緣對齊版心（外層要加 .bleed-split）
+:root {
+  --shell: 100000px; // 576px 以下 .container 沒有最大寬度
+  --pad: 1rem;       // .container 的左右內距
+
+  @include media-breakpoint-up(sm)  { --shell: #{map-get($container-max-widths, sm)}; }
+  @include media-breakpoint-up(md)  { --shell: #{map-get($container-max-widths, md)}; --pad: 2rem; }
+  @include media-breakpoint-up(lg)  { --shell: #{map-get($container-max-widths, lg)}; }
+  @include media-breakpoint-up(xl)  { --shell: #{map-get($container-max-widths, xl)}; }
+  @include media-breakpoint-up(xxl) { --shell: #{map-get($container-max-widths, xxl)}; }
+}
+.container,
+.container-fluid {
+  @include media-breakpoint-up(md) { --bs-gutter-x: 4rem; }
+}
+// 購物車、結帳 1280；我的訂單、付款結果 1080（與 .container 併用）
+.container-flow   { max-width: $container-flow; }
+.container-narrow { max-width: $container-narrow; }
+
+// 滿版左右半的外層：讓裡面可以用 100cqw 算出版心位置
+.bleed-split { container-type: inline-size; }
+@mixin shell-start {
+  padding-inline-start: max(var(--pad), calc((100cqw - var(--shell)) / 2 + var(--pad)));
+}
+@mixin shell-end {
+  padding-inline-end: max(var(--pad), calc((100cqw - var(--shell)) / 2 + var(--pad)));
+}
+
+// ---------- 頁面骨架：頁尾貼底；有固定結帳列的頁面底部多留空間 ----------
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+main { flex: 1 0 auto; }
+
+html {
+  scroll-padding-top: $sticky-top-offset; // sticky 黑列不遮住錨點與焦點
+}
+// 固定結帳列：<body class="has-buybar">。頁面底部多留列高＋16px，Tab 到的欄位與頁尾都不會被蓋住
+// 多留的空間加在頁尾（黃底延伸到固定列後面），不加在 body，捲到底時頁尾和固定列之間不會露出一條白邊
+body.has-buybar {
+  --buybar-offset: #{$buybar-height-sm + 1rem};
+
+  @include media-breakpoint-up(lg) { --buybar-offset: #{$buybar-height + 1rem}; }
+
+  .site-footer { padding-bottom: var(--buybar-offset); }
+}
+html:has(body.has-buybar) {
+  scroll-padding-bottom: $buybar-height-sm + 1rem;
+
+  @include media-breakpoint-up(lg) { scroll-padding-bottom: $buybar-height + 1rem; }
+}
+// 商品詳情：只有 992px 以下有固定購買列
+body.has-buybar-sm {
+  @include media-breakpoint-down(lg) {
+    --buybar-offset: #{$buybar-height-sm + 1rem};
+
+    .site-footer { padding-bottom: var(--buybar-offset); }
+  }
+}
+html:has(body.has-buybar-sm) {
+  @include media-breakpoint-down(lg) { scroll-padding-bottom: $buybar-height-sm + 1rem; }
+}
+
+// ---------- 字級：手機值在前，lg 以上換成桌機值 ----------
+h1, .h1 {
+  font-size: 2rem; // 32
+
+  @include media-breakpoint-up(lg) { font-size: $h1-font-size; } // 44
+  line-height: 1.2;
+}
+h2, .h2 {
+  font-size: 1.625rem; // 26
+
+  @include media-breakpoint-up(lg) { font-size: $h2-font-size; } // 36
+}
+h3, .h3 {
+  font-size: 1.125rem; // 18
+  font-weight: 700;
+  line-height: 1.4;
+
+  @include media-breakpoint-up(lg) { font-size: $h3-font-size; } // 20
+}
+h4, .h4, h5, .h5, h6, .h6 {
+  font-weight: 700;
+  line-height: 1.4;
+}
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  text-wrap: balance;
+}
+p, li, dd, label, figcaption, td, th, .form-text {
+  text-wrap: pretty;
+}
+// 首頁 H1：72／40px
+.display-hero {
+  font-family: $font-family-num;
+  font-size: clamp(2.5rem, 5.2vw, 4.5rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -.01em;
+}
+.lead { line-height: 1.7; }
+
+// ---------- 螢光筆：H2 文字背後的黃色底（換行時每行都有） ----------
+// <h2><span class="marker">人氣嚴選｜空間放大的秘密武器</span></h2>
+// 黃色只在黑字背後當底，不單獨當線條或文字
+.marker {
+  padding-inline: .08em;
+  background-image: linear-gradient(transparent 60%, $volt 60%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+// ---------- 數字：Inter Tight 等寬數字 ----------
+.num {
+  font-family: $font-family-num;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- 大字號金額標籤：NT$ 縮小、上緣對齊，數字原大 ----------
+// <span class="price-tag price-tag-card"><span class="price-cur">NT$</span><span class="price-num">16,800</span></span>
+.price-tag {
+  display: inline-flex;
+  align-items: flex-start;
+  font-family: $font-family-num;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: $letter-spacing-price;
+  white-space: nowrap;
+}
+.price-cur {
+  margin-top: .12em;
+  margin-right: .1em;
+  font-size: max(.42em, .6875rem); // 數字的 0.42 倍，小價格時至少 11px
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.price-tag-sm    { font-size: 1.125rem; }                // 18：清單裡的單價
+.price-tag-card  { font-size: $price-card-sm;  @include media-breakpoint-up(md) { font-size: $price-card; } }  // 22 → 28
+.price-tag-set   { font-size: $price-set; }              // 32：整套價、訂單金額
+.price-tag-total { font-size: $price-total-sm; @include media-breakpoint-up(lg) { font-size: $price-total; } } // 28 → 40
+.price-tag-hero  { font-size: $price-hero-sm;  @include media-breakpoint-up(lg) { font-size: $price-hero; } }  // 44 → 64
+
+// 黃色價格吊牌：商品詳情的價格（黃底、左側尖角＋12px 黑色圓孔、黑字 44 → 64px）
+// <p class="price-hangtag"><span class="price-tag price-tag-hero"><span class="price-cur">NT$</span><span class="price-num">16,800</span></span></p>
+// 已售完：加 .is-off（停用灰底，數字仍清楚）
+.price-hangtag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: .75rem 1.5rem .75rem 2.5rem;
+  background-color: $volt;
+  color: $black;
+  clip-path: polygon(1rem 0, 100% 0, 100% 100%, 1rem 100%, 0 50%); // 左側尖角，像掛在商品上的吊牌
+
+  @include media-breakpoint-up(lg) { padding: 1rem 1.75rem 1rem 2.75rem; }
+
+  // 吊牌的穿繩圓孔
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 1.125rem;
+    width: .75rem;
+    height: .75rem;
+    margin-top: -.375rem;
+    border-radius: 50%;
+    background-color: $black;
+  }
+  &.is-off {
+    background-color: $grey-200;
+    color: $grey-700;
+  }
+}
+
+// ---------- 區塊節奏與色塊 ----------
+.section {
+  padding-block: map-get($spacers, 7); // 48
+
+  @include media-breakpoint-up(lg) { padding-block: map-get($spacers, 8); } // 64
+}
+// 黑帶：白字，次要字 #B3B3B3，焦點改黃色
+.band-dark {
+  background-color: $black;
+  color: $white;
+}
+// 黃塊：黑字（面積控制在每畫面 15～25%，不放長段落）
+.band-volt {
+  background-color: $volt;
+  color: $black;
+}
+// 深色面上的文字、連結、焦點、按鈕（黑帶、黑色結帳列、熱點小卡、頁首黑列都加 .on-dark）
+.band-dark,
+.on-dark {
+  h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 { color: $white; }
+  .text-muted-dark,
+  .section-head p,
+  .page-lead { color: $on-dark-muted; }
+  a:not(.btn) { color: $white; }
+  :focus-visible { outline-color: $volt; }
+  .btn-text {
+    --bs-btn-color: #{$white};
+    --bs-btn-hover-color: #{$white};
+    --bs-btn-active-color: #{$white};
+  }
+  // 黑色面上的黃按鈕：不需要黑框；hover 改白底黑字
+  .btn-volt {
+    --bs-btn-border-color: #{$volt};
+    --bs-btn-hover-color: #{$black};
+    --bs-btn-hover-bg: #{$white};
+    --bs-btn-hover-border-color: #{$white};
+    --bs-btn-active-color: #{$black};
+    --bs-btn-active-bg: #{$white};
+    --bs-btn-active-border-color: #{$white};
+  }
+}
+.text-muted-dark { color: $on-dark-muted; }
+
+// 區塊標題列：左 H2（螢光筆）＋一句說明，右側連結
+// <div class="section-head"><div><h2><span class="marker">…</span></h2><p>…</p></div><a class="btn btn-text" …>…</a></div>
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: map-get($spacers, 3) map-get($spacers, 5);
+  margin-bottom: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) { margin-bottom: map-get($spacers, 6); }
+
+  h2, .h2 { margin-bottom: map-get($spacers, 2); }
+  p {
+    max-width: 40em;
+    margin-bottom: 0;
+    color: $body-secondary-color;
+  }
+}
+
+// 頁內小節標題：22／24px 900＋下方 2px 黑線（付款結果的「購買品項」「接下來會發生什麼」、我的訂單的明細）
+// 比 H2 螢光筆（36px）安靜，用在同一頁裡已經有超大數字或黑帶當主角的時候
+// <h2 class="rule-title">購買品項<span class="rule-title-aside">共 4 件</span></h2>
+.rule-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  margin-bottom: map-get($spacers, 5);
+  padding-bottom: map-get($spacers, 3);
+  border-bottom: $border-strong solid $black;
+  font-family: $font-family-base;
+  font-size: 1.375rem;
+  font-weight: 900;
+  line-height: 1.3;
+
+  @include media-breakpoint-up(lg) { font-size: 1.5rem; }
+}
+.rule-title-aside {
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+  font-weight: 700;
+}
+
+// 首頁以外各頁的內容底部：和頁尾之間留 48／64px（最後一個區塊通常是設計稿狀態示意）
+.page-body {
+  padding-bottom: map-get($spacers, 7);
+
+  @include media-breakpoint-up(lg) { padding-bottom: map-get($spacers, 8); }
+}
+
+// ---------- 首頁以外各頁的頁首 ----------
+// <header class="page-header">
+//   <nav aria-label="目前位置"><ol class="breadcrumb">…</ol></nav>   ← 購物車、結帳、付款結果改放 .chevron-steps
+//   <div class="page-title-row"><h1>商品一覽</h1><span class="count-chip"><span class="num">10</span> 件</span></div>
+//   <p class="page-lead">一句說明</p>
+// </header>
+.page-header {
+  padding-top: map-get($spacers, 4);
+  padding-bottom: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 5);
+    padding-bottom: map-get($spacers, 6);
+  }
+
+  > nav,
+  > .chevron-steps { margin-bottom: map-get($spacers, 4); }
+  h1, .h1 { margin-bottom: 0; }
+}
+.page-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 2);
+}
+.page-lead {
+  max-width: 40em;
+  margin: map-get($spacers, 2) 0 0;
+  color: $body-secondary-color;
+}
+// H1 旁的黃底數字方塊（商品一覽「10 件」、購物車「4 件」）
+.count-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .25rem;
+  padding: .25rem .625rem;
+  background-color: $volt;
+  color: $black;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+
+  .num {
+    font-size: 1.5rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+}
+
+// ---------- 按鈕三階：.btn-volt（黃底黑框）／.btn-dark（黑底）／.btn-outline-dark（白底黑框） ----------
+// 規則：每張卡、每個區塊只有一顆 .btn-volt；框線一開始就以同色存在，hover 只換色、尺寸不變
+.btn {
+  --bs-btn-font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: $btn-height;
+  text-align: center;
+
+  &:focus-visible {
+    outline: $focus-ring-width solid $black;
+    outline-offset: $focus-ring-offset;
+    box-shadow: none;
+  }
+}
+.btn-lg { min-height: $btn-height-lg; }
+.btn-sm { min-height: $btn-height-sm; }
+
+.btn-volt {
+  --bs-btn-color: #{$black};
+  --bs-btn-bg: #{$volt};
+  --bs-btn-border-color: #{$black};
+  --bs-btn-hover-color: #{$volt};
+  --bs-btn-hover-bg: #{$black};
+  --bs-btn-hover-border-color: #{$black};
+  --bs-btn-active-color: #{$volt};
+  --bs-btn-active-bg: #{$black};
+  --bs-btn-active-border-color: #{$black};
+  --bs-btn-font-weight: 900;
+  min-height: $btn-height-lg;
+  font-size: 1.0625rem;
+
+  &.btn-sm,
+  &.btn-card { min-height: $btn-height; font-size: 1rem; }
+}
+.btn-dark {
+  --bs-btn-color: #{$white};
+  --bs-btn-bg: #{$black};
+  --bs-btn-border-color: #{$black};
+  --bs-btn-hover-color: #{$black};
+  --bs-btn-hover-bg: #{$volt};
+  --bs-btn-hover-border-color: #{$black};
+  --bs-btn-active-color: #{$black};
+  --bs-btn-active-bg: #{$volt};
+  --bs-btn-active-border-color: #{$black};
+}
+.btn-outline-dark {
+  --bs-btn-color: #{$black};
+  --bs-btn-bg: #{$white};
+  --bs-btn-border-color: #{$black};
+  --bs-btn-hover-color: #{$white};
+  --bs-btn-hover-bg: #{$black};
+  --bs-btn-hover-border-color: #{$black};
+  --bs-btn-active-color: #{$white};
+  --bs-btn-active-bg: #{$black};
+  --bs-btn-active-border-color: #{$black};
+}
+// 黑色面上的次要按鈕：白框白字，hover 白底黑字
+.btn-outline-light {
+  --bs-btn-color: #{$white};
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: #{$white};
+  --bs-btn-hover-color: #{$black};
+  --bs-btn-hover-bg: #{$white};
+  --bs-btn-hover-border-color: #{$white};
+  --bs-btn-active-color: #{$black};
+  --bs-btn-active-bg: #{$white};
+  --bs-btn-active-border-color: #{$white};
+}
+// 黃塊上的黑按鈕：hover 改白底，避免和黃塊融在一起
+.band-volt .btn-dark {
+  --bs-btn-hover-bg: #{$white};
+  --bs-btn-active-bg: #{$white};
+}
+// 停用：灰底灰字＋虛線框（框寬不變），不靠透明度
+.btn-volt,
+.btn-dark,
+.btn-outline-dark {
+  &:disabled,
+  &.disabled {
+    --bs-btn-disabled-color: #{$grey-700};
+    --bs-btn-disabled-bg: #{$grey-200};
+    --bs-btn-disabled-border-color: #{$grey-400};
+    border-style: dashed;
+    cursor: not-allowed;
+    pointer-events: auto;
+  }
+}
+// 商品卡、熱點小卡的按鈕：滿寬 48px
+.btn-card {
+  width: 100%;
+  min-height: $btn-height;
+}
+// 文字連結型按鈕：粗體＋2px 底線，hover 底線加粗到 4px（只變裝飾，不變尺寸）
+.btn-text {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: .25rem;
+  --bs-btn-color: #{$black};
+  --bs-btn-hover-color: #{$black};
+  --bs-btn-active-color: #{$black};
+  --bs-btn-border-width: 0;
+  min-height: $btn-height-sm;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .3em;
+
+  &:hover { text-decoration-thickness: 4px; }
+}
+
+// ---------- 標籤：矩形，黑底白字或黃底黑字 ----------
+// <span class="tag">現貨</span>  變化：.tag-volt（低庫存、提醒）／.tag-off（已售完、停用）／.tag-outline（庫存數）
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .25rem .5rem;
+  background-color: $black;
+  color: $white;
+  font-size: .875rem;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.tag-volt { background-color: $volt; color: $black; }
+.tag-off {
+  background-color: $grey-200;
+  color: $grey-700;
+  outline: 1px dashed $grey-400;
+  outline-offset: -1px;
+}
+.tag-outline {
+  background-color: $white;
+  color: $black;
+  box-shadow: inset 0 0 0 $border-strong $black; // 框畫在內側，和其他標籤一樣大
+}
+
+// 訂單狀態：5 種狀態靠底色＋圖示＋文字區分（不只靠顏色）
+// <span class="badge-status is-pending"><i class="bi bi-clock-fill" aria-hidden="true"></i>待付款</span>
+.badge-status {
+  @extend .tag;
+
+  &.is-pending  { background-color: $volt; color: $black; }                          // 待付款：bi-clock-fill
+  &.is-paid     { background-color: $white; color: $black; box-shadow: inset 0 0 0 $border-strong $black; } // 已付款：bi-check-circle
+  &.is-shipping { background-color: $black; color: $volt; }                          // 出貨中：bi-truck
+  &.is-done     { background-color: $black; color: $white; }                         // 已完成：bi-check2-all
+  &.is-cancel   { background-color: $grey-200; color: $grey-700; outline: 1px dashed $grey-400; outline-offset: -1px; } // 已取消：bi-x-circle
+}
+
+// ---------- 圖片框：灰底，圖片 cover ----------
+.img-frame {
+  position: relative;
+  overflow: hidden;
+  background-color: $grey-100;
+
+  > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// ---------- 數量增減：48px 方鍵，2px 黑框 ----------
+// <div class="qty">
+//   <button class="qty-btn" type="button" aria-label="減少數量"><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
+//   <input class="qty-input" type="text" inputmode="numeric" value="1" aria-label="數量">
+//   <button class="qty-btn" type="button" aria-label="增加數量"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
+// </div>
+.qty {
+  display: inline-flex;
+  align-items: stretch;
+  border: $border-strong solid $black;
+  background-color: $white;
+}
+.qty-btn {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 2.75rem; // 含上下框 48px
+  padding: 0;
+  border: 0;
+  background-color: $white;
+  color: $black;
+  font-size: 1.125rem;
+  transition: background-color .12s ease;
+
+  &:hover:not(:disabled) { background-color: $volt; }
+  &:focus-visible { outline: $focus-ring-width solid $black; outline-offset: -$focus-ring-width; }
+  &:disabled { color: $grey-400; cursor: not-allowed; }
+}
+.qty-input {
+  width: 3rem;
+  border: 0;
+  border-inline: $border-strong solid $black;
+  background: transparent;
+  color: $black;
+  font-family: $font-family-num;
+  font-size: 1.125rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+
+  &:focus-visible { outline: $focus-ring-width solid $black; outline-offset: -$focus-ring-width; }
+  &:disabled { background-color: $grey-200; color: $grey-700; }
+}
+// 整組停用（已售完）時外框改虛線；只有「−」停用（數量為 1）時外框不變
+.qty:has(.qty-input:disabled) { border-color: $grey-400; border-style: dashed; }
+
+// ---------- 表單 ----------
+.form-control,
+.form-select {
+  &:focus {
+    outline: $focus-ring-width solid $black;
+    outline-offset: $focus-ring-offset;
+  }
+}
+.form-select { min-height: $btn-height; }
+.form-check-input {
+  &:focus-visible {
+    outline: $focus-ring-width solid $black;
+    outline-offset: $focus-ring-offset;
+  }
+}
+.form-check-label { cursor: pointer; }
+// 錯誤：紅框（內側再加 1px，尺寸不變）＋紅字訊息（前面放圖示，不只靠顏色）
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: $red;
+  box-shadow: inset 0 0 0 1px $red;
+
+  &:focus { box-shadow: inset 0 0 0 1px $red; }
+}
+.invalid-feedback {
+  font-size: $form-text-font-size;
+  font-weight: 700;
+
+  > .bi { margin-right: .25rem; }
+}
+.form-label-optional {
+  margin-left: .375rem;
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  font-weight: 400;
+}
+
+// 選項卡（結帳的配送、付款）：0 圓角、2px 黑框；選中＝黃底；停用＝虛線灰＋原因
+// <label class="option-card" for="shipHome">
+//   <input class="form-check-input" type="radio" name="shipping" id="shipHome" checked>
+//   <span class="option-card-body"><span class="option-card-title">宅配到府</span><span class="option-card-note">…</span></span>
+//   <span class="option-card-aside">免運</span>
+// </label>
+.option-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: .75rem;
+  padding: 1rem;
+  border: $border-strong solid $black;
+  background-color: $white;
+  cursor: pointer;
+  transition: background-color .12s ease;
+
+  .form-check-input { margin: .2em 0 0; }
+  &:hover { background-color: $volt-tint; }
+  &:has(input:checked) { background-color: $volt; }
+  &:has(input:disabled) {
+    border-style: dashed;
+    border-color: $grey-400;
+    background-color: $grey-200;
+    color: $grey-700;
+    cursor: not-allowed;
+  }
+  & + & { margin-top: .75rem; }
+}
+.option-card-title { display: block; font-weight: 700; }
+.option-card-note { display: block; font-size: $font-size-sm; color: $grey-600; }
+.option-card:has(input:checked) .option-card-note { color: $grey-600; } // 黃底上 5.24:1
+.option-card:has(input:disabled) .option-card-note { color: $grey-700; }
+.option-card-aside { font-weight: 700; white-space: nowrap; }
+
+// ---------- 底線分頁籤：選中 4px 黑底線＋900 ----------
+.nav-underline {
+  --bs-nav-link-padding-x: .25rem;
+  --bs-nav-underline-gap: 1.25rem;
+  --bs-nav-underline-border-width: 4px;
+  --bs-nav-underline-link-active-color: #{$black};
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  border-bottom: 1px solid $grey-300;
+  scrollbar-width: none;
+
+  .nav-link {
+    min-height: $btn-height;
+    padding-inline: var(--bs-nav-link-padding-x);
+    color: $grey-600;
+    font-weight: 700;
+    white-space: nowrap;
+
+    &:hover { color: $black; border-bottom-color: $grey-300; }
+    &:focus-visible { outline: $focus-ring-width solid $black; outline-offset: -$focus-ring-width; box-shadow: none; }
+  }
+  .nav-link.active { font-weight: 900; color: $black; border-bottom-color: $black; }
+}
+// 分頁文字後面的數量：黑方塊白字
+.tab-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  margin-left: .375rem;
+  padding-inline: .25rem;
+  background-color: $black;
+  color: $white;
+  font-family: $font-family-num;
+  font-size: .8125rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- 麵包屑：連結 44px 觸控高度 ----------
+.breadcrumb { align-items: center; }
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: $btn-height-sm;
+  color: $grey-600;
+  font-weight: 700;
+  text-decoration: none;
+
+  &:hover { color: $black; text-decoration: underline; text-decoration-thickness: 2px; }
+}
+.breadcrumb-item.active { font-weight: 700; }
+
+// ---------- 提示：實心色帶 ----------
+// <div class="alert alert-danger" role="alert">
+//   <i class="bi bi-exclamation-square-fill" aria-hidden="true"></i>
+//   <div><p class="alert-title">沒有登入成功</p><p class="mb-0">說明與下一步。</p></div>
+// </div>
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+
+  > .bi {
+    flex-shrink: 0;
+    font-size: 1.25rem;
+    line-height: 1.35;
+  }
+  > div > :last-child { margin-bottom: 0; }
+  a { color: inherit; font-weight: 700; }
+}
+.alert-title { margin-bottom: .25rem; font-weight: 900; }
+.alert-danger  { --bs-alert-bg: #{$red};   --bs-alert-color: #{$white}; --bs-alert-link-color: #{$white}; }
+.alert-success { --bs-alert-bg: #{$green}; --bs-alert-color: #{$white}; --bs-alert-link-color: #{$white}; }
+.alert-info    { --bs-alert-bg: #{$blue};  --bs-alert-color: #{$white}; --bs-alert-link-color: #{$white}; }
+.alert-warning { --bs-alert-bg: #{$volt};  --bs-alert-color: #{$black}; --bs-alert-link-color: #{$black}; } // 只放提醒，不放錯誤
+.alert-light   { --bs-alert-bg: #{$grey-100}; --bs-alert-color: #{$black}; --bs-alert-link-color: #{$black}; }
+
+// ---------- 焦點 ----------
+// 白底、黃底：3px 黑實線＋2px 偏移；黑底（.on-dark、.band-dark）：3px 黃實線
+:focus-visible {
+  outline: $focus-ring-width solid $black;
+  outline-offset: $focus-ring-offset;
+}
+.offcanvas:focus-visible,
+.modal:focus-visible,
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  top: -4rem;
+  left: 1rem;
+  z-index: $zindex-site-header + 10;
+  padding: .75rem 1rem;
+  background: $black;
+  color: $volt;
+  font-weight: 700;
+
+  &:focus { top: .5rem; outline-color: $volt; }
+}
+
+// 關閉鈕：44px 觸控目標
+.btn-close {
+  box-sizing: border-box;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  background-size: 1rem;
+  opacity: 1;
+
+  &:hover { background-color: $volt-tint; opacity: 1; }
+  &:focus-visible { outline: $focus-ring-width solid $black; outline-offset: -$focus-ring-width; box-shadow: none; }
+}
+.btn-close-white {
+  --bs-btn-close-filter: none;
+  --bs-btn-close-bg: #{escape-svg(url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='#{$white}'><path d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414'/></svg>"))};
+
+  &:hover { background-color: transparent; outline: 2px solid $volt; outline-offset: -2px; }
+  &:focus-visible { outline-color: $volt; }
+}
+.modal-header .btn-close,
+.offcanvas-header .btn-close {
+  margin: 0 0 0 auto;
+  padding: 0;
+}
+// 送出中的按鈕（含 .spinner-border）：停用但文字清楚
+.btn:disabled:has(> .spinner-border) {
+  --bs-btn-disabled-color: #{$black};
+  --bs-btn-disabled-bg: #{$volt-tint};
+  --bs-btn-disabled-border-color: #{$black};
+  border-style: solid;
+  cursor: progress;
+}
+
+// ---------- 加入購物車的提示（toast，黑底白字，出現在固定結帳列上方） ----------
+.site-toast-wrap {
+  position: fixed;
+  right: 1rem;
+  bottom: calc(var(--buybar-offset, 0px) + 1rem);
+  left: 1rem;
+  z-index: $zindex-toast;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+
+  > .toast { pointer-events: auto; }
+}
+.site-toast {
+  --bs-toast-bg: #{$black};
+  --bs-toast-color: #{$white};
+  --bs-toast-border-width: 0;
+  --bs-toast-box-shadow: none;
+
+  .toast-body {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    font-weight: 700;
+  }
+  .bi { color: $volt; font-size: 1.25rem; }
+  a {
+    margin-left: auto;
+    color: $white;
+    white-space: nowrap;
+
+    &:focus-visible { outline-color: $volt; }
+  }
+}
+
+// ---------- 設計稿狀態示意（頁面底部；黑底黃字標籤＋灰底舞台，和正式內容分開） ----------
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag">設計稿狀態示意</p>
+//   <h2 class="demo-state-title">篩選後沒有商品時</h2>
+//   <div class="demo-state-stage">…</div>
+// </section>
+.demo-state {
+  margin-top: map-get($spacers, 8);
+  padding-top: map-get($spacers, 5);
+  border-top: $border-strong solid $black;
+}
+.demo-state-tag {
+  display: inline-block;
+  margin-bottom: map-get($spacers, 3);
+  padding: .25rem .625rem;
+  background-color: $black;
+  color: $volt;
+  font-size: .875rem;
+  font-weight: 700;
+}
+.demo-state-title {
+  margin-bottom: map-get($spacers, 4);
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+.demo-state-stage {
+  padding: map-get($spacers, 5) map-get($spacers, 4);
+  background-color: $grey-100;
+
+  @include media-breakpoint-up(md) { padding: map-get($spacers, 6); }
+}
+
+// 空狀態：一句大字＋一個動作
+.empty-state {
+  padding-block: map-get($spacers, 6);
+}
+.empty-state-title {
+  margin-bottom: map-get($spacers, 4);
+  font-size: 1.5rem;
+  font-weight: 900;
+
+  @include media-breakpoint-up(md) { font-size: 2rem; }
+}
+
+// ---------- 其他共用工具 ----------
+// 詞組換行：品名、短標題只在空白與 <wbr> 處換行（長段落不要用）
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+// 576px 以下讓橫向捲動列貼齊螢幕兩側、內容起點仍對齊版心
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: calc(var(--pad) * -1);
+    padding-inline: var(--pad);
+    scroll-padding-inline: var(--pad);
+  }
+}
+.bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: calc(var(--pad) * -1) !important;
+    padding-inline: var(--pad) !important;
+    scroll-padding-inline: var(--pad);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

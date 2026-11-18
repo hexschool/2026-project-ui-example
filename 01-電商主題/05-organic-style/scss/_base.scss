@@ -1,0 +1,473 @@
+// ============================================================
+// 全站基礎：字體分工、標題階層、區塊節奏、焦點、共用小工具
+// 方塊、標籤、步驟軌道等元件在 components/
+// ============================================================
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+// 錨點捲動扣掉懸浮頁首（88px）再多留 16px；平滑捲動（減少動態時關閉，見檔尾）
+html {
+  scroll-padding-top: $scroll-offset;
+  scroll-behavior: smooth;
+}
+
+// ---------- 標題階層：圓體 700、靠左；手機與桌機兩組字級 ----------
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  text-wrap: balance; // 多行標題平均分配，避免最後一行只剩一兩個字
+}
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty;
+}
+@include media-breakpoint-up(lg) {
+  h1, .h1 { font-size: 2.125rem; } // 34px
+  h2, .h2 { font-size: 1.875rem; } // 30px
+  h3, .h3 { font-size: 1.25rem; }  // 20px
+}
+.display-1 {
+  font-size: 2rem; // 手機 32px
+  @include media-breakpoint-up(lg) { font-size: 3rem; } // 桌機 48px
+}
+
+// 圓體：標題以外需要圓體的小字（按鈕、步驟、標籤、價格已內建）
+.text-round {
+  font-family: $font-family-round;
+}
+
+// 價格、尺寸、訂單編號：Nunito 等寬數字
+.num,
+.price {
+  font-family: $font-family-round;
+  font-variant-numeric: tabular-nums;
+}
+.price {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+// 次要說明文字（14px）
+.text-note {
+  font-size: $small-font-size;
+  line-height: $line-height-sm;
+  color: $body-secondary-color;
+}
+
+// ---------- 區塊節奏 ----------
+// 區塊上下留白：手機 72px → 桌機 96px
+.section {
+  padding-block: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7);
+  }
+}
+// 霧薄荷整條區塊：四角 40px 大圓角，像一張平放的大卡（1920 寬時鋪滿、內容仍對齊版心）
+.section-mist {
+  background-color: $mist;
+  border-radius: $radius-sheet;
+}
+
+// 區塊標題列：標題＋副標靠左，連結靠右（lg 以下上下排）；標題前不加符號
+// <div class="section-heading">
+//   <div><h2>標題</h2><p>副標</p></div>
+//   <a class="btn btn-text" href="…">連結</a>
+// </div>
+.section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: map-get($spacers, 2) map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: map-get($spacers, 5);
+  }
+
+  h2,
+  .h2 {
+    margin-bottom: map-get($spacers, 2);
+  }
+  p {
+    max-width: 34em;
+    margin-bottom: 0;
+    color: $body-secondary-color;
+  }
+  > :only-child h2,
+  > h2:only-child {
+    margin-bottom: 0;
+  }
+}
+
+// ---------- 首頁以外各頁的頁首 ----------
+// 麵包屑（購物車、結帳、付款結果改放 .flow-track）→ h1 → 一句說明，靠左
+// <header class="page-header">
+//   <nav aria-label="目前位置"><ol class="breadcrumb">…</ol></nav>
+//   <h1>頁面標題</h1>
+//   <p class="page-lead">一句說明</p>
+// </header>
+.page-header {
+  padding-top: map-get($spacers, 3);   // 懸浮頁首下方 16px
+  margin-bottom: map-get($spacers, 4); // 到第一個內容區塊 24px
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 4);
+    margin-bottom: map-get($spacers, 5);
+  }
+
+  > nav,
+  > .flow-track {
+    margin-bottom: map-get($spacers, 3);
+
+    @include media-breakpoint-up(lg) {
+      margin-bottom: map-get($spacers, 4);
+    }
+  }
+  .breadcrumb {
+    margin-bottom: 0;
+  }
+  h1,
+  .h1 {
+    margin-bottom: map-get($spacers, 2);
+  }
+}
+.page-lead {
+  max-width: 36em;
+  margin-bottom: 0;
+  color: $body-secondary-color;
+}
+
+// ---------- 麵包屑：44px 觸控高度，連結森林薄荷、目前頁墨綠 ----------
+.breadcrumb {
+  align-items: center;
+  font-family: $font-family-round;
+}
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-weight: 700;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: .25em;
+  }
+}
+
+// ---------- 按鈕：全膠囊、圓體 700 ----------
+// 主要：森林薄荷底白字；次要：白底森林框；停用：停用底＋鼠尾草字（不靠透明度）
+.btn {
+  white-space: nowrap;
+}
+.btn-sm {
+  min-height: 2.75rem; // 觸控目標 44px
+}
+.btn-primary {
+  --bs-btn-hover-bg: #{$forest-deep};
+  --bs-btn-hover-border-color: #{$forest-deep};
+  --bs-btn-active-bg: #{$forest-deep};
+  --bs-btn-active-border-color: #{$forest-deep};
+}
+.btn-outline-primary {
+  --bs-btn-bg: #{$white};
+  --bs-btn-hover-color: #{$forest-deep};
+  --bs-btn-hover-bg: #{$mist};
+  --bs-btn-hover-border-color: #{$forest-deep};
+  --bs-btn-active-color: #{$forest-deep};
+  --bs-btn-active-bg: #{$mint};
+  --bs-btn-active-border-color: #{$forest-deep};
+}
+// 薄荷底按鈕：放在白底或霧底上的低強調動作
+.btn-mint {
+  --bs-btn-color: #{$forest-deep};
+  --bs-btn-bg: #{$mint};
+  --bs-btn-border-color: #{$mint};
+  --bs-btn-hover-color: #{$forest-deep};
+  --bs-btn-hover-bg: #{mix($mint, $forest, 85%)};
+  --bs-btn-hover-border-color: #{mix($mint, $forest, 85%)};
+  --bs-btn-active-color: #{$forest-deep};
+  --bs-btn-active-bg: #{mix($mint, $forest, 80%)};
+  --bs-btn-active-border-color: #{mix($mint, $forest, 80%)};
+}
+// 白底按鈕：放在薄荷或森林薄荷面板上
+.btn-white {
+  --bs-btn-color: #{$forest-deep};
+  --bs-btn-bg: #{$white};
+  --bs-btn-border-color: #{$white};
+  --bs-btn-hover-color: #{$forest-deep};
+  --bs-btn-hover-bg: #{$mist};
+  --bs-btn-hover-border-color: #{$mist};
+  --bs-btn-active-color: #{$forest-deep};
+  --bs-btn-active-bg: #{$mist};
+  --bs-btn-active-border-color: #{$mist};
+}
+.btn:disabled,
+.btn.disabled,
+fieldset:disabled .btn {
+  --bs-btn-disabled-color: #{$disabled-text};
+  --bs-btn-disabled-bg: #{$disabled-bg};
+  --bs-btn-disabled-border-color: #{$disabled-bg};
+  cursor: not-allowed;
+  pointer-events: auto; // 讓 not-allowed 游標顯示出來（按鈕本身已 disabled，不會觸發）
+}
+// 文字連結型按鈕：森林薄荷字＋底線，內建 44px 觸控高度，不要再加 py-*
+.btn-text {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: .25rem;
+  --bs-btn-color: #{$forest};
+  --bs-btn-hover-color: #{$forest-deep};
+  --bs-btn-active-color: #{$forest-deep};
+  --bs-btn-border-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  text-decoration: underline;
+  text-underline-offset: .3em;
+  text-decoration-thickness: 1px;
+
+  &:hover { text-decoration-thickness: 2px; }
+}
+// 44px 圓形圖示按鈕（頁首、數量鍵以外的單一圖示動作）
+.btn-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border-radius: 50%;
+}
+
+// ---------- 表單 ----------
+.form-label-optional {
+  margin-left: map-get($spacers, 2);
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  font-weight: 400;
+}
+.form-check-input {
+  margin-top: .3em;
+}
+.form-check-label {
+  cursor: pointer;
+}
+// 開關（只顯示有現貨）：關閉時框與圓點用深鼠尾草（3.33:1），開啟為森林薄荷
+.form-switch .form-check-input {
+  width: 2.5em;
+  height: 1.375em;
+  margin-top: .2em;
+  border-color: $sage-dark;
+}
+
+// 數量步進器：膠囊外框＋ 44px 圓鍵
+// <div class="qty"><button class="btn" aria-label="減少數量">−</button><input …><button class="btn" aria-label="增加數量">＋</button></div>
+.qty {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .25rem;
+  border: 1px solid $input-border-color;
+  border-radius: $radius-pill;
+  background-color: $white;
+
+  .btn {
+    --bs-btn-padding-x: 0;
+    --bs-btn-padding-y: 0;
+    --bs-btn-border-width: 0;
+    --bs-btn-bg: #{$mist};
+    --bs-btn-color: #{$forest-deep};
+    --bs-btn-hover-bg: #{$mint};
+    --bs-btn-hover-color: #{$forest-deep};
+    --bs-btn-active-bg: #{$mint};
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    font-size: 1.125rem;
+  }
+  input {
+    width: 2.5rem;
+    border: 0;
+    text-align: center;
+    background: transparent;
+    font-family: $font-family-round;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: $ink;
+
+    &:focus-visible {
+      outline: none;
+      border-radius: $radius-input;
+      box-shadow: inset 0 0 0 2px $forest;
+    }
+  }
+
+  &:has(input:disabled) {
+    border-color: $card-line;
+    background-color: $disabled-bg;
+  }
+}
+
+// ---------- 浮層陰影：$enable-shadows 關閉時 Bootstrap 不會輸出，這裡手動套用 ----------
+.dropdown-menu {
+  box-shadow: var(--bs-dropdown-box-shadow);
+}
+.modal-content {
+  box-shadow: $box-shadow-lg;
+}
+
+// ---------- 鍵盤焦點：3px 森林薄荷外圈、2px 偏移 ----------
+:focus-visible {
+  outline: 3px solid $forest;
+  outline-offset: 2px;
+}
+.btn {
+  --bs-btn-focus-box-shadow: 0 0 0 2px #{$white}, 0 0 0 5px #{$forest};
+}
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible {
+  outline: none;
+}
+// 在森林薄荷實心方塊上：焦點改白色
+.on-forest :focus-visible {
+  outline-color: $white;
+}
+.on-forest .btn {
+  --bs-btn-focus-box-shadow: 0 0 0 2px #{$forest}, 0 0 0 5px #{$white};
+}
+// offcanvas、modal 開啟時焦點會落在容器本身，不需要外框
+.offcanvas:focus-visible,
+.offcanvas-lg:focus-visible,
+.modal:focus-visible {
+  outline: 0;
+}
+// 程式移動焦點的目標（main、錨點區塊）不畫外框
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: $zindex-modal + 10;
+  padding: .625rem 1.25rem;
+  border-radius: $radius-pill;
+  background: $forest;
+  color: $white;
+  font-family: $font-family-round;
+  font-weight: 700;
+  text-decoration: none;
+  &:focus { top: 1rem; }
+}
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、<wbr> 處換行，品名「(三入組)」這類片語不會被拆開；整段放不下時才強制斷行
+// 用在品名、短標題；長段落不要用
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 圖片：固定比例、裁切填滿 ----------
+.img-cover {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// ---------- 手機滿版橫向捲動列 ----------
+// 576px 以下讓橫向捲動列貼齊螢幕兩側，第一項仍對齊版心
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+    scroll-padding-inline: $container-padding-x * .5;
+  }
+}
+.bleed-x {
+  @include bleed-x;
+}
+
+// ---------- 底部抽屜（992px 以下的 offcanvas-bottom）：上緣 32px 圓角、高度依內容、上方把手 ----------
+// 頁首選單（components/_header.scss）與商品一覽的篩選抽屜共用這個外觀；在 media-breakpoint-down(lg) 裡、加在 .offcanvas-bottom 上呼叫
+@mixin bottom-sheet {
+  --bs-offcanvas-height: auto;
+  max-height: 88dvh;
+  border-radius: $radius-panel $radius-panel 0 0;
+  box-shadow: $shadow-float;
+  pointer-events: auto;
+
+  .offcanvas-header {
+    position: relative;
+    padding: 1.75rem 1.25rem .5rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: .625rem;
+      left: 50%;
+      width: 2.5rem;
+      height: .3125rem;
+      margin-left: -1.25rem;
+      border-radius: $radius-pill;
+      background-color: $sage;
+    }
+  }
+  .offcanvas-title { font-size: 1.125rem; }
+  .offcanvas-body {
+    padding: .5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
+  }
+}
+
+// 橫向捲動列（scroll-snap）：手機的人氣嚴選、迷你商品卡
+// <ul class="scroll-row list-unstyled">…</ul>，項目寬度由頁面決定（--scroll-item）
+.scroll-row {
+  --scroll-item: 72%;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--scroll-item);
+  gap: $tile-gap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding-bottom: .25rem; // 焦點環不被裁掉
+  @include bleed-x;
+
+  &::-webkit-scrollbar { display: none; }
+  > * { scroll-snap-align: start; }
+}
+
+// ---------- 減少動態：軌道直接顯示最終長度、熱點不擴散、勾勾不縮放 ----------
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

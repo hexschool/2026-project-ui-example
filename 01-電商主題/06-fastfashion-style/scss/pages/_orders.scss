@@ -1,0 +1,487 @@
+// ============================================================
+// 我的訂單（orders.html）
+// 構圖：1080 窄版心｜頁首（麵包屑、H1＋「5 筆」、說明）→ 黑色會員列 → 粗字底線狀態分頁（數量是小黑方塊）
+//      → 票根式訂單卡（2px 黑框；左側 120px 整條狀態色塊＋2px 黑虛線撕線＋上下半圓缺口；中段編號、縮圖、配送；右段價格牌與動作）
+// 手機：狀態色塊變成卡片頂端 40px 色帶，撕線改成橫的，缺口移到左右兩端；金額移到中段下方
+// 狀態色塊：待付款＝黃底黑字、已付款＝白底黑字、出貨中＝黑底黃字、已完成＝黑底白字、已取消＝灰底虛線灰字（每種另有圖示與文字）
+// ============================================================
+
+$orders-stub-width:  7.5rem;  // 120px
+$orders-stub-height: 2.5rem;  // 手機 40px
+$orders-notch:       1.25rem; // 缺口外徑 20px（內徑 16px＋2px 黑框）
+
+// ---------- 黑色會員列 ----------
+.orders-member {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding: 1.25rem;
+  background-color: $black;
+  color: $white;
+
+  @include media-breakpoint-up(md) { padding: 1.25rem 1.5rem; }
+}
+.orders-member-who {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+
+  p { margin: 0; }
+}
+// 會員頭像：黃方塊黑字（姓氏）
+.orders-member-avatar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  background-color: $volt;
+  color: $black;
+  font-size: 1.375rem;
+  font-weight: 900;
+}
+.orders-member-name { font-size: 1.125rem; font-weight: 700; }
+.orders-member-mail {
+  color: $on-dark-muted;
+  font-size: $font-size-sm;
+  overflow-wrap: anywhere;
+}
+.orders-member-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem 1.5rem;
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  // 黑底上的連結：白字＋黃色 2px 底線（16.46:1）；hover 底線加粗，尺寸不變
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    min-height: $btn-height-sm;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: $volt;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .35em;
+
+    &:hover { text-decoration-thickness: 4px; }
+  }
+}
+
+// ---------- 狀態分頁 ----------
+.orders-filter { margin-top: map-get($spacers, 6); }
+
+// ---------- 票根式訂單卡 ----------
+.orders-list {
+  display: grid;
+  gap: 1.5rem;
+  margin: map-get($spacers, 5) 0 0;
+  padding: 0;
+  list-style: none;
+
+  > li[hidden] { display: none; }
+}
+.orders-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: $orders-stub-height auto;
+  border: $border-strong solid $black;
+  background-color: $white;
+
+  @include media-breakpoint-up(md) {
+    grid-template-rows: none;
+    grid-template-columns: $orders-stub-width minmax(0, 1fr);
+  }
+
+  // 撕線兩端的半圓缺口：白色圓＋2px 黑框，只露出卡片外框以內的那一半
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    width: $orders-notch;
+    height: $orders-notch;
+    border: $border-strong solid $black;
+    border-radius: 50%;
+    background-color: $white;
+    pointer-events: none;
+  }
+  // 手機：撕線是橫的（色帶下緣），缺口在左右兩端
+  &::before {
+    top: calc(#{$orders-stub-height} + 1px - #{$orders-notch * .5});
+    left: calc(-1px - #{$orders-notch * .5});
+    clip-path: inset(0 0 0 calc(#{$orders-notch * .5} - 1px));
+  }
+  &::after {
+    top: calc(#{$orders-stub-height} + 1px - #{$orders-notch * .5});
+    right: calc(-1px - #{$orders-notch * .5});
+    clip-path: inset(0 calc(#{$orders-notch * .5} - 1px) 0 0);
+  }
+  // 768px 以上：撕線是直的（色塊右緣），缺口在上下兩端
+  @include media-breakpoint-up(md) {
+    &::before,
+    &::after {
+      left: calc(#{$orders-stub-width} + 1px - #{$orders-notch * .5});
+      right: auto;
+    }
+    &::before {
+      top: calc(-1px - #{$orders-notch * .5});
+      clip-path: inset(calc(#{$orders-notch * .5} - 1px) 0 0 0);
+    }
+    &::after {
+      top: auto;
+      bottom: calc(-1px - #{$orders-notch * .5});
+      clip-path: inset(0 0 calc(#{$orders-notch * .5} - 1px) 0);
+    }
+  }
+}
+
+// 狀態色塊：手機是頂端 40px 色帶（圖示＋文字橫排），768px 以上是左側 120px 整條（圖示在上、文字在下）
+.orders-stub {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding-inline: 1.25rem;
+  font-weight: 900;
+  line-height: 1.2;
+
+  .bi { font-size: 1.125rem; line-height: 1; }
+
+  @include media-breakpoint-up(md) {
+    flex-direction: column;
+    justify-content: center;
+    gap: .625rem;
+    padding: 1.5rem .75rem;
+    font-size: 1.125rem;
+    text-align: center;
+
+    .bi { font-size: 2rem; }
+  }
+}
+.orders-card.is-pending  .orders-stub { background-color: $volt;  color: $black; }
+.orders-card.is-paid     .orders-stub { background-color: $white; color: $black; }
+.orders-card.is-shipping .orders-stub { background-color: $black; color: $volt; }
+.orders-card.is-done     .orders-stub { background-color: $black; color: $white; }
+.orders-card.is-cancel   .orders-stub {
+  background-color: $grey-200;
+  color: $grey-700;
+  outline: 1px dashed $grey-400;
+  outline-offset: -.375rem;
+}
+
+// 撕線：2px 黑虛線
+.orders-body {
+  min-width: 0;
+  border-top: $border-strong dashed $black;
+
+  @include media-breakpoint-up(md) {
+    border-top: 0;
+    border-left: $border-strong dashed $black;
+  }
+}
+.orders-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+
+  @include media-breakpoint-up(lg) { grid-template-columns: minmax(0, 1fr) 13rem; }
+}
+.orders-info {
+  padding: 1.25rem 1.25rem 1rem;
+
+  @include media-breakpoint-up(md) { padding: 1.5rem 1.5rem 1.25rem; }
+}
+.orders-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .25rem 1rem;
+  margin-bottom: 1rem;
+}
+.orders-no {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -.01em;
+
+  @include media-breakpoint-up(md) { font-size: 1.25rem; } // 20
+}
+.orders-date {
+  margin: 0;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+}
+
+// 商品縮圖一排（64px 灰底）＋品名
+.orders-items {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  // 576px 以上：自動排成等寬欄（1080 版心時一列 3 件）
+  @include media-breakpoint-up(sm) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+    gap: .875rem 1.5rem;
+  }
+
+  > li {
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 1fr);
+    align-items: center;
+    gap: .75rem;
+  }
+}
+.orders-thumb {
+  width: 4rem;
+  height: 4rem;
+}
+.orders-item-name {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  line-height: 1.45;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+}
+.orders-item-qty {
+  display: block;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+}
+
+// 配送方式、預計到貨、付款期限
+.orders-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 2rem;
+  margin: 1rem 0 0;
+  padding-top: .875rem;
+  border-top: 1px solid $grey-300;
+
+  dt {
+    color: $body-secondary-color;
+    font-size: .8125rem;
+    font-weight: 700;
+  }
+  dd { margin: 0; font-weight: 700; }
+}
+
+// 出貨中：4 段箭頭小進度（已完成＝黑底白字、目前＝黃底黑字、未到＝灰底灰字），日期在下方
+$orders-track-tip: .625rem; // 箭頭尖端 10px
+
+.orders-track {
+  display: flex;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
+
+    & + li { margin-left: calc(#{$orders-track-tip} * -.6); }
+  }
+}
+.orders-track-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .25rem;
+  height: 2.25rem;
+  padding-inline: calc(#{$orders-track-tip} + .25rem);
+  background-color: $grey-100;
+  color: $grey-600;
+  font-size: .8125rem;
+  font-weight: 700;
+  white-space: nowrap;
+  clip-path: polygon(0 0, calc(100% - #{$orders-track-tip}) 0, 100% 50%, calc(100% - #{$orders-track-tip}) 100%, 0 100%, #{$orders-track-tip} 50%);
+
+  li:first-child > & { clip-path: polygon(0 0, calc(100% - #{$orders-track-tip}) 0, 100% 50%, calc(100% - #{$orders-track-tip}) 100%, 0 100%); }
+
+  .bi {
+    display: none;
+
+    @include media-breakpoint-up(sm) { display: inline; }
+  }
+  .is-done > & { background-color: $black; color: $white; }
+  .is-current > & { background-color: $volt; color: $black; font-weight: 900; }
+}
+.orders-track-date {
+  display: block;
+  margin-top: .375rem;
+  color: $body-secondary-color;
+  font-size: .8125rem;
+  white-space: nowrap;
+}
+.orders-note {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  margin: .875rem 0 0;
+  font-size: $font-size-sm;
+  font-weight: 700;
+
+  .bi { margin-top: .15em; }
+}
+
+// 右段：價格牌 32px、件數、動作（992px 以下改成卡片底部一列）
+.orders-side {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  padding: 1rem 1.25rem 1.25rem;
+  border-top: 1px solid $grey-300;
+
+  @include media-breakpoint-up(md) { padding-inline: 1.5rem; }
+
+  @include media-breakpoint-up(lg) {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding: 1.5rem;
+    border-top: 0;
+    border-left: 1px solid $grey-300;
+    text-align: right;
+  }
+}
+.orders-total p { margin: 0; }
+.orders-count {
+  margin-top: .375rem !important;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+  font-weight: 700;
+}
+.orders-card.is-cancel .orders-total .price-tag { color: $grey-600; } // 已取消：金額降低視覺重量（灰字 6.69:1）
+.orders-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1rem;
+
+  @include media-breakpoint-up(lg) {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .5rem;
+    margin-top: auto;
+    padding-top: 1rem;
+  }
+}
+// 訂單明細：展開時箭頭朝上（只轉圖示，尺寸不變）
+.orders-toggle .bi { transition: transform .12s ease; }
+.orders-toggle[aria-expanded="true"] .bi { transform: rotate(180deg); }
+
+// ---------- 訂單明細（collapse） ----------
+.orders-detail {
+  padding: 1.25rem;
+  border-top: 1px solid $grey-300;
+  background-color: $grey-100;
+
+  @include media-breakpoint-up(md) { padding: 1.5rem; }
+}
+.orders-detail-title {
+  margin-bottom: .625rem;
+  font-family: $font-family-base;
+  font-size: .9375rem;
+  font-weight: 900;
+
+  * + & { margin-top: 1.25rem; }
+}
+.orders-detail-lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: .5rem;
+    border-bottom: 1px solid $grey-300;
+  }
+}
+.orders-detail-sum {
+  display: grid;
+  gap: .25rem;
+  margin: .75rem 0 0;
+
+  > div { display: flex; justify-content: space-between; gap: 1rem; }
+  dt { color: $body-secondary-color; font-weight: 400; }
+  dd { margin: 0; font-weight: 700; }
+  .is-total {
+    align-items: center;
+    margin-top: .5rem;
+    padding-top: .75rem;
+    border-top: $border-strong solid $black;
+
+    dt { color: $black; font-weight: 900; }
+  }
+}
+.orders-detail-info p { margin-bottom: 0; }
+.orders-history {
+  display: grid;
+  gap: .375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li { display: flex; gap: .75rem; }
+  .num { flex-shrink: 0; min-width: 3em; }
+}
+// 待付款：ATM 繳費資訊（白底黑框）＋付款期限
+.orders-atm {
+  display: grid;
+  gap: .625rem;
+  margin: .75rem 0 0;
+  padding: .875rem 1rem;
+  border: $border-strong solid $black;
+  background-color: $white;
+
+  dt {
+    color: $body-secondary-color;
+    font-size: .8125rem;
+    font-weight: 700;
+  }
+  dd {
+    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+}
+.orders-due {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  margin-top: .75rem !important;
+  font-size: $font-size-sm;
+  font-weight: 700;
+
+  .bi { margin-top: .15em; }
+}
+
+.orders-foot-note {
+  margin: map-get($spacers, 5) 0 0;
+  color: $body-secondary-color;
+  font-size: $font-size-sm;
+}
+
+// 狀態示意：空狀態
+.orders-empty { padding-bottom: 0; }

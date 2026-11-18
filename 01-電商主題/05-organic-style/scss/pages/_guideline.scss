@@ -1,0 +1,1201 @@
+// ============================================================
+// 設計 Guideline（guideline.html）
+// 構圖：頁首（麵包屑、H1、說明）
+//       → 左 3 欄黏性目錄（霧薄荷 24px 圓角卡、膠囊連結、Bootstrap Scrollspy）｜右 9 欄內容
+//       → 十節，每節是靠左的區塊標題＋一格格圓角方塊（bento）
+// 992px 以下：目錄改成頁首下方的黏性橫捲膠囊列（同一份標記），Scrollspy 換節時 js/main.js 把目前項目捲進畫面
+// 示範一律用頁面真的在用的類別；gl- 類別只負責本頁的排版、色塊、尺規，以及「強制呈現滑過／焦點」
+// class 一律加 gl- 前綴
+// ============================================================
+
+// ---------- 版面：目錄｜內容 ----------
+// lg 以下 .gl-layout 是一般區塊（不是格線），目錄才能在整段內容裡黏住（格線項目只會在自己的格子裡黏）
+.gl-layout {
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+    gap: $tile-gap-lg;
+    align-items: start;
+  }
+}
+.gl-content {
+  min-width: 0;
+
+  // 單欄的 .bento 用自動欄寬，裡面放了可橫捲的分段列會被撐寬：子項一律可以縮
+  .bento > * { min-width: 0; }
+}
+
+// ---------- 目錄 ----------
+// lg 以上：霧薄荷 24px 圓角卡，膠囊連結直排，目前章節＝浮起的白膠囊＋實心編號
+// lg 以下：白色膠囊列（柔陰影）黏在懸浮頁首下方，可橫捲，目前章節＝薄荷底膠囊
+.gl-toc {
+  position: sticky;
+  top: $sticky-top;
+  z-index: $zindex-sticky;
+
+  @include media-breakpoint-up(lg) {
+    padding: 1.25rem .75rem .75rem;
+    border-radius: $radius-card;
+    background-color: $mist;
+  }
+  @include media-breakpoint-down(lg) {
+    margin-bottom: map-get($spacers, 5);
+    padding: .375rem;
+    border: 1px solid $card-line;
+    border-radius: $radius-pill;
+    background-color: $white;
+    box-shadow: $shadow-float;
+  }
+}
+.gl-toc-title {
+  margin: 0 0 .5rem .75rem;
+  color: $sage-text;
+  font-family: $font-family-round;
+  font-size: .875rem;
+  font-weight: 700;
+
+  @include media-breakpoint-down(lg) { @include visually-hidden; }
+}
+.gl-toc-list {
+  display: grid;
+  gap: .25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-down(lg) {
+    display: flex;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+  }
+}
+.gl-toc-link {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  min-height: 2.75rem;
+  padding: .375rem 1rem .375rem .5rem;
+  border: 1px solid transparent;
+  border-radius: $radius-pill;
+  color: $sage-text;
+  font-family: $font-family-round;
+  font-size: .9375rem;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color .2s, border-color .2s, color .2s, box-shadow .2s;
+
+  &:hover {
+    background-color: rgba($white, .6);
+    color: $forest-deep;
+  }
+  &.active {
+    border-color: $card-line;
+    background-color: $white;
+    color: $forest-deep;
+    box-shadow: $box-shadow-sm;
+  }
+  // 捲動容器會裁掉外擴的焦點環，改畫在內側
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 3px $forest;
+  }
+
+  @include media-breakpoint-down(lg) {
+    flex: 0 0 auto;
+
+    &:hover { background-color: $mist; }
+    &.active {
+      border-color: $mint;
+      background-color: $mint;
+      box-shadow: none;
+    }
+  }
+}
+.gl-toc-no {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid $sage-dark;
+  border-radius: 50%;
+  background-color: $white;
+  color: $sage-text;
+  font-size: .75rem;
+  font-weight: 800;
+  line-height: 1;
+  transition: background-color .2s, border-color .2s, color .2s;
+
+  .gl-toc-link.active & {
+    border-color: $forest;
+    background-color: $forest;
+    color: $white;
+  }
+}
+
+// ---------- 章節與段落 ----------
+.gl-section {
+  // 992px 以下上方多一條黏性目錄列：標題再往下讓 72px，不被目錄列蓋住
+  @include media-breakpoint-down(lg) { scroll-margin-top: 4.5rem; }
+
+  & + & {
+    margin-top: map-get($spacers, 6);
+
+    @include media-breakpoint-up(lg) { margin-top: map-get($spacers, 7); }
+  }
+}
+.gl-block {
+  margin-top: map-get($spacers, 5);
+}
+.gl-block-title {
+  margin-bottom: .5rem;
+}
+.gl-block-note {
+  max-width: 42em;
+  margin-bottom: 1.25rem;
+  color: $sage-text;
+}
+// 方塊裡的小標（h4）
+.gl-tile-title {
+  margin-bottom: .375rem;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+}
+// 圖說、狀態名稱
+.gl-caption {
+  margin: .75rem 0 0;
+  color: $sage-text;
+  font-size: $small-font-size;
+  line-height: $line-height-sm;
+}
+// 方塊格線：手機 1 欄，sm 以上 2 欄，xl 以上 3 欄（.gl-grid-2 只到 2 欄、.gl-grid-4 到 4 欄）
+.gl-grid {
+  @include media-breakpoint-up(sm) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @include media-breakpoint-up(xl) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  &.gl-grid-2 {
+    @include media-breakpoint-up(xl) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  &.gl-grid-4 {
+    @include media-breakpoint-up(xl) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  > * { min-width: 0; }
+}
+.gl-grid-md {
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  > * { min-width: 0; }
+}
+
+// 規則清單：薄荷亮的葉形小點（和葉形標籤同一個形狀）
+.gl-rules {
+  display: grid;
+  gap: .625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    padding-left: 1.375rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: .6em;
+      left: 0;
+      width: .625rem;
+      height: .625rem;
+      border-radius: 14px 3px;
+      background-color: $mint-bright;
+    }
+  }
+}
+
+// 名稱｜說明的定義清單
+.gl-spec {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+
+  dt {
+    margin-bottom: .125rem;
+    color: $sage-text;
+    font-family: $font-family-round;
+    font-size: .8125rem;
+    font-weight: 700;
+  }
+  dd { margin: 0; }
+}
+
+// ---------- 概覽 ----------
+.gl-intro {
+  // 平板以上：左邊薄荷規格方塊撐滿兩列，右邊照片在上、攝影調性在下
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-areas:
+      "main photo"
+      "main note";
+  }
+}
+.gl-intro-main {
+  @include media-breakpoint-up(md) { grid-area: main; }
+
+  // 薄荷方塊裡的次要字用深森林（對薄荷 6.93），鼠尾草字在薄荷上只有 4.82
+  .gl-spec dt { color: $forest-deep; }
+}
+.gl-intro-name {
+  margin-bottom: 1.25rem;
+  font-size: 1.5rem;
+
+  @include media-breakpoint-up(lg) { font-size: 1.75rem; }
+}
+.gl-quote {
+  margin: .25rem 0 0;
+  padding: .75rem 1rem;
+  border-radius: $radius-sm;
+  background-color: $white;
+  font-family: $font-family-round;
+  font-weight: 700;
+}
+.gl-intro-photo {
+  aspect-ratio: 4 / 3;
+
+  @include media-breakpoint-up(md) { grid-area: photo; aspect-ratio: auto; min-height: 18rem; }
+}
+.gl-intro-note {
+  @include media-breakpoint-up(md) { grid-area: note; }
+
+  p { margin: 0; }
+}
+// 設計原則：白底框線與霧薄荷交替
+.gl-principle {
+  p { margin: 0; color: $sage-text; }
+  .icon-circle { margin-bottom: 1rem; }
+}
+
+// 頁面清單
+.gl-pages {
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  > * { min-width: 0; }
+}
+.gl-page {
+  p { margin: 0; color: $sage-text; font-size: .9375rem; }
+}
+.gl-page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .25rem .75rem;
+  margin-bottom: .5rem;
+
+  a {
+    font-family: $font-family-round;
+    font-size: 1.0625rem;
+    font-weight: 700;
+  }
+}
+
+// ---------- 色彩 ----------
+// 色塊的顏色由這張表產生（hex、對比度寫在 guideline.html，改色時兩邊要同步）
+$gl-swatches: (
+  "white":        $white,
+  "mist":         $mist,
+  "mint":         $mint,
+  "track":        $track,
+  "mint-bright":  $mint-bright,
+  "forest":       $forest,
+  "forest-deep":  $forest-deep,
+  "ink":          $ink,
+  "sage-text":    $sage-text,
+  "placeholder":  $placeholder,
+  "sage-dark":    $sage-dark,
+  "sage":         $sage,
+  "card-line":    $card-line,
+  "success":      $success,
+  "warning-bg":   $warning-bg,
+  "danger":       $danger,
+  "info":         $info,
+  "disabled-bg":  $disabled-bg,
+);
+@each $name, $color in $gl-swatches {
+  .gl-chip-#{$name} { background-color: $color; }
+}
+
+// 建議用色比例：一條膠囊，依 --w 分段
+.gl-ratio {
+  margin: 0 0 map-get($spacers, 4);
+}
+.gl-ratio-bar {
+  display: flex;
+  height: 3rem;
+  overflow: hidden;
+  border: 1px solid $card-line;
+  border-radius: $radius-pill;
+
+  > span { flex: var(--w) 1 0; }
+}
+.gl-ratio-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .375rem 1.25rem;
+  margin: .75rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: $sage-text;
+  font-size: $small-font-size;
+
+  li { display: inline-flex; align-items: center; gap: .5rem; }
+}
+.gl-ratio-dot {
+  width: .875rem;
+  height: .875rem;
+  border: 1px solid rgba($ink, .12);
+  border-radius: 50%;
+}
+
+// 色票方塊：手機色塊在左（橫排），sm 以上色塊在上
+.gl-swatch {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  padding: .5rem .5rem .5rem .5rem;
+  border: 1px solid $card-line;
+  border-radius: $radius-card;
+  background-color: $white;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start; // 同一列的卡片等高時，多出來的高度留在底部，色名才會對齊
+    gap: 0;
+  }
+}
+.gl-swatch-chip {
+  display: flex;
+  align-items: flex-end;
+  aspect-ratio: 1;
+  padding: .625rem .75rem;
+  border-radius: $radius-sm;
+  box-shadow: inset 0 0 0 1px rgba($ink, .08);
+  font-family: $font-family-round;
+  font-size: .8125rem;
+  font-weight: 700;
+  line-height: 1.4;
+
+  @include media-breakpoint-up(sm) {
+    aspect-ratio: auto;
+    min-height: 6.5rem;
+    font-size: .875rem;
+  }
+  // 手機的小色塊放不下示範字
+  .gl-chip-sample {
+    @include media-breakpoint-down(sm) { @include visually-hidden; }
+  }
+}
+.gl-swatch-body {
+  min-width: 0;
+  padding: .25rem .5rem .5rem 0;
+
+  @include media-breakpoint-up(sm) { padding: 1rem .75rem .75rem; }
+
+  p { margin: 0; }
+}
+.gl-swatch-name {
+  font-family: $font-family-round;
+  font-weight: 700;
+}
+.gl-swatch-code {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 .5rem;
+  margin-bottom: .5rem !important;
+  color: $sage-text;
+  font-size: $small-font-size;
+}
+.gl-swatch-role {
+  font-size: .9375rem;
+  line-height: 1.65;
+}
+.gl-swatch-contrast {
+  margin-top: .375rem !important;
+  color: $sage-text;
+  font-size: .8125rem;
+  line-height: 1.6;
+}
+
+// Bootstrap 變數對應：變數｜值，兩欄自動換行
+.gl-map {
+  display: grid;
+  gap: .5rem 1.5rem;
+  margin: 0;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: .125rem .75rem;
+    padding: .625rem 0;
+    border-bottom: 1px solid $card-line;
+  }
+  dt { font-weight: 400; }
+  dd {
+    margin: 0;
+    color: $sage-text;
+    font-size: $small-font-size;
+  }
+}
+
+// ---------- 字級 ----------
+.gl-font-sample {
+  margin-bottom: .75rem;
+  font-size: 2.25rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.gl-font-meta {
+  margin: 0;
+  color: $sage-text;
+  font-size: $small-font-size;
+}
+// 字級表：範例｜規格，lg 以上左右排
+.gl-scale {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid $card-line;
+  border-radius: $radius-card;
+}
+.gl-scale-row {
+  display: grid;
+  gap: .75rem;
+  padding: 1.25rem 1.25rem;
+
+  & + & { border-top: 1px solid $card-line; }
+
+  @include media-breakpoint-up(md) { padding-inline: 1.5rem; }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 1fr) 15rem;
+    align-items: center;
+    gap: 1.5rem;
+  }
+}
+.gl-scale-sample {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.gl-scale-spec {
+  display: grid;
+  gap: .125rem;
+  margin: 0;
+  color: $sage-text;
+  font-size: $small-font-size;
+  line-height: 1.6;
+
+  strong {
+    color: $ink;
+    font-family: $font-family-round;
+    font-weight: 700;
+  }
+}
+// 換行對照：限寬的品名
+.gl-wrap-demo {
+  max-width: 13em;
+  margin: 0;
+  font-family: $font-family-round;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+// ---------- 間距 ----------
+// 尺規：長條本身沒有寬度，寬度來自 .ps-1～.ps-7 的左內距（直接讀 $spacers）
+.gl-space {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gl-space-row {
+  display: grid;
+  grid-template-columns: 2.5rem 3.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: .5rem 1rem;
+  padding-block: .625rem;
+  border-bottom: 1px solid $card-line;
+
+  @include media-breakpoint-up(md) { grid-template-columns: 3rem 4rem 7rem minmax(0, 1fr); }
+}
+.gl-space-bar {
+  display: block;
+  width: 0;
+  height: 1rem;
+  border-radius: $radius-pill;
+  background-color: $forest;
+}
+.gl-space-use {
+  grid-column: 1 / -1;
+  color: $sage-text;
+  font-size: $small-font-size;
+
+  @include media-breakpoint-up(md) { grid-column: auto; }
+}
+// 方塊間距示範
+.gl-gap-demo {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  > span {
+    display: grid;
+    place-items: center;
+    min-height: 4.5rem;
+    border-radius: $radius-sm;
+    background-color: $mint;
+    color: $forest-deep;
+    font-family: $font-family-round;
+    font-weight: 700;
+  }
+}
+// 懸浮頁首示意：霧薄荷底上一條真的 .site-header-pill，右側標出 12／64／12
+.gl-header-demo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: stretch;
+  padding: 0 1rem;
+  border-radius: $radius-card;
+  background-color: $mist;
+
+  .site-header-pill {
+    margin-block: .75rem; // 和真的頁首一樣：上下各 12px
+    pointer-events: none;
+  }
+  .gl-header-nav {
+    display: none;
+    flex: 1 1 auto;
+    justify-content: center;
+    gap: .25rem;
+
+    @include media-breakpoint-up(md) { display: flex; }
+  }
+  .gl-header-nav span {
+    padding: .5rem .875rem;
+    border-radius: $radius-pill;
+    font-family: $font-family-round;
+    font-size: .875rem;
+    font-weight: 700;
+
+    &:first-child { background-color: $mint; color: $forest-deep; }
+  }
+}
+.gl-header-ruler {
+  display: grid;
+  grid-template-rows: .75rem $site-header-pill-height .75rem;
+  width: 3.5rem;
+  border-left: 2px solid $forest;
+  color: $forest-deep;
+  font-size: .75rem;
+  font-weight: 800;
+
+  > span {
+    display: flex;
+    align-items: center;
+    padding-left: .5rem;
+    line-height: 1;
+  }
+  > span + span { border-top: 1px dashed $sage-dark; }
+}
+
+// ---------- 圓角與陰影 ----------
+.gl-radius-item {
+  display: flex;
+  flex-direction: column;
+}
+.gl-radius-stage {
+  display: grid;
+  place-items: center;
+  min-height: 8rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: $radius-sm;
+  background-color: $mist;
+
+  > * { max-width: 100%; }
+  .form-control { max-width: 12rem; }
+  .tile { min-width: 8rem; }
+}
+.gl-radius-value {
+  margin: 0;
+  font-family: $font-family-round;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+// 大面板示意：真的 .section-mist，縮小尺寸
+// 40px 大面板本身是霧薄荷：這一格的舞台改成白底＋細框，面板才看得出來
+.gl-radius-stage:has(.gl-sheet-demo) {
+  background-color: $white;
+  box-shadow: inset 0 0 0 1px $card-line;
+}
+.gl-sheet-demo {
+  width: 100%;
+  max-width: 13rem;
+  min-height: 6rem;
+}
+// 巢狀：外層 32 → 24 → 16
+.gl-nest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+
+  .tile { display: flex; align-items: center; gap: .875rem; }
+  p { margin: 0; }
+}
+// 陰影三層
+.gl-shadow-stage {
+  display: grid;
+  place-items: center;
+  min-height: 9rem;
+  margin-bottom: 1rem;
+  padding: 1.5rem 1rem;
+  border-radius: $radius-sm;
+  background-color: $mist;
+
+  > * { width: 100%; max-width: 15rem; }
+}
+// 線條樣本
+.gl-line {
+  display: block;
+  height: 0;
+  margin-block: 1.25rem 1rem;
+  border-top: 1px solid $card-line;
+
+  &.is-form   { border-top-color: $sage-dark; }
+  &.is-divide { border-top-color: $sage; }
+  &.is-dash   { border-top: 1px dashed $sage-dark; }
+  &.is-select { border-top: 2px solid $forest; }
+}
+
+// ---------- 元件狀態 ----------
+// 一列一個變化：名稱與用途 → 各狀態
+.gl-variant + .gl-variant {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid $card-line;
+}
+.gl-variant-head {
+  margin-bottom: 1rem;
+
+  h4 { margin-bottom: .25rem; font-size: 1rem; }
+  p { margin: 0; color: $sage-text; font-size: .9375rem; }
+}
+.gl-states {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @include media-breakpoint-up(xl) { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+  &.is-3 {
+    @include media-breakpoint-up(xl) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  &.is-4 {
+    @include media-breakpoint-up(xl) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  &.is-wide {
+    grid-template-columns: minmax(0, 1fr);
+
+    @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    @include media-breakpoint-up(xl) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+}
+.gl-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+
+  > .btn { max-width: 100%; }
+  .form-control,
+  .form-select { width: 100%; }
+}
+.gl-state-label {
+  margin: .625rem 0 0;
+  color: $sage-text;
+  font-size: .8125rem;
+  line-height: 1.5;
+}
+// 白按鈕要放在薄荷面板上看
+.gl-on-mint {
+  padding: .75rem;
+  border-radius: $radius-sm;
+  background-color: $mint;
+}
+
+// 強制呈現滑過、焦點（只在本頁示意，讀取的是元件真正的 hover／focus 變數或數值）
+// 這些示範加 tabindex="-1" 不進 Tab 順序
+.btn.gl-is-hover {
+  color: var(--bs-btn-hover-color);
+  background-color: var(--bs-btn-hover-bg);
+  border-color: var(--bs-btn-hover-border-color);
+}
+.btn-text.gl-is-hover { text-decoration-thickness: 2px; }
+.btn.gl-is-focus { box-shadow: var(--bs-btn-focus-box-shadow); }
+.form-control.gl-is-focus,
+.form-select.gl-is-focus {
+  border-color: $input-focus-border-color;
+  box-shadow: $input-focus-box-shadow;
+}
+.form-check-input.gl-is-focus {
+  border-color: $forest;
+  box-shadow: $form-check-input-focus-box-shadow;
+}
+.option-card.gl-is-hover { border-color: $forest; }
+.chip-filter.gl-is-hover {
+  border-color: $mint-bright;
+  color: $forest-deep;
+}
+.seg-item.gl-is-hover {
+  background-color: rgba($white, .6);
+  color: $forest-deep;
+}
+.seg-item.gl-is-focus { box-shadow: inset 0 0 0 3px $forest; }
+.site-nav .nav-link.gl-is-hover {
+  background-color: $mist;
+  color: $forest-deep;
+}
+.product-card.gl-is-hover {
+  border-color: $mint-bright;
+  box-shadow: $box-shadow-sm;
+}
+
+// 頁首導覽示範：不在膠囊裡，放不下時換行
+.gl-nav-demo .site-nav {
+  flex-wrap: wrap;
+}
+// 選項卡示範
+.gl-options {
+  display: grid;
+  gap: .75rem;
+
+  // 最多兩欄：選項卡要放得下標題、說明與右側的運費
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  // 標題前的圖示和結帳頁（.co-options）一樣
+  .option-card-title .bi { margin-right: .5rem; color: $forest; }
+  .option-card.is-disabled .option-card-title .bi { color: inherit; }
+}
+// 分頁示範的內容區
+.gl-tab-pane {
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: $radius-sm;
+  background-color: $mist;
+  font-size: .9375rem;
+}
+// 篩選示範：葉形標籤一列
+.gl-filter-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+// 商品卡示範：2 欄，xl 以上 4 欄
+// 每格是「卡片＋狀態說明」：商品卡本身 height: 100%，這裡改成 flex 讓卡片撐滿、說明接在下面
+.gl-cards {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  @include media-breakpoint-up(xl) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  > * {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .product-card {
+    flex: 1 1 auto;
+    height: auto;
+  }
+
+  // 手機 2 欄：和商品一覽一樣，內距收小、品名縮成 15px 並放寬到 3 行
+  @include media-breakpoint-down(sm) {
+    .product-card-body { padding: .75rem .625rem .375rem; } // 左右 10px，文字不貼框
+    .product-card-title { font-size: .9375rem; -webkit-line-clamp: 3; }
+    .product-card-tag { top: .5rem; left: .5rem; }
+  }
+}
+// 履歷卡＋摘要卡
+.gl-pair {
+  @include media-breakpoint-up(xl) { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+
+  > * { min-width: 0; }
+}
+// 狀態示意的示範：本頁已在章節之中，上方不再留 72px
+.gl-demo-state {
+  margin-top: 0;
+}
+
+// ---------- 平滑步驟指引 ----------
+.gl-flow-tile {
+  > p:first-child {
+    margin-bottom: 1.25rem;
+    font-family: $font-family-round;
+    font-weight: 700;
+  }
+}
+.gl-flow-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem .75rem;
+  margin: 1.25rem 0 0;
+  color: $sage-text;
+  font-size: $small-font-size;
+}
+// 節點三種狀態的圖例：節點本身用真的 .flow-step 標記，說明另外寫（不放在 .flow-label，手機才不會被藏起來）
+.gl-node-legend {
+  > div {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .flow-step { flex: 0 0 auto; }
+  p { margin: 0; font-size: .9375rem; }
+  strong { display: block; font-family: $font-family-round; }
+}
+// 子步驟軌示範：直向放在霧薄荷方塊裡、橫向在下方
+.gl-rail-demo {
+  @include media-breakpoint-up(md) { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+
+  > * { min-width: 0; }
+}
+.gl-mini-tracks {
+  display: grid;
+  gap: 1.75rem;
+
+  > div > p:first-child {
+    margin-bottom: .75rem;
+    font-family: $font-family-round;
+    font-size: .9375rem;
+    font-weight: 700;
+  }
+}
+.gl-motion {
+  dt { font-family: $font-family-round; font-weight: 700; }
+  dd { margin: 0 0 1rem; color: $sage-text; }
+  dd:last-child { margin-bottom: 0; }
+}
+
+// ---------- 葉形標籤 ----------
+.gl-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gl-tag-rows {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+
+  > div {
+    display: grid;
+    gap: .5rem;
+
+    @include media-breakpoint-up(md) {
+      grid-template-columns: 9rem minmax(0, 1fr);
+      align-items: start;
+      gap: 1rem;
+    }
+  }
+  dt {
+    padding-top: .25rem;
+    font-family: $font-family-round;
+    font-weight: 700;
+  }
+  dd { margin: 0; }
+}
+.gl-tag-where {
+  margin: .5rem 0 0;
+  color: $sage-text;
+  font-size: $small-font-size;
+}
+// 葉形的構造：放大 3 倍的虛線葉子，中間放原尺寸的標籤
+.gl-leaf-stage {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 1rem;
+}
+// 葉形放大 3 倍：標籤約 30px 高、圓角 14px 3px → 約 90px 高、圓角 42px 9px；中間放一個原尺寸的標籤對照
+.gl-leaf-big {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 14rem;
+  height: 5.5rem;
+  border: 2px dashed $forest;
+  border-radius: 42px 9px;
+  background-color: $white;
+}
+
+// ---------- RWD ----------
+.gl-bp {
+  h3 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .25rem .75rem;
+    margin-bottom: .5rem;
+    font-size: 1.125rem;
+  }
+  p { margin: 0; font-size: .9375rem; }
+}
+.gl-bp-meta {
+  color: $sage-text;
+  font-family: $font-family-base;
+  font-size: $small-font-size;
+  font-weight: 400;
+}
+// 各頁的版型行為：每頁一張方塊，裡面三列（手機／平板／桌機）
+.gl-rwd-pages {
+  @include media-breakpoint-up(xl) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  > * { min-width: 0; }
+}
+.gl-rwd-page {
+  h4 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .25rem .75rem;
+    margin-bottom: .75rem;
+    font-size: 1.0625rem;
+  }
+  dl { display: grid; gap: .75rem; margin: 0; }
+  dl > div {
+    display: grid;
+    grid-template-columns: 4.25rem minmax(0, 1fr);
+    gap: .75rem;
+    align-items: start;
+  }
+  dt { padding-top: .125rem; }
+  dd { margin: 0; font-size: .9375rem; line-height: 1.7; }
+}
+.gl-device {
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+  padding: .125rem .5rem;
+  border-radius: $radius-pill;
+  background-color: $mist;
+  color: $forest-deep;
+  font-family: $font-family-round;
+  font-size: .75rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  .tile-mist & { background-color: $white; }
+}
+// 格線示意的格子
+.gl-grid-cell {
+  display: grid;
+  place-items: center;
+  min-height: 2.5rem;
+  border-radius: $radius-input;
+  background-color: $mint;
+  color: $forest-deep;
+  font-family: $font-family-round;
+  font-size: .8125rem;
+  font-weight: 700;
+
+  &.is-tall { min-height: 4.5rem; }
+  &.is-mist { background-color: $mist; }
+}
+
+// ---------- Do／Don't ----------
+.gl-dd {
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  > * { min-width: 0; }
+
+  & + & { margin-top: map-get($spacers, 5); }
+}
+.gl-dd-title {
+  margin-bottom: 1rem;
+  font-size: 1.125rem;
+
+  @include media-breakpoint-up(md) { grid-column: 1 / -1; margin-bottom: 0; }
+}
+.gl-dd-item {
+  display: flex;
+  flex-direction: column;
+}
+.gl-dd-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: 1rem;
+  font-family: $font-family-round;
+  font-weight: 700;
+
+  .bi { font-size: 1.25rem; line-height: 1; }
+  .is-do & .bi { color: $success; }
+  .is-dont & .bi { color: $danger; }
+}
+.gl-dd-stage {
+  display: grid;
+  place-items: center;
+  flex: 1 1 auto;
+  min-height: 9rem;
+  padding: 1.25rem;
+  border-radius: $radius-sm;
+  background-color: $white;
+
+  > * { max-width: 100%; }
+}
+.gl-dd-item.is-dont {
+  border-color: rgba($danger, .35);
+}
+.gl-dd-text {
+  margin: 1rem 0 0;
+  font-size: .9375rem;
+}
+
+// 「避免」的錯誤示範：只在本頁出現，故意畫錯，正式頁面不要用
+.gl-dont-text {
+  margin: 0;
+  font-family: $font-family-round;
+  font-size: 1.125rem;
+  font-weight: 700;
+
+  &.is-mint-bright { color: $mint-bright; }
+  &.is-mint { color: $mint; }
+}
+.gl-dont-radius {
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+  padding: 1rem;
+  border: 1px solid $card-line;
+  border-radius: 10px;
+
+  img { width: 3.5rem; height: 3.5rem; border-radius: 20px; object-fit: cover; }
+  .btn { --bs-btn-border-radius: 6px; }
+}
+.gl-dont-lift {
+  width: 100%;
+  max-width: 13rem;
+  transform: translateY(-.5rem);
+  border-color: $mint-bright;
+  box-shadow: 0 1.25rem 2rem rgba($ink, .22);
+
+  .product-card-media img { transform: scale(1.12); }
+}
+.gl-dont-flood {
+  display: grid;
+  gap: .5rem;
+  width: 100%;
+  padding: .75rem;
+  border-radius: $radius-sm;
+  background-color: $mint-bright;
+
+  > span {
+    display: block;
+    height: 1.75rem;
+    border-radius: $radius-input;
+    background-color: $mint;
+  }
+}
+.gl-do-flood {
+  display: grid;
+  gap: .5rem;
+  width: 100%;
+  padding: .75rem;
+  border: 1px solid $card-line;
+  border-radius: $radius-sm;
+  background-color: $white;
+
+  > span {
+    display: block;
+    height: 1.75rem;
+    border-radius: $radius-input;
+    background-color: $mist;
+
+    &.is-mint { background-color: $mint; }
+    &.is-forest { width: 40%; background-color: $forest; border-radius: $radius-pill; }
+  }
+}
+.gl-dont-dots {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 16rem;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    margin-top: -1px;
+    background-color: $sage;
+  }
+  > span {
+    position: relative;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 1px solid $sage-dark;
+    border-radius: 50%;
+    background-color: $white;
+
+    &:first-child { border-color: $forest; background-color: $forest; }
+  }
+}
+.gl-dont-track {
+  width: 100%;
+  height: .5rem;
+  border-radius: $radius-pill;
+  background: linear-gradient(90deg, $mint-bright 0 60%, $track 60% 100%);
+}
+.gl-track-wrap {
+  width: 100%;
+
+  .track { width: 100%; }
+}
+.gl-dont-dot-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  font-size: .9375rem;
+
+  &::before {
+    content: "";
+    width: .625rem;
+    height: .625rem;
+    border-radius: 50%;
+    background-color: $forest;
+  }
+}
+.gl-dont-round-body {
+  margin: 0;
+  font-family: $font-family-round;
+  font-size: 1rem;
+  line-height: 1.8;
+}

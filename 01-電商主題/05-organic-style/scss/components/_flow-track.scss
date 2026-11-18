@@ -1,0 +1,345 @@
+// ============================================================
+// 招牌元素：平滑步驟指引
+// 1. .flow-track：結帳三步（購物車／填寫資料與付款／完成訂單）是一條 8px 高、全膠囊的連續軌道，
+//    三個 32px 節點在 1/6、1/2、5/6 的位置，節點下方是文字標籤
+//    已完成＝森林薄荷實心＋白勾；目前＝白底＋3px 森林薄荷外圈＋數字＋粗體標籤＋aria-current="step"；
+//    未到＝白底＋1px 深鼠尾草框＋鼠尾草字數字
+//    填色：購物車填到第一節點（--to: .1667）、結帳到第二節點（.5）、付款結果填滿（1）
+//    載入時從上一步的位置（--from）長到這一步（--to），只播一次；節點本身不動
+// 2. .track：同一套語言的進度軌道（免運進度、配送進度、付款結果的「接下來」時間軸），8px 膠囊＋填色
+// 減少動態時直接顯示最終長度（_base.scss）
+// ============================================================
+
+// <ol class="flow-track" style="--from: .1667; --to: .5" aria-label="結帳步驟">
+//   <li class="flow-step is-done">
+//     <a class="flow-link" href="cart.html">
+//       <span class="flow-node"><i class="bi bi-check-lg" aria-hidden="true"></i></span>
+//       <span class="flow-label"><span class="visually-hidden">已完成：</span>購物車</span>
+//     </a>
+//   </li>
+//   <li class="flow-step is-current" aria-current="step">
+//     <span class="flow-node num">2</span><span class="flow-label">填寫資料與付款</span>
+//   </li>
+//   <li class="flow-step"><span class="flow-node num">3</span><span class="flow-label">完成訂單</span></li>
+// </ol>
+
+$flow-node:  2rem;   // 32px
+$flow-rail:  .5rem;  // 8px
+
+@keyframes flow-fill {
+  from { transform: scaleX(var(--from, 0)); }
+  to   { transform: scaleX(var(--to, 0)); }
+}
+
+.flow-track {
+  --from: 0;
+  --to: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  // 軌道底
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: ($flow-node - $flow-rail) * .5;
+    left: 0;
+    right: 0;
+    height: $flow-rail;
+    border-radius: $radius-pill;
+  }
+  &::before { background-color: $track; }
+  // 填色：森林薄荷（對軌道底 5.42）
+  &::after {
+    background-color: $forest;
+    transform: scaleX(var(--to));
+    transform-origin: left center;
+    animation: flow-fill .7s cubic-bezier(.2, .7, .2, 1) both;
+  }
+}
+
+.flow-step {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-start; // 直向排列：節點一律貼齊上緣（手機只有目前步驟有文字時，三個節點仍在同一條線上）
+  text-align: center;
+}
+.flow-step,
+.flow-link {
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+}
+.flow-link {
+  display: flex;
+  min-width: 2.75rem;
+  border-radius: $radius-sm;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover .flow-label { text-decoration: underline; text-underline-offset: .25em; }
+  &:hover .flow-node { background-color: $forest-deep; border-color: $forest-deep; }
+}
+
+.flow-node {
+  display: inline-grid;
+  place-items: center;
+  width: $flow-node;
+  height: $flow-node;
+  border: 1px solid $sage-dark;
+  border-radius: 50%;
+  background-color: $white;
+  color: $sage-text;
+  font-family: $font-family-round;
+  font-size: .875rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.flow-label {
+  color: $sage-text;
+  font-family: $font-family-round;
+  font-size: .875rem;
+  font-weight: 500;
+  line-height: 1.4;
+
+  @include media-breakpoint-up(md) { font-size: .9375rem; }
+}
+
+.flow-step.is-done {
+  .flow-node {
+    border-color: $forest;
+    background-color: $forest;
+    color: $white;
+    font-size: 1rem;
+  }
+  .flow-label { color: $ink; }
+}
+.flow-step.is-current {
+  .flow-node {
+    border: 3px solid $forest;
+    color: $forest;
+  }
+  .flow-label {
+    color: $ink;
+    font-weight: 700;
+  }
+}
+
+// ---------- 迷你配送軌道（我的訂單每張卡）：同一條 8px 軌道、4 個 24px 節點 ----------
+// 待付款 → 已付款 → 出貨中 → 已完成；填到目前狀態的節點：--to 0.125／0.375／0.625，已完成填滿 1
+// 不播放長出動畫（狀態篩選切換時清單會重新顯示，動畫不該重播）
+// 已完成的訂單沒有「目前」節點：最後一個節點寫 class="flow-step is-done" aria-current="step"，手機仍顯示它的文字
+// 節點文字下方可以加日期：<span class="flow-date num">09/22</span>
+// <ol class="flow-track flow-track-mini" style="--to: .625" aria-label="配送進度">
+//   <li class="flow-step is-done"><span class="flow-node" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+//     <span class="flow-label"><span class="visually-hidden">已完成：</span>待付款<span class="flow-date num">09/18</span></span></li>
+//   <li class="flow-step is-current" aria-current="step"><span class="flow-node num" aria-hidden="true">3</span>
+//     <span class="flow-label">出貨中<span class="flow-date num">09/22</span></span></li>
+//   …
+// </ol>
+$mini-node: 1.5rem; // 24px
+
+.flow-track-mini {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  &::before,
+  &::after { top: ($mini-node - $flow-rail) * .5; }
+  &::after { animation: none; }
+
+  .flow-step,
+  .flow-link { gap: .375rem; }
+  .flow-node {
+    width: $mini-node;
+    height: $mini-node;
+    font-size: .75rem;
+  }
+  .flow-step.is-done .flow-node { font-size: .8125rem; }
+  .flow-label {
+    font-size: .8125rem;
+
+    @include media-breakpoint-up(md) { font-size: .875rem; }
+  }
+}
+.flow-date {
+  display: block;
+  color: $sage-text;
+  font-size: .75rem;
+  font-weight: 600;
+}
+
+// 手機：只顯示目前步驟的文字，其他節點留數字（文字留給螢幕閱讀器）
+@include media-breakpoint-down(sm) {
+  .flow-step:not(.is-current):not([aria-current]) .flow-label {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+}
+
+// ---------- 進度軌道 ----------
+// <div class="track" style="--from: 0; --to: 1" aria-hidden="true"></div>
+// 進度的文字（「已達滿 NT$ 3,000 免運門檻」）寫在軌道旁邊，軌道本身只是圖
+.track {
+  --from: 0;
+  --to: 0;
+  position: relative;
+  height: $flow-rail;
+  overflow: hidden;
+  border-radius: $radius-pill;
+  background-color: $track;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: $forest;
+    transform: scaleX(var(--to));
+    transform-origin: left center;
+    animation: flow-fill .7s cubic-bezier(.2, .7, .2, 1) both;
+  }
+}
+// 已取消：鼠尾草虛線軌道、沒有填色
+.track.is-cancel {
+  background: repeating-linear-gradient(90deg, $sage-dark 0 .5rem, transparent .5rem .875rem);
+  background-size: 100% 2px;
+  background-position: 0 50%;
+  background-repeat: no-repeat;
+
+  &::after { display: none; }
+}
+
+// ---------- 子步驟軌（結帳頁左側）：同一套軌道語言的直向版本 ----------
+// 四個 24px 節點以一條 2px 直線相連；目前段落（Bootstrap Scrollspy 加上 .active）＝節點實心＋文字粗體
+// 橫向版本（.step-rail-pill 或 mixin step-rail-pill）：白色膠囊列、可橫捲，目前段落是薄荷底膠囊
+// <nav id="coRail" class="step-rail" aria-label="結帳表單段落">
+//   <ol class="step-rail-list">
+//     <li><a class="step-rail-link active" href="#co-recipient"><span class="step-rail-node num" aria-hidden="true">1</span><span class="step-rail-label">收件資訊</span></a></li>
+//   </ol>
+//   <p class="step-rail-foot">最後在右側確認付款</p>
+// </nav>
+$rail-node: 1.5rem; // 24px
+
+.step-rail-list {
+  position: relative;
+  display: grid;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  // 連接線：從第一個節點中心到最後一個節點中心
+  &::before {
+    content: "";
+    position: absolute;
+    top: 1.375rem;
+    bottom: 1.375rem;
+    left: calc(#{$rail-node * .5} - 1px);
+    width: 2px;
+    border-radius: $radius-pill;
+    background-color: $sage;
+  }
+}
+.step-rail-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 2.75rem;
+  color: $sage-text;
+  font-family: $font-family-round;
+  font-size: .9375rem;
+  font-weight: 500;
+  line-height: 1.4;
+  text-decoration: none;
+  transition: color .2s;
+
+  &:hover {
+    color: $forest-deep;
+    .step-rail-label { text-decoration: underline; text-underline-offset: .25em; }
+  }
+  &.active {
+    color: $ink;
+    font-weight: 700;
+  }
+}
+.step-rail-node {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: $rail-node;
+  height: $rail-node;
+  border: 1px solid $sage-dark;
+  border-radius: 50%;
+  background-color: $white;
+  color: $sage-text;
+  font-size: .75rem;
+  font-weight: 800;
+  line-height: 1;
+  transition: background-color .2s, border-color .2s, color .2s;
+
+  .step-rail-link.active & {
+    border-color: $forest;
+    background-color: $forest;
+    color: $white;
+  }
+}
+.step-rail-foot {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 1rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px dashed $sage;
+  color: $sage-text;
+  font-size: $small-font-size;
+  line-height: 1.6;
+}
+
+// 橫向膠囊列：結帳頁 1200px 以下、Guideline 示範
+@mixin step-rail-pill {
+  padding: .375rem;
+  border: 1px solid $card-line;
+  border-radius: $radius-pill;
+  background-color: $white;
+  box-shadow: $shadow-float;
+
+  .step-rail-list {
+    display: flex;
+    gap: .25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+    &::before { display: none; }
+  }
+  .step-rail-link {
+    flex: 0 0 auto;
+    gap: .5rem;
+    padding: .375rem 1rem .375rem .5rem;
+    border-radius: $radius-pill;
+    white-space: nowrap;
+    transition: background-color .2s, color .2s;
+
+    &:hover { background-color: $mist; }
+    &.active { background-color: $mint; color: $forest-deep; }
+    // 捲動容器會裁掉外擴的焦點環，改畫在內側
+    &:focus-visible { outline: none; box-shadow: inset 0 0 0 3px $forest; }
+  }
+  .step-rail-foot { display: none; }
+}
+.step-rail-pill {
+  @include step-rail-pill;
+}

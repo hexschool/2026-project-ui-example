@@ -1,0 +1,311 @@
+// ============================================================
+// 商品一覽（products.html）
+// 構圖：頁首（H1＋「10 件」方塊）→ 黏性分類列（白底、下方 2px 黑線）→ 4 欄密集商品格（第 5 格黃色票券方塊、最後一格黑色提示方塊）
+// 沒有左側欄：寬度、價格、庫存收進右側抽屜「篩選」
+// ============================================================
+
+// ---------- 頁首：左 H1 與說明、右「回到首頁看靈感」 ----------
+.products-head { padding-bottom: map-get($spacers, 5); }
+.products-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: .5rem 2rem;
+
+  .btn-text { flex-shrink: 0; }
+}
+
+// ---------- 黏性分類列：捲動時黏在黑色主列（64px）下方 ----------
+.products-bar {
+  position: sticky;
+  top: $site-bar-height;
+  z-index: $zindex-sticky;
+  border-bottom: $border-strong solid $black;
+  background-color: $white;
+}
+.products-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 4rem;
+
+  @include media-breakpoint-up(lg) { gap: 1.5rem; }
+}
+
+// 分類：矩形按鈕，選中＝黑底白字
+// 768px 以下（手機）整列橫向捲動，貼齊螢幕左緣開始捲，右緣淡出提示還有；
+// 768px 以上不捲動（滑鼠沒辦法捲隱藏捲軸的列）：放不下時換行，768～991px 排成兩行；
+// 992px 以上一行放得下 7 個分類（992～1199px 排序下拉移到件數列，分類列只放分類與「篩選」）
+.products-cats {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-inline-start: calc(var(--pad) * -1);
+
+  ul {
+    display: flex;
+    gap: .25rem;
+    padding-block: .625rem;
+    padding-inline: var(--pad) 0;
+  }
+
+  @include media-breakpoint-down(md) {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+
+    &::-webkit-scrollbar { display: none; }
+
+    ul {
+      width: max-content;
+      padding-inline-end: 2rem; // 右側多留 2rem，最後一個分類捲到底時不會落在淡出區
+    }
+  }
+  @include media-breakpoint-up(md) {
+    ul { flex-wrap: wrap; }
+  }
+}
+.products-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  padding: 0 .875rem;
+  color: $black;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color .12s ease, color .12s ease;
+
+  &:hover { background-color: $volt-tint; color: $black; }
+  &:focus-visible { outline-offset: -$focus-ring-width; }
+
+  &.is-active {
+    background-color: $black;
+    color: $white;
+
+    .products-cat-count { color: $volt; } // 黑底黃字 16.46:1
+    &:focus-visible { outline-color: $volt; }
+  }
+}
+.products-cat-count {
+  color: $grey-600;
+  font-size: .875rem;
+}
+
+// 篩選、排序
+.products-tools {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: .75rem;
+}
+.products-filter-btn {
+  min-height: $btn-height-sm;
+  padding-inline: .875rem;
+
+  .bi { font-size: 1.125rem; }
+}
+// 排序下拉：白底 2px 黑框
+.products-sort .form-select {
+  min-height: $btn-height-sm;
+  padding-block: .5rem;
+  border: $border-strong solid $black;
+  font-weight: 700;
+
+  @include media-breakpoint-up(lg) { min-width: 13.5rem; }
+}
+
+// ---------- 件數列（1200px 以下也放排序） ----------
+.products-body { padding-top: map-get($spacers, 5); } // 與 .page-body 併用
+.products-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1.5rem;
+  margin-bottom: map-get($spacers, 5);
+  font-weight: 700;
+
+  .num { font-size: 1.125rem; }
+}
+
+// ---------- 第 5 格：黃色票券方塊（直式，撕線在正中間） ----------
+// 高度跟著同一列的商品卡；內容撐滿上下：票根「限時券」在頂端、面額與門檻貼著撕線，
+// 撕線下方倒數在上、滿寬「登入領取」貼齊底部，不留一大塊空黃
+.products-promo {
+  container-type: inline-size; // 面額、倒數字級跟著方塊寬度走（cqi）
+  height: 100%;
+  min-height: 20rem;
+
+  .coupon-stub,
+  .coupon-main { padding-inline: 1rem; }
+
+  @include media-breakpoint-up(md) {
+    .coupon-stub,
+    .coupon-main { padding-inline: 1.5rem; }
+  }
+  .coupon-label { margin-bottom: auto; }
+  .coupon-main {
+    align-items: stretch;
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+
+    .btn { margin-top: auto; }
+  }
+  .coupon-timer { margin-bottom: 1rem; }
+  .countdown-num {
+    // 390px 兩欄約 28px、1440px 四欄約 39px
+    font-size: clamp(1.75rem, 12cqi, 2.5rem);
+  }
+}
+.products-promo-amount {
+  margin: .5rem 0 .25rem;
+  line-height: 1;
+
+  .coupon-amount {
+    // 依方塊寬度：768px 三欄約 37px、1440px 四欄約 55px，最小 32、最大 56
+    font-size: clamp(2rem, 17cqi, 3.5rem);
+  }
+}
+
+// ---------- 最後一格：黑色提示方塊（量尺寸） ----------
+.products-tip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  min-height: 20rem;
+  padding: 1.25rem 1rem;
+  background-color: $black;
+  color: $white;
+
+  @include media-breakpoint-up(md) { padding: 1.5rem; }
+}
+.products-tip-icon {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 1.25rem;
+  background-color: $volt;
+  color: $black;
+  font-size: 1.5rem;
+}
+.products-tip-title {
+  margin-bottom: .75rem;
+  font-family: $font-family-base;
+  font-size: 1.25rem;
+  font-weight: 900;
+
+  @include media-breakpoint-up(md) { font-size: 1.5rem; }
+}
+.products-tip-text {
+  color: $on-dark-muted;
+  font-size: $font-size-sm;
+}
+// 黑底上的黃色連結（16.46:1）
+.on-dark .products-tip-link,
+.products-tip-link {
+  margin-top: auto;
+  padding-block: .5rem;
+  color: $volt;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .3em;
+
+  &:hover { color: $volt; text-decoration-thickness: 4px; }
+}
+
+// ---------- 清單尾端：已顯示件數 ----------
+.products-more {
+  display: grid;
+  justify-items: center;
+  max-width: 22rem;
+  margin: map-get($spacers, 8) auto 0;
+  font-weight: 700;
+  text-align: center;
+
+  .products-more-bar { width: 100%; margin-bottom: 1.25rem; }
+  .btn { width: 100%; }
+}
+
+// ---------- 篩選抽屜（右側）：黑色標題列、白底內容、底部兩顆按鈕 ----------
+.products-filter {
+  --bs-offcanvas-width: 22.5rem;
+  border-left: $border-width solid $black;
+
+  .offcanvas-header {
+    background-color: $black;
+    color: $white;
+  }
+}
+.products-filter-heading {
+  margin: 0;
+  color: $white;
+  font-family: $font-family-base;
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+.products-filter-group {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid $grey-300;
+
+  &:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: 0; }
+
+  .form-check {
+    min-height: 2.75rem;
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    margin: 0;
+    padding-left: 0;
+
+    .form-check-input { flex-shrink: 0; margin: 0; float: none; }
+  }
+  .form-switch .form-check-input { width: 2.5em; }
+  .form-check-label {
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+}
+.products-filter-title {
+  margin-bottom: .5rem;
+  font-size: 1rem;
+  font-weight: 900;
+}
+.products-filter-note {
+  margin-bottom: .5rem;
+  color: $grey-600;
+  font-size: $font-size-sm;
+}
+.products-filter-count { color: $grey-600; }
+.products-filter-foot {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: .75rem;
+  padding: 1rem 1.25rem;
+  border-top: $border-strong solid $black;
+}
+
+// ---------- 狀態示意：篩選後沒有商品 ----------
+.products-empty {
+  max-width: 36rem;
+
+  .text-secondary { margin-bottom: 1.5rem; }
+}
+.products-empty-meta {
+  margin-bottom: .75rem;
+  font-weight: 700;
+}
+.products-empty-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-bottom: 1.5rem;
+}

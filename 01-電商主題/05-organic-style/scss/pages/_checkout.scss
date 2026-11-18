@@ -1,0 +1,170 @@
+// ============================================================
+// 結帳（checkout.html）
+// 構圖（版心 1240）：頁首（連續軌道從第一節點長到第二節點 → H1 → 說明）
+//       → 三欄：左子步驟軌（Scrollspy、黏性）｜中四張圓角段落卡｜右黏性摘要卡（霧薄荷＋柔陰影）→ 狀態示意
+// lg（992～1199）：子步驟軌變成中欄上方的橫向黏性膠囊列，摘要卡在右欄
+// 992px 以下：子步驟膠囊列黏在頂部、可橫捲；段落卡依序排；摘要卡放最下（含確認付款）
+// class 一律加 co- 前綴
+// ============================================================
+
+// ---------- 三欄格線 ----------
+// .co-main 包住子步驟軌與表單：lg 以下子步驟軌只在這一段裡黏住（到摘要卡就放開）；
+// xl 以上 .co-main 用 display: contents，子步驟軌與表單直接成為三欄格線的兩欄
+.co-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: map-get($spacers, 5) $tile-gap-lg;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: start;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 6fr) minmax(0, 4fr);
+  }
+}
+// 注意：sticky 的範圍是格線項目的格子，所以 lg 以下 .co-main 是一般區塊（不是格線），子步驟軌才黏得住
+.co-main {
+  min-width: 0;
+
+  @include media-breakpoint-up(xl) { display: contents; }
+}
+
+// ---------- 子步驟軌：xl 直向（.step-rail），以下橫向膠囊（mixin step-rail-pill） ----------
+.co-rail {
+  position: sticky;
+  top: $sticky-top;
+  z-index: $zindex-sticky;
+
+  @include media-breakpoint-up(xl) {
+    align-self: start;
+    padding-top: .5rem;
+  }
+  @include media-breakpoint-down(xl) {
+    @include step-rail-pill;
+    margin-bottom: $tile-gap;
+  }
+  @include media-breakpoint-between(lg, xl) { margin-bottom: $tile-gap-lg; }
+}
+
+// ---------- 段落卡：白底框線 24px 圓角，標題前是 32px 圓形編號（和子步驟軌同號） ----------
+.co-form {
+  display: grid;
+  gap: $tile-gap;
+  min-width: 0;
+
+  @include media-breakpoint-up(lg) { gap: $tile-gap-lg; }
+}
+// 錨點捲動：992～1199 與手機上方多了一條黏性膠囊列，標題要再往下讓一點
+.co-section {
+  @include media-breakpoint-down(xl) { scroll-margin-top: 4.5rem; }
+}
+.co-section-title {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.125rem;
+
+  @include media-breakpoint-up(lg) { font-size: 1.25rem; }
+}
+.co-section-no {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: $mint;
+  color: $forest-deep;
+  font-size: .9375rem;
+  font-weight: 800;
+}
+.co-options {
+  display: grid;
+  gap: .75rem;
+
+  &.is-2col {
+    @include media-breakpoint-up(sm) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  .option-card-title .bi { margin-right: .5rem; color: $forest; }
+  .option-card.is-disabled .option-card-title .bi { color: inherit; }
+}
+
+// 信用卡欄位：選「信用卡」時才顯示（CSS :has()，不需要 JS）
+.co-card-fields {
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+  border-radius: $radius-sm;
+  background-color: $mist;
+
+  @include media-breakpoint-up(md) { padding: 1.5rem; }
+}
+.co-pay:not(:has(#pay-card:checked)) .co-card-fields {
+  display: none;
+}
+// 選其他付款方式時的說明
+.co-pay-note {
+  display: none;
+  margin: 1.25rem 0 0;
+  padding: 1rem 1.25rem;
+  border-radius: $radius-sm;
+  background-color: $mist;
+  font-size: $small-font-size;
+}
+.co-pay:has(#pay-atm:checked) .co-pay-note.is-atm,
+.co-pay:has(#pay-cod:checked) .co-pay-note.is-cod,
+.co-pay:has(#pay-mobile:checked) .co-pay-note.is-mobile {
+  display: flex;
+  gap: .5rem;
+}
+
+// ---------- 右欄摘要卡：lg 以上黏住 ----------
+.co-summary {
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top;
+  }
+  .btn-lg { min-height: 3.25rem; } // 52px
+}
+.co-summary-actions {
+  display: grid;
+  justify-items: center;
+  gap: .25rem;
+  margin-top: 1.5rem;
+}
+.co-secure {
+  display: grid;
+  gap: .5rem;
+  margin: 1.25rem 0 0;
+  padding: 1rem 0 0;
+  border-top: 1px dashed $sage;
+  list-style: none;
+  color: $sage-text;
+  font-size: $small-font-size;
+
+  li { display: flex; gap: .5rem; }
+  .bi { color: $forest; }
+}
+
+// ---------- 狀態示意 ----------
+.co-demo-grid {
+  display: grid;
+  gap: $tile-gap;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: $tile-gap-lg;
+  }
+  .demo-state-stage { height: 100%; }
+
+  // 手機上外框、舞台、卡片三層內距疊起來太窄，卡片內距收小
+  @include media-breakpoint-down(md) {
+    .tile,
+    .sum-card { padding: 1rem; }
+  }
+}
+.co-demo-sub {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}

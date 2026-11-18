@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>商品一覽｜NestCraft 原創生活家居選物</title>
+  <meta name="description" content="NestCraft 全部商品：沙發、餐桌椅、收納家具、臥室家具、燈具與椅子，每件都標示寬深高，依分類、寬度、價格與現貨找到放得下的家具。設計稿 05｜親和無毒風。">
+  <meta name="theme-color" content="#FFFFFF">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Chiron+GoRound+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，10 個 .html 要一起改，改完執行 npm run check。
+    - 每頁只需要調整一處「目前頁面」標示（scripts/check-layout.mjs 依這個規則比對）：
+      頁首導覽：目前頁的 <a class="nav-link"> 改成 class="nav-link active"，並加 aria-current="page"
+      · index.html → 首頁；products.html → 商品一覽；orders.html → 我的訂單
+      · product.html：「商品一覽」只加 active，不加 aria-current
+      · 購物車、結帳、付款結果、登入、註冊、Guideline 不標示目前頁
+    - 導覽連結的 class 只寫 nav-link（目前頁加 active），不要加別的 class，樣式從父層 .site-nav 選。
+    - 頁首是懸浮膠囊：header 本身透明且 pointer-events: none，膠囊與抽屜設回 auto。
+      992px 以下，導覽（同一份 #siteMenu）變成底部抽屜；放大鏡按鈕也開這個抽屜，並把焦點放進搜尋框（js/main.js）。
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <div class="container">
+        <div class="site-header-pill">
+          <a class="site-brand" href="index.html" aria-label="NestCraft 首頁">
+            <svg class="site-brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+              <circle class="mark-bg" cx="16" cy="16" r="16" />
+              <path class="mark-ink" d="M6.5 15.5C8.2 10.4 11.6 7.4 16 6.6c4.4.8 7.8 3.8 9.5 8.9z" />
+              <path class="mark-vein" d="M16 14.6V9.2M16 13.2l-3.4-2.4M16 13.2l3.4-2.4" />
+              <path class="mark-ink" d="M9.75 17h12.5v7a1.5 1.5 0 0 1-1.5 1.5h-9.5a1.5 1.5 0 0 1-1.5-1.5z" />
+              <path class="mark-bg" d="M14.25 25.5v-3.25a1.75 1.75 0 0 1 3.5 0v3.25z" />
+            </svg>
+            <span class="site-brand-name">NestCraft</span>
+          </a>
+
+          <!-- 導覽：lg 以上在膠囊中間；992px 以下是底部抽屜（offcanvas-lg，同一份標記） -->
+          <div id="siteMenu" class="offcanvas-lg offcanvas-bottom site-menu" tabindex="-1" aria-labelledby="siteMenuLabel">
+            <div class="offcanvas-header">
+              <h2 id="siteMenuLabel" class="offcanvas-title">選單</h2>
+              <button class="btn-close" type="button" data-bs-dismiss="offcanvas" data-bs-target="#siteMenu" aria-label="關閉選單"></button>
+            </div>
+            <div class="offcanvas-body">
+              <form class="site-search d-lg-none" role="search" action="products.html">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control" type="search" name="q" placeholder="搜尋家具、收納、尺寸…" aria-label="搜尋商品">
+              </form>
+              <nav aria-label="主要導覽">
+                <ul class="site-nav">
+                  <li><a class="nav-link" href="index.html">首頁</a></li>
+                  <li><a class="nav-link active" href="products.html" aria-current="page">商品一覽</a></li>
+                  <li><a class="nav-link" href="index.html#rooms">空間靈感</a></li>
+                  <li><a class="nav-link" href="orders.html">我的訂單</a></li>
+                  <li class="d-lg-none"><a class="nav-link" href="login.html">會員登入</a></li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+
+          <form class="site-search site-search-desktop d-none d-lg-flex" role="search" action="products.html">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input class="form-control" type="search" name="q" placeholder="搜尋家具、收納、尺寸…" aria-label="搜尋商品">
+          </form>
+
+          <!-- 圖示列：桌機 會員 → 購物車；992px 以下 搜尋 → 購物車 → 選單 -->
+          <div class="site-actions">
+            <button class="site-icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteMenu" aria-controls="siteMenu" aria-label="搜尋商品" data-focus-search>
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <a class="site-icon-btn d-none d-lg-inline-grid" href="login.html" aria-label="會員登入">
+              <i class="bi bi-person" aria-hidden="true"></i>
+            </a>
+            <a class="site-icon-btn" href="cart.html" aria-label="購物車，4 件商品">
+              <i class="bi bi-bag" aria-hidden="true"></i>
+              <span class="site-cart-count">4</span>
+            </a>
+            <button class="site-icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteMenu" aria-controls="siteMenu" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!--
+        商品一覽（樣式見 scss/pages/_products.scss）
+        - 沒有左側欄：分類、只顯示有現貨、寬度、價格區間、排序都在上方的黏性膠囊列（top 88px，緊貼在懸浮頁首下方）
+        - 992px 以下：膠囊列只留分類 chip 與「篩選」鈕，開關、寬度、價格區間、排序是同一份標記的底部抽屜（offcanvas-lg）
+        - 設計稿不實作篩選：分類 chip 都連回 products.html，固定以「全部」為目前選取；開關、寬度、價格區間、排序只是示意
+      -->
+      <div class="container">
+        <header class="page-header">
+          <nav aria-label="目前位置">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+              <li class="breadcrumb-item active" aria-current="page">商品一覽</li>
+            </ol>
+          </nav>
+          <div class="products-title-row">
+            <h1>商品一覽</h1>
+            <a class="btn btn-text" href="index.html#rooms">回到首頁看靈感<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          </div>
+          <p class="page-lead text-phrase">從沙發、餐桌到收納，<wbr>找到放得下、也帶得走的家具。</p>
+        </header>
+
+        <!-- 黏性膠囊篩選列：分類 chip 的數字是該分類的商品件數 -->
+        <section class="products-bar" aria-label="篩選與排序">
+          <h2 class="visually-hidden">篩選與排序</h2>
+          <ul class="products-cats" aria-label="商品分類">
+            <li><a class="chip chip-filter active" href="products.html" aria-current="true">全部<span class="chip-count">10</span></a></li>
+            <li><a class="chip chip-filter" href="products.html">沙發<span class="chip-count">2</span></a></li>
+            <li><a class="chip chip-filter" href="products.html">餐桌椅<span class="chip-count">1</span></a></li>
+            <li><a class="chip chip-filter" href="products.html">收納家具<span class="chip-count">4</span></a></li>
+            <li><a class="chip chip-filter" href="products.html">臥室家具<span class="chip-count">1</span></a></li>
+            <li><a class="chip chip-filter" href="products.html">居家燈具<span class="chip-count">1</span></a></li>
+            <li><a class="chip chip-filter" href="products.html">椅子<span class="chip-count">1</span></a></li>
+          </ul>
+
+          <button class="btn btn-mint products-filter-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#productsFilter" aria-controls="productsFilter">
+            <i class="bi bi-sliders2" aria-hidden="true"></i>篩選
+          </button>
+
+          <!-- lg 以上：排在膠囊列右側；992px 以下：底部抽屜 -->
+          <div id="productsFilter" class="offcanvas-lg offcanvas-bottom products-filter" tabindex="-1" aria-labelledby="productsFilterTitle">
+            <div class="offcanvas-header">
+              <h2 id="productsFilterTitle" class="offcanvas-title">篩選與排序</h2>
+              <button class="btn-close" type="button" data-bs-dismiss="offcanvas" data-bs-target="#productsFilter" aria-label="關閉篩選"></button>
+            </div>
+            <div class="offcanvas-body">
+              <form id="productsFilterForm" class="products-filter-form" action="products.html">
+                <span class="products-divider d-none d-lg-block" aria-hidden="true"></span>
+
+                <div class="products-stock form-check form-switch">
+                  <input id="inStockOnly" class="form-check-input" type="checkbox" role="switch">
+                  <label class="form-check-label" for="inStockOnly">只顯示有現貨</label>
+                </div>
+
+                <!-- 依寬度篩選：租屋族最常問的是「放不放得下」；lg 以上是下拉選單，抽屜裡直接攤開 -->
+                <div class="dropdown products-dropdown">
+                  <button class="products-pill dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                    寬度<i class="bi bi-chevron-down" aria-hidden="true"></i>
+                  </button>
+                  <div class="dropdown-menu dropdown-menu-end products-dropdown-menu">
+                    <fieldset>
+                      <legend class="products-filter-legend">依寬度篩選</legend>
+                      <p class="text-note mb-2">以家具最寬處計算，擺放時左右各留 5&nbsp;cm 會更從容。</p>
+                      <div class="form-check">
+                        <input id="width-s" class="form-check-input" type="checkbox" name="width" value="s">
+                        <label class="form-check-label" for="width-s"><span>30&nbsp;cm 以下</span><span class="products-filter-count num">1</span></label>
+                      </div>
+                      <div class="form-check">
+                        <input id="width-m" class="form-check-input" type="checkbox" name="width" value="m">
+                        <label class="form-check-label" for="width-m"><span>30–80&nbsp;cm</span><span class="products-filter-count num">6</span></label>
+                      </div>
+                      <div class="form-check">
+                        <input id="width-l" class="form-check-input" type="checkbox" name="width" value="l">
+                        <label class="form-check-label" for="width-l"><span>80&nbsp;cm 以上</span><span class="products-filter-count num">3</span></label>
+                      </div>
+                    </fieldset>
+                  </div>
+                </div>
+
+                <!-- 價格區間：單選，預設「不限」；和寬度一樣，lg 以上是下拉選單，抽屜裡直接攤開 -->
+                <div class="dropdown products-dropdown">
+                  <button class="products-pill dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                    價格<i class="bi bi-chevron-down" aria-hidden="true"></i>
+                  </button>
+                  <div class="dropdown-menu dropdown-menu-end products-dropdown-menu">
+                    <fieldset>
+                      <legend class="products-filter-legend">價格區間</legend>
+                      <div class="form-check">
+                        <input id="price-0" class="form-check-input" type="radio" name="price" value="any" checked>
+                        <label class="form-check-label" for="price-0">不限</label>
+                      </div>
+                      <div class="form-check">
+                        <input id="price-1" class="form-check-input" type="radio" name="price" value="0-3000">
+                        <label class="form-check-label" for="price-1">NT$ 3,000 以下</label>
+                      </div>
+                      <div class="form-check">
+                        <input id="price-2" class="form-check-input" type="radio" name="price" value="3000-10000">
+                        <label class="form-check-label" for="price-2">NT$ 3,000–10,000</label>
+                      </div>
+                      <div class="form-check">
+                        <input id="price-3" class="form-check-input" type="radio" name="price" value="10000-20000">
+                        <label class="form-check-label" for="price-3">NT$ 10,000–20,000</label>
+                      </div>
+                      <div class="form-check">
+                        <input id="price-4" class="form-check-input" type="radio" name="price" value="20000-">
+                        <label class="form-check-label" for="price-4">NT$ 20,000 以上</label>
+                      </div>
+                    </fieldset>
+                  </div>
+                </div>
+
+                <div class="products-sort">
+                  <label class="products-sort-label" for="productsSort">排序</label>
+                  <select id="productsSort" class="form-select" autocomplete="off">
+                    <option>推薦排序</option>
+                    <option>價格由低到高</option>
+                    <option>價格由高到低</option>
+                    <option>最新上架</option>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <!-- 抽屜底部：「清除」以 form 屬性重設上方的篩選表單 -->
+            <div class="products-filter-foot d-lg-none">
+              <button class="btn btn-outline-primary" type="reset" form="productsFilterForm">清除</button>
+              <button class="btn btn-primary flex-fill" type="button" data-bs-dismiss="offcanvas" data-bs-target="#productsFilter">
+                顯示 <span class="num">10</span> 件商品
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <p class="products-count">共 <span class="num">10</span> 件商品</p>
+
+        <h2 class="visually-hidden">商品列表</h2>
+        <!--
+          商品卡（與首頁人氣嚴選共用 .product-card）：所有商品都連到同一頁商品詳情（product.html）
+          - 圖片連結與品名連到同一頁：圖片連結加 tabindex="-1"＋aria-hidden，鍵盤與螢幕閱讀器只會經過品名一次
+          - 左上葉形標籤：現貨／僅剩 N 件（庫存少於 10 件）／已售完；已售完的按鈕停用並寫「已售完」
+          - 尺寸的 W × D × H 之間是不換行空白（&nbsp;）；長品名在詞組之間放 <wbr>
+        -->
+        <ul class="products-grid">
+            <li>
+              <article class="product-card">
+                <div class="product-card-media">
+                  <a href="product.html" tabindex="-1" aria-hidden="true"><img src="images/p-1001.jpg" alt="" loading="lazy"></a>
+                  <p class="product-card-tag leaf-tag is-stock">現貨</p>
+                </div>
+                <div class="product-card-body">
+                  <p class="product-card-category"><span class="chip">餐桌椅</span></p>
+                  <h3 class="product-card-title text-phrase"><a href="product.html">橡木餐桌</a></h3>
+                  <p class="product-card-size">W160&nbsp;× D80&nbsp;× H75&nbsp;cm</p>
+                  <div class="product-card-foot">
+                    <span class="price">NT$ 16,800</span>
+                    <button class="btn btn-sm btn-outline-primary" type="button">加入購物車</button>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="product-card">
+                <div class="product-card-media">
+                  <a href="product.html" tabindex="-1" aria-hidden="true"><img src="images/p-1002.jpg" alt="" loading="lazy"></a>
+                  <p class="product-card-tag leaf-tag is-low">僅剩 5 件</p>
+                </div>
+                <div class="product-card-body">
+                  <p class="product-card-category"><span class="chip">沙發</span></p>
+                  <h3 class="product-card-title text-phrase"><a href="product.html">亞麻雙人沙發</a></h3>
+                  <p class="product-card-size">W180&nbsp;× D90&nbsp;× H85&nbsp;cm</p>
+                  <div class="product-card-foot">
+                    <span class="price">NT$ 32,800</span>
+                    <button class="btn btn-sm btn-outline-primary" type="button">加入購物車</button>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="product-card">
+                <div class="product-card-media">
+                  <a href="product.html" tabindex="-1" aria-hidden="true"><img src="images/p-1003.jpg" alt="" loading="lazy"></a>
+                  <p class="product-card-tag leaf-tag is-soldout">已售完</p>
+                </div>
+                <div class="product-card-body">
+                  <p class="product-card-category"><span class="chip">收納家具</span></p>
+                  <h3 class="product-card-title text-phrase"><a href="product.html">藤編收納櫃</a></h3>
+                  <p class="product-card-size">W80&nbsp;× D40&nbsp;× H110&nbsp;cm</p>
+                  <div class="product-card-foot">
+                    <span class="price">NT$ 12,600</span>
+                    <button class="btn btn-sm btn-outline-primary" type="button" disabled>已售完</button>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="product-card">
+                <div class="product-card-media">
+                  <a href="product.html" tabindex="-1" aria-hidden="true"><img src="images/p-1004.jpg" alt="" loading="lazy"></a>
+                  <p class="product-card-tag leaf-tag is-stock">現貨</p>
+                </div>
+                <div class="product-card-body">
+                  <p class="product-card-category"><span class="chip">臥室家具</span></p>
+                  <h3 class="product-card-title text-phrase"><a href="product.html">極簡床頭櫃</a></h3>
+                  <p class="product-card-size">W45&nbsp;× D40&nbsp;× H50&nbsp;cm</p>
+                  <div class="product-card-foot">
+                    <span class="price">NT$ 7,800</span>
+                    <button class="btn btn-sm btn-outline-primary" type="button">加入購物車</button>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="product-card">
+                <div class="product-card-media">
+                  <a href="product.html" tabindex="-1" aria-hidden="true"><img src="images/p-1005.jpg" alt="" loading="lazy"></a>
+                  <p class="product-card-tag leaf-tag is-low">僅剩 9 件</p>
+                </div>
+                <div class="product-card-body">
+                  <p class="product-card-category"><span class="chip">居家燈具</span></p>
+                  <h3 class="product-card-title text-phrase"><a href="product.html">弧形落地燈</a></h3>
+                  <p class="product-card-size">W40&nbsp;× D120&nbsp;× H180&nbsp;cm</p>
+                  <div class="product-card-foot">
+                    <span class="price">NT$ 6,900</span>
+                    <button class="btn btn-sm btn-outline-primary" type="button">加入購物車</button>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="product-card">
+                <div class="product-card-media">
+                  <a href="product.html" tabindex="-1" aria-hidden="true"><img src="images/p-1006.jpg" alt="" loading="lazy"></a>
+                  <p class="product-card-tag leaf-tag is-low">僅剩 4 件</p>
+                </div>
+                <div class="product-card-body">
+                  <p class="product-card-category"><span class="chip">椅子</span></p>
+                  <h3 class="product-card-title text-phrase"><a href="product.html">羊毛休閒單椅</a></h3>
+                  <p class="product-card-size">W75&nbsp;× D80&nbsp;× H90&nbsp;cm</p>
+                  <div class="product-card-foot">
+                    <span class="price">NT$ 14,200</span>
+                    <button class="btn btn-sm btn-outline-primary" type="button">加入購物車</button>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="product-card">
+                <div class="product-card-media">
+                  <a href="product.html" tabindex="-1" aria-hidden="true"><img src="images/p-1007.jpg" alt="" loading="lazy"></a>
+                  <p class="product-card-tag leaf-tag is-stock">現貨</p>
+                </div>
+                <div class="product-card-body">
+                  <p class="product-card-category"><span class="chip">收納家具</span></p>
+                  <h3 class="product-card-title text-phrase"><a href="product.html">NestBox 自由拼裝<wbr>收納方塊 (三入組)</a></h3>
+                  <p class="product-card-size">單入 <span class="d-inline-block">W35&nbsp;× D35&nbsp;× H35&nbsp;cm</span></p>
+                  <div class="product-card-foot">
+                    <span class="price">NT$ 1,280</span>
+                    <button class="btn btn-sm btn-outline-primary" type="button">加入購物車</button>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="product-card">
+                <div class="product-card-media">
+                  <a href="product.html" tabindex="-1" aria-hidden="true"><img src="images/p-1008.jpg" alt="" loading="lazy"></a>
+                  <p class="product-card-tag leaf-tag is-stock">現貨</p>
+                </div>
+                <div class="product-card-body">
+                  <p class="product-card-category"><span class="chip">收納家具</span></p>
+                  <h3 class="product-card-title text-phrase"><a href="product.html">SlimFit 夾縫<wbr>多功能推車</a></h3>
+                  <p class="product-card-size">W15&nbsp;× D45&nbsp;× H80&nbsp;cm</p>
+                  <div class="product-card-foot">
+                    <span class="price">NT$ 890</span>
+                    <button class="btn btn-sm btn-outline-primary" type="button">加入購物車</button>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="product-card">
+                <div class="product-card-media">
+                  <a href="product.html" tabindex="-1" aria-hidden="true"><img src="images/p-1009.jpg" alt="" loading="lazy"></a>
+                  <p class="product-card-tag leaf-tag is-low">僅剩 7 件</p>
+                </div>
+                <div class="product-card-body">
+                  <p class="product-card-category"><span class="chip">沙發</span></p>
+                  <h3 class="product-card-title text-phrase"><a href="product.html">日暮亞麻<wbr><span class="text-nowrap">｜雙人沙發床</span> (底座隱藏收納)</a></h3>
+                  <p class="product-card-size">沙發模式 <span class="d-inline-block">W150&nbsp;× D85&nbsp;× H80&nbsp;cm</span></p>
+                  <div class="product-card-foot">
+                    <span class="price">NT$ 8,600</span>
+                    <button class="btn btn-sm btn-outline-primary" type="button">加入購物車</button>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="product-card">
+                <div class="product-card-media">
+                  <a href="product.html" tabindex="-1" aria-hidden="true"><img src="images/p-1010.jpg" alt="" loading="lazy"></a>
+                  <p class="product-card-tag leaf-tag is-stock">現貨</p>
+                </div>
+                <div class="product-card-body">
+                  <p class="product-card-category"><span class="chip">收納家具</span></p>
+                  <h3 class="product-card-title text-phrase"><a href="product.html">懸浮感<wbr>洞洞板<wbr>壁面收納組 (免釘牆)</a></h3>
+                  <p class="product-card-size">單片底板 <span class="d-inline-block">W60&nbsp;× D2&nbsp;× H60&nbsp;cm</span></p>
+                  <div class="product-card-foot">
+                    <span class="price">NT$ 1,450</span>
+                    <button class="btn btn-sm btn-outline-primary" type="button">加入購物車</button>
+                  </div>
+                </div>
+              </article>
+            </li>
+          <!-- 最後一格：跨 2 欄的薄荷方塊（xl 剛好補滿第 3 列） -->
+          <li class="products-tip tile tile-mint tile-lg">
+            <span class="icon-circle" aria-hidden="true"><i class="bi bi-arrows"></i></span>
+            <h3>先量尺寸，再挑家具</h3>
+            <p>量好牆面寬度與走道，再用「依寬度篩選」縮小範圍。每件商品都標示寬、深、高，下單前對照一次就好。</p>
+            <a class="btn btn-white" href="index.html#rooms">看看小坪數的空間搭配</a>
+          </li>
+        </ul>
+
+        <!-- 清單尾端：商品只有一頁，用滿格的小軌道表示已經看完 -->
+        <div class="products-end">
+          <div class="track" style="--to: 1" aria-hidden="true"></div>
+          <p class="text-note">已顯示全部 <span class="num">10</span> 件商品</p>
+        </div>
+
+        <!-- 設計稿狀態示意：篩選後沒有商品（規則同 Guideline 的「空狀態」） -->
+        <section class="demo-state" aria-labelledby="products-state-title">
+          <p class="demo-state-tag">設計稿狀態示意</p>
+          <h2 id="products-state-title" class="demo-state-title">篩選後沒有商品時</h2>
+          <p class="demo-state-note text-phrase">假設在「居家燈具」勾選「30&nbsp;cm 以下」：<wbr>篩選列保留、件數顯示 0，<wbr>商品格的位置改顯示以下區塊。</p>
+          <div class="demo-state-stage">
+            <div class="products-demo-bar">
+              <span class="chip chip-filter active" aria-hidden="true">居家燈具<span class="chip-count">1</span></span>
+              <span class="chip chip-filter" aria-hidden="true">寬度：30&nbsp;cm 以下</span>
+              <p>共 <span class="num">0</span> 件商品</p>
+            </div>
+            <div class="empty-state">
+              <span class="empty-state-art" aria-hidden="true"><i class="bi bi-search"></i></span>
+              <p>這個分類暫時沒有符合條件的商品。</p>
+              <a class="btn btn-outline-primary" href="products.html">清除篩選條件</a>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="row gy-4 gx-4">
+          <div class="col-lg-4">
+            <a class="site-brand" href="index.html" aria-label="NestCraft 首頁">
+              <svg class="site-brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+                <circle class="mark-bg" cx="16" cy="16" r="16" />
+                <path class="mark-ink" d="M6.5 15.5C8.2 10.4 11.6 7.4 16 6.6c4.4.8 7.8 3.8 9.5 8.9z" />
+                <path class="mark-vein" d="M16 14.6V9.2M16 13.2l-3.4-2.4M16 13.2l3.4-2.4" />
+                <path class="mark-ink" d="M9.75 17h12.5v7a1.5 1.5 0 0 1-1.5 1.5h-9.5a1.5 1.5 0 0 1-1.5-1.5z" />
+                <path class="mark-bg" d="M14.25 25.5v-3.25a1.75 1.75 0 0 1 3.5 0v3.25z" />
+              </svg>
+              <span class="site-brand-name">NestCraft</span>
+            </a>
+            <p class="site-footer-lead">
+              把有限的坪數，活出無限的講究。<br>
+              專為租屋族與小空間打造的模組家具。
+            </p>
+          </div>
+          <!-- 購物指南、品牌故事尚未設計頁面：不帶 href 的佔位連結 -->
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">購物指南</h2>
+            <ul class="list-unstyled site-footer-links">
+              <li><a>運送與安裝</a></li>
+              <li><a>14 天退換說明</a></li>
+              <li><a>付款方式</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">關於 NestCraft</h2>
+            <ul class="list-unstyled site-footer-links">
+              <li><a>品牌故事</a></li>
+              <li><a href="index.html#rooms">空間靈感</a></li>
+              <li><a href="products.html">全部商品</a></li>
+            </ul>
+          </div>
+          <div class="col-md-4 col-lg-4">
+            <h2 class="site-footer-title">客服中心</h2>
+            <ul class="list-unstyled site-footer-links">
+              <li>週一至週五 10:00–18:00</li>
+              <li><a href="mailto:hello@nestcraft.example">hello@nestcraft.example</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 NestCraft 原創生活家居選物｜本站為課程設計稿範例，商品與訂單皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

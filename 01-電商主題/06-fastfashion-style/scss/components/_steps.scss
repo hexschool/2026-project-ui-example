@@ -1,0 +1,102 @@
+// ============================================================
+// 箭頭步驟 .chevron-steps：三段箭頭色塊（購物車 1、結帳 2、付款結果 3）
+// 已完成＝黑底白字＋勾；目前＝黃底黑字＋aria-current="step"；未到＝#F3F3F3 灰字
+// 箭頭用 clip-path 切出來，相鄰兩段之間留 4px 斜縫；576px 以下只顯示目前步驟的文字，其他步驟縮成只包住圖示或數字
+//
+// <ol class="chevron-steps" aria-label="結帳步驟">
+//   <li class="is-done"><a href="cart.html"><i class="bi bi-check-lg" aria-hidden="true"></i>…</a></li>   ← 結帳頁：已完成的購物車可點回去
+//   <li class="is-done"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="chevron-steps-label">購物車<span class="visually-hidden">（已完成）</span></span></li>
+//   <li class="is-current" aria-current="step"><span class="chevron-steps-num">2</span><span class="chevron-steps-label">填寫資料與付款</span></li>
+//   <li><span class="chevron-steps-num">3</span><span class="chevron-steps-label">完成訂單</span></li>
+// </ol>
+// ============================================================
+
+$chevron-tip: 1rem; // 箭頭尖端寬 16px
+
+.chevron-steps {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+    flex: 1 1 0;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-width: 0;
+    min-height: 3rem;
+    padding: .5rem calc(#{$chevron-tip} + .75rem);
+    background-color: $grey-100;
+    color: $grey-600;
+    font-weight: 700;
+    line-height: 1.3;
+    clip-path: polygon(0 0, calc(100% - #{$chevron-tip}) 0, 100% 50%, calc(100% - #{$chevron-tip}) 100%, 0 100%, #{$chevron-tip} 50%);
+
+    // 相鄰兩段重疊 12px：尖端伸進下一段的凹口，中間留 4px 斜縫
+    & + li { margin-left: calc(#{$chevron-tip} * -.75); }
+    &:first-child {
+      padding-left: 1rem;
+      clip-path: polygon(0 0, calc(100% - #{$chevron-tip}) 0, 100% 50%, calc(100% - #{$chevron-tip}) 100%, 0 100%);
+    }
+  }
+  .is-done {
+    background-color: $black;
+    color: $white;
+  }
+  .is-current {
+    flex-grow: 1.6;
+    background-color: $volt;
+    color: $black;
+    font-weight: 900;
+  }
+  .bi { font-size: 1.125rem; }
+}
+// 已完成的「購物車」在結帳頁可以點回去：連結填滿整段箭頭（焦點框畫在內側，不會被箭頭切掉）
+.chevron-steps a {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  align-self: stretch;
+  margin-block: -.5rem;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover .chevron-steps-label { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: .25em; }
+  &:focus-visible { outline: $focus-ring-width solid $volt; outline-offset: -$focus-ring-width - 2px; }
+}
+.chevron-steps-num {
+  font-family: $font-family-num;
+  font-size: 1.125rem;
+  font-weight: 900;
+}
+.chevron-steps-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+// 手機：已完成、未到的步驟只留圖示或數字（文字給螢幕閱讀器），寬度只包住圖示；
+// 剩下的寬度全部給目前步驟，文字完整顯示（不加刪節號，真的放不下時換成兩行）
+// 付款結果的第 3 步是「已完成」又是目前步驟（.is-done＋aria-current）：手機也顯示文字
+@include media-breakpoint-down(sm) {
+  .chevron-steps > li:not(.is-current):not([aria-current]) {
+    flex: 0 0 auto;
+    padding-inline: calc(#{$chevron-tip} + .625rem);
+
+    &:first-child { padding-left: .875rem; }
+    .chevron-steps-label { @include visually-hidden; }
+  }
+  .chevron-steps > .is-current,
+  .chevron-steps > [aria-current] {
+    flex: 1 1 auto;
+
+    .chevron-steps-label {
+      overflow: visible;
+      white-space: normal;
+      text-overflow: clip;
+    }
+  }
+}

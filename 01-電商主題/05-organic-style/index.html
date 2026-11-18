@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>首頁｜NestCraft 原創生活家居選物</title>
+  <meta name="description" content="NestCraft 原創生活家居選物：專為租屋族與小空間打造的靈活模組家具，情境整套搭配、最快 3 步完成結帳。設計稿 05｜親和無毒風。">
+  <meta name="theme-color" content="#FFFFFF">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Chiron+GoRound+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，10 個 .html 要一起改，改完執行 npm run check。
+    - 每頁只需要調整一處「目前頁面」標示（scripts/check-layout.mjs 依這個規則比對）：
+      頁首導覽：目前頁的 <a class="nav-link"> 改成 class="nav-link active"，並加 aria-current="page"
+      · index.html → 首頁；products.html → 商品一覽；orders.html → 我的訂單
+      · product.html：「商品一覽」只加 active，不加 aria-current
+      · 購物車、結帳、付款結果、登入、註冊、Guideline 不標示目前頁
+    - 導覽連結的 class 只寫 nav-link（目前頁加 active），不要加別的 class，樣式從父層 .site-nav 選。
+    - 頁首是懸浮膠囊：header 本身透明且 pointer-events: none，膠囊與抽屜設回 auto。
+      992px 以下，導覽（同一份 #siteMenu）變成底部抽屜；放大鏡按鈕也開這個抽屜，並把焦點放進搜尋框（js/main.js）。
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <div class="container">
+        <div class="site-header-pill">
+          <a class="site-brand" href="index.html" aria-label="NestCraft 首頁">
+            <svg class="site-brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+              <circle class="mark-bg" cx="16" cy="16" r="16" />
+              <path class="mark-ink" d="M6.5 15.5C8.2 10.4 11.6 7.4 16 6.6c4.4.8 7.8 3.8 9.5 8.9z" />
+              <path class="mark-vein" d="M16 14.6V9.2M16 13.2l-3.4-2.4M16 13.2l3.4-2.4" />
+              <path class="mark-ink" d="M9.75 17h12.5v7a1.5 1.5 0 0 1-1.5 1.5h-9.5a1.5 1.5 0 0 1-1.5-1.5z" />
+              <path class="mark-bg" d="M14.25 25.5v-3.25a1.75 1.75 0 0 1 3.5 0v3.25z" />
+            </svg>
+            <span class="site-brand-name">NestCraft</span>
+          </a>
+
+          <!-- 導覽：lg 以上在膠囊中間；992px 以下是底部抽屜（offcanvas-lg，同一份標記） -->
+          <div id="siteMenu" class="offcanvas-lg offcanvas-bottom site-menu" tabindex="-1" aria-labelledby="siteMenuLabel">
+            <div class="offcanvas-header">
+              <h2 id="siteMenuLabel" class="offcanvas-title">選單</h2>
+              <button class="btn-close" type="button" data-bs-dismiss="offcanvas" data-bs-target="#siteMenu" aria-label="關閉選單"></button>
+            </div>
+            <div class="offcanvas-body">
+              <form class="site-search d-lg-none" role="search" action="products.html">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control" type="search" name="q" placeholder="搜尋家具、收納、尺寸…" aria-label="搜尋商品">
+              </form>
+              <nav aria-label="主要導覽">
+                <ul class="site-nav">
+                  <li><a class="nav-link active" href="index.html" aria-current="page">首頁</a></li>
+                  <li><a class="nav-link" href="products.html">商品一覽</a></li>
+                  <li><a class="nav-link" href="index.html#rooms">空間靈感</a></li>
+                  <li><a class="nav-link" href="orders.html">我的訂單</a></li>
+                  <li class="d-lg-none"><a class="nav-link" href="login.html">會員登入</a></li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+
+          <form class="site-search site-search-desktop d-none d-lg-flex" role="search" action="products.html">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input class="form-control" type="search" name="q" placeholder="搜尋家具、收納、尺寸…" aria-label="搜尋商品">
+          </form>
+
+          <!-- 圖示列：桌機 會員 → 購物車；992px 以下 搜尋 → 購物車 → 選單 -->
+          <div class="site-actions">
+            <button class="site-icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteMenu" aria-controls="siteMenu" aria-label="搜尋商品" data-focus-search>
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <a class="site-icon-btn d-none d-lg-inline-grid" href="login.html" aria-label="會員登入">
+              <i class="bi bi-person" aria-hidden="true"></i>
+            </a>
+            <a class="site-icon-btn" href="cart.html" aria-label="購物車，4 件商品">
+              <i class="bi bi-bag" aria-hidden="true"></i>
+              <span class="site-cart-count">4</span>
+            </a>
+            <button class="site-icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteMenu" aria-controls="siteMenu" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!--
+        首頁共用寫法
+        - 數字與單位之間用不換行空白（&nbsp;），讓「5 坪」「48 小時」「14 天」不被拆行
+        - 長品名在詞組之間放 <wbr>，配合 .text-phrase 只在這些位置換行
+        - 尺寸的 W × D × H 之間也是 &nbsp;，只允許在「單入」「沙發模式」這類限定詞後面換行
+      -->
+
+      <!-- 區塊一：首屏視覺與品牌宣言（bento：薄荷主方塊＋照片方塊＋兩個小資訊方塊） -->
+      <section class="home-hero" aria-labelledby="home-hero-title">
+        <div class="container">
+          <div class="home-hero-bento bento">
+            <div class="home-hero-main tile tile-mint tile-lg has-blob">
+              <svg class="blob blob-tr" viewBox="0 0 200 200" aria-hidden="true"><path d="M104 10c36 2 70 22 82 56s4 74-24 100-70 34-104 22S6 140 10 102 34 34 60 20s30-11 44-10z" /></svg>
+              <h1 id="home-hero-title" class="display-1 home-hero-title">
+                <span class="d-inline-block">把有限的坪數，</span><span class="d-inline-block">活出無限的講究。</span>
+              </h1>
+              <!-- 兩句各自是 inline-block：寬度不夠時整句換行，不會從句子中間斷開 -->
+              <p class="home-hero-lead">
+                <span class="d-inline-block">專為租屋族與小空間打造的靈活模組家具。</span><span class="d-inline-block">不需妥協，輕鬆拼湊你的理想生活。</span>
+              </p>
+              <div class="home-hero-actions">
+                <a class="btn btn-primary btn-lg" href="#rooms">探索空間靈感</a>
+                <a class="btn btn-outline-primary btn-lg" href="#featured">立即打造專屬角落</a>
+              </div>
+            </div>
+
+            <div class="home-hero-photo tile tile-lg tile-media">
+              <img src="images/hero.jpg" alt="明亮的小套房：左邊是淺木床架與鼠尾草灰亞麻寢具，中間是灰綠色雙人沙發與圓形小茶几，右邊是擺著香草盆栽的淺木收納方塊" fetchpriority="high">
+            </div>
+
+            <div class="home-hero-fact home-hero-size tile">
+              <i class="home-hero-fact-icon bi bi-house" aria-hidden="true"></i>
+              <p class="home-hero-num num">5&nbsp;坪</p>
+              <p class="home-hero-fact-text text-phrase">（約&nbsp;16.5&nbsp;m²）<wbr>的明亮小套房</p>
+            </div>
+
+            <div class="home-hero-fact home-hero-ship tile tile-forest on-forest">
+              <i class="home-hero-fact-icon bi bi-truck" aria-hidden="true"></i>
+              <p class="home-hero-num num">48&nbsp;小時</p>
+              <p class="home-hero-fact-text">現貨極速派送</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 區塊二：品牌核心痛點解決（4 個圓角方塊，白底框線與霧薄荷底交替） -->
+      <section class="section" aria-labelledby="home-values-title">
+        <div class="container">
+          <div class="section-heading">
+            <h2 id="home-values-title">專為小日子設計的四大堅持</h2>
+          </div>
+          <ul class="home-values bento list-unstyled mb-0">
+            <li class="home-value tile">
+              <span class="icon-circle" aria-hidden="true"><i class="bi bi-grid-1x2"></i></span>
+              <h3 class="home-value-title">自由模組變化</h3>
+              <p>靈活擴充，搬家也能輕鬆帶著走，適應每個階段的你。</p>
+            </li>
+            <li class="home-value tile tile-mist">
+              <span class="icon-circle" aria-hidden="true"><i class="bi bi-bookshelf"></i></span>
+              <h3 class="home-value-title">小坪數神收納</h3>
+              <p>向上發展、極致利用畸零地，榨出空間最大潛力。</p>
+            </li>
+            <li class="home-value tile">
+              <span class="icon-circle" aria-hidden="true"><i class="bi bi-lamp"></i></span>
+              <h3 class="home-value-title">沉浸式情境選物</h3>
+              <p>不知道怎麼搭？一鍵套用設計師的空間靈感。</p>
+            </li>
+            <li class="home-value tile tile-mist">
+              <span class="icon-circle" aria-hidden="true"><i class="bi bi-lightning-charge"></i></span>
+              <h3 class="home-value-title">無縫閃電結帳</h3>
+              <p>所見即所得，最快 3&nbsp;步完成結帳，美好生活不需等待。</p>
+              <!-- 小插圖：和結帳頁同一條連續軌道（三個節點都已完成），只是裝飾 -->
+              <div class="home-value-flow" aria-hidden="true">
+                <span><i class="bi bi-check-lg"></i></span><span><i class="bi bi-check-lg"></i></span><span><i class="bi bi-check-lg"></i></span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 區塊三：沉浸式空間搭配（膠囊分段切換＋大圖熱點＋下方商品迷你卡＋整套列） -->
+      <section id="rooms" class="section pt-0" aria-labelledby="home-rooms-title">
+        <div class="container">
+          <div class="section-heading">
+            <div>
+              <!-- 手機：分隔符「｜」改為換行，不吊在行尾 -->
+              <h2 id="home-rooms-title">靈感提案<span class="d-none d-sm-inline">｜</span><br class="d-sm-none">看見你未來的家</h2>
+              <p>直接選取喜歡的風格整套打包，或是尋找屬於你的佈置靈感。</p>
+            </div>
+            <a class="btn btn-text" href="products.html">瀏覽更多風格圖鑑<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          </div>
+
+          <!--
+            膠囊分段切換（Bootstrap tab）：每段是 40px 圓形縮圖＋空間名稱
+            - 未選取的分頁 tabindex="-1"：Tab 鍵只停在目前分頁，分頁之間用方向鍵切換
+            - 手機可以橫捲：用方向鍵切換時，js/main.js 會把選到的分段捲進畫面
+          -->
+          <div class="seg home-room-seg" role="tablist" aria-label="空間情境">
+            <button id="room-a-tab" class="seg-item active" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#room-a-pane" aria-controls="room-a-pane" aria-selected="true">
+              <img class="home-room-seg-thumb" src="images/room-a.jpg" alt="">
+              <span>【5 坪微型公寓】</span>
+            </button>
+            <button id="room-b-tab" class="seg-item" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#room-b-pane" aria-controls="room-b-pane" aria-selected="false" tabindex="-1">
+              <img class="home-room-seg-thumb" src="images/room-b.jpg" alt="">
+              <span>【陽光小套房】</span>
+            </button>
+            <button id="room-c-tab" class="seg-item" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#room-c-pane" aria-controls="room-c-pane" aria-selected="false" tabindex="-1">
+              <img class="home-room-seg-thumb" src="images/room-c.jpg" alt="">
+              <span>【小資雙人租屋】</span>
+            </button>
+          </div>
+
+          <div class="tab-content">
+            <!-- ===== 情境 A：5 坪微型公寓 ===== -->
+            <div id="room-a-pane" class="tab-pane fade show active" role="tabpanel" aria-labelledby="room-a-tab" tabindex="0">
+              <div class="home-room-head">
+                <h3 class="home-room-title text-phrase">溫潤木質調的<wbr>無壓舒眠區</h3>
+                <p class="text-note mb-0"><i class="bi bi-hand-index me-1" aria-hidden="true"></i>點選圖上的圓點，查看家具的尺寸與價格。</p>
+              </div>
+              <div class="home-room-stage">
+                <img class="home-room-img" src="images/room-a.jpg" alt="5 坪微型公寓的睡眠角落：攤開成床的鼠尾草灰沙發床鋪著白色寢具，左側是淺木床頭櫃與白色檯燈，窗邊有一棵橄欖樹">
+
+                <!--
+                  熱點：每個熱點的寫法都一樣
+                  - style 的 --x／--y 是圓點在「完整 3:2 照片」寬高的百分比；lg 以上照片裁成 2:1（上下各裁 12.5%），
+                    CSS 會自動換算 top，所以 --y 要落在 12.5%～87.5% 之間
+                  - data-bs-popper-config：小卡與螢幕邊緣至少留 20px，並與圓點保持 8px 間距
+                -->
+                <div class="dropdown home-spot" style="--x: 26%; --y: 72%">
+                  <button class="home-spot-btn" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"modifiers":[{"name":"preventOverflow","options":{"padding":20}},{"name":"offset","options":{"offset":[0,8]}}]}' aria-expanded="false" aria-label="查看 極簡床頭櫃">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                  </button>
+                  <div class="dropdown-menu home-spot-card">
+                    <div class="home-spot-head">
+                      <img class="home-spot-thumb" src="images/p-1004.jpg" alt="">
+                      <div>
+                        <p class="home-spot-name text-phrase">極簡床頭櫃</p>
+                        <p class="price mb-0">NT$ 7,800</p>
+                      </div>
+                    </div>
+                    <p class="home-spot-size">W45&nbsp;×&nbsp;D40&nbsp;×&nbsp;H50&nbsp;cm</p>
+                    <div class="home-spot-actions">
+                      <button class="btn btn-sm btn-primary" type="button">加入購物車</button>
+                      <a class="btn btn-sm btn-text" href="product.html">查看商品</a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 沙發床在照片中是攤開的，尺寸標示床鋪模式 -->
+                <div class="dropdown home-spot" style="--x: 63%; --y: 64%">
+                  <button class="home-spot-btn" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"modifiers":[{"name":"preventOverflow","options":{"padding":20}},{"name":"offset","options":{"offset":[0,8]}}]}' aria-expanded="false" aria-label="查看 日暮亞麻｜雙人沙發床 (底座隱藏收納)">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                  </button>
+                  <div class="dropdown-menu home-spot-card">
+                    <div class="home-spot-head">
+                      <img class="home-spot-thumb" src="images/p-1009.jpg" alt="">
+                      <div>
+                        <p class="home-spot-name text-phrase">日暮亞麻<wbr><span class="text-nowrap">｜雙人沙發床</span> (底座隱藏收納)</p>
+                        <p class="price mb-0">NT$ 8,600</p>
+                      </div>
+                    </div>
+                    <p class="home-spot-size">床鋪模式 W150&nbsp;×&nbsp;D190&nbsp;×&nbsp;H40&nbsp;cm</p>
+                    <div class="home-spot-actions">
+                      <button class="btn btn-sm btn-primary" type="button">加入購物車</button>
+                      <a class="btn btn-sm btn-text" href="product.html">查看商品</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 此情境的商品迷你卡（stretched-link：整張卡都可以點；手機橫向捲動） -->
+              <ul class="home-room-items scroll-row list-unstyled">
+                <li class="home-mini">
+                  <img class="home-mini-thumb" src="images/p-1004.jpg" alt="">
+                  <div class="home-mini-body">
+                    <a class="home-mini-name text-phrase stretched-link" href="product.html">極簡床頭櫃</a>
+                    <p class="home-mini-size">W45&nbsp;×&nbsp;D40&nbsp;×&nbsp;H50&nbsp;cm</p>
+                    <p class="home-mini-price"><span class="price">NT$ 7,800</span></p>
+                  </div>
+                </li>
+                <li class="home-mini">
+                  <img class="home-mini-thumb" src="images/p-1009.jpg" alt="">
+                  <div class="home-mini-body">
+                    <a class="home-mini-name text-phrase stretched-link" href="product.html">日暮亞麻<wbr><span class="text-nowrap">｜雙人沙發床</span> (底座隱藏收納)</a>
+                    <p class="home-mini-size">床鋪模式 W150&nbsp;×&nbsp;D190&nbsp;×&nbsp;H40&nbsp;cm</p>
+                    <p class="home-mini-price"><span class="price">NT$ 8,600</span><span class="leaf-tag is-low">僅剩 7 件</span></p>
+                  </div>
+                </li>
+              </ul>
+              <div class="home-room-set">
+                <p class="home-room-set-sum">
+                  <span>整套 <span class="num">2</span> 件</span>
+                  <span class="price">NT$ 16,400</span>
+                </p>
+                <button class="btn btn-primary" type="button"><i class="bi bi-basket me-2" aria-hidden="true"></i>整套加入購物車</button>
+              </div>
+            </div>
+
+            <!-- ===== 情境 B：陽光小套房 ===== -->
+            <div id="room-b-pane" class="tab-pane fade" role="tabpanel" aria-labelledby="room-b-tab" tabindex="0">
+              <div class="home-room-head">
+                <h3 class="home-room-title text-phrase">兼具在家辦公<wbr>與完美收納的<wbr>雙棲角落</h3>
+                <p class="text-note mb-0"><i class="bi bi-hand-index me-1" aria-hidden="true"></i>點選圖上的圓點，查看家具的尺寸與價格。</p>
+              </div>
+              <div class="home-room-stage">
+                <img class="home-room-img" src="images/room-b.jpg" alt="陽光小套房：左側是整面淺木收納方塊與白色收納籃，窗前是當書桌用的淺色橡木桌，右側是灰綠色沙發床" loading="lazy">
+
+                <div class="dropdown home-spot" style="--x: 21%; --y: 78%">
+                  <button class="home-spot-btn" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"modifiers":[{"name":"preventOverflow","options":{"padding":20}},{"name":"offset","options":{"offset":[0,8]}}]}' aria-expanded="false" aria-label="查看 NestBox 自由拼裝收納方塊 (三入組)">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                  </button>
+                  <div class="dropdown-menu home-spot-card">
+                    <div class="home-spot-head">
+                      <img class="home-spot-thumb" src="images/p-1007.jpg" alt="">
+                      <div>
+                        <p class="home-spot-name text-phrase">NestBox 自由拼裝<wbr>收納方塊 (三入組)</p>
+                        <p class="price mb-0">NT$ 1,280</p>
+                      </div>
+                    </div>
+                    <p class="home-spot-size">單入 W35&nbsp;×&nbsp;D35&nbsp;×&nbsp;H35&nbsp;cm</p>
+                    <div class="home-spot-actions">
+                      <button class="btn btn-sm btn-primary" type="button">加入購物車</button>
+                      <a class="btn btn-sm btn-text" href="product.html">查看商品</a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dropdown home-spot" style="--x: 58%; --y: 54%">
+                  <button class="home-spot-btn" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"modifiers":[{"name":"preventOverflow","options":{"padding":20}},{"name":"offset","options":{"offset":[0,8]}}]}' aria-expanded="false" aria-label="查看 橡木餐桌">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                  </button>
+                  <div class="dropdown-menu home-spot-card">
+                    <div class="home-spot-head">
+                      <img class="home-spot-thumb" src="images/p-1001.jpg" alt="">
+                      <div>
+                        <p class="home-spot-name text-phrase">橡木餐桌</p>
+                        <p class="price mb-0">NT$ 16,800</p>
+                      </div>
+                    </div>
+                    <p class="home-spot-size">W160&nbsp;×&nbsp;D80&nbsp;×&nbsp;H75&nbsp;cm</p>
+                    <div class="home-spot-actions">
+                      <button class="btn btn-sm btn-primary" type="button">加入購物車</button>
+                      <a class="btn btn-sm btn-text" href="product.html">查看商品</a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dropdown home-spot" style="--x: 82%; --y: 66%">
+                  <button class="home-spot-btn" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"modifiers":[{"name":"preventOverflow","options":{"padding":20}},{"name":"offset","options":{"offset":[0,8]}}]}' aria-expanded="false" aria-label="查看 日暮亞麻｜雙人沙發床 (底座隱藏收納)">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                  </button>
+                  <div class="dropdown-menu home-spot-card">
+                    <div class="home-spot-head">
+                      <img class="home-spot-thumb" src="images/p-1009.jpg" alt="">
+                      <div>
+                        <p class="home-spot-name text-phrase">日暮亞麻<wbr><span class="text-nowrap">｜雙人沙發床</span> (底座隱藏收納)</p>
+                        <p class="price mb-0">NT$ 8,600</p>
+                      </div>
+                    </div>
+                    <p class="home-spot-size">沙發模式 W150&nbsp;×&nbsp;D85&nbsp;×&nbsp;H80&nbsp;cm</p>
+                    <div class="home-spot-actions">
+                      <button class="btn btn-sm btn-primary" type="button">加入購物車</button>
+                      <a class="btn btn-sm btn-text" href="product.html">查看商品</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <ul class="home-room-items scroll-row list-unstyled">
+                <li class="home-mini">
+                  <img class="home-mini-thumb" src="images/p-1007.jpg" alt="" loading="lazy">
+                  <div class="home-mini-body">
+                    <a class="home-mini-name text-phrase stretched-link" href="product.html">NestBox 自由拼裝<wbr>收納方塊 (三入組)</a>
+                    <p class="home-mini-size">單入 W35&nbsp;×&nbsp;D35&nbsp;×&nbsp;H35&nbsp;cm</p>
+                    <p class="home-mini-price"><span class="price">NT$ 1,280</span></p>
+                  </div>
+                </li>
+                <li class="home-mini">
+                  <img class="home-mini-thumb" src="images/p-1001.jpg" alt="" loading="lazy">
+                  <div class="home-mini-body">
+                    <a class="home-mini-name text-phrase stretched-link" href="product.html">橡木餐桌</a>
+                    <p class="home-mini-size">W160&nbsp;×&nbsp;D80&nbsp;×&nbsp;H75&nbsp;cm</p>
+                    <p class="home-mini-price"><span class="price">NT$ 16,800</span></p>
+                  </div>
+                </li>
+                <li class="home-mini">
+                  <img class="home-mini-thumb" src="images/p-1009.jpg" alt="" loading="lazy">
+                  <div class="home-mini-body">
+                    <a class="home-mini-name text-phrase stretched-link" href="product.html">日暮亞麻<wbr><span class="text-nowrap">｜雙人沙發床</span> (底座隱藏收納)</a>
+                    <p class="home-mini-size">沙發模式 W150&nbsp;×&nbsp;D85&nbsp;×&nbsp;H80&nbsp;cm</p>
+                    <p class="home-mini-price"><span class="price">NT$ 8,600</span><span class="leaf-tag is-low">僅剩 7 件</span></p>
+                  </div>
+                </li>
+              </ul>
+              <div class="home-room-set">
+                <p class="home-room-set-sum">
+                  <span>整套 <span class="num">3</span> 件</span>
+                  <span class="price">NT$ 26,680</span>
+                </p>
+                <button class="btn btn-primary" type="button"><i class="bi bi-basket me-2" aria-hidden="true"></i>整套加入購物車</button>
+              </div>
+            </div>
+
+            <!-- ===== 情境 C：小資雙人租屋（含售完品項） ===== -->
+            <div id="room-c-pane" class="tab-pane fade" role="tabpanel" aria-labelledby="room-c-tab" tabindex="0">
+              <div class="home-room-head">
+                <h3 class="home-room-title text-phrase">共享好時光，<wbr>魔術放大的<wbr>客餐廳</h3>
+                <p class="text-note mb-0"><i class="bi bi-hand-index me-1" aria-hidden="true"></i>點選圖上的圓點，查看家具的尺寸與價格。</p>
+              </div>
+              <div class="home-room-stage">
+                <img class="home-room-img" src="images/room-c.jpg" alt="小資雙人租屋的客餐廳：左前方是淺色橡木餐桌椅，後方是藤編收納櫃，右側是灰綠色雙人沙發與白色弧形落地燈" loading="lazy">
+
+                <div class="dropdown home-spot" style="--x: 30%; --y: 63%">
+                  <button class="home-spot-btn" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"modifiers":[{"name":"preventOverflow","options":{"padding":20}},{"name":"offset","options":{"offset":[0,8]}}]}' aria-expanded="false" aria-label="查看 橡木餐桌">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                  </button>
+                  <div class="dropdown-menu home-spot-card">
+                    <div class="home-spot-head">
+                      <img class="home-spot-thumb" src="images/p-1001.jpg" alt="">
+                      <div>
+                        <p class="home-spot-name text-phrase">橡木餐桌</p>
+                        <p class="price mb-0">NT$ 16,800</p>
+                      </div>
+                    </div>
+                    <p class="home-spot-size">W160&nbsp;×&nbsp;D80&nbsp;×&nbsp;H75&nbsp;cm</p>
+                    <div class="home-spot-actions">
+                      <button class="btn btn-sm btn-primary" type="button">加入購物車</button>
+                      <a class="btn btn-sm btn-text" href="product.html">查看商品</a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 售完的商品：加入購物車改為停用的「已售完」 -->
+                <div class="dropdown home-spot" style="--x: 21%; --y: 47%">
+                  <button class="home-spot-btn" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"modifiers":[{"name":"preventOverflow","options":{"padding":20}},{"name":"offset","options":{"offset":[0,8]}}]}' aria-expanded="false" aria-label="查看 藤編收納櫃（已售完）">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                  </button>
+                  <div class="dropdown-menu home-spot-card">
+                    <div class="home-spot-head">
+                      <img class="home-spot-thumb" src="images/p-1003.jpg" alt="">
+                      <div>
+                        <p class="home-spot-name text-phrase">藤編收納櫃</p>
+                        <p class="price mb-0">NT$ 12,600</p>
+                      </div>
+                    </div>
+                    <p class="home-spot-size">W80&nbsp;×&nbsp;D40&nbsp;×&nbsp;H110&nbsp;cm</p>
+                    <div class="home-spot-actions">
+                      <button class="btn btn-sm btn-primary" type="button" disabled>已售完</button>
+                      <a class="btn btn-sm btn-text" href="product.html">查看商品</a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dropdown home-spot" style="--x: 66%; --y: 62%">
+                  <button class="home-spot-btn" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"modifiers":[{"name":"preventOverflow","options":{"padding":20}},{"name":"offset","options":{"offset":[0,8]}}]}' aria-expanded="false" aria-label="查看 亞麻雙人沙發">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                  </button>
+                  <div class="dropdown-menu home-spot-card">
+                    <div class="home-spot-head">
+                      <img class="home-spot-thumb" src="images/p-1002.jpg" alt="">
+                      <div>
+                        <p class="home-spot-name text-phrase">亞麻雙人沙發</p>
+                        <p class="price mb-0">NT$ 32,800</p>
+                      </div>
+                    </div>
+                    <p class="home-spot-size">W180&nbsp;×&nbsp;D90&nbsp;×&nbsp;H85&nbsp;cm</p>
+                    <div class="home-spot-actions">
+                      <button class="btn btn-sm btn-primary" type="button">加入購物車</button>
+                      <a class="btn btn-sm btn-text" href="product.html">查看商品</a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dropdown home-spot" style="--x: 76%; --y: 27%">
+                  <button class="home-spot-btn" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"modifiers":[{"name":"preventOverflow","options":{"padding":20}},{"name":"offset","options":{"offset":[0,8]}}]}' aria-expanded="false" aria-label="查看 弧形落地燈">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                  </button>
+                  <div class="dropdown-menu home-spot-card">
+                    <div class="home-spot-head">
+                      <img class="home-spot-thumb" src="images/p-1005.jpg" alt="">
+                      <div>
+                        <p class="home-spot-name text-phrase">弧形落地燈</p>
+                        <p class="price mb-0">NT$ 6,900</p>
+                      </div>
+                    </div>
+                    <p class="home-spot-size">W40&nbsp;×&nbsp;D120&nbsp;×&nbsp;H180&nbsp;cm</p>
+                    <div class="home-spot-actions">
+                      <button class="btn btn-sm btn-primary" type="button">加入購物車</button>
+                      <a class="btn btn-sm btn-text" href="product.html">查看商品</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <ul class="home-room-items scroll-row list-unstyled">
+                <li class="home-mini">
+                  <img class="home-mini-thumb" src="images/p-1001.jpg" alt="" loading="lazy">
+                  <div class="home-mini-body">
+                    <a class="home-mini-name text-phrase stretched-link" href="product.html">橡木餐桌</a>
+                    <p class="home-mini-size">W160&nbsp;×&nbsp;D80&nbsp;×&nbsp;H75&nbsp;cm</p>
+                    <p class="home-mini-price"><span class="price">NT$ 16,800</span></p>
+                  </div>
+                </li>
+                <li class="home-mini is-soldout">
+                  <img class="home-mini-thumb" src="images/p-1003.jpg" alt="" loading="lazy">
+                  <div class="home-mini-body">
+                    <a class="home-mini-name text-phrase stretched-link" href="product.html">藤編收納櫃</a>
+                    <p class="home-mini-size">W80&nbsp;×&nbsp;D40&nbsp;×&nbsp;H110&nbsp;cm</p>
+                    <p class="home-mini-price"><span class="price">NT$ 12,600</span><span class="leaf-tag is-soldout">已售完</span></p>
+                  </div>
+                </li>
+                <li class="home-mini">
+                  <img class="home-mini-thumb" src="images/p-1002.jpg" alt="" loading="lazy">
+                  <div class="home-mini-body">
+                    <a class="home-mini-name text-phrase stretched-link" href="product.html">亞麻雙人沙發</a>
+                    <p class="home-mini-size">W180&nbsp;×&nbsp;D90&nbsp;×&nbsp;H85&nbsp;cm</p>
+                    <p class="home-mini-price"><span class="price">NT$ 32,800</span><span class="leaf-tag is-low">僅剩 5 件</span></p>
+                  </div>
+                </li>
+                <li class="home-mini">
+                  <img class="home-mini-thumb" src="images/p-1005.jpg" alt="" loading="lazy">
+                  <div class="home-mini-body">
+                    <a class="home-mini-name text-phrase stretched-link" href="product.html">弧形落地燈</a>
+                    <p class="home-mini-size">W40&nbsp;×&nbsp;D120&nbsp;×&nbsp;H180&nbsp;cm</p>
+                    <p class="home-mini-price"><span class="price">NT$ 6,900</span><span class="leaf-tag is-low">僅剩 9 件</span></p>
+                  </div>
+                </li>
+              </ul>
+              <!-- 整套的件數與金額只計入有庫存的品項（4 件中 1 件售完） -->
+              <div class="home-room-set">
+                <p class="home-room-set-sum">
+                  <span>整套 <span class="num">3</span> 件</span>
+                  <span class="price">NT$ 56,500</span>
+                  <span class="home-room-set-note">售完的品項不會加入購物車。</span>
+                </p>
+                <button class="btn btn-primary" type="button"><i class="bi bi-basket me-2" aria-hidden="true"></i>整套加入購物車</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 區塊四：熱銷靈活單品推薦（霧薄荷大面板；手機橫向滑動、桌機 4 欄圓角卡） -->
+      <section id="featured" class="section section-mist home-featured" aria-labelledby="home-featured-title">
+        <div class="container">
+          <div class="section-heading">
+            <div>
+              <h2 id="home-featured-title">人氣嚴選<span class="d-none d-sm-inline">｜</span><br class="d-sm-none">空間放大的秘密武器</h2>
+              <p>最受租屋族歡迎的多功能家具，無痛升級生活品質。</p>
+            </div>
+            <a class="btn btn-text" href="products.html">查看全部商品<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          </div>
+          <!--
+            商品卡（與商品一覽共用 .product-card）
+            - 圖片連結與品名連到同一頁：圖片連結加 tabindex="-1"＋aria-hidden，鍵盤與螢幕閱讀器只會經過品名一次
+            - 首頁的按鈕是「閃電結帳」，直接前往結帳頁
+          -->
+          <ul class="home-featured-list scroll-row list-unstyled mb-0">
+            <li>
+              <article class="product-card">
+                <div class="product-card-media">
+                  <a href="product.html" tabindex="-1" aria-hidden="true"><img src="images/p-1007.jpg" alt="" loading="lazy"></a>
+                  <p class="product-card-tag leaf-tag is-stock">現貨</p>
+                </div>
+                <div class="product-card-body">
+                  <p class="product-card-category"><span class="chip">收納家具</span></p>
+                  <h3 class="product-card-title text-phrase"><a href="product.html">NestBox 自由拼裝<wbr>收納方塊 (三入組)</a></h3>
+                  <p class="product-card-size">單入 <span class="d-inline-block">W35&nbsp;× D35&nbsp;× H35&nbsp;cm</span></p>
+                  <div class="product-card-foot">
+                    <span class="price">NT$ 1,280</span>
+                    <a class="btn btn-sm btn-primary" href="checkout.html"><i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>閃電結帳</a>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="product-card">
+                <div class="product-card-media">
+                  <a href="product.html" tabindex="-1" aria-hidden="true"><img src="images/p-1008.jpg" alt="" loading="lazy"></a>
+                  <p class="product-card-tag leaf-tag is-stock">現貨</p>
+                </div>
+                <div class="product-card-body">
+                  <p class="product-card-category"><span class="chip">收納家具</span></p>
+                  <h3 class="product-card-title text-phrase"><a href="product.html">SlimFit 夾縫<wbr>多功能推車</a></h3>
+                  <p class="product-card-size">W15&nbsp;× D45&nbsp;× H80&nbsp;cm</p>
+                  <div class="product-card-foot">
+                    <span class="price">NT$ 890</span>
+                    <a class="btn btn-sm btn-primary" href="checkout.html"><i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>閃電結帳</a>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="product-card">
+                <div class="product-card-media">
+                  <a href="product.html" tabindex="-1" aria-hidden="true"><img src="images/p-1009.jpg" alt="" loading="lazy"></a>
+                  <p class="product-card-tag leaf-tag is-low">僅剩 7 件</p>
+                </div>
+                <div class="product-card-body">
+                  <p class="product-card-category"><span class="chip">沙發</span></p>
+                  <h3 class="product-card-title text-phrase"><a href="product.html">日暮亞麻<wbr><span class="text-nowrap">｜雙人沙發床</span> (底座隱藏收納)</a></h3>
+                  <p class="product-card-size">沙發模式 <span class="d-inline-block">W150&nbsp;× D85&nbsp;× H80&nbsp;cm</span></p>
+                  <div class="product-card-foot">
+                    <span class="price">NT$ 8,600</span>
+                    <a class="btn btn-sm btn-primary" href="checkout.html"><i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>閃電結帳</a>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="product-card">
+                <div class="product-card-media">
+                  <a href="product.html" tabindex="-1" aria-hidden="true"><img src="images/p-1010.jpg" alt="" loading="lazy"></a>
+                  <p class="product-card-tag leaf-tag is-stock">現貨</p>
+                </div>
+                <div class="product-card-body">
+                  <p class="product-card-category"><span class="chip">收納家具</span></p>
+                  <h3 class="product-card-title text-phrase"><a href="product.html">懸浮感<wbr>洞洞板<wbr>壁面收納組 (免釘牆)</a></h3>
+                  <p class="product-card-size">單片底板 <span class="d-inline-block">W60&nbsp;× D2&nbsp;× H60&nbsp;cm</span></p>
+                  <div class="product-card-foot">
+                    <span class="price">NT$ 1,450</span>
+                    <a class="btn btn-sm btn-primary" href="checkout.html"><i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>閃電結帳</a>
+                  </div>
+                </div>
+              </article>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 區塊五：租屋族真實好評（使用者原話逐字）與無憂承諾 -->
+      <section class="section" aria-labelledby="home-proof-title">
+        <div class="container">
+          <div class="section-heading">
+            <h2 id="home-proof-title">NestCraft 室友見證 ＆&nbsp;無憂承諾</h2>
+          </div>
+          <div class="home-proof bento">
+            <!-- 見證：照片方塊＋對話泡泡＋首字頭像 -->
+            <div class="home-ugc tile tile-mist tile-lg">
+              <figure class="home-ugc-item">
+                <div class="home-ugc-photo">
+                  <img src="images/ugc-1.jpg" alt="買家實拍：窗邊的灰綠色布沙發旁，疊放著淺木收納方塊，上面擺著馬克杯與綠色盆栽">
+                </div>
+                <blockquote class="home-ugc-bubble">
+                  <!-- 「帶」「走」之間放不斷行字元（&#8288;，畫面上看不到），避免最後一行只剩「走🥺」」 -->
+                  <p>「終於找到小房間也能放得下的沙發！模組收納櫃超好裝，下次搬家也能帶&#8288;走🥺」</p>
+                </blockquote>
+                <figcaption class="home-ugc-by">
+                  <span class="home-ugc-avatar" aria-hidden="true">T</span>
+                  <span>
+                    <span class="home-ugc-handle num"><i class="bi bi-instagram me-1" aria-hidden="true"></i>@Taipei_Renter</span>
+                    <span class="home-ugc-product">照片中的商品：<a class="text-phrase" href="product.html">NestBox 自由拼裝<wbr>收納方塊 (三入組)</a></span>
+                  </span>
+                </figcaption>
+              </figure>
+              <figure class="home-ugc-item">
+                <div class="home-ugc-photo">
+                  <img src="images/ugc-2.jpg" alt="買家實拍：玄關牆上的淺木洞洞板掛著托特包與鑰匙，牆邊窄縫放著白色推車">
+                </div>
+                <blockquote class="home-ugc-bubble">
+                  <p>「結帳流程真的超順，跟著情境圖買完全不踩雷，小資族救星！」</p>
+                </blockquote>
+                <figcaption class="home-ugc-by">
+                  <span class="home-ugc-avatar" aria-hidden="true">D</span>
+                  <span>
+                    <span class="home-ugc-handle num"><i class="bi bi-instagram me-1" aria-hidden="true"></i>@Design_Daily</span>
+                    <span class="home-ugc-product">照片中的商品：<a class="text-phrase" href="product.html">懸浮感<wbr>洞洞板<wbr>壁面收納組 (免釘牆)</a></span>
+                  </span>
+                </figcaption>
+              </figure>
+            </div>
+
+            <!-- 承諾：三個上下排的霧薄荷方塊 -->
+            <ul class="home-promises list-unstyled mb-0">
+              <li class="home-promise tile tile-mist">
+                <span class="icon-circle icon-circle-sm" aria-hidden="true"><i class="bi bi-puzzle"></i></span>
+                <div>
+                  <h3 class="home-promise-title">免工具組裝</h3>
+                  <p>90%&nbsp;商品採卡扣與簡易設計，單人也能輕鬆完成。</p>
+                </div>
+              </li>
+              <li class="home-promise tile tile-mist">
+                <span class="icon-circle icon-circle-sm" aria-hidden="true"><i class="bi bi-arrow-repeat"></i></span>
+                <div>
+                  <h3 class="home-promise-title">租屋友善退換</h3>
+                  <p>14&nbsp;天猶豫期，專人到府收件，試擺不將就。</p>
+                </div>
+              </li>
+              <li class="home-promise tile tile-mist">
+                <span class="icon-circle icon-circle-sm" aria-hidden="true"><i class="bi bi-truck"></i></span>
+                <div>
+                  <h3 class="home-promise-title">現貨極速派送</h3>
+                  <p>48&nbsp;小時內出貨，週末馬上動手改造。</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 底部 CTA：版心內的薄荷大面板（40px 圓角），左文字、右照片嵌在面板內 -->
+      <section class="home-cta-section" aria-labelledby="home-cta-title">
+        <div class="container">
+          <div class="home-cta has-blob">
+            <svg class="blob blob-bl" viewBox="0 0 200 200" aria-hidden="true"><path d="M96 8c40-2 82 24 94 62s-10 82-44 104-82 26-114 4S-4 112 12 74 56 10 96 8z" /></svg>
+            <div class="home-cta-body">
+              <h2 id="home-cta-title" class="home-cta-title">
+                <span class="d-inline-block">準備好迎接</span><span class="d-inline-block">新的生活空間了嗎？</span>
+              </h2>
+              <p>全館滿 <span class="num">NT$&nbsp;3,000</span> 免運，14&nbsp;天內可退換。</p>
+              <a class="btn btn-primary btn-lg" href="#rooms">立即開始我的改造</a>
+            </div>
+            <div class="home-cta-media">
+              <img src="images/cta.jpg" alt="">
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="row gy-4 gx-4">
+          <div class="col-lg-4">
+            <a class="site-brand" href="index.html" aria-label="NestCraft 首頁">
+              <svg class="site-brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+                <circle class="mark-bg" cx="16" cy="16" r="16" />
+                <path class="mark-ink" d="M6.5 15.5C8.2 10.4 11.6 7.4 16 6.6c4.4.8 7.8 3.8 9.5 8.9z" />
+                <path class="mark-vein" d="M16 14.6V9.2M16 13.2l-3.4-2.4M16 13.2l3.4-2.4" />
+                <path class="mark-ink" d="M9.75 17h12.5v7a1.5 1.5 0 0 1-1.5 1.5h-9.5a1.5 1.5 0 0 1-1.5-1.5z" />
+                <path class="mark-bg" d="M14.25 25.5v-3.25a1.75 1.75 0 0 1 3.5 0v3.25z" />
+              </svg>
+              <span class="site-brand-name">NestCraft</span>
+            </a>
+            <p class="site-footer-lead">
+              把有限的坪數，活出無限的講究。<br>
+              專為租屋族與小空間打造的模組家具。
+            </p>
+          </div>
+          <!-- 購物指南、品牌故事尚未設計頁面：不帶 href 的佔位連結 -->
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">購物指南</h2>
+            <ul class="list-unstyled site-footer-links">
+              <li><a>運送與安裝</a></li>
+              <li><a>14 天退換說明</a></li>
+              <li><a>付款方式</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">關於 NestCraft</h2>
+            <ul class="list-unstyled site-footer-links">
+              <li><a>品牌故事</a></li>
+              <li><a href="index.html#rooms">空間靈感</a></li>
+              <li><a href="products.html">全部商品</a></li>
+            </ul>
+          </div>
+          <div class="col-md-4 col-lg-4">
+            <h2 class="site-footer-title">客服中心</h2>
+            <ul class="list-unstyled site-footer-links">
+              <li>週一至週五 10:00–18:00</li>
+              <li><a href="mailto:hello@nestcraft.example">hello@nestcraft.example</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 NestCraft 原創生活家居選物｜本站為課程設計稿範例，商品與訂單皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

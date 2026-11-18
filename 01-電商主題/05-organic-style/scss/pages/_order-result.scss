@@ -1,0 +1,281 @@
+// ============================================================
+// 付款結果（order-result.html）
+// 構圖（版心 760）：頁首只放連續軌道（從第二節點長到終點）
+//       → 圓角結果卡（32px、白底框線）：72px 薄荷圓＋勾｜H1＋說明 → 霧薄荷摘要面板（白色小方塊拼出 4 項資訊、
+//         三項商品、付款金額）→ 兩顆等寬膠囊按鈕
+//       → 橫向「接下來會發生什麼」時間軸（三個 40px 節點以 8px 軌道相連，節點下各有一段說明）→ 狀態示意
+// 768px 以下：結果卡的圓與標題上下排，時間軸改成直向
+// 標題靠左（和 04 的置中書信拉開差距）；01、02 的「接下來」是直向清單，03 是右側方框，05 是橫向軌道
+// class 一律加 result- 前綴
+// ============================================================
+
+.result-container {
+  @include media-breakpoint-up(lg) { max-width: $container-result; }
+}
+
+// ---------- 結果卡：32px 圓角、白底框線（不加陰影，陰影只給浮起來的東西） ----------
+.result-card {
+  padding: 1.5rem;
+  border: 1px solid $card-line;
+  border-radius: $radius-panel;
+  background-color: $white;
+
+  @include media-breakpoint-up(md) { padding: 2.5rem; }
+}
+// 圓形標記＋標題：sm 以上左右排，標題靠左
+.result-head {
+  display: grid;
+  gap: 1rem 1.5rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+  h1,
+  .result-title {
+    margin-bottom: .5rem;
+  }
+  p {
+    margin-bottom: 0;
+    color: $body-secondary-color;
+  }
+}
+// 狀態示意裡的標題（h3）沿用 H1 的字級
+.result-title {
+  font-size: 1.5rem;
+
+  @include media-breakpoint-up(lg) { font-size: 1.75rem; }
+}
+
+// 72px 薄荷圓＋森林薄荷勾（對薄荷 5.09）；載入時輕微縮放一次（減少動態時關閉，見 _base.scss）
+@keyframes result-pop {
+  from { transform: scale(.85); }
+  to   { transform: scale(1); }
+}
+.result-mark {
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  background-color: $mint;
+  color: $forest;
+  font-size: 2.25rem;
+  line-height: 1;
+  animation: result-pop .3s cubic-bezier(.2, .7, .2, 1) both;
+
+  // 付款未完成：錯誤淡底＋錯誤色驚嘆號（對底 5.6），不播縮放
+  &.is-fail {
+    background-color: mix($danger, $white, 10%);
+    color: $danger;
+    animation: none;
+  }
+}
+
+// ---------- 霧薄荷摘要面板：24px（結果卡 32px 內縮一階）；裡面是 16px 的白色小方塊 ----------
+.result-panel {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border-radius: $radius-card;
+  background-color: $mist;
+
+  @include media-breakpoint-up(md) {
+    margin-top: 2rem;
+    padding: 1.75rem;
+  }
+  .sum-items { margin-top: 1.25rem; }
+}
+// 4 項資訊：手機一欄、sm 以上兩欄白色小方塊
+.result-facts {
+  display: grid;
+  gap: .75rem;
+  margin: 0;
+
+  @include media-breakpoint-up(sm) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  > div {
+    display: grid;
+    gap: .125rem;
+    padding: .875rem 1.125rem;
+    border-radius: $radius-sm;
+    background-color: $white;
+
+    // 手機：項目與值左右排，4 個小方塊不會疊得太高
+    @include media-breakpoint-down(sm) {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: .75rem 1rem;
+
+      dt { flex: 0 0 auto; }
+      dd { text-align: right; }
+    }
+  }
+  dt {
+    color: $sage-text;
+    font-size: .8125rem;
+    font-weight: 400;
+  }
+  dd {
+    margin: 0;
+    font-family: $font-family-round;
+    font-weight: 700;
+  }
+}
+// 付款金額：品項清單下方只有總計一列，不再疊一條分隔線
+.result-total {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+// ---------- 兩顆等寬膠囊按鈕：sm 以上並排，以下上下排 ----------
+.result-actions {
+  display: grid;
+  gap: .75rem;
+  margin-top: 1.5rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  @include media-breakpoint-up(md) { margin-top: 2rem; }
+}
+
+// ---------- 接下來會發生什麼：三個 40px 節點以 8px 軌道相連 ----------
+// 軌道是每一步的 ::before，從自己的節點中心連到下一步的節點中心（最後一步沒有）
+// 第一步（備貨與出貨）是目前進度：白底＋3px 森林薄荷外圈；後兩步白底＋深鼠尾草細框
+$result-node: 2.5rem; // 40px
+$result-gap: 1.5rem;
+
+.result-next {
+  margin-top: map-get($spacers, 5);
+
+  > h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+
+    @include media-breakpoint-up(lg) { font-size: 1.5rem; }
+  }
+}
+.result-steps {
+  display: grid;
+  gap: $result-gap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.result-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: $result-node minmax(0, 1fr);
+  gap: .25rem 1rem;
+  align-content: start;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  // 連到下一步的軌道（手機直向、md 以上橫向）
+  &:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    top: $result-node * .5;
+    bottom: -($result-gap + $result-node * .5);
+    left: ($result-node - .5rem) * .5;
+    width: .5rem;
+    border-radius: $radius-pill;
+    background-color: $track;
+
+    @include media-breakpoint-up(md) {
+      top: ($result-node - .5rem) * .5;
+      bottom: auto;
+      left: $result-node * .5;
+      right: -($result-gap + $result-node * .5);
+      width: auto;
+      height: .5rem;
+    }
+  }
+  h3 {
+    margin: .5rem 0 .25rem;
+    font-size: 1rem;
+    line-height: 1.5;
+
+    @include media-breakpoint-up(md) { margin-top: 1rem; }
+  }
+  p {
+    grid-column: 2;
+    margin: 0;
+    color: $body-secondary-color;
+    font-size: $small-font-size;
+    line-height: $line-height-sm;
+
+    @include media-breakpoint-up(md) { grid-column: 1; }
+  }
+}
+.result-step-node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: $result-node;
+  height: $result-node;
+  border: 1px solid $sage-dark;
+  border-radius: 50%;
+  background-color: $white;
+  color: $sage-text;
+  font-size: 1.125rem;
+
+  @include media-breakpoint-up(md) { grid-row: auto; }
+
+  .result-step.is-current & {
+    border: 3px solid $forest;
+    color: $forest;
+  }
+}
+
+// ---------- 狀態示意：付款未完成 ----------
+.result-fail {
+  .flow-track { margin-bottom: 1.5rem; }
+  .alert { margin: 1.5rem 0 0; }
+
+  // 手機上外框、舞台、卡片三層內距疊起來太窄，卡片與提示框的內距收小
+  @include media-breakpoint-down(md) {
+    .result-card { padding: 1.25rem 1rem; }
+    .alert { padding: .875rem 1rem; }
+  }
+}
+.result-tips-title {
+  margin: 1.5rem 0 .75rem;
+  font-size: 1rem;
+}
+// 建議清單：薄荷葉形小點
+.result-tips {
+  display: grid;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    padding-left: 1.25rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: .6em;
+      left: 0;
+      width: .625rem;
+      height: .625rem;
+      border-radius: 14px 3px; // 和葉形標籤同一個形狀（小尺寸時瀏覽器會等比縮小）
+      background-color: $mint-bright;
+    }
+  }
+}
