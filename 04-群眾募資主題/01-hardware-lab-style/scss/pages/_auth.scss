@@ -1,0 +1,204 @@
+// ============================================================
+// 登入 login.html、註冊 register.html（class 前綴 auth-，兩頁共用）
+// 構圖（方向說明 2.6）：5：7
+// - 左 5：表單直接放在深色底上（不包卡片），上緣一道 2px 充能線：H1 → 說明 → 表單 → 切換連結
+// - 右 7：proposer-workshop.jpg 做成「監視畫面」：出血到視窗右緣、和表單區等高、灰階＋青空疊色、
+//         極淡靜態掃描線、四角取景框；圖上不放任何文字（alt=""，裝飾）
+// - 左欄的左緣對齊頁面版心（和下方狀態示意、頁尾的 .container 同一條線），右欄從分欄線一路延伸到視窗右緣
+// - 設計稿狀態示意在分欄區下方，寬度同表單欄、左緣對齊
+// - < 992：圖隱藏，單欄 H1 → 說明 → 表單 → 切換連結 → 狀態示意
+// ============================================================
+
+// 分欄區與下方狀態示意共用表單欄寬（--form-col），兩者左緣、寬度一致
+.auth,
+.auth-after {
+  @include media-breakpoint-up(lg) {
+    --inner: #{map-get($container-max-widths, lg) - 64px};
+    --form-col: max(25rem, calc(var(--inner) * 5 / 12));
+  }
+  @include media-breakpoint-up(xl) { --inner: #{map-get($container-max-widths, xl) - 64px}; }
+  @include media-breakpoint-up(xxl) { --inner: #{map-get($container-max-widths, xxl) - 64px}; }
+}
+.auth {
+  position: relative;
+
+  // ≥ 992：四條軌道 [左留白][表單欄][監視畫面][右留白]；表單欄＋監視畫面＝版心內容寬（--inner）
+  // 表單欄取版心的 5/12，但至少 25rem（992 寬時版心只有 816px，5/12 只剩 340px）
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns:
+      [full-start] minmax(2rem, 1fr)
+      [content-start] var(--form-col)
+      [split] calc(var(--inner) - var(--form-col))
+      [content-end] minmax(2rem, 1fr)
+      [full-end];
+    border-bottom: 1px solid $line;
+  }
+}
+
+// 左欄：手機與平板就是一般的容器寬，≥ 992 放進表單欄
+.auth-main {
+  width: 100%;
+  margin-inline: auto;
+  padding: map-get($spacers, 6) 16px map-get($spacers, 7);
+
+  @include media-breakpoint-up(sm) { max-width: map-get($container-max-widths, sm); }
+  @include media-breakpoint-up(md) {
+    max-width: map-get($container-max-widths, md);
+    padding-inline: 24px;
+    padding-top: map-get($spacers, 7);
+  }
+  @include media-breakpoint-up(lg) {
+    grid-column: content-start / split;
+    grid-row: 1;
+    max-width: none;
+    margin: 0;
+    padding: map-get($spacers, 8) map-get($spacers, 7) map-get($spacers, 8) 0;
+  }
+}
+
+// 表單區：不包卡片，上緣 2px 充能線（從左緣長到表單寬）
+.auth-panel {
+  position: relative;
+  max-width: 30rem;
+  padding-top: map-get($spacers, 6);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    border-radius: 1px;
+    background: $grad-charge;
+  }
+}
+.auth-title {
+  margin-bottom: map-get($spacers, 2);
+  font-size: $h1-font-size;
+  font-weight: $font-weight-medium;
+  letter-spacing: .06em;
+
+  @include media-breakpoint-down(md) { font-size: 1.875rem; }
+}
+.auth-lead {
+  margin-bottom: map-get($spacers, 6);
+  color: $fg-muted;
+}
+.auth-field { margin-bottom: 1.25rem; }
+// 密碼標籤與「忘記密碼？」同一列
+.auth-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+
+  .form-label { margin-bottom: .5rem; }
+}
+// 佔位連結（沒有忘記密碼頁、服務條款頁）：看起來仍是連結
+.auth-link {
+  color: $blue-300;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .25em;
+}
+.auth-forgot { font-size: $font-size-sm; }
+.auth-check { margin-bottom: map-get($spacers, 5); }
+// 底部切換連結：置中小字＋上方髮絲線
+.auth-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0 .375rem;
+  margin: map-get($spacers, 5) 0 0;
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $line;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+
+// 設計稿狀態示意：分欄區下方，同表單欄寬、左緣對齊
+.auth-after { padding-bottom: $section-y; }
+.auth-demo {
+  max-width: 30rem;
+  margin-top: 0;
+
+  // ≥ 992 分欄區底下已有一道實線，狀態示意不再畫虛線
+  @include media-breakpoint-up(lg) {
+    max-width: min(30rem, calc(var(--form-col) - #{map-get($spacers, 7)}));
+    padding-top: map-get($spacers, 7);
+    border-top: 0;
+  }
+}
+
+// ---------- 右欄：監視畫面 ----------
+// 和表單區等高（右欄由 grid 撐高），圖片 cover 填滿
+.auth-media {
+  position: relative;
+  display: none;
+
+  @include media-breakpoint-up(lg) {
+    display: block;
+    grid-column: split / full-end;
+    grid-row: 1;
+    min-width: 0;
+    border-left: 1px solid $line;
+  }
+}
+.auth-monitor {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: $ti-900;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 42% 50%;
+    filter: grayscale(1) brightness(.62) contrast(1.1);
+  }
+
+  // 青空疊色：只換色相，不改明暗；透明度壓低，保留灰階監視畫面的冷靜感
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background-color: $sky-400;
+    mix-blend-mode: color;
+    opacity: .38;
+  }
+}
+// 極淡靜態掃描線（4px 一條，不動）＋左緣與四周壓暗，讓畫面融進頁面底色
+.auth-monitor-scan {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, rgba($ti-950, .85), transparent 18%),
+    radial-gradient(ellipse at 60% 45%, transparent 55%, rgba($ti-950, .55) 100%),
+    repeating-linear-gradient(180deg, rgba($ti-950, .22) 0 1px, transparent 1px 4px);
+  pointer-events: none;
+}
+// 四角取景框（同 HUD 角括號的畫法，內縮在畫面裡）
+.auth-monitor-frame {
+  position: absolute;
+  inset: 1.5rem;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    linear-gradient($hud-color, $hud-color) top left / 1.25rem #{$hud-weight},
+    linear-gradient($hud-color, $hud-color) top left / #{$hud-weight} 1.25rem,
+    linear-gradient($hud-color, $hud-color) top right / 1.25rem #{$hud-weight},
+    linear-gradient($hud-color, $hud-color) top right / #{$hud-weight} 1.25rem,
+    linear-gradient($hud-color, $hud-color) bottom left / 1.25rem #{$hud-weight},
+    linear-gradient($hud-color, $hud-color) bottom left / #{$hud-weight} 1.25rem,
+    linear-gradient($hud-color, $hud-color) bottom right / 1.25rem #{$hud-weight},
+    linear-gradient($hud-color, $hud-color) bottom right / #{$hud-weight} 1.25rem;
+  background-repeat: no-repeat;
+}

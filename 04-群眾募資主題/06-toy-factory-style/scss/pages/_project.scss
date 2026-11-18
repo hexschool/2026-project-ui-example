@@ -1,0 +1,811 @@
+// ============================================================
+// 專案細節 project.html（class 前綴 pd-）
+// 構圖：置中繪本長頁。沒有「內容左、sticky 儀表板右」的雙欄
+// 麵包屑 → 置中 10 欄主視覺（32px 圓角）＋下緣疊 5 顆圓角縮圖 → 置中標題 → 全寬遊戲墊儀表板（不 sticky）
+// → 頁內導覽糖果膠囊 → 故事置中 680px（上方白色膠囊目錄）→ 方案 8：4（右側 sticky 禮物盒）
+// → 之字形路線圖 → 關於提案者（置中大頭像）→ 留言 4：8 → 風險＋FAQ 6：6 → 狀態示意 → 底部玩具托盤
+// 方案卡、禮物盒在 components/_reward.scss；路線圖在 _route.scss；留言泡泡在 _comment.scss；托盤在 _tray.scss
+// ============================================================
+
+.pd-book {
+  padding-top: map-get($spacers, 4);
+}
+.pd-crumb {
+  margin-bottom: map-get($spacers, 4);
+}
+
+// ---------- 主視覺：32px 圓角，5 顆縮圖疊在下緣 ----------
+// ≥ 992px：主視覺的寬度跟著視窗高度縮，H1 與說明一進頁面就完整露出、不被底部托盤蓋住
+// 28rem ＝ 主視覺上方的頁首與麵包屑約 168px ＋ 縮圖下緣到說明結尾約 176px ＋ 托盤與離底約 88px ＋ 呼吸 16px
+// 限制的是寬度（16:9 跟著等比縮），不在 .ratio 上加 max-height，以免把寬度卡住；最窄 36rem，最寬就是 10 欄
+.pd-media {
+  position: relative;
+
+  @include media-breakpoint-up(lg) {
+    max-width: min(100%, max(36rem, calc((100vh - 28rem) * 16 / 9)));
+    margin-inline: auto;
+  }
+}
+.pd-media-frame {
+  overflow: hidden;
+  border-radius: $border-radius-xl;
+  background-color: $lilac-50;
+  box-shadow: $shadow-card;
+}
+.pd-media-main {
+  border-radius: 0;
+}
+// 影片標示（左上）＋中央的圓形播放標示（裝飾；不自動播放）
+.ratio > .pd-video-label {
+  inset: 1rem auto auto 1rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  width: auto;
+  height: auto;
+  padding: .375rem .875rem .375rem .625rem;
+  border-radius: $border-radius-pill;
+  background-color: rgba($card, .94);
+  color: $ink;
+  font-size: .875rem;
+  font-weight: $font-weight-medium;
+  box-shadow: $box-shadow-sm;
+
+  .bi { color: $grape; font-size: 1.125rem; }
+}
+.ratio > .pd-video-play {
+  inset: 50% auto auto 50%;
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  margin: -2rem 0 0 -2rem;
+  border-radius: 50%;
+  background-color: rgba($card, .92);
+  color: $grape;
+  font-size: 2rem;
+  box-shadow: $shadow-raised;
+  pointer-events: none;
+
+  .bi { margin-left: .25rem; }
+
+  @include media-breakpoint-up(md) {
+    width: 5rem;
+    height: 5rem;
+    margin: -2.5rem 0 0 -2.5rem;
+    font-size: 2.5rem;
+  }
+}
+// 縮圖列：Bootstrap 的 carousel-indicators 改成圓角縮圖，疊在主視覺下緣
+.pd-thumbs.carousel-indicators {
+  position: relative;
+  inset: auto;
+  z-index: 2;
+  gap: .5rem;
+  margin: -1.75rem 0 0;
+  padding: 0 .75rem;
+
+  @include media-breakpoint-up(sm) {
+    gap: .75rem;
+    margin-top: -2.25rem;
+  }
+
+  [data-bs-target] {
+    position: relative;
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    width: 3.5rem;
+    height: 2.75rem;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 3px solid $card;
+    border-radius: $border-radius-sm;
+    background-color: $card;
+    text-indent: 0;
+    opacity: 1;
+    box-shadow: $shadow-card;
+    transition: border-color .15s ease;
+
+    &:hover { border-color: $lilac-300; }
+    &.active { border-color: $grape; }
+    &:focus-visible { outline: 3px solid $grape; outline-offset: 2px; }
+
+    @include media-breakpoint-up(sm) {
+      width: 4.75rem;
+      height: 3.5rem;
+      border-radius: $border-radius;
+    }
+    @include media-breakpoint-up(lg) {
+      width: 5.5rem;
+      height: 4rem;
+    }
+  }
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+.pd-thumbs-more {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background-color: rgba($plum-900, .62);
+  color: $on-plum;
+  font-family: $font-family-figure;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+// ---------- 標題區（置中） ----------
+.pd-head {
+  max-width: 46rem;
+  margin: map-get($spacers, 5) auto 0;
+  text-align: center;
+}
+.pd-title {
+  margin-bottom: .75rem;
+  font-size: clamp(1.875rem, 1.2rem + 2.6vw, 2.75rem);
+}
+.pd-lead {
+  margin-bottom: 1.25rem;
+  color: $ink-muted;
+}
+.pd-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: .625rem;
+  margin: 0;
+}
+.pd-tag-link {
+  text-decoration: none;
+  transition: color .15s ease, box-shadow .15s ease;
+
+  &:hover {
+    color: $grape-700;
+    text-decoration: underline;
+    text-underline-offset: .25em;
+  }
+}
+
+// ---------- 遊戲墊：募資儀表板（不 sticky） ----------
+.pd-mat {
+  @include pegboard;
+  display: grid;
+  gap: 1rem;
+  margin-top: map-get($spacers, 5);
+  padding: 1rem;
+  border-radius: $border-radius-xl;
+  background-color: $lilac-50;
+
+  @include media-breakpoint-up(sm) {
+    padding: 1.5rem;
+  }
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    grid-template-areas:
+      "board side"
+      "maker side";
+    gap: 1.25rem 1.75rem;
+    padding: 2rem;
+
+    > .pd-mat-board { grid-area: board; }
+    > .pd-mat-side  { grid-area: side; }
+    > .pd-maker     { grid-area: maker; }
+  }
+}
+// 左：白色軌道板
+.pd-mat-board {
+  padding: 1.5rem 1.25rem 1.25rem;
+  border-radius: $border-radius-lg;
+  background-color: $card;
+  box-shadow: $shadow-card;
+
+  @include media-breakpoint-up(sm) {
+    padding: 1.75rem 1.75rem 1.5rem;
+  }
+}
+.pd-mat-amount {
+  margin: 0;
+
+  dt {
+    margin-bottom: .25rem;
+    font-size: .9375rem;
+    font-weight: $font-weight-normal;
+    color: $ink-muted;
+  }
+  dd {
+    margin: 0;
+    font-size: 2.25rem;
+    line-height: 1.15;
+
+    @include media-breakpoint-up(sm) {
+      font-size: map-get($display-font-sizes, 3);
+    }
+  }
+}
+.pd-mat-board .rollway {
+  margin-top: 2.25rem;
+}
+.pd-mat-rate {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  margin: 1.5rem 0 0;
+
+  dt {
+    margin-bottom: .375rem;
+    font-size: .875rem;
+    font-weight: $font-weight-normal;
+    color: $ink-muted;
+  }
+  dd { margin: 0; }
+}
+.pd-mat-rate-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+}
+.pd-mat-goal {
+  dd {
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+}
+// 右：兩顆數字積木＋期間＋按鈕
+.pd-mat-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.pd-mat-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin: 0;
+
+  .num-block { padding: 1.125rem 1rem 1rem; }
+  .num-block-value { font-size: 2.25rem; line-height: 1.15; }
+}
+.pd-up {
+  display: inline-flex;
+  align-items: center;
+  gap: .125rem;
+  color: $tone-ok;
+  font-weight: $font-weight-medium;
+}
+.pd-mat-period {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  margin: 0;
+  padding: .75rem 1.125rem;
+  border-radius: $border-radius;
+  background-color: $card;
+  font-size: .9375rem;
+
+  dt {
+    font-weight: $font-weight-normal;
+    color: $ink-muted;
+  }
+  dd { margin: 0; }
+}
+.pd-mat-secondary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+}
+.pd-mat-side .callout {
+  margin: 0;
+  background-color: $card;
+  font-size: .9375rem;
+}
+// 提案者小卡（連到 #proposer）
+.pd-maker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1rem;
+  padding: 1rem 1.25rem;
+  border: 2px solid transparent;
+  border-radius: $border-radius-lg;
+  background-color: $card;
+  color: $ink;
+  text-decoration: none;
+  transition: border-color .15s ease;
+
+  &:hover { border-color: $lilac-300; }
+}
+.pd-maker-text {
+  display: grid;
+  min-width: 0;
+}
+.pd-maker-name {
+  font-family: $font-family-round;
+  font-size: 1.0625rem;
+}
+.pd-maker-place {
+  font-size: .875rem;
+  color: $ink-muted;
+}
+.pd-maker-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+
+  .pill { background-color: $lilac-50; }
+
+  @include media-breakpoint-up(sm) {
+    margin-left: auto;
+  }
+}
+
+// ---------- 頁內導覽：糖果膠囊錨點 ----------
+.pd-pagenav {
+  margin-top: map-get($spacers, 6);
+}
+.pd-pagenav-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .625rem;
+  margin: 0;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    min-height: 2.75rem;
+    padding: .5rem 1.25rem;
+    border-radius: $border-radius-pill;
+    font-family: $font-family-round;
+    color: $ink;
+    text-decoration: none;
+    box-shadow: $box-shadow-inset, $box-shadow-sm;
+    transition: color .15s ease;
+
+    &:hover {
+      color: $grape-700;
+      text-decoration: underline;
+      text-underline-offset: .3em;
+    }
+  }
+}
+.pd-pagenav-sakura { background-color: $sakura-100; }
+.pd-pagenav-lilac  { background-color: $lilac-100; }
+.pd-pagenav-lemon  { background-color: $lemon-100; }
+.pd-pagenav-peach  { background-color: nth(map-get($category-colors, "peach"), 2); }
+.pd-pagenav-white  { background-color: $card; }
+.pd-pagenav-count {
+  min-width: 1.75rem;
+  padding: 0 .5rem;
+  border-radius: $border-radius-pill;
+  background-color: $card;
+  font-family: $font-family-figure;
+  font-size: .8125rem;
+  font-weight: 500;
+  line-height: 1.5rem;
+  text-align: center;
+  color: $ink-muted;
+}
+
+// ---------- 專案故事：置中 680px ----------
+.pd-story {
+  padding-block: map-get($spacers, 6) map-get($spacers, 7);
+}
+// 本頁目錄：白色膠囊，≥ 992px 捲動時貼在頁首下方
+.pd-toc {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  max-width: 54rem;
+  margin: 0 auto map-get($spacers, 6);
+  padding: .375rem;
+  border-radius: $border-radius-pill;
+  background-color: $card;
+  box-shadow: $box-shadow-sm;
+
+  .nav {
+    flex-wrap: nowrap;
+    gap: .25rem;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-link {
+    min-height: 2.75rem;
+    padding: .5rem .875rem;
+    border-radius: $border-radius-pill;
+    font-family: $font-family-round;
+    font-size: .9375rem;
+    color: $ink;
+    white-space: nowrap;
+
+    &:hover { background-color: $lilac-50; color: $grape-700; }
+    &.active { background-color: $grape; color: $on-grape; }
+    &:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 3px $grape, inset 0 0 0 5px $card;
+    }
+  }
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-offset;
+    z-index: $zindex-sticky - 1;
+    padding-left: 1.25rem;
+  }
+}
+.pd-toc-label {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  font-family: $font-family-round;
+  font-size: .875rem;
+  color: $ink-muted;
+
+  .bi { color: $grape; }
+
+  @include media-breakpoint-up(md) {
+    display: inline-flex;
+    padding-left: .75rem;
+  }
+  @include media-breakpoint-up(lg) {
+    padding-left: 0;
+  }
+}
+
+.story {
+  max-width: $story-max-width;
+  margin-inline: auto;
+  font-size: $story-font-size;
+  line-height: $story-line-height;
+
+  p { margin-bottom: $story-paragraph-gap; }
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    margin: 0 0 .75rem;
+    font-size: $story-h2-size;
+
+    // 標題前一顆小積木（裝飾）
+    &::before {
+      content: "";
+      flex-shrink: 0;
+      width: 1rem;
+      height: .75rem;
+      border-radius: 4px;
+      background-color: $sakura-300;
+      box-shadow: $box-shadow-inset;
+    }
+  }
+  // h3：Notion 的故事沒有 h3，project.html 不加；樣式在這裡定義，示範放在 guideline.html 的字級章節
+  // 21px 粉圓，上距 2rem、下距 .5rem（上距大於下距，標題屬於下一段），比 h2 小一級、仍比內文大
+  h3 {
+    margin: 2rem 0 .5rem;
+    font-size: $story-h3-size;
+    line-height: 1.45;
+  }
+}
+.story-chapter {
+  & + & { margin-top: 2.75rem; }
+  > :last-child { margin-bottom: 0; }
+
+  &:nth-child(3n + 2) h2::before { background-color: $lilac-300; }
+  &:nth-child(3n) h2::before { background-color: $lemon-400; }
+
+  // ≥ 992px 目錄是 sticky 的，跳轉時多讓出目錄的高度
+  @include media-breakpoint-up(lg) {
+    scroll-margin-top: 4.5rem;
+  }
+}
+.story-figure {
+  margin: 1.75rem 0 0;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: $border-radius-img;
+  }
+}
+.story-dots {
+  margin: 0 0 $story-paragraph-gap;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    padding-left: 1.5rem;
+
+    & + li { margin-top: .375rem; }
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: .25rem;
+      top: .78em;
+      width: .5rem;
+      height: .5rem;
+      border-radius: 50%;
+      background-color: $sakura-600;
+    }
+    &:nth-child(3n + 2)::before { background-color: $lilac-500; }
+    &:nth-child(3n)::before { background-color: $grape; }
+  }
+}
+.story-specs {
+  .table { font-size: 1rem; }
+  th {
+    width: 7em;
+    font-weight: $font-weight-medium;
+    color: $ink-muted;
+  }
+}
+@include media-breakpoint-up(lg) {
+  #risks { scroll-margin-top: 1rem; }
+}
+
+// ---------- 回饋方案：櫻花粉區塊、上緣 48px 圓角；右側禮物盒 sticky ----------
+.pd-rewards {
+  background-color: $sakura-50;
+  border-radius: 3rem 3rem 0 0;
+
+  @include media-breakpoint-down(md) {
+    border-radius: 2rem 2rem 0 0;
+  }
+
+  fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+}
+.pd-giftbox-wrap {
+  padding-top: 1.25rem; // 蝴蝶結的空間
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-offset;
+  }
+}
+
+// ---------- 生產排程 ----------
+.pd-timeline-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .375rem;
+}
+.pd-timeline-sub {
+  font-size: 1.125rem;
+  color: $ink-muted;
+}
+.pd-timeline-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .5rem;
+  margin: 0 0 map-get($spacers, 6);
+}
+.pd-timeline .route {
+  max-width: 62rem;
+  margin-inline: auto;
+}
+// 延遲範例：平實的錯誤卡（不加裝飾）
+.pd-delay {
+  max-width: 40rem;
+  margin: map-get($spacers, 7) auto 0;
+}
+.pd-delay-card {
+  padding: 1.25rem 1.5rem 1.5rem;
+  border: 1.5px solid rgba($tone-err, .55);
+  border-radius: $border-radius;
+  background-color: $card;
+}
+.pd-delay-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .75rem;
+}
+.pd-delay-icon {
+  color: $tone-err;
+  font-size: 1.25rem;
+}
+.pd-delay-title {
+  margin: 0;
+  font-size: 1.125rem;
+}
+.pd-delay-dates {
+  margin: .75rem 0 1rem;
+
+  time {
+    font-weight: $font-weight-bold;
+  }
+  .bi {
+    margin-inline: .25rem;
+    color: $tone-err;
+  }
+}
+
+// ---------- 關於提案者：淡紫區塊、置中大頭像 ----------
+.pd-proposer {
+  border-radius: 3rem 3rem 0 0;
+
+  @include media-breakpoint-down(md) {
+    border-radius: 2rem 2rem 0 0;
+  }
+}
+.pd-proposer-id {
+  margin-bottom: map-get($spacers, 6);
+  text-align: center;
+
+  .avatar { margin-bottom: 1.25rem; }
+}
+.pd-proposer-name {
+  margin-bottom: .25rem;
+  font-size: 1.625rem;
+}
+.pd-proposer-place {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  color: $ink-muted;
+
+  .bi { color: $grape; }
+}
+.pd-proposer-photo {
+  border-radius: $border-radius-xl;
+  box-shadow: $shadow-card;
+}
+.pd-proposer-bio {
+  line-height: 1.95;
+}
+.pd-proposer-label {
+  margin: 1.75rem 0 .875rem;
+  font-size: 1.125rem;
+}
+// 平台紀錄：準時出貨率整列、較大；其他 3 顆並排
+.pd-proposer-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin: 0;
+
+  .num-block-value { font-size: 1.75rem; }
+  > :last-child { grid-column: 1 / -1; }
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    > :last-child { grid-column: auto; }
+  }
+}
+.pd-proposer-ontime {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  grid-column: 1 / -1;
+  border: 2px solid rgba($tone-ok, .35);
+
+  .num-block-label {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: $font-weight-medium;
+    color: $tone-ok;
+
+    .bi { font-size: 1.375rem; }
+  }
+  .num-block-value {
+    margin: 0;
+    font-size: 2.5rem;
+    line-height: 1.1;
+  }
+}
+.pd-proposer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1.75rem;
+}
+
+// ---------- 留言 ----------
+.pd-comments-side {
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: calc(#{$sticky-offset} + 1rem);
+  }
+}
+.pd-comment-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+// ---------- 風險與挑戰＋常見問題（平實：不加小積木、不加裝飾） ----------
+.pd-plain-title {
+  margin-bottom: 1.25rem;
+  font-size: $h3-font-size;
+}
+.pd-risk-box {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 2px solid rgba($tone-warn, .4);
+  border-radius: $border-radius-lg;
+  background-color: $tone-warn-bg;
+
+  p {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    line-height: 1.9;
+    color: $ink;
+
+    &:last-child { margin-bottom: 0; }
+  }
+}
+.pd-risk-icon {
+  flex-shrink: 0;
+  color: $tone-warn;
+  font-size: 1.5rem;
+  line-height: 1.6;
+}
+.pd-faq {
+  .accordion-item {
+    border-radius: $accordion-border-radius;
+    overflow: hidden;
+
+    & + .accordion-item {
+      margin-top: .75rem;
+      border-top: $accordion-border-width solid $accordion-border-color;
+    }
+  }
+  .accordion-button {
+    border-radius: 0 !important;
+    font-family: $font-family-round;
+    font-size: 1.0625rem;
+  }
+  .accordion-body {
+    padding-bottom: 1.25rem;
+    line-height: 1.85;
+  }
+}
+
+// ---------- 狀態示意：縮小版遊戲墊 ----------
+.pd-mat-mini {
+  @include pegboard;
+  display: grid;
+  justify-items: start;
+  gap: .875rem;
+  padding: 1.25rem;
+  border-radius: $border-radius-lg;
+  background-color: $lilac-50;
+}
+.pd-mat-mini-plain {
+  background-image: none;
+  background-color: $card;
+  border: 2px solid $line;
+}
+.pd-mat-mini-text {
+  margin: 0;
+}

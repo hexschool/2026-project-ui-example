@@ -1,0 +1,446 @@
+// ============================================================
+// 軟萌方案卡＋禮物盒小計卡（專案細節的回饋方案；Guideline 也用）
+//
+// 方案卡：radio＋label，整張卡可點、方向鍵可切換（Bootstrap 的 .btn-check 把 radio 藏起來但保留焦點）
+// 白底、24px 圓角、3px 淡紫框（框粗細固定，選中時只換顏色，版面不跳）
+// 檸檬黃價格吊牌（圓角牌＋打孔圓點）→ 方案名稱（粉圓）→ 貼紙 → 彩色圓點清單 → 已選人數／限量 → 預計出貨 → 按鈕
+// 選中：$lemon-100 底＋3px 葡萄紫框＋右上葡萄紫圓形勾貼紙＋較深陰影，按鈕變「已選擇」（不只靠顏色）
+// 已額滿：radio disabled，整張卡降一階（灰紫淡底、虛線框、內容次要色），按鈕文字「本方案已額滿」
+//
+// <div class="reward-grid">
+//   <div class="reward">
+//     <input class="btn-check" type="radio" name="reward" id="reward3" value="2280" data-reward-name="標準單入組" aria-labelledby="reward3Price reward3Title" checked>
+//     <label class="reward-card" for="reward3">
+//       <span class="reward-check" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+//       <span class="reward-tag" id="reward3Price"><span class="figure-num">NT$ 2,280</span></span>
+//       <span id="reward3Title" class="reward-name">標準單入組</span>
+//       <span class="reward-items"><span>帆布包 × 1</span>…</span>
+//       …
+//       <span class="btn btn-outline-primary reward-cta" aria-hidden="true"><span class="reward-cta-idle">選擇這個方案</span><span class="reward-cta-on">已選擇</span></span>
+//     </label>
+//   </div>
+// </div>
+// label 裡只能放行內元素，所以全部用 <span>；版面由下面的 display 決定
+// ============================================================
+
+// ---------- 方案卡格：手機單欄、≥ 768px 兩欄；.reward-wide 跨兩欄 ----------
+.reward-grid {
+  display: grid;
+  gap: 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+.reward {
+  position: relative;
+  display: flex;
+}
+.reward-wide {
+  @include media-breakpoint-up(md) {
+    grid-column: 1 / -1;
+  }
+}
+
+// ---------- 方案卡 ----------
+.reward-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .875rem;
+  width: 100%;
+  padding: 1.5rem 1.25rem 1.25rem;
+  border: 3px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $card;
+  color: $ink;
+  box-shadow: $shadow-card;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+
+  &:hover { border-color: $lilac-300; }
+
+  @include media-breakpoint-up(xl) {
+    padding: 1.75rem 1.5rem 1.5rem;
+  }
+}
+
+// 檸檬黃價格吊牌：圓角牌＋左側打孔（金額不旋轉）
+.reward-tag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: .25rem 1.125rem .25rem 2.125rem;
+  border-radius: .875rem;
+  background-color: $lemon-400;
+  color: $ink;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: inset 0 -3px 0 rgba($tone-warn, .18);
+
+  // 打孔
+  &::before {
+    content: "";
+    position: absolute;
+    left: .875rem;
+    top: 50%;
+    width: .625rem;
+    height: .625rem;
+    margin-top: -.3125rem;
+    border-radius: 50%;
+    background-color: $card;
+    box-shadow: inset 0 1px 2px rgba($ink, .35);
+  }
+}
+.reward-name {
+  display: block;
+  font-family: $font-family-round;
+  font-size: 1.375rem;
+  line-height: 1.4;
+}
+.reward-desc {
+  display: block;
+  font-size: .9375rem;
+  line-height: 1.8;
+  color: $ink-muted;
+}
+.reward-stickers {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin-top: -.25rem;
+}
+
+// 回饋內容：彩色圓點清單（圓點是裝飾，用 -500／-600 階）
+.reward-items {
+  display: grid;
+  gap: .375rem;
+  width: 100%;
+
+  > span {
+    position: relative;
+    padding-left: 1.25rem;
+    font-size: .9375rem;
+    line-height: 1.7;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: .125rem;
+      top: .6em;
+      width: .5rem;
+      height: .5rem;
+      border-radius: 50%;
+      background-color: $sakura-600;
+    }
+    &:nth-child(3n + 2)::before { background-color: $lilac-500; }
+    &:nth-child(3n)::before { background-color: $grape; }
+  }
+}
+
+// 已選人數、限量
+.reward-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .375rem 1rem;
+}
+.reward-fact {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  font-size: .875rem;
+  color: $ink-muted;
+
+  .bi { color: $grape; }
+}
+.reward-fact-warn {
+  color: $tone-warn;
+  font-weight: $font-weight-medium;
+
+  .bi { color: inherit; }
+}
+// 限量進度（S 積木條＋文字）
+.reward-stock {
+  display: grid;
+  gap: .5rem;
+  width: 100%;
+
+  > .blocks { display: block; }
+  > .status { justify-self: start; }
+}
+.reward-ship {
+  white-space: normal;
+}
+
+// 按鈕：貼在卡片最下面；預設「選擇這個方案」，選中時換成「已選擇」
+.reward-cta {
+  width: 100%;
+  margin-top: auto;
+  pointer-events: none; // 點擊交給整張 label
+
+  .bi { margin-right: .25rem; }
+}
+.reward-cta-on { display: none; }
+.reward-cta-off {
+  border: 2px dashed $track-dash;
+  background-color: transparent;
+  color: $ink-muted;
+  box-shadow: none;
+}
+.reward-note {
+  display: block;
+  font-size: .875rem;
+  color: $ink-muted;
+}
+
+// 右上角的圓形勾貼紙：只有選中時出現
+.reward-check {
+  position: absolute;
+  top: -.75rem;
+  right: 1rem;
+  display: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid $card;
+  border-radius: 50%;
+  background-color: $grape;
+  color: $on-grape;
+  font-size: 1.25rem;
+  box-shadow: 0 4px 10px rgba($grape, .35);
+}
+
+// ---------- 選中 ----------
+.btn-check:checked + .reward-card {
+  border-color: $grape;
+  background-color: $lemon-100;
+  box-shadow: $shadow-raised;
+
+  .reward-check { display: grid; }
+  .reward-cta {
+    border-color: $grape;
+    background-color: $grape;
+    color: $on-grape;
+  }
+  .reward-cta-idle { display: none; }
+  .reward-cta-on { display: inline; }
+}
+.btn-check:focus-visible + .reward-card {
+  outline: 3px solid $grape;
+  outline-offset: 3px;
+}
+
+// ---------- 已額滿：降一階 ----------
+.btn-check:disabled + .reward-card {
+  border-style: dashed;
+  border-color: $line-strong;
+  background-color: $tone-idle-bg;
+  color: $ink-muted;
+  box-shadow: none;
+  cursor: not-allowed;
+
+  .reward-tag {
+    background-color: $track;
+    box-shadow: none;
+  }
+  .reward-items > span::before { background-color: $track-dash; }
+}
+
+// ---------- 扁長卡（方案 1 純支持，跨兩欄）：≥ 768px 吊牌｜名稱與說明｜按鈕 ----------
+.reward-wide .reward-card {
+  @include media-breakpoint-up(md) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) minmax(11rem, auto);
+    grid-template-areas:
+      "tag main cta"
+      "tag facts cta";
+    align-items: center;
+    gap: .5rem 1.5rem;
+    padding-block: 1.5rem;
+
+    .reward-tag { grid-area: tag; align-self: center; }
+    .reward-main { grid-area: main; }
+    .reward-facts { grid-area: facts; }
+    .reward-cta { grid-area: cta; margin-top: 0; }
+  }
+}
+.reward-main {
+  display: grid;
+  gap: .25rem;
+}
+
+// ============================================================
+// 禮物盒小計卡：$lilac-100 盒身、32px 圓角、上緣一條盒蓋（中間一段櫻花粉緞帶）、卡頂 CSS 蝴蝶結（裝飾）
+// 自訂金額（膠囊輸入框＋快捷鈕）→ 贊助小計（白色內卡）→ 主要按鈕 → 退款說明
+// ============================================================
+.giftbox {
+  position: relative;
+  padding: 2.75rem 1.25rem 1.5rem;
+  border-radius: $border-radius-xl;
+  background-color: $lilac-100;
+  box-shadow: $shadow-card;
+
+  // 盒蓋＋緞帶
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1.25rem;
+    border-radius: $border-radius-xl $border-radius-xl 0 0;
+    background: linear-gradient(90deg,
+      $lilac-300 calc(50% - .75rem),
+      $sakura-300 calc(50% - .75rem) calc(50% + .75rem),
+      $lilac-300 calc(50% + .75rem));
+    pointer-events: none;
+  }
+
+  @include media-breakpoint-up(xl) {
+    padding-inline: 1.75rem;
+  }
+}
+// 蝴蝶結：兩個圈（radial-gradient）＋中間的結
+.giftbox-bow {
+  position: absolute;
+  left: 50%;
+  top: -1.125rem;
+  width: 5rem;
+  height: 2.25rem;
+  margin-left: -2.5rem;
+  pointer-events: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1.25rem .875rem at 28% 55%, $sakura-300 96%, transparent 100%),
+      radial-gradient(1.25rem .875rem at 72% 55%, $sakura-300 96%, transparent 100%);
+    filter: drop-shadow(0 2px 2px rgba($sakura-600, .35));
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 1.125rem;
+    height: 1.125rem;
+    margin: -.5rem 0 0 -.5625rem;
+    border-radius: .375rem;
+    background-color: $sakura-600;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .12);
+  }
+}
+.giftbox-title {
+  margin-bottom: .25rem;
+  font-size: 1.375rem;
+}
+.giftbox-title-sum {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 2px dashed $lilac-300;
+}
+.giftbox-text {
+  margin-bottom: 1rem;
+  font-size: .9375rem;
+  color: $ink-muted;
+}
+// 膠囊輸入框：NT$＋數字
+.giftbox-amount {
+  > .input-group-text,
+  > .form-control {
+    border-radius: $border-radius-pill;
+    border-color: $control;
+    background-color: $card;
+  }
+  > .input-group-text {
+    padding-inline: 1.125rem .5rem;
+    border-right: 0;
+    font-family: $font-family-figure;
+    font-weight: 500;
+    color: $ink-muted;
+  }
+  > .form-control {
+    min-height: 3.25rem;
+    border-left: 0;
+    font-family: $font-family-figure;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  > .form-control.is-invalid { border-color: $tone-err; }
+  > .form-control.is-invalid ~ .input-group-text,
+  &:has(.is-invalid) > .input-group-text { border-color: $tone-err; }
+  .invalid-feedback {
+    margin-top: .5rem;
+    padding-left: .5rem;
+  }
+}
+.giftbox-min {
+  margin: .5rem 0 .75rem;
+  padding-left: .5rem;
+  font-size: .875rem;
+  color: $ink-muted;
+}
+.giftbox-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+
+  .chip {
+    padding-inline: .875rem;
+    font-family: $font-family-figure;
+    font-weight: 500;
+  }
+}
+// 小計：白色內卡，數字靠右
+.giftbox-rows {
+  margin: .75rem 0 1.25rem;
+  padding: .75rem 1.125rem;
+  border-radius: $border-radius;
+  background-color: $card;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding-block: .375rem;
+  }
+  dt {
+    flex-shrink: 0;
+    font-size: .9375rem;
+    font-weight: $font-weight-normal;
+    color: $ink-muted;
+  }
+  dd {
+    margin: 0;
+    text-align: right;
+  }
+}
+.giftbox-total {
+  margin-top: .375rem;
+  padding-top: .75rem !important;
+  border-top: 2px dashed $line-strong;
+
+  dt { color: $ink; }
+  dd {
+    font-size: 1.625rem;
+    line-height: 1.2;
+  }
+}
+.giftbox-note {
+  margin: .875rem 0 0;
+  font-size: .8125rem;
+  line-height: 1.7;
+  color: $ink-muted;
+}
+// 狀態示意用的小版本
+.giftbox-mini {
+  padding-top: 2.25rem;
+
+  .giftbox-rows { margin-top: 0; }
+}

@@ -1,0 +1,138 @@
+// ============================================================
+// 選擇卡 .choice（AddressOption、PaymentOption，2026-11 補頁：贊助結帳、贊助紀錄詳情的修改收件資訊）
+// 白色數據卡＋左側 radio；選中＝科技藍 1px 框＋上緣 4px 企業深藍條（和選中的回饋方案、預設地址同一個語彙），
+// radio 本身換成深藍底白勾：外框＋勾選，不只靠顏色
+// hover 只換框線與陰影，尺寸不變；選中後才出現的信用卡欄位 .choice-extra 是點選（:has）切換，不是 hover
+//
+// radio 放在 <label> 外面（label 內不能再放其他輸入欄位），label 用 for 連到 radio，整張卡都可以點
+// <fieldset class="choice-group"><legend class="visually-hidden">收件地址</legend>
+//   <div class="choice">
+//     <input class="form-check-input choice-input" type="radio" name="address" id="addrHome" value="home" checked required>
+//     <label class="choice-main" for="addrHome">
+//       <span class="choice-head"><span class="choice-name">陳柏宇</span><span class="status is-live">…預設地址</span></span>
+//       <span class="choice-line">0912-345-678</span>
+//       <span class="choice-line">70801 台南市安平區平通路 128 號 5 樓</span>
+//     </label>
+//     <div class="choice-extra">選中時才顯示的欄位（信用卡）</div>  ← 選用
+//   </div>
+// </fieldset>
+// ============================================================
+
+$choice-pad: 1.125rem;
+$choice-indent: 3.25rem; // radio 欄寬：文字與 .choice-extra 都對齊到這裡
+$choice-check-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='#{$white}' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.6' d='m5.5 10.2 3 3 6-6.4'/></svg>");
+
+.choice-group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice {
+  position: relative;
+  border: 1px solid $line-strong;
+  border-radius: $border-radius;
+  background-color: $white;
+  box-shadow: $shadow-card;
+  transition: border-color .15s ease, box-shadow .15s ease;
+
+  & + & {
+    margin-top: .75rem;
+  }
+  &:hover {
+    border-color: $control;
+    box-shadow: $shadow-card-hover;
+  }
+
+  // 上緣 4px 企業深藍條：只在選中時出現（裝飾，不佔版面）
+  &::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    height: 4px;
+    border-radius: $border-radius $border-radius 0 0;
+    background-color: transparent;
+    pointer-events: none;
+  }
+  &:has(> .choice-input:checked) {
+    border-color: $blue-600;
+
+    &::before {
+      background-color: $navy-800;
+    }
+  }
+  &:has(> .choice-input:focus-visible) {
+    box-shadow: $focus-ring-double;
+  }
+}
+
+// radio：20px，選中時深藍底白勾
+.choice-input {
+  position: absolute;
+  top: $choice-pad + .0625rem;
+  left: 1.125rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  cursor: pointer;
+
+  &:checked[type="radio"] {
+    --bs-form-check-bg-image: #{escape-svg($choice-check-icon)};
+    background-size: 100% 100%;
+  }
+}
+
+.choice-main {
+  display: block;
+  padding: $choice-pad $choice-pad $choice-pad $choice-indent;
+  cursor: pointer;
+}
+.choice-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .625rem;
+}
+.choice-name {
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+  color: $ink;
+}
+.choice-line {
+  display: block;
+  margin-top: .125rem;
+  font-size: .9375rem;
+  color: $ink-muted;
+}
+// 付款方式：左側方形圖示
+.choice-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: $radius-control;
+  background-color: $ice-100;
+  font-size: .9375rem;
+  line-height: 1;
+  color: $navy-800;
+}
+
+// 選中時才顯示的欄位（信用卡卡號等）：用 :has 切換，不寫 JS
+.choice-extra {
+  display: none;
+  margin: 0 $choice-pad;
+  padding-block: 1rem $choice-pad;
+  border-top: 1px solid $line;
+
+  @include media-breakpoint-up(sm) {
+    margin-left: $choice-indent;
+  }
+}
+.choice:has(> .choice-input:checked) > .choice-extra {
+  display: block;
+}

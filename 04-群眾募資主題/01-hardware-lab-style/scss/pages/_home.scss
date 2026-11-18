@@ -1,0 +1,480 @@
+// ============================================================
+// 首頁 index.html
+// Hero 置中（全站唯一置中構圖）＋寬 10 欄任務主控台 → 4 格橫向面板 → 4:5 分類卡
+// → 便當格專案卡（$ti-900 區塊）→ 通訊紀錄＋平台保障 6：6 → 提案者轉換帶
+// ============================================================
+
+// ---------- 區塊一：Hero ----------
+// 網格紋理＋頂部一團冷藍徑向光暈；1920 寬時背景滿版，內容對齊版心
+.home-hero {
+  @include grid-texture;
+  position: relative;
+  padding-block: map-get($spacers, 7) map-get($spacers, 8);
+  background-color: $ti-950;
+  border-bottom: 1px solid $line;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0, rgba($blue-500, .28), transparent 60%);
+    pointer-events: none;
+  }
+  > .container { position: relative; }
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 8) map-get($spacers, 8);
+  }
+}
+.home-hero-intro {
+  margin-bottom: map-get($spacers, 7);
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: map-get($spacers, 7);
+    text-align: center;
+  }
+}
+// H1：Noto Sans TC 500、字距 0.06em，兩行（「好東西不必」／「等大公司做。」）
+.home-hero-title {
+  margin-bottom: map-get($spacers, 4);
+  font-size: $display-hero-size;
+  font-weight: $font-weight-medium;
+  line-height: 1.2;
+  letter-spacing: .06em;
+
+  span { display: block; }
+}
+.home-hero-lead {
+  max-width: 36em;
+  margin-bottom: map-get($spacers, 6);
+  color: $fg-muted;
+  font-size: $lead-font-size;
+  line-height: 1.75;
+  text-wrap: balance;
+
+  @include media-breakpoint-up(lg) { margin-inline: auto; }
+}
+.home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-down(sm) {
+    flex-direction: column;
+    .btn { width: 100%; }
+  }
+  @include media-breakpoint-up(lg) { justify-content: center; }
+}
+
+// ---------- 任務主控台（Hero 專案卡）----------
+// < 992：單欄，DOM 順序＝圖 → 名稱 → 金額 → 充能條 → 3 格讀數 → 按鈕
+// ≥ 992：左 5 主視覺｜右 4＋按鈕寬 讀數；底部充能條（跨左兩欄）＋按鈕（第 3 欄寬度＝按鈕本身，按鈕不會被擠出面板）
+.home-console-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) auto;
+    grid-template-areas:
+      "media amount  amount"
+      "media stats   stats"
+      "charge charge actions";
+    grid-template-rows: 1fr auto auto; // 主視覺比讀數高時，多出來的高度給「目前募得」那一格
+    column-gap: map-get($spacers, 6);
+    row-gap: 0;
+
+    > .home-console-media   { grid-area: media; }
+    > .home-console-amount  { grid-area: amount; }
+    > .home-console-stats   { grid-area: stats; }
+    > .home-console-charge  { grid-area: charge; }
+    > .home-console-actions { grid-area: actions; }
+  }
+}
+.home-console-media { min-width: 0; }
+.home-console-photo {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $ti-800;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 60% 50%;
+  }
+}
+.home-console-title {
+  margin: map-get($spacers, 4) 0 map-get($spacers, 1);
+  font-size: 1.375rem;
+  line-height: 1.4;
+}
+.home-console-maker {
+  margin-bottom: 0;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+
+// 讀數：目前募得（XL，青空）＋目標
+.home-console-amount {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-self: stretch;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  overflow: hidden;
+
+  // 儀表讀數：標籤貼上緣、數字貼下緣
+  .readout {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .readout:first-child { padding-block: 1rem; }
+
+  @include media-breakpoint-down(sm) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  // ≥ 992：目前募得獨佔一列（XL 讀數才放得下），目標縮成下方一條細列（標籤左、數字右）
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 1fr auto;
+    border-bottom: 0;
+    border-radius: $border-radius $border-radius 0 0;
+
+    .readout:last-child {
+      flex-direction: row;
+      align-items: baseline;
+      gap: map-get($spacers, 4);
+      padding-block: .625rem;
+    }
+  }
+}
+// 讀數：達成率（L）｜贊助人數｜剩餘天數
+.home-console-stats {
+  --cols: 3;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  overflow: hidden;
+
+  .readout-value:not(.readout-l) { font-size: 1.5rem; }
+
+  @include media-breakpoint-up(lg) {
+    border-radius: 0 0 $border-radius $border-radius;
+  }
+  @include media-breakpoint-down(sm) {
+    .readout { padding: .75rem .625rem; }
+    .readout-value:not(.readout-l) { font-size: 1.25rem; }
+    .readout-l { font-size: 1.5rem; }
+  }
+}
+.home-console-charge {
+  align-self: end;
+
+  @include media-breakpoint-up(lg) { margin-top: map-get($spacers, 5); }
+}
+.home-console-actions {
+  display: flex;
+  gap: map-get($spacers, 3);
+  align-self: end;
+
+  .btn-primary { flex: 1 1 auto; }
+
+  @include media-breakpoint-up(lg) {
+    margin-top: map-get($spacers, 5);
+    padding-bottom: 1.5rem; // 和充能條（不含下方刻度字）底緣對齊
+  }
+}
+.btn-lg.btn-icon { width: 3.25rem; }
+
+// ---------- 區塊二：品牌核心痛點（一條橫向面板切 4 格）----------
+.home-values {
+  @include media-breakpoint-up(lg) { padding-top: map-get($spacers, 8); }
+}
+// 格線＝面板底色從 1px gap 露出來
+.value-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $line;
+  overflow: hidden;
+
+  @include media-breakpoint-up(sm) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @include media-breakpoint-up(lg) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.value-cell {
+  padding: map-get($spacers, 5);
+  background-color: $ti-850;
+
+  // < 576：圖示在左、文字在右，縮短單欄的高度
+  @include media-breakpoint-down(sm) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: map-get($spacers, 4);
+
+    > .cut-box { grid-row: span 2; margin-bottom: 0; }
+  }
+
+  @include media-breakpoint-up(xl) { padding: map-get($spacers, 6) map-get($spacers, 5); }
+
+  > .cut-box { margin-bottom: map-get($spacers, 4); }
+  > p {
+    margin-bottom: 0;
+    color: $fg-muted;
+    font-size: .9375rem;
+  }
+}
+.value-title {
+  margin-bottom: map-get($spacers, 2);
+  font-size: $h3-font-size;
+}
+
+// ---------- 區塊三：分類策展（4:5 卡＋底部深色讀數條，常駐顯示）----------
+.category-card {
+  position: relative;
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $ti-850;
+  color: $fg;
+  text-decoration: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: rgba($sky-400, .5);
+    box-shadow: 0 0 18px rgba($sky-400, .12);
+    color: $fg;
+
+    img { filter: brightness(1.08); }
+  }
+  &:focus-visible {
+    outline: 2px solid $sky-300;
+    outline-offset: 2px;
+  }
+}
+.category-card-media {
+  aspect-ratio: 4 / 5;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: filter .2s ease;
+  }
+}
+// 底部讀數條：卡片夠寬時（768–991 兩欄、≥ 1400 四欄）疊在圖片下緣做深色半透明面板；
+// 其他寬度卡片太窄，疊上去會蓋掉大半張圖，改接在圖片下方
+@mixin category-panel-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1rem 1.125rem 1.125rem;
+  background-color: rgba($ti-950, .84);
+  backdrop-filter: blur(6px);
+}
+.category-card-panel {
+  padding: .75rem .75rem .875rem;
+  border-top: 1px solid rgba($sky-400, .25);
+  background-color: $ti-850;
+
+  @include media-breakpoint-up(lg) { padding: .875rem 1rem 1rem; }
+  @include media-breakpoint-only(md) { @include category-panel-overlay; }
+  @include media-breakpoint-up(xxl) { @include category-panel-overlay; }
+}
+.category-card-name {
+  margin-bottom: .125rem;
+  color: $sky-300;
+  font-size: $small-font-size;
+  letter-spacing: .08em;
+}
+.category-card-title {
+  margin-bottom: .5rem;
+  font-size: 1rem;
+  line-height: 1.45;
+
+  @include media-breakpoint-up(md) { font-size: $h3-font-size; }
+}
+.category-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .125rem .875rem;
+  margin: 0;
+  padding-top: .5rem;
+  border-top: 1px solid $line;
+  color: $fg-muted;
+  font-size: $small-font-size;
+  line-height: 1.6;
+
+  strong {
+    color: $fg;
+    font-size: 1rem;
+  }
+}
+.home-more-categories {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: map-get($spacers, 3) map-get($spacers, 4);
+  margin-top: map-get($spacers, 6);
+}
+
+// ---------- 區塊四：正在發生的提案（便當格）----------
+.home-tabs {
+  margin-bottom: map-get($spacers, 6);
+  overflow: hidden; // 讓 .seg 在自己的容器內橫向捲動
+}
+.bento {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: map-get($spacers, 5);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    > .is-feature { grid-column: span 2; }
+  }
+  // 768–1199 是 2 欄：卡片總數為偶數時最後一張會落單，讓它跨 2 欄、主視覺改 21:9 收尾
+  @include media-breakpoint-between(md, xl) {
+    > .project-card:last-child:nth-child(even) {
+      grid-column: span 2;
+
+      .project-card-media { aspect-ratio: 21 / 9; }
+    }
+  }
+  // 992–1199 維持 2 欄（3 欄時小卡的金額讀數放不下）；≥ 1200 才 3 欄、大卡跨 2 欄 2 列
+  // 大卡的高度＝右側兩張小卡疊起來的高度：這兩張的主視覺改成 21:9，大卡才不會被拉成接近正方形、超過一個視窗高
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    > .is-feature { grid-row: span 2; }
+    > .is-feature + .project-card .project-card-media,
+    > .is-feature + .project-card + .project-card .project-card-media { aspect-ratio: 21 / 9; }
+  }
+}
+
+// ---------- 區塊五：通訊紀錄（評價）＋平台保障 ----------
+// 評價卡：左 1:1 實拍｜右 已收到回饋 → 引言 → Mono 署名（手機也維持圖左文右 4：8）
+.comm-card {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  grid-template-areas:
+    "photo badge"
+    "photo quote"
+    "photo author";
+  grid-template-rows: auto 1fr auto;
+  column-gap: map-get($spacers, 4);
+  margin: 0;
+  padding: map-get($spacers, 4);
+  border-left: 2px solid rgba($ok-ink, .55);
+
+  @include media-breakpoint-up(md) {
+    column-gap: map-get($spacers, 5);
+    padding: map-get($spacers, 5);
+  }
+}
+.comm-card-photo {
+  grid-area: photo;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+}
+.comm-card-badge { grid-area: badge; margin-bottom: .5rem; }
+.comm-card-quote {
+  grid-area: quote;
+  margin: 0;
+
+  p {
+    margin-bottom: .5rem;
+    font-size: 1rem;
+    line-height: 1.75;
+
+    @include media-breakpoint-up(md) { font-size: 1.0625rem; }
+  }
+}
+.comm-card-author {
+  grid-area: author;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  color: $fg-muted;
+  font-family: $font-family-monospace;
+  font-size: $small-font-size;
+
+  &::before {
+    content: "";
+    width: 1rem;
+    height: 1px;
+    background-color: $line-strong;
+  }
+}
+
+// 平台保障：三列（切角圖示框＋h3＋說明），列間髮絲線
+.guarantee-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+  padding: 0 map-get($spacers, 5);
+  list-style: none;
+}
+.guarantee-item {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: map-get($spacers, 4);
+  padding-block: map-get($spacers, 5);
+
+  & + & { border-top: 1px solid $line; }
+
+  p {
+    margin-bottom: 0;
+    color: $fg-muted;
+  }
+}
+.guarantee-title {
+  margin-bottom: map-get($spacers, 1);
+  font-size: $h3-font-size;
+}
+
+// 提案者轉換帶：深色冷藍漸層面板，左 h2、右主要按鈕
+.propose-band {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: map-get($spacers, 5);
+  margin-top: map-get($spacers, 8);
+  padding: map-get($spacers, 6) map-get($spacers, 5);
+  border: 1px solid rgba($sky-400, .25);
+  border-radius: $border-radius-lg;
+  background: $grad-band;
+
+  @include media-breakpoint-up(lg) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: map-get($spacers, 9);
+    padding: map-get($spacers, 7) map-get($spacers, 7);
+  }
+}
+.propose-band-title {
+  margin-bottom: 0;
+  font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2rem);
+  letter-spacing: .05em;
+}

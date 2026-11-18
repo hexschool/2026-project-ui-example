@@ -1,0 +1,114 @@
+// ============================================================
+// 裝飾：散落的積木、小球、斜放的疊板
+// 一律 aria-hidden="true"、pointer-events: none、位置固定（不動）；每個畫面最多 6 個，不擋文字
+// 放在 overflow: clip 的容器裡（.home-hero-panel、.page-panel…），390 寬不能撐出水平捲軸
+// 退款、失敗、錯誤、延遲、取消贊助、條款附近不放
+//
+// <span class="deco deco-block deco-sakura" style="--x: 4%; --y: 12%; --r: -12deg" aria-hidden="true"></span>
+// <span class="deco deco-ball" style="--x: 92%; --y: 80%" aria-hidden="true"></span>
+// 尺寸：預設 28px；.deco-sm 18px、.deco-lg 40px；.deco-long 是 2 格長的積木
+// ============================================================
+
+.deco {
+  --x: 0;
+  --y: 0;
+  --r: 0deg;
+  --size: 1.75rem;
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  z-index: 0;
+  width: var(--size);
+  height: var(--size);
+  pointer-events: none;
+  transform: rotate(var(--r));
+}
+.deco-sm { --size: 1.125rem; }
+.deco-lg { --size: 2.5rem; }
+
+// 積木：圓角方塊＋下緣厚度（內陰影）＋上方兩顆凸點
+.deco-block {
+  border-radius: $border-radius-xs;
+  background-color: $sakura-300;
+  box-shadow: inset 0 -4px 0 rgba($ink, .1), 0 6px 12px rgba($grape, .12);
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: -18%;
+    width: 26%;
+    height: 22%;
+    border-radius: 3px 3px 0 0;
+    background-color: inherit;
+  }
+  &::before { left: 16%; }
+  &::after { right: 16%; }
+}
+.deco-long { width: calc(var(--size) * 2); }
+.deco-sakura { background-color: $sakura-300; }
+.deco-lilac  { background-color: $lilac-300; }
+.deco-lemon  { background-color: $lemon-400; }
+.deco-peach  { background-color: $peach-200; }
+
+// 小球：葡萄紫漸層＋白色高光
+.deco-ball {
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 30%, rgba($card, .95) 0 12%, rgba($card, 0) 13%),
+    radial-gradient(circle at 40% 35%, $grape-light, $grape 55%, $grape-800);
+  box-shadow: 0 6px 12px rgba($grape, .28);
+}
+.deco-ball-sakura {
+  background:
+    radial-gradient(circle at 34% 30%, rgba($card, .95) 0 12%, rgba($card, 0) 13%),
+    radial-gradient(circle at 40% 35%, #F08BB1, $sakura-600 60%, #B8406F);
+  box-shadow: 0 6px 12px rgba($sakura-600, .28);
+}
+
+// 斜放的疊板：Hero 卡、登入卡後面的彩色圓角板（文字與表單本身不旋轉）
+// 寫在卡片的外層包裝上（包裝建立自己的堆疊層，疊板在卡片後面）：
+// <div class="has-plate has-plate-2" style="--plate-radius: 2rem"><article class="…卡片…">…</article></div>
+// .has-plate::before 是旋轉 4° 的馬卡龍紫板；.has-plate-2::after 是 -3° 的檸檬黃板（在更後面）
+// .plates-swap 對調兩塊板的顏色（前面那塊變黃、後面那塊變紫；登入與註冊用不同順序，讓兩頁看得出差別）
+.has-plate {
+  --plate-radius: #{$border-radius-xl};
+  --plate-a: #{$lilac-300};
+  --plate-b: #{$lemon-400};
+  position: relative;
+  isolation: isolate;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: var(--plate-radius);
+    background-color: var(--plate-a);
+    transform: rotate(4deg);
+    pointer-events: none;
+  }
+  > * { position: relative; }
+}
+.has-plate-2::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  border-radius: var(--plate-radius);
+  background-color: var(--plate-b);
+  transform: rotate(-3deg);
+  pointer-events: none;
+}
+.plates-swap {
+  --plate-a: #{$lemon-400};
+  --plate-b: #{$lilac-300};
+}
+
+// 手機：裝飾縮小，不擋字
+@include media-breakpoint-down(lg) {
+  .deco { --size: 1.25rem; }
+  .deco-sm { --size: .875rem; }
+  .deco-lg { --size: 1.75rem; }
+  .deco-hide-sm { display: none; }
+}

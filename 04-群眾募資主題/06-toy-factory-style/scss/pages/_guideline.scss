@@ -1,0 +1,1235 @@
+// ============================================================
+// 設計 Guideline guideline.html（class 前綴 gl-）
+// 構圖：櫻花粉洞洞板標題面板 → 9：3，章節卡在左、目錄在右
+//   目錄＝sticky 的積木導覽（.block-nav），放在淡紫洞洞板的「貼紙表」裡，ScrollSpy 標示目前章節
+//   每一章是一張 .stack-card（白底 32px 圓角＋淡色標頭帶＋標頭積木寫章節編號）
+// < 992px：目錄變成頁首下方可橫捲的糖果膠囊列（.candy-tabs，sticky）
+// 元件示範一律用頁面真的在用的 class；這裡只補 Guideline 自己的展示框（色票、字級、間距、版面示意、Do／Don't…）
+// ============================================================
+
+// ---------- 版面 ----------
+.gl-body {
+  padding-top: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 6);
+  }
+}
+
+// < 992px：章節膠囊列，貼在漂浮頁首下方（膠囊列自己橫捲，不撐開頁面）
+.gl-chapters {
+  position: sticky;
+  top: $site-header-gap + $site-header-height + .5rem; // 84px：頁首膠囊下方
+  z-index: $zindex-sticky - 1;
+  margin-top: map-get($spacers, 3);
+  pointer-events: none; // 膠囊列以外的透明區不擋住底下的內容
+
+  .candy-tabs { pointer-events: auto; }
+}
+// 錨點跳轉時多讓出膠囊列的高度
+@include media-breakpoint-down(lg) {
+  html:has(.gl-chapters) {
+    scroll-padding-top: calc(#{$sticky-offset} + 3.75rem);
+  }
+}
+
+// ≥ 992px：右側目錄「貼紙表」：淡紫洞洞板、32px 圓角；比視窗高時在自己的框裡捲動
+.gl-toc {
+  @include pegboard;
+  position: sticky;
+  top: $sticky-offset;
+  max-height: calc(100vh - #{$sticky-offset} - 1rem);
+  overflow-y: auto;
+  padding: 1.25rem 1rem;
+  border-radius: $border-radius-xl;
+  background-color: $lilac-50;
+  scrollbar-width: thin;
+
+  .nav-link { padding-right: .625rem; }
+}
+.gl-toc-no {
+  min-width: 1.375rem;
+  font-family: $font-family-figure;
+  font-size: .8125rem;
+  font-weight: $font-weight-figure;
+  color: $ink-muted;
+}
+.block-nav .nav-item .nav-link.active .gl-toc-no { color: $lilac-100; }
+
+// ---------- 章節卡 ----------
+.gl-chapter {
+  & + & { margin-top: map-get($spacers, 5); }
+
+  .stack-card-title { @include font-size($h2-font-size); }
+  .stack-card-lead { max-width: 40em; }
+
+  > .stack-card-body {
+    @include media-breakpoint-up(lg) {
+      padding: 2rem 2.5rem 2.5rem;
+    }
+  }
+}
+// 標頭積木寫章節編號
+.gl-chapter-no {
+  font-family: $font-family-figure;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-figure;
+  letter-spacing: 0;
+}
+
+// 章節裡的小標：前面一顆小積木（裝飾）
+.gl-sub {
+  display: flex;
+  align-items: flex-start;
+  gap: .625rem;
+  margin: map-get($spacers, 6) 0 map-get($spacers, 3);
+  font-size: $story-h3-size;
+
+  // 小積木對齊第一行的中線（標題換行時不會跑到兩行中間）
+  &::before {
+    content: "";
+    flex-shrink: 0;
+    margin-top: calc(#{$headings-line-height} * .5em - .3125rem);
+    width: .875rem;
+    height: .625rem;
+    border-radius: 3px;
+    background-color: $lilac-300;
+    box-shadow: $box-shadow-inset;
+  }
+  &:first-child { margin-top: 0; }
+}
+.gl-text {
+  max-width: 46em;
+}
+.gl-note {
+  max-width: 46em;
+  margin-top: map-get($spacers, 3);
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+}
+// 規則清單：彩色圓點（同回饋內容的圓點）
+.gl-rules {
+  display: grid;
+  gap: .5rem;
+  margin: 0 0 map-get($spacers, 3);
+  padding: 0;
+  list-style: none;
+
+  > li {
+    position: relative;
+    padding-left: 1.375rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: .25rem;
+      top: .7em;
+      width: .5rem;
+      height: .5rem;
+      border-radius: 50%;
+      background-color: $sakura-600;
+    }
+    &:nth-child(3n + 2)::before { background-color: $lilac-500; }
+    &:nth-child(3n)::before { background-color: $grape; }
+  }
+  strong { font-weight: $font-weight-bold; }
+}
+// 示範舞台：頁面底色的圓角框（元件放在跟頁面一樣的底色上看）
+.gl-stage {
+  min-width: 0;
+  padding: 1rem;
+  border: 2px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $page;
+
+  > :last-child { margin-bottom: 0; }
+
+  @include media-breakpoint-up(sm) {
+    padding: 1.5rem;
+  }
+}
+// 示範項目上方的小標籤
+.gl-cap {
+  margin-bottom: .625rem;
+  font-family: $font-family-round;
+  font-size: .9375rem;
+  color: $ink-muted;
+
+  code { font-size: .8125rem; }
+}
+code {
+  color: $grape-700;
+}
+
+// ---------- 00 概念與頁面 ----------
+.gl-signs {
+  display: grid;
+  gap: 1rem;
+  margin: map-get($spacers, 4) 0 0;
+  padding: 0;
+  list-style: none;
+
+  // 章節欄在 ≥ 1200px 才夠寬放三欄；以下一張一列
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.gl-sign {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  min-width: 0;
+  padding: 1.25rem;
+  border-radius: $border-radius-lg;
+  background-color: $sakura-50;
+
+  &:nth-child(2) { background-color: $lilac-50; }
+  &:nth-child(3) { background-color: $lemon-100; }
+
+  > p { margin: 0; font-size: .9375rem; }
+}
+.gl-sign-title {
+  margin: 0;
+  font-size: 1.1875rem;
+}
+// 招牌的小示範：放在白色小盒子裡，固定在卡片底部
+.gl-sign-demo {
+  margin-top: auto;
+  padding: 1rem;
+  border-radius: $border-radius;
+  background-color: $card;
+
+  .rollway { margin-top: 1.5rem; }
+  .reward-tag { font-size: 1.25rem; }
+}
+.gl-sign-tower {
+  display: flex;
+  flex-wrap: wrap; // 欄寬不夠時達成率泡泡換到積木塔下方，不會被裁掉
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: .75rem;
+}
+
+// 可愛的界線：左「可以可愛」、右「一律平實」
+.gl-cute {
+  display: grid;
+  gap: 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.gl-cute-box {
+  min-width: 0;
+  padding: 1.25rem;
+  border-radius: $border-radius-lg;
+  background-color: $lilac-50;
+
+  .gl-rules { margin: 0; }
+}
+// 平實那一邊：白底、細框，不用色面
+.gl-cute-plain {
+  border: 2px solid $line;
+  background-color: $card;
+
+  .gl-rules > li::before { background-color: $track-dash; }
+}
+.gl-cute-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .75rem;
+  font-size: 1.125rem;
+
+  .bi { color: $grape; }
+}
+
+// 10 個頁面
+.gl-pages {
+  display: grid;
+  gap: .75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: gl-page;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.gl-page {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: .125rem .875rem;
+  align-content: start;
+  min-width: 0;
+  padding: 1rem 1.125rem;
+  border: 2px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $card;
+  counter-increment: gl-page;
+
+  // 編號積木
+  &::before {
+    content: counter(gl-page, decimal-leading-zero);
+    grid-row: 1 / span 2;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2rem;
+    margin-top: .125rem;
+    border-radius: .5rem;
+    background-color: $sakura-100;
+    font-family: $font-family-figure;
+    font-size: .875rem;
+    font-weight: $font-weight-figure;
+    color: $ink;
+    box-shadow: $box-shadow-inset;
+  }
+  &:nth-child(4n + 2)::before { background-color: $lilac-100; }
+  &:nth-child(4n + 3)::before { background-color: $lemon-100; }
+  &:nth-child(4n)::before { background-color: #{nth(map-get($category-colors, "peach"), 2)}; }
+
+  > p { margin: 0; font-size: .9375rem; color: $body-secondary-color; }
+}
+.gl-page-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .25rem .625rem;
+  margin: 0;
+  font-family: $font-family-round;
+  font-size: 1.0625rem;
+
+  a {
+    font-family: $font-family-figure;
+    font-size: .875rem;
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+}
+
+// ---------- 01 色彩：顏料罐色票 ----------
+.gl-pots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); // < 576px 固定兩欄，色票不會排成一長條
+  gap: 1.75rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    column-gap: 1.25rem;
+  }
+}
+.gl-pots-lg {
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  }
+
+  .gl-pot-chip { width: 5.5rem; height: 5.5rem; }
+}
+.gl-pot {
+  min-width: 0;
+
+  > p { margin: 0; }
+}
+// 圓形色塊：白色外圈＋細框＋左上一點高光（像一罐打開的顏料）
+.gl-pot-chip {
+  position: relative;
+  display: block;
+  width: 4.25rem;
+  height: 4.25rem;
+  margin: .375rem 0 .875rem .375rem;
+  border-radius: 50%;
+  background-color: var(--c);
+  box-shadow: inset 0 -5px 0 rgba($ink, .08), 0 0 0 4px $card, 0 0 0 6px $line-strong, $box-shadow-sm;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 22%;
+    top: 18%;
+    width: 20%;
+    height: 14%;
+    border-radius: 50%;
+    background-color: rgba($card, .55);
+    transform: rotate(-30deg);
+  }
+}
+.gl-pot-name {
+  font-family: $font-family-round;
+  font-size: 1rem;
+  line-height: 1.5;
+
+  code {
+    display: block;
+    font-size: .8125rem;
+  }
+}
+.gl-pot-hex {
+  margin: .125rem 0 .25rem !important;
+  font-family: $font-family-figure;
+  font-size: .9375rem;
+  font-weight: $font-weight-figure;
+  letter-spacing: .04em;
+}
+.gl-pot-use {
+  font-size: .875rem;
+  line-height: 1.7;
+  color: $body-secondary-color;
+}
+// 對比小膠囊：達標實線、不能當文字的虛線
+.gl-ratios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem;
+  margin-top: .5rem !important;
+}
+.gl-ratio {
+  display: inline-flex;
+  align-items: center;
+  padding: .0625rem .5rem;
+  border-radius: $border-radius-pill;
+  background-color: $lilac-50;
+  font-size: .8125rem;
+  line-height: 1.6;
+  color: $ink;
+  white-space: nowrap;
+}
+.gl-ratio-no {
+  border: 1.5px dashed $track-dash;
+  background-color: transparent;
+  color: $ink-muted;
+}
+
+// 狀態徽章總表
+.gl-badges {
+  display: grid;
+  gap: .875rem;
+  margin: 0;
+
+  > div {
+    display: grid;
+    gap: .5rem;
+    padding: 1rem 1.125rem;
+    border: 2px solid $line;
+    border-radius: $border-radius-lg;
+    background-color: $card;
+
+    @include media-breakpoint-up(md) {
+      grid-template-columns: 9rem minmax(0, 1fr);
+      gap: .5rem 1.25rem;
+    }
+  }
+  dt {
+    font-family: $font-family-round;
+    font-weight: $font-weight-round;
+  }
+  dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    margin: 0;
+  }
+}
+.gl-where {
+  flex-basis: 100%;
+  margin: .125rem 0 0;
+  font-size: .875rem;
+  color: $body-secondary-color;
+}
+.gl-badge-none {
+  font-size: .875rem;
+  color: $body-secondary-color;
+}
+
+// ---------- 02 字級 ----------
+.gl-fonts {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.gl-font {
+  min-width: 0;
+  padding: 1.25rem;
+  border-radius: $border-radius-lg;
+  background-color: $lilac-50;
+
+  &:nth-child(2) { background-color: $sakura-50; }
+  &:nth-child(3) { background-color: $lemon-100; }
+
+  > p { margin: 0; }
+}
+.gl-font-sample {
+  margin-bottom: .75rem !important;
+  font-size: 2rem;
+  line-height: 1.3;
+  color: $ink;
+  overflow-wrap: anywhere;
+}
+.gl-font-name {
+  font-family: $font-family-round;
+  font-size: 1.0625rem;
+}
+.gl-font-use {
+  margin-top: .25rem !important;
+  font-size: .875rem;
+  color: $body-secondary-color;
+}
+// Guideline 的說明表格：列標題不換行、每格有最小寬；窄螢幕時整張表在 .table-frame 裡橫捲，不會擠成一字一行
+.gl-table {
+  th { white-space: nowrap; }
+  td { min-width: 6.5rem; }
+  td:last-child { min-width: 11rem; }
+}
+// 各頁 RWD 對照：兩欄都是長句，各給 13rem
+.gl-table-pages td,
+.gl-table-pages td:last-child { min-width: 13rem; }
+// < 576px：示範框貼齊卡片左右（抵掉卡片內距 20px），留言這類有縮排的元件才不會擠成一條
+.gl-stage-bleed {
+  @include media-breakpoint-down(sm) {
+    margin-inline: -1.25rem;
+    border-inline: 0;
+    border-radius: 0;
+  }
+}
+.gl-type-table {
+  th[scope="row"] {
+    min-width: 10rem;
+    font-weight: $font-weight-normal;
+  }
+  // 第 2 欄「字體與大小／行高」不換行；用途欄給最小寬，窄螢幕時整張表在 .table-frame 裡橫捲
+  td:nth-child(2) { white-space: nowrap; }
+  td:last-child { min-width: 12rem; }
+}
+.gl-type-sample {
+  display: block;
+  margin-bottom: .125rem;
+  color: $ink;
+  white-space: nowrap;
+}
+// Display 示範：和首頁 H1 同一個 clamp，表格裡縮成 h1 的大小
+.gl-display {
+  margin: 0 0 .5rem;
+  font-family: $font-family-round;
+  font-size: clamp(2.75rem, 1.8rem + 3.4vw, 4.5rem);
+  line-height: 1.15;
+  letter-spacing: $letter-spacing-heading;
+}
+// 兩種數字排版並排
+.gl-num-pair {
+  display: grid;
+  gap: 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .table { margin-bottom: .75rem; }
+}
+
+// ---------- 03 間距 ----------
+.gl-spacers {
+  display: grid;
+  gap: .625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: 1.75rem 7rem minmax(0, 1fr);
+
+    @include media-breakpoint-up(sm) {
+      grid-template-columns: 1.75rem 11rem minmax(0, 1fr);
+    }
+    align-items: center;
+    gap: .75rem;
+    font-size: .875rem;
+    color: $body-secondary-color;
+  }
+  code {
+    font-family: $font-family-figure;
+    font-size: .875rem;
+  }
+}
+// 一條積木：長度就是間距（最長 104px）
+.gl-spacer-bar {
+  display: block;
+  width: var(--s);
+  height: .875rem;
+  border-radius: 3px;
+  background-color: $lilac-300;
+  box-shadow: $box-shadow-inset;
+}
+
+// 各頁欄位配置：每頁一個積木示意
+.gl-layouts {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.gl-layout {
+  min-width: 0;
+  padding: 1rem 1.125rem 1.125rem;
+  border: 2px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $card;
+}
+.gl-layout-name {
+  margin-bottom: .125rem;
+  font-family: $font-family-round;
+  font-size: 1.0625rem;
+
+  a {
+    margin-left: .375rem;
+    font-family: $font-family-figure;
+    font-size: .8125rem;
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+}
+.gl-layout-note {
+  margin-bottom: .75rem;
+  font-size: .875rem;
+  color: $body-secondary-color;
+}
+.gl-cols {
+  display: flex;
+  gap: .375rem;
+
+  & + & { margin-top: .375rem; }
+}
+.gl-col {
+  display: grid;
+  place-items: center;
+  flex: var(--f, 1) 1 0;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: .375rem .5rem;
+  border-radius: $border-radius-xs;
+  background-color: $sakura-100;
+  font-size: .8125rem;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: $box-shadow-inset;
+
+  &:nth-child(2) { background-color: $lilac-100; }
+  &:nth-child(3) { background-color: $lemon-100; }
+  &:nth-child(4) { background-color: #{nth(map-get($category-colors, "peach"), 2)}; }
+}
+.gl-col-sticky { outline: 2px dashed $lilac-500; outline-offset: -4px; }
+// 置中窄版：左右留白
+.gl-cols-center { justify-content: center; }
+.gl-col-narrow { flex: 0 1 var(--w, 50%); }
+
+// ---------- 04 圓角陰影 ----------
+.gl-radii {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li { min-width: 0; }
+  p { margin: .625rem 0 0; font-size: .875rem; color: $body-secondary-color; }
+  strong {
+    font-family: $font-family-figure;
+    font-weight: $font-weight-figure;
+    color: $ink;
+  }
+}
+.gl-radius-box {
+  display: block;
+  width: 100%;
+  height: 4.5rem;
+  border: 2px solid $lilac-300;
+  background-color: $lilac-50;
+}
+.gl-shadows {
+  display: grid;
+  gap: 1.25rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.gl-shadow {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  min-height: 7.5rem;
+  padding: 1rem 1.125rem;
+  border-radius: $border-radius-lg;
+  background-color: $card;
+
+  strong { font-family: $font-family-round; font-weight: $font-weight-round; }
+  span { font-size: .875rem; color: $body-secondary-color; }
+  code { font-size: .75rem; overflow-wrap: anywhere; }
+}
+// 紋理、疊板、裝飾三格
+.gl-textures {
+  display: grid;
+  gap: 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  > figure { min-width: 0; margin: 0; }
+  figcaption { margin-top: .75rem; font-size: .875rem; color: $body-secondary-color; }
+}
+.gl-texture-box {
+  position: relative;
+  height: 9rem;
+  overflow: clip;
+  border-radius: $border-radius-lg;
+}
+.gl-texture-pegboard {
+  @include pegboard;
+  background-color: $sakura-50;
+}
+.gl-texture-plate {
+  display: grid;
+  place-items: center;
+  background-color: $page;
+
+  .has-plate { width: 62%; }
+}
+.gl-texture-card {
+  display: grid;
+  place-items: center;
+  height: 5rem;
+  border-radius: $border-radius-xl;
+  background-color: $card;
+  font-family: $font-family-round;
+  box-shadow: $shadow-card;
+}
+.gl-texture-deco {
+  background-color: $lilac-50;
+}
+// 玩具盒卡示範：限制寬度，像列表裡的一張
+.gl-card-demo {
+  display: grid;
+  gap: 1.25rem;
+  align-items: start;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
+  }
+  .gl-rules { margin: 0; }
+}
+
+// ---------- 05 元件狀態 ----------
+// 示範用：把 hover、focus 固定住（不改尺寸，只換顏色與外框）
+.btn.gl-hover {
+  color: var(--bs-btn-hover-color);
+  background-color: var(--bs-btn-hover-bg);
+  border-color: var(--bs-btn-hover-border-color);
+}
+.btn-primary.gl-hover { background-image: linear-gradient(180deg, $grape, $grape-700); }
+.btn-danger-text.gl-hover { background-color: $tone-err-bg; }
+.btn.gl-focus { box-shadow: var(--bs-btn-focus-box-shadow); }
+.btn-primary.gl-focus,
+.btn-lemon.gl-focus { box-shadow: $focus-ring-double; }
+.form-control.gl-focus {
+  border-color: $input-focus-border-color;
+  box-shadow: $focus-ring-double;
+}
+
+.gl-btn-rows {
+  display: grid;
+  gap: .5rem;
+}
+.gl-btn-label {
+  margin: .75rem 0 0;
+  font-size: .875rem;
+  color: $body-secondary-color;
+
+  &:first-child { margin-top: 0; }
+}
+.gl-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+}
+// 葡萄紫面（轉換帶）上的按鈕
+.gl-grape-row {
+  padding: 1rem;
+  border-radius: $border-radius-lg;
+  background-color: $grape;
+}
+
+.gl-forms {
+  display: grid;
+  gap: 1.25rem 1.5rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  > div { min-width: 0; }
+}
+
+// 進度：三種狀態並排
+.gl-meters {
+  display: grid;
+  gap: 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  > div { min-width: 0; }
+  .text-note { margin: .625rem 0 0; }
+}
+.gl-meter-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .5rem;
+  margin-bottom: .5rem;
+  font-family: $font-family-round;
+
+  .figure-num { font-size: 1.375rem; }
+}
+// 積木條尺寸對照
+.gl-sizes {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.25rem;
+
+  > div {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: 1rem;
+  }
+}
+// 積木塔＋達成率泡泡
+.gl-tower-demo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem 2rem;
+
+  > dl { margin: 0; text-align: center; }
+  dt {
+    margin-bottom: .25rem;
+    font-size: .875rem;
+    font-weight: $font-weight-normal;
+    color: $ink-muted;
+  }
+  dd { margin: 0; }
+}
+
+// 方案卡：每格上方一行狀態名
+.gl-reward-cell {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  > .reward { flex: 1; }
+}
+.gl-reward-cell .gl-cap { margin-bottom: 1.125rem; } // 留位置給選中時凸出的勾貼紙
+
+// 路線圖放在白色章節卡裡：最後一站用白色蓋掉小路
+.gl-route { --route-bg: #{$card}; }
+
+// 權限狀態：兩個積木導覽並排
+.gl-perm {
+  display: grid;
+  gap: 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  > div { min-width: 0; }
+}
+
+// 頁首示範：同一顆漂浮膠囊，已登入／未登入
+.gl-capsules {
+  display: grid;
+  gap: 1.5rem;
+}
+.gl-capsule {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+
+  // < 576px：示範框比真正的頁首窄，只留 Logo 圖示，讓膠囊維持一行
+  @include media-breakpoint-down(sm) {
+    .site-brand-text { display: none; }
+  }
+}
+// 主導覽：只在 ≥ 1400px 出現（HTML 的 d-none d-xxl-flex），版面窄時示範不擠
+.gl-capsule-nav {
+  flex-wrap: nowrap;
+  gap: .25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gl-capsule-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .625rem;
+}
+
+// 提示框並排
+.gl-callouts {
+  display: grid;
+  gap: .875rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+// ---------- 06 數據圖表 ----------
+.gl-chart-stack {
+  display: grid;
+  gap: 1.25rem;
+}
+
+// ---------- 07 空畫面與狀態文案 ----------
+.gl-copy {
+  display: grid;
+  gap: .875rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.gl-copy-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-content: start;
+  gap: .375rem .875rem;
+  min-width: 0;
+  padding: 1rem 1.125rem;
+  border: 2px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $card;
+
+  > :not(.gl-copy-no) { grid-column: 2; }
+  p { margin: 0; }
+}
+.gl-copy-no {
+  grid-row: 1 / span 4;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2rem;
+  border-radius: .5rem;
+  background-color: $lilac-100;
+  font-family: $font-family-figure;
+  font-size: .875rem;
+  font-weight: $font-weight-figure;
+  box-shadow: $box-shadow-inset;
+}
+.gl-copy-case {
+  font-family: $font-family-round;
+  font-size: 1.0625rem;
+}
+.gl-copy-text {
+  color: $ink;
+}
+.gl-copy-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .75rem;
+  margin-top: .25rem !important;
+  font-size: .875rem;
+  color: $body-secondary-color;
+}
+.gl-copy-warn { color: $tone-err; }
+.gl-empties {
+  display: grid;
+  gap: 1rem;
+  margin-top: map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .empty-state { height: 100%; padding-inline: 1.25rem; }
+}
+
+// ---------- 08 RWD：底部玩具托盤的靜態示範 ----------
+// .toy-tray 在頁面上是 position: fixed；這裡放回文件流，並分別固定成手機與桌機兩種樣子
+.gl-trays {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+}
+.gl-tray-stage {
+  padding: 2.5rem 1rem 0;
+  overflow: clip;
+  border: 2px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $page;
+
+  .toy-tray {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    z-index: auto;
+    width: auto;
+    transform: none;
+  }
+}
+.gl-tray-phone {
+  max-width: 24.375rem; // 390px
+  margin-inline: auto;
+  padding-inline: 0;
+  border-bottom: 0;
+  border-radius: $border-radius-xl $border-radius-xl 0 0;
+
+  .toy-tray {
+    padding: .625rem 1rem;
+    border: 0;
+    border-radius: $border-radius-lg $border-radius-lg 0 0;
+    box-shadow: 0 -8px 24px rgba($grape, .14);
+  }
+  .toy-tray-inner { gap: .625rem; }
+  .toy-tray-amount { font-size: 1.125rem; }
+  .toy-tray-rollway { display: none; }
+  .toy-tray-inner > .btn-icon { margin-left: auto; }
+
+  // < 576px：示範框貼齊卡片左右（抵掉卡片內距 20px），托盤才放得下一整列
+  @include media-breakpoint-down(sm) {
+    margin-inline: -1.25rem;
+    border-inline: 0;
+    border-radius: 0;
+
+    .toy-tray { padding-inline: .75rem; }
+    .toy-tray-amount { font-size: 1rem; }
+    .toy-tray-cta { --bs-btn-padding-x: 1rem; }
+  }
+}
+.gl-tray-desk {
+  padding-bottom: 1rem;
+
+  .toy-tray {
+    max-width: 55rem;
+    margin-inline: auto;
+    padding: .5rem .5rem .5rem 1.75rem;
+    border: 2px solid $line;
+    border-radius: $border-radius-pill;
+    box-shadow: $shadow-raised;
+  }
+  .toy-tray-inner { gap: 1rem; }
+  .toy-tray-amount { font-size: 1.375rem; }
+  .toy-tray-rollway {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 6rem;
+    margin-top: .75rem;
+  }
+  .toy-tray-inner > .btn-icon { margin-left: 0; }
+}
+.gl-tray-hint {
+  margin: 0 0 1rem;
+  font-size: .875rem;
+  color: $ink-muted;
+  text-align: center;
+}
+
+// ---------- 09 Do／Don't ----------
+.gl-dd {
+  & + & {
+    margin-top: map-get($spacers, 5);
+    padding-top: map-get($spacers, 5);
+    border-top: 2px dotted $line-strong;
+  }
+}
+.gl-dd-title {
+  margin-bottom: .875rem;
+  font-size: 1.1875rem;
+}
+.gl-dd-pair {
+  display: grid;
+  gap: 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.gl-do,
+.gl-dont {
+  min-width: 0;
+  padding: 1rem 1.25rem 1.25rem;
+  border: 2px solid;
+  border-radius: $border-radius-lg;
+  background-color: $card;
+
+  > :last-child { margin-bottom: 0; }
+}
+.gl-do   { border-color: rgba($tone-ok, .45); }
+.gl-dont { border-color: rgba($tone-err, .55); border-style: dashed; }
+.gl-dd-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: .75rem;
+  font-family: $font-family-sans-serif;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+}
+.gl-do .gl-dd-tag   { color: $tone-ok; }
+.gl-dont .gl-dd-tag { color: $tone-err; }
+.gl-dd-why {
+  max-width: 46em;
+  margin: .75rem 0 0;
+  font-size: .9375rem;
+  color: $body-secondary-color;
+}
+// 1. 四個數字
+.gl-dd-figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem 1rem;
+  margin: 0;
+
+  dt { font-size: .8125rem; font-weight: $font-weight-normal; color: $ink-muted; }
+  dd { margin: 0; font-family: $font-family-figure; font-size: 1.125rem; font-weight: $font-weight-figure; }
+}
+.gl-dd-big {
+  margin: 0;
+  font-size: 3.5rem;
+}
+// 3. 額滿方案（縮小版方案卡）
+.gl-dd-reward {
+  display: grid;
+  justify-items: start;
+  gap: .5rem;
+  padding: 1rem;
+  border: 3px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $card;
+
+  > p { margin: 0; }
+  .reward-tag { font-size: 1.25rem; }
+  .btn { pointer-events: none; }
+}
+.gl-dd-reward-off {
+  border-style: dashed;
+  border-color: $line-strong;
+  background-color: $tone-idle-bg;
+  color: $ink-muted;
+
+  .reward-tag { background-color: $track; box-shadow: none; }
+}
+// 4. 圖表縮圖
+.gl-dd-chart {
+  display: block;
+  width: 100%;
+  max-width: 20rem;
+  height: auto;
+}
+.gl-dd-grid   { stroke: $line; stroke-width: 1; }
+.gl-dd-line   { fill: none; stroke: $grape; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.gl-dd-target { stroke: $ink-muted; stroke-width: 1.5; stroke-dasharray: 5 4; }
+.gl-dd-line-b { fill: none; stroke: $sakura-600; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.gl-dd-axis   { fill: $ink-muted; font-family: $font-family-figure; font-size: 9px; }
+// 5. 只有色點
+.gl-dd-dots {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+
+  span {
+    width: .875rem;
+    height: .875rem;
+    border-radius: 50%;
+    background-color: $tone-warn;
+
+    & + span { background-color: $tone-ok; }
+  }
+}
+// 6. 程式碼
+.gl-code {
+  margin: 0;
+  padding: .875rem 1rem;
+  border-radius: $border-radius;
+  background-color: $lilac-50;
+  font-size: .8125rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+
+  code { color: $ink; }
+}
+// 7. 粉彩當字色：用 SVG 畫成一張「錯誤示範的圖」
+.gl-dd-svg-text {
+  display: block;
+  width: 100%;
+  max-width: 18rem;
+  height: auto;
+}
+.gl-dd-pastel { fill: $sakura-300; font-family: $font-family-round; font-size: 22px; }
+// 8. 可愛過頭：退款訊息旁擺積木（錯誤示範）
+.gl-dd-cute {
+  position: relative;
+  overflow: clip;
+
+  .empty-state { padding-inline: 1.25rem; }
+}
+// 9. 黑粗框＋位移硬陰影（03 大膽新潮的語言，這套不用）
+.gl-dd-hard {
+  display: grid;
+  place-items: center;
+  height: 5.5rem;
+  border: 3px solid $ink;
+  border-radius: .875rem;
+  background-color: $card;
+  font-family: $font-family-round;
+  box-shadow: 6px 6px 0 $ink;
+}
+.gl-dd-soft {
+  display: grid;
+  place-items: center;
+  height: 5.5rem;
+  border: 2px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $card;
+  font-family: $font-family-round;
+  box-shadow: $shadow-card;
+}
+// 10. 粉圓的假粗體（錯誤示範：讓瀏覽器合成粗體）
+.gl-faux-bold {
+  font-synthesis: weight;
+  font-weight: 700 !important;
+  // 各平台合成的粗細不同（macOS 很輕、Windows 較重）；加一點描邊，示範較重的那一種
+  -webkit-text-stroke: .03em currentColor;
+}
+.gl-dd-heading {
+  margin: 0;
+  font-size: 1.75rem;
+}

@@ -1,0 +1,852 @@
+// ============================================================
+// 個人頁面 account.html：應用程式版面
+// ≥ 992：左側導覽面板貼齊視窗左緣（240px、冰灰底、右側 1px 線、內層 sticky top 72px）＋右側內容區（fluid、最大 1080px、置中）
+// < 992：側邊導覽收成頂部下拉（sticky 在 56px 頁首下）；持有明細表、提案表每列變卡片
+// 招牌元素：持有明細表（我的贊助紀錄）
+// ============================================================
+
+// ---------- 角色（data-role 由 js/main.js 切換） ----------
+[data-role="backer"] .for-proposer,
+[data-role="proposer"] .for-backer {
+  display: none !important;
+}
+
+// ---------- 版面 ----------
+.acct {
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+  }
+}
+.acct-main {
+  min-width: 0;
+}
+.acct-wrap {
+  --acct-pad: 1rem;
+  max-width: calc(67.5rem + 2 * var(--acct-pad));
+  margin-inline: auto;
+  padding-inline: var(--acct-pad);
+
+  @include media-breakpoint-up(md) {
+    --acct-pad: 1.5rem;
+  }
+  @include media-breakpoint-up(lg) {
+    --acct-pad: 2.5rem;
+  }
+  @include media-breakpoint-up(xxl) {
+    --acct-pad: 3rem;
+  }
+}
+
+// ---------- 左側導覽面板 ----------
+.acct-side {
+  padding: map-get($spacers, 4) .75rem map-get($spacers, 5);
+  border-right: 1px solid $line;
+  background-color: $ice-50;
+}
+.acct-side-inner {
+  position: sticky;
+  top: $sticky-offset;
+}
+.acct-nav-group {
+  margin: 1.5rem .75rem .375rem;
+  font-size: .75rem;
+  font-weight: $font-weight-medium;
+  letter-spacing: .04em;
+  color: $ink-muted;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+.acct-nav-list {
+  gap: .125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+// 目前項目：白底＋左側 3px 企業深藍條；hover 只換字色與底色
+.acct-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  min-height: 2.5rem;
+  padding: .5rem .75rem;
+  border-radius: $radius-control;
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+  color: $ink-muted;
+
+  &:hover,
+  &:focus {
+    background-color: rgba($white, .6);
+    color: $ink;
+  }
+  &.active {
+    border-radius: 0 $radius-control $radius-control 0;
+    background-color: $white;
+    color: $ink;
+    box-shadow: inset 3px 0 0 $navy-800, $shadow-card;
+  }
+}
+.acct-nav-count {
+  flex: none;
+  min-width: 1.5rem;
+  padding: 0 .375rem;
+  border-radius: $radius-control;
+  background-color: $ice-100;
+  font-size: .75rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.375rem;
+  text-align: center;
+  color: $ink-muted;
+
+  &.is-unread {
+    background-color: $blue-600;
+    color: $white;
+  }
+}
+// 角色升級入口（贊助者）
+.acct-upgrade {
+  margin-top: map-get($spacers, 4);
+  padding: 1rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $white;
+
+  p {
+    margin-bottom: .75rem;
+    font-size: .9375rem;
+    font-weight: $font-weight-bold;
+  }
+}
+
+// ---------- < 992：頂部下拉導覽 ----------
+.acct-nav-mobile {
+  position: sticky;
+  top: $site-bar-height;
+  z-index: 3;
+  padding: .5rem 1rem;
+  border-bottom: 1px solid $line;
+  background-color: $white;
+
+  @include media-breakpoint-up(md) {
+    padding-inline: 1.5rem;
+  }
+  .dropdown-menu {
+    width: 100%;
+  }
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    min-height: 2.75rem;
+  }
+}
+.acct-nav-mobile-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+}
+
+// ---------- 頁面標題區 ----------
+.acct-head {
+  padding-block: map-get($spacers, 4) map-get($spacers, 5);
+  border-bottom: 1px solid $line;
+  background-color: $ice-50;
+
+  .breadcrumb {
+    margin-bottom: 0;
+    font-size: .875rem;
+  }
+}
+.acct-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.25rem 2rem;
+  margin-top: map-get($spacers, 3);
+}
+.acct-id {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .avatar {
+    --avatar-size: 4rem;
+
+    @include media-breakpoint-up(md) {
+      --avatar-size: 5.5rem;
+    }
+  }
+  h1 {
+    margin: 0;
+    font-size: 1.875rem;
+
+    @include media-breakpoint-up(lg) {
+      font-size: $h1-font-size;
+    }
+  }
+}
+.acct-id-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .625rem;
+  margin: .375rem 0 0;
+  font-size: .9375rem;
+  color: $ink-muted;
+}
+.acct-id-name {
+  font-weight: $font-weight-bold;
+  color: $ink;
+}
+// 角色切換：4px 方角的分段控制
+.acct-role {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .375rem;
+
+  .demo-state-tag {
+    margin: 0;
+  }
+}
+.acct-role-switch {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid $control;
+  border-radius: $radius-control;
+  background-color: $white;
+
+  button {
+    min-height: 2.25rem;
+    padding: .375rem .875rem;
+    border: 0;
+    border-radius: 2px;
+    background: transparent;
+    font-size: .875rem;
+    font-weight: $font-weight-medium;
+    color: $ink-muted;
+
+    &:hover {
+      background-color: $ice-50;
+      color: $ink;
+    }
+    &[aria-pressed="true"] {
+      background-color: $navy-800;
+      color: $white;
+    }
+  }
+}
+
+// ---------- 區塊 ----------
+.acct-body {
+  padding-bottom: map-get($spacers, 6);
+}
+.acct-section {
+  padding-block: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 6);
+  }
+  & + & {
+    border-top: 1px solid $line;
+  }
+}
+// < 992：錨點跳轉時再讓開頂部下拉列
+@include media-breakpoint-down(lg) {
+  .acct-section,
+  #settings {
+    scroll-margin-top: 3.75rem;
+  }
+}
+
+// 統計列：沿用 .kpi-ribbon，文字照原文、只放大數字；< 1200 兩欄（內容區較窄時數字放得下）
+.acct-tally {
+  --kpi-cols: 2;
+  margin-bottom: map-get($spacers, 4);
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(xxl) {
+    --kpi-cols: 4;
+  }
+
+  .kpi {
+    display: block;
+    font-size: .9375rem;
+    line-height: 1.5;
+    color: $ink-muted;
+  }
+  .kpi.is-ok {
+    color: $ok-fg;
+
+    .acct-tally-num {
+      color: $ok-fg;
+    }
+  }
+}
+.acct-tally-num {
+  margin-inline: .125rem;
+  font-size: 1.5rem;
+  font-weight: $font-weight-semibold;
+  line-height: 1.2;
+  color: $ink;
+  white-space: nowrap;
+}
+.acct-filter {
+  margin-bottom: map-get($spacers, 3);
+}
+
+// ---------- 持有明細表＋提案表（≥ 768 表格；< 768 每列變卡片） ----------
+.acct-table {
+  @include media-breakpoint-up(md) {
+    overflow: hidden;
+    border: 1px solid $line;
+    border-radius: $border-radius;
+    background-color: $white;
+    box-shadow: $shadow-card;
+  }
+
+  .data-table > thead > tr > th:first-child,
+  .data-table > tbody > tr > td:first-child {
+    padding-left: 1.25rem;
+  }
+  .data-table > thead > tr > th:last-child,
+  .data-table > tbody > tr > td:last-child {
+    padding-right: 1.25rem;
+  }
+  .data-table > tbody > tr > td {
+    padding-block: 1rem;
+  }
+  .data-table > tbody > tr:last-child > td {
+    border-bottom: 0;
+  }
+}
+.acct-col-actions {
+  width: 1%;
+}
+.acct-proj {
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+  min-width: 13rem;
+}
+.acct-proj-thumb {
+  flex: none;
+  width: 4.5rem;
+  border: 1px solid $line;
+  border-radius: $radius-control;
+}
+.acct-proj-text {
+  min-width: 0;
+}
+.acct-proj-title {
+  margin: 0;
+  font-size: .9375rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.45;
+
+  a {
+    color: $ink;
+    text-decoration: none;
+
+    &:hover {
+      color: $blue-700;
+      text-decoration: underline;
+    }
+  }
+}
+.acct-proj-by {
+  margin: .125rem 0 0;
+  font-size: .8125rem;
+  color: $ink-muted;
+}
+.acct-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .375rem;
+  min-width: 9.5rem;
+
+  .meter {
+    width: 100%;
+    max-width: 9rem;
+  }
+}
+.acct-state-note {
+  margin: 0;
+  font-size: .8125rem;
+  line-height: 1.45;
+  color: $ink-muted;
+}
+// 操作：按鈕直排
+.acct-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: .375rem;
+  min-width: 7.5rem;
+
+  .btn {
+    white-space: nowrap;
+  }
+  .btn-text {
+    min-height: 2rem;
+  }
+}
+// 第 4 列（募資失敗 ‧ 已退款）整列降一階
+.acct-holdings > tbody > tr.is-muted > td {
+  background-color: $ice-50;
+}
+.acct-holdings tr.is-muted {
+  .acct-proj-thumb img {
+    opacity: .55;
+  }
+  .acct-proj-title a {
+    color: $ink-muted;
+  }
+}
+.acct-empty-row > td {
+  background-color: $white !important;
+}
+
+// 提案表
+.acct-col-status {
+  width: 11rem;
+}
+.acct-cell-name .acct-proj-title {
+  font-size: 1rem;
+}
+.acct-figures {
+  min-width: 12rem;
+
+  .meter {
+    max-width: 14rem;
+  }
+}
+.acct-figures-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 .75rem;
+  margin: 0 0 .375rem;
+}
+.acct-figures-rate {
+  font-size: 1.25rem;
+  font-weight: $font-weight-semibold;
+  color: $ink;
+}
+.acct-figures-money {
+  font-size: .9375rem;
+  font-weight: $font-weight-semibold;
+  color: $ink-muted;
+}
+.acct-figures-note {
+  margin: .375rem 0 0;
+  font-size: .8125rem;
+  line-height: 1.5;
+  color: $ink-muted;
+}
+// 審核未通過：兩列（專案列＋退件原因列）左側同一道 err 線、中間不畫分隔線
+.acct-proposals > tbody > tr.is-rejected > td:first-child {
+  box-shadow: inset 3px 0 0 $err-fg;
+}
+.acct-proposals > tbody > tr.is-rejected:not(.acct-reject-row) > td {
+  border-bottom: 0;
+}
+.acct-proposals > tbody > .acct-reject-row > td {
+  padding-top: 0;
+}
+.acct-reject {
+  font-size: .9375rem;
+}
+// 草稿：整列淡底
+.acct-proposals > tbody > tr.is-draft > td {
+  background-color: $ice-50;
+}
+.acct-missing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+
+  .tag-list {
+    gap: .375rem;
+  }
+}
+.acct-missing-label {
+  font-size: .8125rem;
+  color: $ink-muted;
+}
+
+// 表格放不下時，每列改成兩行的格狀列，欄名寫在值的上方
+//   持有明細表（6 欄，768–1399）："專案 專案 狀態 操作" / "方案 金額 日期 操作"
+//   提案表（4 欄，768–1199）：    "狀態 專案 操作" / "狀態 數據 操作"
+@mixin acct-row-grid {
+  display: block;
+
+  > thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  > tbody {
+    display: block;
+  }
+  > tbody > tr {
+    display: grid;
+    align-items: start;
+    gap: .75rem 1.25rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid $line;
+  }
+  > tbody > tr:last-child {
+    border-bottom: 0;
+  }
+  > tbody > tr:hover {
+    background-color: $ice-50;
+  }
+  > tbody > tr > td {
+    display: block;
+    padding: 0 !important;
+    border: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+  .acct-cell-actions {
+    grid-area: actions;
+    align-self: center;
+  }
+}
+@include media-breakpoint-between(md, xxl) {
+  .acct-holdings {
+    @include acct-row-grid;
+
+    > tbody > tr {
+      grid-template-columns: minmax(0, 1fr) minmax(0, .9fr) minmax(10rem, 1.3fr) auto;
+      grid-template-areas:
+        "proj proj   state actions"
+        "plan amount date  actions";
+    }
+    > tbody > tr.is-muted {
+      background-color: $ice-50;
+    }
+    > tbody > tr > td:nth-child(2) { grid-area: plan; }
+    > tbody > tr > td:nth-child(3) { grid-area: amount; text-align: left; }
+    > tbody > tr > td:nth-child(4) { grid-area: date; }
+    > tbody > tr > td:nth-child(5) { grid-area: state; }
+    .acct-cell-project { grid-area: proj; }
+    > tbody > tr > td[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      margin-bottom: .125rem;
+      font-size: .75rem;
+      font-weight: $font-weight-medium;
+      color: $ink-muted;
+    }
+    > tbody > tr > td:nth-child(5)::before {
+      content: none;
+    }
+    > tbody > .acct-empty-row:not([hidden]) {
+      display: block;
+    }
+  }
+}
+@include media-breakpoint-between(md, xl) {
+  .acct-proposals {
+    @include acct-row-grid;
+
+    > tbody > tr {
+      grid-template-columns: 10rem minmax(0, 1fr) auto;
+      grid-template-areas:
+        "status name actions"
+        "status data actions";
+    }
+    > tbody > tr > td:nth-child(1) { grid-area: status; }
+    > tbody > tr > td:nth-child(3) { grid-area: data; }
+    .acct-cell-name { grid-area: name; }
+    .acct-cell-empty { display: none !important; }
+    .acct-figures { min-width: 0; }
+    > tbody > tr.is-draft {
+      background-color: $ice-50;
+    }
+    > tbody > tr.is-rejected {
+      box-shadow: inset 3px 0 0 $err-fg;
+    }
+    > tbody > tr.is-rejected:not(.acct-reject-row) {
+      border-bottom: 0;
+    }
+    > tbody > tr.acct-reject-row {
+      display: block;
+      padding-top: 0;
+    }
+  }
+}
+
+// < 768：每列變卡片（.data-table.is-stack 的基本樣式在 components/_data-table.scss）
+@include media-breakpoint-down(md) {
+  .data-table.is-stack.acct-holdings,
+  .data-table.is-stack.acct-proposals {
+    > tbody > tr > .acct-cell-project,
+    > tbody > tr > .acct-cell-name {
+      display: block;
+      margin-bottom: .375rem;
+      padding-bottom: .75rem;
+      border-bottom: 1px solid $line;
+    }
+    > tbody > tr > .acct-cell-actions {
+      display: block;
+      margin-top: .5rem;
+      padding-top: .75rem;
+      border-top: 1px solid $line;
+    }
+    > tbody > tr > .acct-cell-empty {
+      display: none;
+    }
+    > tbody > tr > td > .acct-state,
+    > tbody > tr > td > .acct-figures {
+      align-items: flex-end;
+      min-width: 0;
+      text-align: right;
+    }
+    .acct-proj {
+      min-width: 0;
+    }
+    .acct-actions {
+      flex-direction: row;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+    .acct-figures-main {
+      justify-content: flex-end;
+    }
+    .acct-figures .meter {
+      margin-left: auto;
+    }
+  }
+  .data-table.is-stack.acct-holdings > tbody > tr.is-muted {
+    background-color: $ice-50;
+  }
+  .data-table.is-stack.acct-proposals {
+    > tbody > tr.is-draft {
+      background-color: $ice-50;
+    }
+    // 退件原因接在審核未通過那張卡下面，兩張合成一張、外框 err 色
+    > tbody > tr.is-rejected {
+      border-color: rgba($err-fg, .45);
+    }
+    > tbody > tr.is-rejected:not(.acct-reject-row) {
+      margin-bottom: 0;
+      border-bottom: 0;
+      border-radius: $border-radius $border-radius 0 0;
+    }
+    > tbody > tr.acct-reject-row {
+      border-top: 0;
+      border-radius: 0 0 $border-radius $border-radius;
+      padding-top: 0;
+    }
+    > tbody > tr.is-rejected > td:first-child {
+      box-shadow: none;
+    }
+    > tbody > tr > td.acct-cell-actions {
+      border-top-color: $line;
+    }
+  }
+  .acct-empty-row {
+    border: 0 !important;
+    background: transparent !important;
+  }
+}
+
+// 權限提示（贊助者）
+.acct-permission {
+  max-width: 36rem;
+}
+
+// ---------- 募資數據 ----------
+.acct-period {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1.5rem;
+  margin-bottom: map-get($spacers, 4);
+}
+.acct-period-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .375rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.acct-period-range {
+  margin: 0;
+  font-size: .875rem;
+  color: $ink-muted;
+}
+.acct-kpis {
+  --kpi-cols: 2;
+  margin-bottom: map-get($spacers, 4);
+
+  @include media-breakpoint-up(xl) {
+    --kpi-cols: 4;
+
+    .kpi-value {
+      font-size: 1.75rem;
+    }
+  }
+  @include media-breakpoint-up(xxl) {
+    .kpi-value {
+      font-size: $kpi-size;
+    }
+  }
+}
+// 圖表 1｜圖表 2：≥ 1400 並排 6：6
+.acct-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr); // 圖表在手機有最小寬度：欄寬要能縮，橫捲只發生在圖卡裡
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+
+  @include media-breakpoint-up(xxl) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.acct-insight {
+  margin-top: 1.25rem;
+}
+
+// ---------- 收件資訊＋帳號設定 ----------
+.acct-address {
+  padding: 1.25rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $white;
+  box-shadow: $shadow-card;
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 4);
+  }
+  & + & {
+    margin-top: 1rem;
+  }
+  &:not(.is-default) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem 1rem;
+  }
+  // 預設地址：上緣 4px 企業深藍＋藍框（和選中的回饋方案同一個語彙）
+  &.is-default {
+    position: relative;
+    border-color: $blue-600;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      right: -1px;
+      height: 4px;
+      border-radius: $border-radius $border-radius 0 0;
+      background-color: $navy-800;
+    }
+  }
+}
+.acct-address-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+.acct-address-actions {
+  display: flex;
+  gap: 1rem;
+
+  .btn-text {
+    min-height: 2.25rem;
+    padding-inline: 0;
+  }
+}
+.acct-address-summary {
+  min-width: 0;
+}
+.acct-address-name {
+  margin: 0;
+  font-weight: $font-weight-bold;
+}
+.acct-address-line {
+  margin: .25rem 0 0;
+  font-size: .875rem;
+  color: $ink-muted;
+}
+.acct-card {
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $white;
+  box-shadow: $shadow-card;
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 4);
+  }
+}
+.acct-card-title {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+// 通知開關：一列一個、開關靠右、列間 1px 線
+.acct-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3rem;
+  margin: 0;
+  padding: .5rem 0;
+  border-top: 1px solid $line;
+
+  .form-check-input {
+    order: 2;
+    flex: none;
+    float: none;
+    margin: 0;
+  }
+  .form-check-label {
+    order: 1;
+  }
+}
+
+// ---------- 狀態示意 ----------
+.acct-badge-row {
+  gap: .5rem;
+}
+.acct-demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+  padding: 1rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $white;
+}
+.acct-inline-icon {
+  font-size: .875em;
+}

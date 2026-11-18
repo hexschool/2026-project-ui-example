@@ -1,0 +1,96 @@
+// ============================================================
+// ★ 任務主控台 .console 與 ★ 達成率弧形儀表 .gauge
+// （落實 Notion「資金儀表板宛如航太數據監控台」）
+//
+// 主控台：遙測面板＋四角 HUD 角括號＋上緣充能狀態條＋頂部標頭列（狀態燈＋小標籤）
+//   → 讀數格（.readouts）→ 充能條（.charge）→ CTA
+// 用在：首頁 Hero、專案儀表板、結帳「載荷清單」（贊助摘要）、贊助紀錄詳情左欄
+// 內部欄位怎麼排由各頁決定（_home.scss 的 .home-console 是一個例子）
+//
+// <section class="console panel panel-strip is-live hud" aria-labelledby="…">
+//   <div class="console-head">
+//     <span class="badge-state is-live"><span class="status-dot" aria-hidden="true"></span>募資中</span>
+//     <span class="console-head-meta">設計生活</span>
+//   </div>
+//   <div class="console-body">…</div>
+// </section>
+// 縮小版（狀態示意 S3／S4／S5、結帳摘要）不加 .hud；HUD 角括號全站只用 4 處
+// ============================================================
+
+.console {
+  display: flex;
+  flex-direction: column;
+}
+.console-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  min-height: 3rem;
+  padding: .5rem $panel-pad;
+  border-bottom: 1px solid $line;
+  border-radius: $border-radius-lg $border-radius-lg 0 0;
+  background-color: $ti-900;
+
+  @include media-breakpoint-up(lg) { padding-inline: $panel-pad-lg; }
+}
+.console-head-meta {
+  color: $fg-muted;
+  font-size: $small-font-size;
+  letter-spacing: .08em;
+}
+.console-body {
+  padding: $panel-pad;
+
+  @include media-breakpoint-up(lg) { padding: $panel-pad-lg; }
+}
+// 主控台裡的讀數格：沿用面板底色，外圍一圈髮絲線
+.console .readouts {
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  overflow: hidden;
+}
+
+// ---------- ★ 達成率弧形儀表（只用在帆布包：專案儀表板、個人頁募資數據的達成率格）----------
+// 240° 弧、刻度 0／100／200／300%，100% 處一道亮刻度，指示弧畫到 --val（pathLength 300 ＝ 300%）
+// inline SVG、aria-hidden；數字一定要以文字顯示在弧心或旁邊。直徑 ≤ 96px；992–1199px 的窄欄可以隱藏
+// <svg class="gauge" viewBox="0 4 100 74" style="--val: 247" aria-hidden="true">
+//   <path class="gauge-track" pathLength="300" d="M15.36 70A40 40 0 1 1 84.64 70"/>
+//   <path class="gauge-value" pathLength="300" d="M15.36 70A40 40 0 1 1 84.64 70"/>
+//   <path class="gauge-ticks" d="M11.03 72.5 7.56 74.5M78.93 15.53 81.5 12.47M88.97 72.5 92.44 74.5"/>
+//   <path class="gauge-target" d="M21.07 15.53 18.5 12.47"/>
+// </svg>
+.gauge {
+  --val: 0;
+  display: block;
+  width: 6rem;
+  height: auto;
+  overflow: visible;
+}
+.gauge-track,
+.gauge-value {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: butt;
+}
+.gauge-track { stroke: $track; }
+.gauge-value {
+  stroke: $sky-400;
+  stroke-dasharray: var(--val) 300; // 不加發光：儀表就在 L 充能條與 live 燈旁邊，發光名額留給它們
+  animation: gauge-draw 1.2s cubic-bezier(.2, .8, .2, 1) both;
+}
+.gauge-ticks {
+  fill: none;
+  stroke: $line-strong;
+  stroke-width: 1.5;
+}
+.gauge-target {
+  fill: none;
+  stroke: $fg;
+  stroke-width: 2;
+}
+@keyframes gauge-draw {
+  from { stroke-dashoffset: var(--val); }
+  to   { stroke-dashoffset: 0; }
+}

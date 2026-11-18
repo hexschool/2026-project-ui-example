@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title（頁面名稱｜島造 ISLANDMAKE 在地製造提案平台）、description（每頁一句不同的摘要） -->
+  <title>探索專案｜島造 ISLANDMAKE 在地製造提案平台</title>
+  <meta name="description" content="依分類、募資狀態、達成率與贊助門檻，瀏覽島造上正在募資的台灣在地設計與製造專案。">
+  <meta name="theme-color" content="#FFFAF7">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Huninn 粉圓（標題、按鈕、導覽，只有 400）、Noto Sans TC（內文）、Fredoka（數字與英文） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（10 頁共用）
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，10 個 .html 要一起改，
+      改完執行 npm run check 確認都與這份範本一致。
+    - 每頁只需要調整一處「目前頁面」標示：頁首導覽目前頁的 <a class="nav-link"> 加 active 與 aria-current="page"
+        index.html → 首頁；projects.html → 探索專案；account.html → 我的島造
+        project.html → 探索專案（只加 active，不加 aria-current，因為這一頁不是專案列表本身）
+        backing.html → 我的島造（只加 active，不加 aria-current，它是個人頁的子頁）
+        guideline.html、login.html、register.html、checkout.html、order-result.html → 不標示（流程頁不標示）
+    - 導覽連結的開始標籤一字不改：<a class="nav-link" href="…">（check-layout.mjs 依此比對）；<header class="site-header"> 不加 class
+    - 全站以「已登入的提案者 陳柏宇」呈現（登入、註冊頁也一樣）；未登入的頁首示範在 guideline.html 的元件狀態
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <!-- 漂浮膠囊頁首：離頂 12px 的白色膠囊，捲動時一直浮在上方 -->
+    <header class="site-header">
+      <div class="container">
+        <nav class="navbar navbar-expand-lg site-capsule" aria-label="主要導覽">
+          <a class="navbar-brand site-brand" href="index.html">
+            <img src="images/favicon.svg" alt="" width="40" height="40">
+            <span class="site-brand-text">
+              <span class="site-brand-name">島造</span>
+              <span class="site-brand-sub" lang="en">ISLANDMAKE</span>
+            </span>
+          </a>
+
+          <!-- 992px 以下的圖示列：搜尋、頭像、選單 -->
+          <div class="d-flex d-lg-none align-items-center gap-1 ms-auto">
+            <button class="site-icon-link" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearchMobile" aria-controls="siteSearchMobile" aria-expanded="false" aria-label="搜尋專案或提案者">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <a class="site-avatar" href="account.html" aria-label="我的島造（陳柏宇）">
+              <img src="images/proposer-avatar.jpg" alt="" width="36" height="36">
+            </a>
+            <button class="navbar-toggler site-icon-link" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link active" href="projects.html" aria-current="page">探索專案</a></li>
+              <li class="nav-item"><a class="nav-link" href="account.html">我的島造</a></li>
+            </ul>
+            <!-- 992px 以下：「我要提案」放在選單裡 -->
+            <a class="btn btn-primary w-100 site-nav-propose d-lg-none" href="index.html#propose"><i class="bi bi-plus-lg" aria-hidden="true"></i>我要提案</a>
+            <!-- 桌機右側：搜尋 → 我要提案 → 頭像 -->
+            <div class="site-header-actions d-none d-lg-flex">
+              <form class="site-search" role="search" action="projects.html">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control" type="search" name="q" placeholder="搜尋專案或提案者" aria-label="搜尋專案或提案者">
+              </form>
+              <a class="btn btn-primary btn-sm" href="index.html#propose"><i class="bi bi-plus-lg" aria-hidden="true"></i>我要提案</a>
+              <a class="site-avatar" href="account.html" aria-label="我的島造（陳柏宇）">
+                <img src="images/proposer-avatar.jpg" alt="" width="36" height="36">
+              </a>
+            </div>
+          </div>
+        </nav>
+
+        <!-- 992px 以下：點放大鏡展開的搜尋列 -->
+        <div id="siteSearchMobile" class="collapse d-lg-none site-search-mobile">
+          <div class="site-search-panel">
+            <form class="site-search" role="search" action="projects.html">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input class="form-control" type="search" name="q" placeholder="搜尋專案或提案者" aria-label="搜尋專案或提案者">
+            </form>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!-- ========== 頁面標題區：容器內 40px 圓角的櫻花粉洞洞板面板（不是滿版色帶）；麵包屑 → H1 → 一句說明（CONTENT.md 附錄 B.1）
+           右側散落 3 顆積木、1 顆小球（裝飾；992px 以下隱藏，不擋字） ========== -->
+      <header class="page-panel-wrap">
+        <div class="container">
+          <div class="page-panel plist-panel">
+            <span class="deco deco-block deco-lilac deco-long deco-hide-sm" style="--x: 78%; --y: 22%; --r: -8deg" aria-hidden="true"></span>
+            <span class="deco deco-block deco-lemon deco-hide-sm" style="--x: 90%; --y: 50%; --r: 12deg" aria-hidden="true"></span>
+            <span class="deco deco-block deco-sakura deco-sm deco-hide-sm" style="--x: 71%; --y: 66%; --r: 18deg" aria-hidden="true"></span>
+            <span class="deco deco-ball deco-hide-sm" style="--x: 84%; --y: 74%" aria-hidden="true"></span>
+            <nav aria-label="目前位置">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+                <li class="breadcrumb-item active" aria-current="page">探索專案</li>
+              </ol>
+            </nav>
+            <h1>探索專案</h1>
+            <p class="page-lead">目前有 92 件專案正在募資，其中 14 件將在七天內結束。</p>
+          </div>
+        </div>
+      </header>
+
+      <!-- ========== 主體：左 3「玩具箱」篩選欄＋右 9 兩欄直式玩具盒卡
+           篩選用 .offcanvas-lg：992px 以上是 sticky 側欄，以下是從底部升起的全螢幕浮層（32px 上圓角），只寫一份 HTML ========== -->
+      <div class="container plist">
+        <div class="row">
+          <div class="col-lg-3">
+            <!-- 設計稿不真的篩選：預設選中「全部」「募資中」「最新上架」寫死在 checked -->
+            <aside id="filters" class="offcanvas-lg offcanvas-bottom plist-filters" tabindex="-1" aria-labelledby="filtersTitle">
+              <div class="offcanvas-header plist-filters-header">
+                <h2 class="plist-filters-heading" id="filtersTitleMobile">篩選</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#filters" aria-label="關閉篩選"></button>
+              </div>
+              <div class="offcanvas-body">
+                <form class="plist-toybox" action="projects.html" aria-labelledby="filtersTitle">
+                  <div class="plist-toybox-head">
+                    <h2 class="plist-toybox-title" id="filtersTitle">篩選</h2>
+                    <button class="btn-text" type="reset">清除全部</button>
+                  </div>
+
+                  <div class="plist-group">
+                    <label class="plist-legend" for="filterKeyword">關鍵字</label>
+                    <div class="site-search plist-search">
+                      <i class="bi bi-search" aria-hidden="true"></i>
+                      <input class="form-control" id="filterKeyword" type="search" name="q" placeholder="搜尋專案或提案者">
+                    </div>
+                  </div>
+
+                  <fieldset class="plist-group">
+                    <legend class="plist-legend">專案分類</legend>
+                    <div class="plist-chips">
+                      <input class="btn-check" type="radio" name="category" id="cat0" value="all" checked>
+                      <label class="chip" for="cat0">全部 <span class="chip-count">92</span></label>
+                      <input class="btn-check" type="radio" name="category" id="cat1" value="design">
+                      <label class="chip" for="cat1">設計生活 <span class="chip-count">24</span></label>
+                      <input class="btn-check" type="radio" name="category" id="cat2" value="tech">
+                      <label class="chip" for="cat2">科技硬體 <span class="chip-count">11</span></label>
+                      <input class="btn-check" type="radio" name="category" id="cat3" value="publishing">
+                      <label class="chip" for="cat3">出版與影像 <span class="chip-count">18</span></label>
+                      <input class="btn-check" type="radio" name="category" id="cat4" value="food">
+                      <label class="chip" for="cat4">食品飲料 <span class="chip-count">13</span></label>
+                      <input class="btn-check" type="radio" name="category" id="cat5" value="social">
+                      <label class="chip" for="cat5">社會設計 <span class="chip-count">9</span></label>
+                      <input class="btn-check" type="radio" name="category" id="cat6" value="games">
+                      <label class="chip" for="cat6">遊戲桌遊 <span class="chip-count">8</span></label>
+                      <input class="btn-check" type="radio" name="category" id="cat7" value="fashion">
+                      <label class="chip" for="cat7">時尚服飾 <span class="chip-count">6</span></label>
+                      <input class="btn-check" type="radio" name="category" id="cat8" value="place">
+                      <label class="chip" for="cat8">空間與地方 <span class="chip-count">3</span></label>
+                    </div>
+                  </fieldset>
+
+                  <fieldset class="plist-group">
+                    <legend class="plist-legend">專案狀態</legend>
+                    <div class="plist-chips">
+                      <input class="btn-check" type="checkbox" name="status" id="st1" value="funding" checked>
+                      <label class="chip" for="st1">募資中</label>
+                      <input class="btn-check" type="checkbox" name="status" id="st2" value="ending">
+                      <label class="chip" for="st2">即將結束（7 天內）</label>
+                      <input class="btn-check" type="checkbox" name="status" id="st3" value="funded">
+                      <label class="chip" for="st3">已達標</label>
+                      <input class="btn-check" type="checkbox" name="status" id="st4" value="upcoming">
+                      <label class="chip" for="st4">即將開始</label>
+                      <input class="btn-check" type="checkbox" name="status" id="st5" value="ended">
+                      <label class="chip" for="st5">已結束</label>
+                    </div>
+                  </fieldset>
+
+                  <fieldset class="plist-group">
+                    <legend class="plist-legend">達成率</legend>
+                    <div class="plist-chips">
+                      <input class="btn-check" type="checkbox" name="rate" id="rate1" value="under">
+                      <label class="chip" for="rate1">尚未達標</label>
+                      <input class="btn-check" type="checkbox" name="rate" id="rate2" value="100-300">
+                      <label class="chip" for="rate2">100–300%</label>
+                      <input class="btn-check" type="checkbox" name="rate" id="rate3" value="300+">
+                      <label class="chip" for="rate3">300% 以上</label>
+                    </div>
+                  </fieldset>
+
+                  <fieldset class="plist-group">
+                    <legend class="plist-legend">贊助門檻</legend>
+                    <div class="plist-chips">
+                      <input class="btn-check" type="checkbox" name="floor" id="floor1" value="-500">
+                      <label class="chip" for="floor1">NT$&nbsp;500 以下</label>
+                      <input class="btn-check" type="checkbox" name="floor" id="floor2" value="500-1500">
+                      <label class="chip" for="floor2">NT$&nbsp;500–1,500</label>
+                      <input class="btn-check" type="checkbox" name="floor" id="floor3" value="1500-3000">
+                      <label class="chip" for="floor3">NT$&nbsp;1,500–3,000</label>
+                      <input class="btn-check" type="checkbox" name="floor" id="floor4" value="3000+">
+                      <label class="chip" for="floor4">NT$&nbsp;3,000 以上</label>
+                    </div>
+                  </fieldset>
+
+                  <!-- 排序（單選）：清單＋「小球槽」，選中的那一格放進一顆葡萄紫小球（不只靠顏色：還有勾） -->
+                  <fieldset class="plist-group">
+                    <legend class="plist-legend">排序</legend>
+                    <div class="plist-sort">
+                      <input class="btn-check" type="radio" name="sort" id="sort1" value="newest" checked>
+                      <label class="plist-sort-option" for="sort1">最新上架</label>
+                      <input class="btn-check" type="radio" name="sort" id="sort2" value="backers">
+                      <label class="plist-sort-option" for="sort2">最多人贊助</label>
+                      <input class="btn-check" type="radio" name="sort" id="sort3" value="amount">
+                      <label class="plist-sort-option" for="sort3">募資金額最高</label>
+                      <input class="btn-check" type="radio" name="sort" id="sort4" value="ending">
+                      <label class="plist-sort-option" for="sort4">即將結束</label>
+                      <input class="btn-check" type="radio" name="sort" id="sort5" value="rate">
+                      <label class="plist-sort-option" for="sort5">達成率最高</label>
+                    </div>
+                  </fieldset>
+                </form>
+              </div>
+              <!-- 浮層底部固定按鈕（992px 以上隱藏） -->
+              <div class="plist-filters-footer d-lg-none">
+                <button class="btn btn-primary btn-lg w-100" type="button" data-bs-dismiss="offcanvas" data-bs-target="#filters">查看 92 件結果</button>
+              </div>
+            </aside>
+          </div>
+
+          <div class="col-lg-9">
+            <!-- 工具列：已套用的條件（可移除）｜共 N 件＋（< 992px）篩選按鈕 -->
+            <div class="plist-toolbar">
+              <div class="plist-applied">
+                <span class="plist-applied-label">已套用</span>
+                <span class="chip chip-applied">募資中<button class="chip-remove" type="button" aria-label="移除 募資中"><i class="bi bi-x-lg" aria-hidden="true"></i></button></span>
+                <span class="chip chip-applied">最新上架<button class="chip-remove" type="button" aria-label="移除 最新上架"><i class="bi bi-x-lg" aria-hidden="true"></i></button></span>
+              </div>
+              <div class="plist-count">
+                <p class="mb-0">共 <span class="figure-num plist-count-num">92</span> 件</p>
+                <button class="btn btn-outline-primary btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#filters" aria-controls="filters">
+                  <i class="bi bi-sliders" aria-hidden="true"></i>篩選
+                </button>
+              </div>
+            </div>
+
+            <!-- 8 件專案（順序照 Notion P1～P8）：兩欄直式玩具盒卡，整張卡連到 project.html
+                 同一列兩張卡等高，資料區（達成率 → 積木條 → 三顆小膠囊 → 標籤列）貼底，介紹長短不同時積木條不會上下錯位 -->
+            <ul class="row row-cols-1 row-cols-md-2 g-4 list-unstyled plist-grid">
+              <li class="col">
+                <article class="toybox project-card plist-card">
+                  <div class="toybox-window img-frame ratio ratio-4x3">
+                    <img src="images/project-01-canvas-bag.jpg" alt="原胚、墨綠、炭黑三色帆布通勤包" width="1600" height="1066">
+                    <span class="sticker sticker-sakura toybox-sticker">設計生活</span>
+                  </div>
+                  <div class="toybox-body">
+                    <h2 class="project-card-title plist-card-title text-phrase"><a class="stretched-link" href="project.html">一只走十年的<wbr>台南帆布包</a></h2>
+                    <p class="project-card-maker plist-card-maker">布作工房 第三代（台南 ‧ 中西區）</p>
+                    <p class="plist-card-intro">用做了五十年軍用帆布的老廠布料，重新設計一只通勤包。12 號加厚胚布經三次預縮處理，肩帶內藏彈性襯墊，背兩小時不壓肩。所有車縫在台南自家工廠完成，每只包內側縫有車縫師的編號——壞了寄回來，原來那個人幫你修。</p>
+                    <div class="project-card-data">
+                      <dl class="project-figures">
+                        <dt class="visually-hidden">達成率</dt>
+                        <dd class="figure-num project-figures-rate"><data value="247">247%</data></dd>
+                        <dt class="visually-hidden">目前金額</dt>
+                        <dd class="project-figures-amount"><data value="1235600">NT$&nbsp;1,235,600</data></dd>
+                      </dl>
+                      <div class="blocks blocks-md is-over" style="--target: 40.5%" aria-hidden="true"><span></span></div>
+                      <dl class="pill-list plist-card-pills">
+                        <div class="pill"><dt><i class="bi bi-flag" aria-hidden="true"></i>目標</dt><dd>NT$&nbsp;500,000</dd></div>
+                        <div class="pill"><dt class="visually-hidden">贊助人數</dt><dd><i class="bi bi-people" aria-hidden="true"></i><data value="1042">1,042</data>&nbsp;人贊助</dd></div>
+                        <div class="pill"><dt class="visually-hidden">剩餘天數</dt><dd><i class="bi bi-clock" aria-hidden="true"></i>剩&nbsp;<data value="12">12</data>&nbsp;天</dd></div>
+                      </dl>
+                      <ul class="plist-card-facts" aria-label="專案資訊">
+                        <li><span class="status status-live has-dot">募資中</span></li>
+                        <li class="plist-fact"><span>回饋門檻</span> <strong>NT$&nbsp;1,880 起</strong></li>
+                        <li class="plist-fact"><span>預計出貨</span> <strong>2027 年 2 月</strong></li>
+                      </ul>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li class="col">
+                <article class="toybox project-card plist-card">
+                  <div class="toybox-window img-frame ratio ratio-4x3">
+                    <img src="images/project-02-orbitlight.jpg" alt="磁吸底座與多支燈管模組組成的桌上照明" width="1600" height="1066">
+                    <span class="sticker sticker-lilac toybox-sticker">科技硬體</span>
+                    <span class="status status-warn status-on-photo toybox-alert"><i class="bi bi-alarm" aria-hidden="true"></i>剩&nbsp;5&nbsp;天</span>
+                  </div>
+                  <div class="toybox-body">
+                    <h2 class="project-card-title plist-card-title text-phrase"><a class="stretched-link" href="project.html">OrbitLight 模組化<wbr>桌上照明系統</a></h2>
+                    <p class="project-card-maker plist-card-maker">微光製造所（新竹 ‧ 硬體新創）</p>
+                    <p class="plist-card-intro">一組可以隨桌面長大的照明系統。磁吸底座 ＋ 可自由增減的燈管模組，從單支閱讀燈到環繞整張工作桌，不用重買。全系列採用 Ra97 高演色 LED 與無頻閃驅動，並開放第三方配件的規格文件。主板與組裝皆在新竹完成。</p>
+                    <div class="project-card-data">
+                      <dl class="project-figures">
+                        <dt class="visually-hidden">達成率</dt>
+                        <dd class="figure-num project-figures-rate"><data value="586">586%</data></dd>
+                        <dt class="visually-hidden">目前金額</dt>
+                        <dd class="project-figures-amount"><data value="5274000">NT$&nbsp;5,274,000</data></dd>
+                      </dl>
+                      <div class="blocks blocks-md is-over" style="--target: 17.1%" aria-hidden="true"><span></span></div>
+                      <dl class="pill-list plist-card-pills">
+                        <div class="pill"><dt><i class="bi bi-flag" aria-hidden="true"></i>目標</dt><dd>NT$&nbsp;900,000</dd></div>
+                        <div class="pill"><dt class="visually-hidden">贊助人數</dt><dd><i class="bi bi-people" aria-hidden="true"></i><data value="2318">2,318</data>&nbsp;人贊助</dd></div>
+                        <div class="pill pill-warn"><dt class="visually-hidden">剩餘天數</dt><dd><i class="bi bi-alarm" aria-hidden="true"></i>剩&nbsp;<data value="5">5</data>&nbsp;天</dd></div>
+                      </dl>
+                      <ul class="plist-card-facts" aria-label="專案資訊">
+                        <li><span class="status status-live has-dot">募資中</span></li>
+                        <li class="plist-fact"><span>回饋門檻</span> <strong>NT$&nbsp;2,480 起</strong></li>
+                        <li class="plist-fact"><span>預計出貨</span> <strong>2027 年 4 月</strong></li>
+                      </ul>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li class="col">
+                <article class="toybox project-card plist-card">
+                  <div class="toybox-window img-frame ratio ratio-4x3">
+                    <img src="images/project-03-documentary.jpg" alt="遠洋漁船甲板上整理漁網的漁工與拍攝中的攝影機" width="1600" height="1066" loading="lazy">
+                    <span class="sticker sticker-lemon toybox-sticker">出版與影像</span>
+                  </div>
+                  <div class="toybox-body">
+                    <h2 class="project-card-title plist-card-title text-phrase"><a class="stretched-link" href="project.html">《海的另一邊》<wbr>遠洋漁工紀錄片</a></h2>
+                    <p class="project-card-maker plist-card-maker">第三視角工作室（高雄 ‧ 獨立紀錄片團隊）</p>
+                    <p class="plist-card-intro">四年、三艘船、兩萬海浬，跟拍六位印尼籍遠洋漁工的工作與返鄉。團隊已完成 80% 拍攝，本次募資用於後期剪輯、配樂與院線上映。回饋包含首映會門票、導演版藍光與拍攝側記攝影集。</p>
+                    <div class="project-card-data">
+                      <dl class="project-figures">
+                        <dt class="visually-hidden">達成率</dt>
+                        <dd class="figure-num project-figures-rate"><data value="68">68%</data></dd>
+                        <dt class="visually-hidden">目前金額</dt>
+                        <dd class="project-figures-amount"><data value="680000">NT$&nbsp;680,000</data></dd>
+                      </dl>
+                      <div class="blocks blocks-md " style="--value: 68%" aria-hidden="true"><span></span></div>
+                      <dl class="pill-list plist-card-pills">
+                        <div class="pill"><dt><i class="bi bi-flag" aria-hidden="true"></i>目標</dt><dd>NT$&nbsp;1,000,000</dd></div>
+                        <div class="pill"><dt class="visually-hidden">贊助人數</dt><dd><i class="bi bi-people" aria-hidden="true"></i><data value="497">497</data>&nbsp;人贊助</dd></div>
+                        <div class="pill"><dt class="visually-hidden">剩餘天數</dt><dd><i class="bi bi-clock" aria-hidden="true"></i>剩&nbsp;<data value="21">21</data>&nbsp;天</dd></div>
+                      </dl>
+                      <ul class="plist-card-facts" aria-label="專案資訊">
+                        <li><span class="status status-live has-dot">募資中</span></li>
+                        <li class="plist-fact"><span>回饋門檻</span> <strong>NT$&nbsp;600 起</strong></li>
+                        <li class="plist-fact"><span>預計交付</span> <strong>2027 年 6 月（首映）</strong></li>
+                      </ul>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li class="col">
+                <article class="toybox project-card plist-card">
+                  <div class="toybox-window img-frame ratio ratio-4x3">
+                    <img src="images/project-04-grip-cutlery.jpg" alt="加粗矽膠握柄的湯匙、叉子與刀" width="1600" height="1066" loading="lazy">
+                    <span class="sticker sticker-peach toybox-sticker">社會設計</span>
+                    <span class="status status-warn status-on-photo toybox-alert"><i class="bi bi-alarm" aria-hidden="true"></i>剩&nbsp;3&nbsp;天</span>
+                  </div>
+                  <div class="toybox-body">
+                    <h2 class="project-card-title plist-card-title text-phrase"><a class="stretched-link" href="project.html">好握餐具｜<wbr>為手部退化設計的<wbr>一套餐具</a></h2>
+                    <p class="project-card-maker plist-card-maker">共生設計實驗室（台北 ‧ 社會設計團隊）</p>
+                    <p class="plist-card-intro">與職能治療師共同開發，針對中風後遺症與類風濕患者設計。加粗矽膠握柄符合無力抓握的手型，湯匙碗體角度經 42 位使用者實測調整，刀叉可單手操作。售出一組即捐贈一組至長照機構。</p>
+                    <div class="project-card-data">
+                      <dl class="project-figures">
+                        <dt class="visually-hidden">達成率</dt>
+                        <dd class="figure-num project-figures-rate"><data value="134">134%</data></dd>
+                        <dt class="visually-hidden">目前金額</dt>
+                        <dd class="project-figures-amount"><data value="402000">NT$&nbsp;402,000</data></dd>
+                      </dl>
+                      <div class="blocks blocks-md is-over" style="--target: 74.6%" aria-hidden="true"><span></span></div>
+                      <dl class="pill-list plist-card-pills">
+                        <div class="pill"><dt><i class="bi bi-flag" aria-hidden="true"></i>目標</dt><dd>NT$&nbsp;300,000</dd></div>
+                        <div class="pill"><dt class="visually-hidden">贊助人數</dt><dd><i class="bi bi-people" aria-hidden="true"></i><data value="613">613</data>&nbsp;人贊助</dd></div>
+                        <div class="pill pill-warn"><dt class="visually-hidden">剩餘天數</dt><dd><i class="bi bi-alarm" aria-hidden="true"></i>剩&nbsp;<data value="3">3</data>&nbsp;天</dd></div>
+                      </dl>
+                      <ul class="plist-card-facts" aria-label="專案資訊">
+                        <li><span class="status status-live has-dot">募資中</span></li>
+                        <li class="plist-fact"><span>回饋門檻</span> <strong>NT$&nbsp;980 起</strong></li>
+                        <li class="plist-fact"><span>預計出貨</span> <strong>2027 年 1 月</strong></li>
+                      </ul>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li class="col">
+                <article class="toybox project-card plist-card">
+                  <div class="toybox-window img-frame ratio ratio-4x3">
+                    <img src="images/project-05-bamboo-notebook.jpg" alt="竹炭染色布封面的筆記本與平攤的再生紙內頁" width="1600" height="1066" loading="lazy">
+                    <span class="sticker sticker-sakura toybox-sticker">設計生活</span>
+                  </div>
+                  <div class="toybox-body">
+                    <h2 class="project-card-title plist-card-title text-phrase"><a class="stretched-link" href="project.html">寫了會回來的<wbr>竹纖維筆記本</a></h2>
+                    <p class="project-card-maker plist-card-maker">再生紙研所（南投 ‧ 竹業轉型計畫）</p>
+                    <p class="plist-card-intro">以南投廢棄竹材製成的再生紙筆記本，不漂白、無塗層，鋼筆書寫不暈不透。內頁採 180 度平攤裝訂，封面使用竹炭染色布。每售出一本，回收等量竹材送回原產地做為肥料，形成閉環。</p>
+                    <div class="project-card-data">
+                      <dl class="project-figures">
+                        <dt class="visually-hidden">達成率</dt>
+                        <dd class="figure-num project-figures-rate"><data value="159">159%</data></dd>
+                        <dt class="visually-hidden">目前金額</dt>
+                        <dd class="project-figures-amount"><data value="318400">NT$&nbsp;318,400</data></dd>
+                      </dl>
+                      <div class="blocks blocks-md is-over" style="--target: 62.8%" aria-hidden="true"><span></span></div>
+                      <dl class="pill-list plist-card-pills">
+                        <div class="pill"><dt><i class="bi bi-flag" aria-hidden="true"></i>目標</dt><dd>NT$&nbsp;200,000</dd></div>
+                        <div class="pill"><dt class="visually-hidden">贊助人數</dt><dd><i class="bi bi-people" aria-hidden="true"></i><data value="886">886</data>&nbsp;人贊助</dd></div>
+                        <div class="pill"><dt class="visually-hidden">剩餘天數</dt><dd><i class="bi bi-clock" aria-hidden="true"></i>剩&nbsp;<data value="9">9</data>&nbsp;天</dd></div>
+                      </dl>
+                      <ul class="plist-card-facts" aria-label="專案資訊">
+                        <li><span class="status status-live has-dot">募資中</span></li>
+                        <li class="plist-fact"><span>回饋門檻</span> <strong>NT$&nbsp;420 起</strong></li>
+                        <li class="plist-fact"><span>預計出貨</span> <strong>2026 年 12 月</strong></li>
+                      </ul>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li class="col">
+                <article class="toybox project-card plist-card">
+                  <div class="toybox-window img-frame ratio ratio-4x3">
+                    <img src="images/project-06-island-boardgame.jpg" alt="手繪台灣原生動植物卡牌與棲地板塊的桌遊" width="1600" height="1066" loading="lazy">
+                    <span class="sticker toybox-sticker">遊戲桌遊</span>
+                  </div>
+                  <div class="toybox-body">
+                    <h2 class="project-card-title plist-card-title text-phrase"><a class="stretched-link" href="project.html">島嶼生態｜<wbr>台灣原生種<wbr>策略桌遊</a></h2>
+                    <p class="project-card-maker plist-card-maker">山貓遊戲設計（台中 ‧ 獨立桌遊工作室）</p>
+                    <p class="plist-card-intro">2–5 人的生態系建構遊戲，收錄 86 種台灣原生動植物，每張卡牌皆由生態插畫家手繪並經生態學者審訂。玩家透過棲地配置與物種互動建立食物網，遊戲時間約 45 分鐘，10 歲以上可玩。</p>
+                    <div class="project-card-data">
+                      <dl class="project-figures">
+                        <dt class="visually-hidden">達成率</dt>
+                        <dd class="figure-num project-figures-rate"><data value="307">307%</data></dd>
+                        <dt class="visually-hidden">目前金額</dt>
+                        <dd class="project-figures-amount"><data value="1847500">NT$&nbsp;1,847,500</data></dd>
+                      </dl>
+                      <div class="blocks blocks-md is-over" style="--target: 32.5%" aria-hidden="true"><span></span></div>
+                      <dl class="pill-list plist-card-pills">
+                        <div class="pill"><dt><i class="bi bi-flag" aria-hidden="true"></i>目標</dt><dd>NT$&nbsp;600,000</dd></div>
+                        <div class="pill"><dt class="visually-hidden">贊助人數</dt><dd><i class="bi bi-people" aria-hidden="true"></i><data value="1566">1,566</data>&nbsp;人贊助</dd></div>
+                        <div class="pill"><dt class="visually-hidden">剩餘天數</dt><dd><i class="bi bi-clock" aria-hidden="true"></i>剩&nbsp;<data value="16">16</data>&nbsp;天</dd></div>
+                      </dl>
+                      <ul class="plist-card-facts" aria-label="專案資訊">
+                        <li><span class="status status-live has-dot">募資中</span></li>
+                        <li class="plist-fact"><span>回饋門檻</span> <strong>NT$&nbsp;1,280 起</strong></li>
+                        <li class="plist-fact"><span>預計出貨</span> <strong>2027 年 3 月</strong></li>
+                      </ul>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li class="col">
+                <article class="toybox project-card plist-card">
+                  <div class="toybox-window img-frame ratio ratio-4x3">
+                    <img src="images/project-07-coffee-cup.jpg" alt="咖啡渣壓製的隨行杯與一小堆咖啡渣" width="1600" height="1066" loading="lazy">
+                    <span class="sticker toybox-sticker">食品飲料</span>
+                  </div>
+                  <div class="toybox-body">
+                    <h2 class="project-card-title plist-card-title text-phrase"><a class="stretched-link" href="project.html">回到土裡的<wbr>咖啡渣杯</a></h2>
+                    <p class="project-card-maker plist-card-maker">循環物料實驗室（嘉義 ‧ 材料新創）</p>
+                    <p class="plist-card-intro">用咖啡館回收的咖啡渣加上植物基黏合劑壓製成的隨行杯，耐熱 90°C、可重複使用兩年，壽命結束後埋入土中 180 天自然分解。本次募資用於開模與首批量產，已完成 14 次材料強度測試。</p>
+                    <div class="project-card-data">
+                      <dl class="project-figures">
+                        <dt class="visually-hidden">達成率</dt>
+                        <dd class="figure-num project-figures-rate"><data value="47">47%</data></dd>
+                        <dt class="visually-hidden">目前金額</dt>
+                        <dd class="project-figures-amount"><data value="212000">NT$&nbsp;212,000</data></dd>
+                      </dl>
+                      <div class="blocks blocks-md " style="--value: 47.1%" aria-hidden="true"><span></span></div>
+                      <dl class="pill-list plist-card-pills">
+                        <div class="pill"><dt><i class="bi bi-flag" aria-hidden="true"></i>目標</dt><dd>NT$&nbsp;450,000</dd></div>
+                        <div class="pill"><dt class="visually-hidden">贊助人數</dt><dd><i class="bi bi-people" aria-hidden="true"></i><data value="388">388</data>&nbsp;人贊助</dd></div>
+                        <div class="pill"><dt class="visually-hidden">剩餘天數</dt><dd><i class="bi bi-clock" aria-hidden="true"></i>剩&nbsp;<data value="28">28</data>&nbsp;天</dd></div>
+                      </dl>
+                      <ul class="plist-card-facts" aria-label="專案資訊">
+                        <li><span class="status status-live has-dot">募資中</span></li>
+                        <li class="plist-fact"><span>回饋門檻</span> <strong>NT$&nbsp;680 起</strong></li>
+                        <li class="plist-fact"><span>預計出貨</span> <strong>2027 年 5 月</strong></li>
+                      </ul>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li class="col">
+                <article class="toybox project-card plist-card">
+                  <div class="toybox-window img-frame ratio ratio-4x3">
+                    <img src="images/project-08-street-facades.jpg" alt="攤開的手繪台灣街屋立面圖集與測繪工具" width="1600" height="1066" loading="lazy">
+                    <span class="sticker sticker-lemon toybox-sticker">出版與影像</span>
+                    <span class="status status-warn status-on-photo toybox-alert"><i class="bi bi-alarm" aria-hidden="true"></i>剩&nbsp;7&nbsp;天</span>
+                  </div>
+                  <div class="toybox-body">
+                    <h2 class="project-card-title plist-card-title text-phrase"><a class="stretched-link" href="project.html">街屋立面｜<wbr>台灣老屋<wbr>測繪圖集</a></h2>
+                    <p class="project-card-maker plist-card-maker">測繪筆記（台北 ‧ 建築研究團隊）</p>
+                    <p class="plist-card-intro">耗時五年手繪測繪的 120 棟台灣街屋立面圖集，涵蓋日治洋樓、戰後現代主義與 80 年代磁磚立面。全書採 1:50 比例精繪，附加尺寸標註與建材說明，是建築、設計與文資工作者的工具書。</p>
+                    <div class="project-card-data">
+                      <dl class="project-figures">
+                        <dt class="visually-hidden">達成率</dt>
+                        <dd class="figure-num project-figures-rate"><data value="136">136%</data></dd>
+                        <dt class="visually-hidden">目前金額</dt>
+                        <dd class="project-figures-amount"><data value="1094200">NT$&nbsp;1,094,200</data></dd>
+                      </dl>
+                      <div class="blocks blocks-md is-over" style="--target: 73.1%" aria-hidden="true"><span></span></div>
+                      <dl class="pill-list plist-card-pills">
+                        <div class="pill"><dt><i class="bi bi-flag" aria-hidden="true"></i>目標</dt><dd>NT$&nbsp;800,000</dd></div>
+                        <div class="pill"><dt class="visually-hidden">贊助人數</dt><dd><i class="bi bi-people" aria-hidden="true"></i><data value="724">724</data>&nbsp;人贊助</dd></div>
+                        <div class="pill pill-warn"><dt class="visually-hidden">剩餘天數</dt><dd><i class="bi bi-alarm" aria-hidden="true"></i>剩&nbsp;<data value="7">7</data>&nbsp;天</dd></div>
+                      </dl>
+                      <ul class="plist-card-facts" aria-label="專案資訊">
+                        <li><span class="status status-live has-dot">募資中</span></li>
+                        <li class="plist-fact"><span>回饋門檻</span> <strong>NT$&nbsp;1,500 起</strong></li>
+                        <li class="plist-fact"><span>預計出貨</span> <strong>2027 年 2 月</strong></li>
+                      </ul>
+                    </div>
+                  </div>
+                </article>
+              </li>
+            </ul>
+
+            <!-- 分頁：圓形糖果按鈕；本次只做第 1 頁，其他頁碼是不帶 href 的佔位連結 -->
+            <nav class="plist-pagination" aria-label="專案列表分頁">
+              <ul class="pagination candy-pages">
+                <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left" aria-hidden="true"></i><span class="visually-hidden">上一頁</span></span></li>
+                <li class="page-item active"><a class="page-link" aria-current="page">1</a></li>
+                <li class="page-item"><a class="page-link">2</a></li>
+                <li class="page-item"><a class="page-link">3</a></li>
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+                <li class="page-item"><a class="page-link">12</a></li>
+                <li class="page-item"><a class="page-link"><i class="bi bi-chevron-right" aria-hidden="true"></i><span class="visually-hidden">下一頁</span></a></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+
+        <!-- ========== 設計稿狀態示意 ========== -->
+        <section class="demo-state" aria-labelledby="demoEmptyTitle">
+          <p class="demo-state-tag"><i class="bi bi-eye" aria-hidden="true"></i>設計稿狀態示意</p>
+          <h2 id="demoEmptyTitle" class="demo-state-title">專案列表篩選無結果</h2>
+          <p class="text-note">篩選條件下沒有任何專案時，右側卡片格與分頁換成這個畫面；玩具箱篩選欄與「已套用」標籤維持原樣，方便放寬條件。</p>
+          <div class="demo-state-stage">
+            <div class="empty-state">
+              <span class="empty-state-icon"><i class="bi bi-search" aria-hidden="true"></i></span>
+              <p>這個條件下目前沒有專案，試著放寬分類或贊助金額範圍。</p>
+              <button class="btn btn-outline-primary" type="button">清除所有篩選</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- 玩具托盤頁尾：淡紫底、上緣扇貝邊 -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="row gy-5">
+          <div class="col-lg-5 col-xl-4">
+            <a class="site-brand" href="index.html">
+              <img src="images/favicon.svg" alt="" width="40" height="40">
+              <span class="site-brand-text">
+                <span class="site-brand-name">島造</span>
+                <span class="site-brand-sub" lang="en">ISLANDMAKE</span>
+              </span>
+            </a>
+            <p class="site-footer-lead">專注台灣在地設計與製造的群眾募資平台。不做快消、不做轉賣，只收「說得出材料從哪來、工廠在哪裡、什麼時候能交到你手上」的提案。</p>
+          </div>
+          <!-- 尚未設計頁面的連結：不帶 href 的佔位連結 -->
+          <div class="col-6 col-md-4 col-lg-2 offset-xl-1">
+            <h2 class="site-footer-title">贊助者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="projects.html">探索專案</a></li>
+              <li><a href="account.html#backings">我的贊助紀錄</a></li>
+              <li><a>追蹤中的專案</a></li>
+              <li><a href="project.html#faq">贊助常見問題</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">提案者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="index.html#propose">我要提案</a></li>
+              <li><a href="account.html#my-projects">提案管理</a></li>
+              <li><a href="account.html#dashboard">募資數據</a></li>
+              <li><a>排程與出貨規範</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+            <h2 class="site-footer-title">平台</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a>關於島造</a></li>
+              <li><a>審核標準</a></li>
+              <li><a>退款政策</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">© 2026 島造 ISLANDMAKE 在地製造提案平台｜<wbr>本站為課程設計稿範例，專案與金額皆為示意資料。</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

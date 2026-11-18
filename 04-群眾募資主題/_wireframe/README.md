@@ -1,6 +1,6 @@
 # _wireframe：共用的版型參考
 
-這個資料夾是群眾募資設計稿的**資訊架構與版型依據**：所有風格（`02-green-style`、`03-bold-style`、`04-indie-press-style` 以及之後的各套）的頁面組成、區塊順序與欄數都以這裡為準。
+這個資料夾是群眾募資設計稿的**資訊架構與版型依據**：所有風格（`01-hardware-lab-style`、`02-green-style`、`03-bold-style`、`04-indie-press-style`、`05-business-style`、`06-toy-factory-style` 以及之後的各套）的頁面組成、區塊順序與欄數都以這裡為準。
 
 - 來源：Notion「04-群眾募資主題：島造 ISLANDMAKE 在地製造提案平台」頁面裡的附件 `index.html`（<https://app.notion.com/p/3ef6ab47eb4880638063f06429c057ed>）
 - 下載日期：2026-10-06，**原樣保存**為 `index.html`，沒有改過任何內容（SHA-256 `9b1d85be0254e2a28b7f7f1bcf8e556e43e2ea6e36dcfba00b535334930b1dfa`）
@@ -8,7 +8,7 @@
 ## 範圍與資料來源
 
 1. **wireframe 只提供資訊架構與版型**：頁面有哪些、區塊順序、桌機欄數、元件、互動與狀態規則。
-2. 這份 wireframe 是一套**有自己視覺風格的高保真稿**（奶油底、磚紅、深夜色、襯線標題、藥丸按鈕）。它的配色、字體、圓角都**不是規格**，三套風格各自重新設計，見 `WIREFRAME_SPEC.md` §0.1。
+2. 這份 wireframe 是一套**有自己視覺風格的高保真稿**（奶油底、磚紅、深夜色、襯線標題、藥丸按鈕）。它的配色、字體、圓角都**不是規格**，六套風格各自重新設計，見 `WIREFRAME_SPEC.md` §0.1。
 3. **文案以 Notion 為唯一來源**，整理在上一層的 [`../CONTENT.md`](../CONTENT.md)，逐字使用。wireframe 有一些 Notion 沒有的文字（例如首頁的平台數字 NT$ 14.2 億、各區塊的英文眉標、延遲原因說明），對照表在 `WIREFRAME_SPEC.md` §6；兩者不一致時**以 Notion 為準**。
 4. 每套共 10 頁。Notion 規定的 5 頁（設計 Guideline、首頁、專案列表、專案細節與贊助方案選擇、個人頁面）剛好就是 wireframe 的 5 個頁面區塊；2026-11 補的 5 頁（登入、註冊、贊助結帳、贊助成功、贊助紀錄詳情）**wireframe 沒有、也沒有截圖**，版型直接看 `WIREFRAME_SPEC.md` §3.05～3.09，文案看 `../CONTENT.md` 附錄 B.7～B.12。提案者後台與管理員後台仍是第二階段，不做。
 5. 圖片清單在 [`../IMAGES.md`](../IMAGES.md)；每套風格的規範與新增步驟在 [`../README.md`](../README.md)。

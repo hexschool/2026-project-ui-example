@@ -1,0 +1,157 @@
+// ============================================================
+// 招牌元素 2：KPI 指標列 .kpi-ribbon（StatTile 的集合）
+// 每格「標籤在上（13px muted）→ 大數字（Plex 600、等寬）→ 補充」，格與格之間 1px 直立線
+// 用在：首頁 Hero 事實卡、專案細節的募資行情列、個人頁統計列與募資數據、贊助紀錄詳情的專案摘要帶
+//
+// <dl class="kpi-ribbon" style="--kpi-cols: 4">
+//   <div class="kpi">
+//     <dt class="kpi-label">贊助人數</dt>
+//     <dd class="kpi-value"><data value="1042">1,042</data><span class="unit">人</span></dd>
+//     <dd class="kpi-note is-up"><i class="bi bi-arrow-up-right" aria-hidden="true"></i>今日 +37</dd>
+//   </div>
+//   …
+// </dl>
+// 變化：.is-inset（沒有外框，放在卡片裡）、.is-ice（冰灰底）、.kpi.is-ok（成功強調：ok 底＋ok 框＋數字大一級）
+// 欄數：--kpi-cols（≥ 768px，預設 4）、--kpi-cols-sm（< 768px，預設 2）
+// 格線用「容器底色＋1px gap」畫，任何欄數都對得齊；奇數格在 2 欄時最後一格跨 2 欄
+// ============================================================
+
+.kpi-ribbon {
+  --kpi-cols: 4;
+  --kpi-cols-sm: 2;
+  --kpi-bg: #{$white};
+  display: grid;
+  grid-template-columns: repeat(var(--kpi-cols-sm), minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $line;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(var(--kpi-cols), minmax(0, 1fr));
+  }
+
+  &.is-inset {
+    border: 0;
+    border-radius: 0;
+  }
+  &.is-ice {
+    --kpi-bg: #{$ice-50};
+  }
+}
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  min-width: 0;
+  padding: 1rem 1.125rem;
+  background-color: var(--kpi-bg, $white);
+
+  @include media-breakpoint-up(lg) {
+    padding: 1.125rem 1.25rem;
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+@include media-breakpoint-down(md) {
+  .kpi-ribbon > .kpi:last-child:nth-child(odd) {
+    grid-column: span 2;
+  }
+}
+.kpi-label {
+  font-size: $kpi-label-size;
+  font-weight: $font-weight-medium;
+  line-height: 1.4;
+  color: $ink-muted;
+}
+.kpi-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 .25rem;
+  font-size: $kpi-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: 1.15;
+  color: $ink;
+  white-space: nowrap;
+
+  @include media-breakpoint-up(lg) {
+    font-size: $kpi-size;
+  }
+
+  // 「共贊助 14 件專案」這類原文：只放大數字，前後文字維持小字
+  .kpi-text {
+    font-size: .9375rem;
+    font-weight: $font-weight-medium;
+    color: $ink-muted;
+    white-space: normal;
+  }
+}
+.kpi-note {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  font-size: .8125rem;
+  color: $ink-muted;
+
+  &.is-up {
+    color: $ok-fg;
+    font-weight: $font-weight-medium;
+  }
+}
+// 成功強調（準時出貨率 100%）
+.kpi.is-ok {
+  position: relative;
+  background-color: $ok-bg;
+  box-shadow: inset 0 0 0 1px $ok-fg;
+
+  .kpi-label,
+  .kpi-value {
+    color: $ok-fg;
+  }
+  .kpi-value {
+    font-size: $kpi-size-sm + .25rem;
+
+    @include media-breakpoint-up(lg) {
+      font-size: $kpi-size + .25rem;
+    }
+  }
+}
+
+// 兩格一組的小型 KPI（專案卡：達成率｜目前募得、贊助人數｜剩餘天數）
+// <dl class="kpi-pair"><div><dt>達成率</dt><dd>…</dd></div><div><dt>目前募得</dt><dd>…</dd></div></dl>
+.kpi-pair {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  margin: 0;
+
+  > div {
+    min-width: 0;
+  }
+  > div + div {
+    padding-left: .875rem;
+    margin-left: .875rem;
+    border-left: 1px solid $line;
+  }
+  dt {
+    font-size: .75rem;
+    font-weight: $font-weight-medium;
+    line-height: 1.4;
+    color: $ink-muted;
+  }
+  dd {
+    margin: .125rem 0 0;
+    font-size: $kpi-size-sm;
+    font-weight: $font-weight-semibold;
+    line-height: 1.2;
+    color: $ink;
+    white-space: nowrap;
+  }
+  &.is-sm dd {
+    font-size: 1rem;
+  }
+}

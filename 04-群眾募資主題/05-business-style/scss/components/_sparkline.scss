@@ -1,0 +1,115 @@
+// ============================================================
+// 招牌元素 3：累積走勢迷你圖 .sparkline
+// SPEC §3.04 圖 2 的 20 天累積資料（CONTENT 附錄 B.4）縮放到 viewBox 0 0 240 130：
+//   x＝3＋i × 12.316（i＝0～19）、y＝122 − 累積千元 ÷ 1,400 × 114；基準線 y＝122、1,000 千元格線 y＝40.6；
+//   目標線 y＝81.3（62.5%）；09/17 達標點 (24.8, 81.3)；端點 (237, 21.4)。points 直接抄 index.html 的 .sparkline-line
+// 面積＋折線（$blue-600）、目標虛線（$ink-muted，全圖唯一的虛線）、端點圓點；SVG 裡不寫色碼，只寫 class
+// 旁邊一定有文字數字（KPI），不加新的標題文案；標註只用 wireframe 的直接標註（目標、09/17 達標、日期）
+// 載入時折線描線一次（700ms，pathLength="1"），prefers-reduced-motion 時關閉
+//
+// <figure class="sparkline" aria-hidden="true">
+//   <div class="sparkline-plot"><svg viewBox="0 0 240 130">…</svg>
+//     <span class="sparkline-note is-goal" style="--y: 62.5%">目標</span>
+//     <span class="sparkline-note is-cross" style="--x: 10.3%; --y: 62.5%">09/17 達標</span></div>
+//   <figcaption class="sparkline-axis"><span>09/15</span><span>10/04</span></figcaption>
+// </figure>
+// ============================================================
+
+.sparkline {
+  position: relative;
+  margin: 0;
+}
+.sparkline-plot {
+  position: relative;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+}
+.sparkline-grid {
+  stroke: $line;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.sparkline-grid.is-base {
+  stroke: $line-strong;
+}
+.sparkline-area {
+  fill: $spark-area;
+}
+.sparkline-line {
+  fill: none;
+  stroke: $spark-line;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-dasharray: 1; // 搭配 SVG 的 pathLength="1"（不能加 non-scaling-stroke，否則虛線長度改用螢幕單位）
+  stroke-dashoffset: 0;
+  animation: sparkline-draw .7s ease-out both;
+}
+.sparkline-goal {
+  stroke: $spark-goal;
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+}
+.sparkline-dot {
+  fill: $white;
+  stroke: $spark-line;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.sparkline-dot.is-solid {
+  fill: $spark-line;
+}
+
+@keyframes sparkline-draw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sparkline-line {
+    animation: none;
+  }
+}
+
+// 直接標註：用百分比定位在 SVG 上（--x、--y 是 viewBox 座標換成的百分比）
+// 「目標」放在目標線左端的上方：那一段折線還在目標線下面（09/17 才穿過），不會和數據線打架；
+// 「09/17 達標」在達標點右下方，和虛線之間留 7px。兩個標註都加一圈白色描邊，壓到格線或面積時仍然清楚
+.sparkline-note {
+  position: absolute;
+  top: var(--y, 0);
+  font-size: .75rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: $ink-muted;
+  text-shadow: 0 0 2px $white, 0 0 2px $white, 0 0 3px $white;
+
+  &.is-goal {
+    left: 0;
+    transform: translateY(calc(-100% - 5px));
+  }
+  &.is-cross {
+    left: calc(var(--x) + 8px);
+    transform: translateY(7px);
+    color: $ink;
+  }
+  &.is-end {
+    right: 0;
+    transform: translateY(calc(-100% - 8px));
+    color: $blue-700;
+    font-weight: $font-weight-semibold;
+  }
+}
+// x 軸：起訖日期
+.sparkline-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: .375rem;
+  font-size: .75rem;
+  color: $ink-muted;
+}

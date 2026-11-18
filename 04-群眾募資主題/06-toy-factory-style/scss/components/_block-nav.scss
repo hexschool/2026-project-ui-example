@@ -1,0 +1,125 @@
+// ============================================================
+// 積木導覽（個人頁側欄；Guideline 的章節目錄也可以用）
+// 每個項目是一塊圓角積木按鈕，淡色底依序輪替（櫻、紫、檸檬、桃）；群組標題粉圓
+// 目前項目＝葡萄紫底白字＋左側一顆檸檬小球（不只靠顏色）；數量用白色小圓泡
+// ≥ 992px sticky（top: $sticky-offset）由外層決定；ScrollSpy 會切換 .nav-link.active
+//
+// <nav id="acctNav" class="block-nav" aria-label="…">
+//   <p class="block-nav-group">贊助</p>
+//   <ul class="nav flex-column">
+//     <li class="nav-item"><a class="nav-link active" href="#backings">我的贊助紀錄<span class="block-nav-count">14</span></a></li>
+//   </ul>
+// </nav>
+// 未讀數：<span class="block-nav-unread">4<span class="visually-hidden"> 則未讀</span></span>
+// ============================================================
+
+$block-nav-colors: ($sakura-100, $lilac-100, $lemon-100, nth(map-get($category-colors, "peach"), 2));
+
+.block-nav {
+  .nav {
+    gap: .5rem;
+  }
+  .nav-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    min-height: 3rem;
+    padding: .5rem .75rem .5rem .875rem;
+    border: 2px solid transparent;
+    border-radius: $border-radius;
+    font-family: $font-family-round;
+    font-size: 1rem;
+    color: $ink;
+    box-shadow: $box-shadow-inset;
+    transition: border-color .15s ease, color .15s ease;
+
+    // 左側小球槽：一般是空心，目前項目放進一顆檸檬小球
+    &::before {
+      content: "";
+      flex-shrink: 0;
+      width: .75rem;
+      height: .75rem;
+      border-radius: 50%;
+      background-color: rgba($card, .85);
+      box-shadow: inset 0 0 0 1.5px rgba($ink, .18);
+    }
+
+    &:hover {
+      border-color: $lilac-300;
+      color: $grape-700;
+    }
+    &:focus-visible {
+      outline: 3px solid $grape;
+      outline-offset: 2px;
+      box-shadow: $box-shadow-inset;
+    }
+  }
+  a.nav-link:not([href]) { cursor: default; }
+
+  @each $color in $block-nav-colors {
+    $i: index($block-nav-colors, $color);
+    .nav-item:nth-child(4n + #{$i}) .nav-link { background-color: $color; }
+  }
+
+  // 寫成 .nav-item .nav-link.active，權重才蓋得過上面輪替底色的 :nth-child
+  .nav-item .nav-link.active {
+    background-color: $grape;
+    color: $on-grape;
+    box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .18), 0 6px 14px rgba($grape, .25);
+
+    &::before {
+      background:
+        radial-gradient(circle at 34% 30%, rgba($card, .95) 0 14%, rgba($card, 0) 15%),
+        radial-gradient(circle at 40% 35%, $lemon-400, $lemon-500 70%);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+    }
+    &:hover { border-color: transparent; color: $on-grape; }
+    .block-nav-count { color: $grape-700; }
+  }
+}
+.block-nav .for-proposer,
+.block-nav-group + .nav { margin-bottom: 1.5rem; }
+.block-nav > :last-child,
+.block-nav > :last-child .nav { margin-bottom: 0; }
+.block-nav-group {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .625rem;
+  padding-left: .25rem;
+  font-family: $font-family-round;
+  font-size: .9375rem;
+  color: $ink-muted;
+
+  &::before {
+    content: "";
+    width: .875rem;
+    height: .625rem;
+    border-radius: 3px;
+    background-color: $lilac-500;
+  }
+}
+// 數量小圓泡（下拉選單裡也用）
+.block-nav-count,
+.block-nav-unread {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  margin-left: auto;
+  padding: 0 .4375rem;
+  border-radius: $border-radius-pill;
+  font-family: $font-family-figure;
+  font-size: .8125rem;
+  font-weight: 500;
+  line-height: 1;
+}
+.block-nav-count {
+  background-color: $card;
+  color: $ink-muted;
+}
+.block-nav-unread {
+  background-color: $tone-err;
+  color: $card;
+}

@@ -1,0 +1,1089 @@
+// ============================================================
+// 設計 Guideline guideline.html（class 前綴 gl-）
+// 構圖（方向說明 2.6）：頁面標題區 → 上方 sticky「章節頻道列」（00 概覽＋9 章，方角分段 .seg，ScrollSpy）
+//   → 全寬章節（一章一個區塊、底色交替）→ 每章一組面板（沿用 .module.panel）
+// 章節 id：#overview、#color、#typography、#spacing、#radius、#states、#charts、#copy、#rwd、#dos-donts
+// 不用左側 3：9 目錄：≥ 992 左邊已經是控制欄，再放一條直欄會變成兩條側欄
+// 元件示範一律用頁面真的在用的 class（.charge、.console、.reward-tier、.sequence、.chart-card…）；
+// 這裡只寫 Guideline 才需要的東西：色票、尺規、欄位示意、靜態的 hover／focus 樣子、頁首與手機行動列的靜態示範、Do／Don't 舞台
+// ============================================================
+
+// ---------- 頁面標題區 ----------
+.gl-head-meta { margin-top: map-get($spacers, 4); }
+// 章節內的大段落標題（「10 個頁面」「空畫面的樣子」）：h3＋充能短直線
+.gl-part-title {
+  margin: map-get($spacers, 8) 0 map-get($spacers, 5);
+  font-size: $h3-font-size;
+}
+
+// ---------- ★ 章節頻道列 ----------
+// ≥ 992 貼在視窗頂端（沒有頂部頁首）；< 992 是標題區下方一列可橫捲的分段，不 sticky（手機頂部已經有 60px 橫列）
+// <nav id="glChannels" class="gl-channels" aria-label="Guideline 章節">
+//   <div class="container"><div class="nav seg gl-channel-list">
+//     <a class="nav-link" href="#color"><span class="gl-channel-no">01</span>色彩</a>…
+// 目前章節：.seg 的選中樣子（青空字＋選中底），由 ScrollSpy 切換 .active
+.gl-channels {
+  border-bottom: 1px solid $line;
+  background-color: $ti-900;
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: 0;
+    z-index: $zindex-sticky;
+  }
+}
+.gl-channel-list {
+  display: flex;
+  width: 100%;
+  margin-block: .625rem;
+
+  .nav-link {
+    flex: 1 0 auto;
+    justify-content: center;
+  }
+
+  // ≥ 992：編號在上、章名在下（和控制欄「圖示在上、文字在下」同一個語彙），10 格平均分配
+  @include media-breakpoint-up(lg) {
+    .nav-link {
+      flex-direction: column;
+      gap: 0;
+      padding: .3125rem .5rem;
+      font-size: .875rem;
+      line-height: 1.35;
+    }
+  }
+}
+.gl-channel-no {
+  color: $fg-faint;
+  font-family: $font-family-numeric;
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+}
+.gl-channel-list .nav-link.active .gl-channel-no { color: $sky-300; }
+
+// ---------- 章節 ----------
+// 章首：左邊一格「頻道號」（遙測面板＋上緣充能條，Chakra 數字）、右邊 h2 與說明
+.gl-chapter {
+  @include media-breakpoint-up(lg) { scroll-margin-top: 4rem; } // 扣掉 sticky 頻道列（約 74px，另有 24px scroll-padding）
+}
+.gl-chapter-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  column-gap: map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    column-gap: map-get($spacers, 5);
+    margin-bottom: 2.5rem;
+  }
+}
+.gl-chapter-no {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  color: $sky-300;
+  font-family: $font-family-numeric;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+
+  @include media-breakpoint-up(lg) {
+    width: 4.5rem;
+    height: 4.5rem;
+    font-size: 1.75rem;
+  }
+}
+.gl-chapter-title { margin-bottom: map-get($spacers, 2); }
+.gl-chapter-lead {
+  max-width: 46em;
+  margin: 0;
+  color: $fg-muted;
+}
+.gl-stack {
+  display: grid;
+  gap: map-get($spacers, 5);
+}
+// 面板裡的小標（h4）與說明
+.gl-sub {
+  margin: map-get($spacers, 5) 0 map-get($spacers, 3);
+  color: $fg;
+  font-size: 1rem;
+  font-weight: $font-weight-medium;
+  letter-spacing: .06em;
+
+  &:first-child { margin-top: 0; }
+}
+.gl-note {
+  margin: map-get($spacers, 3) 0 0;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+// 狀態名稱（示範上方的小標籤）：Mono 方框，和「設計稿狀態示意」標籤同一個語彙，但實線
+.gl-state {
+  display: inline-block;
+  margin-bottom: map-get($spacers, 2);
+  padding: 0 .5rem;
+  border: 1px solid $line-strong;
+  border-radius: $border-radius-sm;
+  color: $fg-muted;
+  font-size: $small-font-size;
+  letter-spacing: .06em;
+  line-height: 1.7;
+}
+// 示範舞台：比面板再深一階的底，放元件本體
+.gl-stage {
+  padding: map-get($spacers, 5);
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $ti-900;
+
+  > :last-child { margin-bottom: 0; }
+}
+
+// ---------- 00 概覽：招牌主控台示範 ----------
+.gl-console-body {
+  display: grid;
+  gap: map-get($spacers, 5);
+}
+.gl-console-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 4);
+
+  .gauge { width: 5.5rem; }
+}
+.gl-console-rate {
+  display: flex;
+  align-items: center;
+  gap: map-get($spacers, 3);
+}
+// 讀數格：手機一欄（NT$ 500,000 在 3 欄時放不下）、≥ 576 三欄
+.gl-console-readouts {
+  @include media-breakpoint-up(sm) { --cols: 3; }
+}
+// 招牌元素說明：編號清單（Chakra 編號＋名稱＋規則）
+.gl-signs {
+  display: grid;
+  gap: map-get($spacers, 5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: sign;
+}
+.gl-sign {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  column-gap: map-get($spacers, 3);
+  counter-increment: sign;
+
+  &::before {
+    content: counter(sign, decimal-leading-zero);
+    grid-row: span 3;
+    color: $sky-300;
+    font-family: $font-family-numeric;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.6;
+  }
+}
+.gl-sign-title {
+  margin-bottom: map-get($spacers, 1);
+  font-size: 1.0625rem;
+
+  code { margin-left: .375rem; font-size: .8125rem; }
+}
+.gl-sign-use {
+  margin: map-get($spacers, 2) 0 0;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+
+// 10 頁清單：每頁一張遙測面板（檔名 Mono、頁名、構圖、狀態示意）
+.gl-pages {
+  display: grid;
+  gap: map-get($spacers, 4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @include media-breakpoint-up(xxl) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.gl-page {
+  display: flex;
+  flex-direction: column;
+  gap: map-get($spacers, 2);
+  padding: 1rem 1.125rem 1.125rem;
+
+  p { margin: 0; }
+}
+.gl-page-file {
+  font-family: $font-family-monospace;
+  font-size: .875rem;
+
+  a { color: $blue-300; }
+  a:hover { color: $sky-300; }
+}
+.gl-page-name {
+  margin: 0;
+  font-size: $h3-font-size;
+}
+.gl-page-demo {
+  margin-top: auto !important;
+  padding-top: map-get($spacers, 2);
+  border-top: 1px dashed $line-strong;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+
+// ---------- 01 色彩 ----------
+// <ul class="gl-swatches"><li class="gl-swatch panel" style="--chip: #0A0E13">…</li></ul>
+.gl-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+  gap: map-get($spacers, 4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gl-swatch {
+  overflow: hidden;
+
+  p { margin: 0; }
+}
+// 色塊：深色色票和面板幾乎同色，所以下緣多一條線把它切出來
+.gl-swatch-chip {
+  display: block;
+  height: 4.5rem;
+  border-bottom: 1px solid $line-strong;
+  background: var(--chip);
+}
+.gl-swatch-body {
+  display: grid;
+  gap: .125rem;
+  padding: .75rem 1rem 1rem;
+}
+.gl-swatch-name {
+  font-weight: $font-weight-medium;
+
+  code { margin-left: .375rem; font-size: .8125rem; }
+}
+.gl-swatch-hex {
+  font-family: $font-family-monospace;
+  font-size: .875rem;
+}
+.gl-swatch-use {
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+.gl-swatch-ratio {
+  margin-top: .25rem !important;
+  color: $fg;
+  font-family: $font-family-monospace;
+  font-size: $mono-size;
+}
+// 表格裡的小色點
+.gl-dot {
+  display: inline-block;
+  width: .875rem;
+  height: .875rem;
+  margin-right: .5rem;
+  border: 1px solid $line-strong;
+  border-radius: 2px;
+  background: var(--chip);
+  vertical-align: -.125em;
+}
+// 色票表、徽章表：表格裡的文字欄可換行
+.gl-table {
+  min-width: 44rem;
+
+  td, th { vertical-align: middle; }
+  td { white-space: normal; }
+  .badge-state { margin: .125rem .25rem .125rem 0; }
+}
+// 只有短數字的小表（容器表）：不設最小寬，照內容撐開；放不下時才在 .table-responsive 裡橫捲
+.gl-table-fit { min-width: 0; }
+
+// ---------- 02 字級階層 ----------
+// 字級樣本：左邊規格、右邊樣本（樣本直接用頁面上的 class）
+.gl-specimens {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gl-specimen {
+  display: grid;
+  gap: map-get($spacers, 2) map-get($spacers, 5);
+  padding-block: map-get($spacers, 4);
+  border-top: 1px solid $line;
+
+  &:first-child { padding-top: 0; border-top: 0; }
+  &:last-child { padding-bottom: 0; }
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    align-items: center;
+  }
+}
+.gl-specimen-meta {
+  p { margin: 0; }
+}
+.gl-specimen-name { font-weight: $font-weight-medium; }
+.gl-specimen-spec {
+  color: $fg-muted;
+  font-family: $font-family-monospace;
+  font-size: $mono-size;
+}
+.gl-specimen-sample {
+  min-width: 0;
+  overflow-wrap: anywhere;
+
+  > :last-child { margin-bottom: 0; }
+}
+// 字體家族卡
+.gl-family {
+  height: 100%;
+  padding: 1rem 1.125rem;
+
+  p { margin: 0; }
+}
+.gl-family-sample {
+  margin: .25rem 0 .5rem !important;
+  font-size: 1.75rem;
+  line-height: 1.3;
+}
+.gl-family-sample.is-numeric {
+  font-family: $font-family-numeric;
+  font-weight: 600;
+}
+.gl-family-sample.is-mono {
+  font-family: $font-family-monospace;
+  font-size: 1.25rem;
+}
+// 長文示範：限制在 680px 文字欄
+.gl-story { max-width: $story-measure; }
+
+// ---------- 03 間距 ----------
+.gl-spacers {
+  display: grid;
+  gap: .625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: 2rem 3rem minmax(0, 1fr);
+    align-items: center;
+    gap: map-get($spacers, 3);
+  }
+  code { font-size: .875rem; }
+}
+.gl-spacer-value {
+  color: $fg-muted;
+  font-family: $font-family-monospace;
+  font-size: $mono-size;
+}
+.gl-spacer-bar {
+  width: var(--s);
+  height: .75rem;
+  border: 1px solid $sky-400;
+  border-radius: 1px;
+  background-color: rgba($sky-400, .25);
+}
+// 欄位配置示意：12 欄，每格用 --c 指定跨幾欄；.is-key 是主控台／摘要（本風格鏡像放在左邊的那一欄）
+// <div class="gl-cols" aria-hidden="true"><span class="is-key" style="--c: 5">主控台</span><span style="--c: 7">…</span></div>
+.gl-layouts {
+  display: grid;
+  gap: map-get($spacers, 4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @include media-breakpoint-up(xxl) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.gl-layout {
+  padding: 1rem 1.125rem 1.125rem;
+
+  p { margin: 0; }
+}
+.gl-layout-name {
+  margin-bottom: map-get($spacers, 3) !important;
+  font-weight: $font-weight-medium;
+}
+.gl-cols {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 3px;
+  margin-bottom: map-get($spacers, 3);
+
+  > span {
+    grid-column: span var(--c);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 2.75rem;
+    padding: .25rem;
+    border: 1px solid $line-strong;
+    border-radius: $border-radius-xs;
+    background-color: $ti-800;
+    color: $fg-muted;
+    font-size: .75rem;
+    line-height: 1.35;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+  > .is-key {
+    border-color: rgba($sky-400, .6);
+    background-color: $select-bg;
+    color: $sky-300;
+  }
+  > .is-bleed { border-style: dashed; }
+  > .is-empty {
+    border-style: dashed;
+    border-color: $line;
+    background: none;
+  }
+}
+.gl-layout-note {
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+
+// ---------- 04 圓角陰影 ----------
+.gl-radii {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: map-get($spacers, 4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+  p { margin: 0; }
+}
+.gl-radius {
+  height: 4rem;
+  margin-bottom: map-get($spacers, 2);
+  border: 1px solid $line-strong;
+  border-top-color: $sky-400;
+  border-left-color: $sky-400;
+  border-radius: var(--r);
+  background-color: $ti-800;
+}
+.gl-radius.is-round {
+  width: 4rem;
+  border-radius: 50%;
+}
+.gl-token {
+  font-family: $font-family-monospace;
+  font-size: .875rem;
+}
+// 浮起層、HUD 的靜態示範
+.gl-static {
+  position: relative !important;
+  inset: auto !important;
+  z-index: auto !important;
+}
+.dropdown-menu.gl-static {
+  display: block;
+  min-width: 13rem;
+  margin: 0;
+}
+.gl-hud-demo {
+  display: grid;
+  place-items: center;
+  min-height: 7rem;
+  margin: .375rem; // 角括號外推 5px，留位置給它
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+// 發光層級表的示範格
+.gl-glow-cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: map-get($spacers, 3);
+  min-width: 9rem;
+
+  .charge { width: 9rem; }
+}
+
+// ---------- 05 元件狀態 ----------
+// 靜態的 hover／focus／active：只換顏色、框線、亮度與焦點環，尺寸和真的互動一樣不變
+// （放在表格裡給人看，不能操作：tabindex="-1"）
+.btn.gl-hover {
+  color: var(--#{$prefix}btn-hover-color);
+  background-color: var(--#{$prefix}btn-hover-bg);
+  border-color: var(--#{$prefix}btn-hover-border-color);
+}
+.btn.gl-active {
+  color: var(--#{$prefix}btn-active-color);
+  background-color: var(--#{$prefix}btn-active-bg);
+  border-color: var(--#{$prefix}btn-active-border-color);
+}
+.btn-primary.gl-hover { filter: brightness(1.08); }
+.btn-primary.gl-active { filter: brightness(.96); }
+.btn.gl-focus { box-shadow: $focus-ring-shadow; }
+.btn-text.gl-hover {
+  color: $sky-300;
+  text-decoration: underline;
+  text-underline-offset: .3em;
+}
+.btn-text.gl-focus {
+  outline: $focus-ring-width solid $focus-ring-color;
+  outline-offset: 2px;
+}
+.form-control.gl-focus {
+  border-color: $input-focus-border-color;
+  box-shadow: $input-focus-box-shadow;
+}
+.gl-btn-table {
+  min-width: 46rem;
+
+  td { white-space: nowrap; }
+}
+// 轉換帶（冷藍漸層底）上的按鈕示範
+.gl-band {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: map-get($spacers, 3) map-get($spacers, 4);
+  margin-top: map-get($spacers, 4);
+  padding: map-get($spacers, 5);
+  border: 1px solid rgba($sky-400, .3);
+  border-radius: $border-radius-lg;
+  background: $grad-band;
+}
+// 充能條 3 狀態 × 3 尺寸
+.gl-charge-grid {
+  display: grid;
+  gap: map-get($spacers, 5);
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.gl-charge-case {
+  display: grid;
+  gap: map-get($spacers, 4);
+  align-content: start;
+
+  p { margin: 0; }
+}
+.gl-charge-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: map-get($spacers, 3);
+}
+.gl-size {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: map-get($spacers, 3);
+}
+.gl-size-name {
+  color: $fg-faint;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+}
+// 頁首的靜態示範：≥ 992 的直立控制欄、< 992 的頂部橫列，各兩種登入狀態
+.gl-headers {
+  display: grid;
+  gap: map-get($spacers, 5);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+  }
+}
+.gl-rails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map-get($spacers, 5);
+}
+.gl-rail {
+  display: flex;
+  flex-direction: column;
+  width: $rail-width;
+  min-height: 27rem;
+  padding: 1rem 0 .75rem;
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $ti-900;
+}
+.gl-rail-brand {
+  display: grid;
+  justify-items: center;
+  gap: .375rem;
+  margin: 0 .75rem .75rem;
+  padding-bottom: .75rem;
+  border-bottom: 1px solid $line;
+
+  .site-brand-mark { width: 2.25rem; height: 2.25rem; }
+  .site-brand-name { font-size: .9375rem; letter-spacing: .16em; margin-right: -.16em; }
+}
+.gl-rail-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .375rem;
+  min-height: 3.75rem;
+  padding: .5rem .25rem;
+  color: $fg-muted;
+  font-size: $small-font-size;
+  font-weight: $font-weight-medium;
+  letter-spacing: .04em;
+  line-height: 1.2;
+  text-align: center;
+
+  .bi { font-size: 1.25rem; line-height: 1; }
+}
+.gl-rail-item.is-active {
+  background-color: rgba($sky-400, .06);
+  color: $sky-300;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .5rem;
+    bottom: .5rem;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    background-color: $sky-400;
+  }
+}
+.gl-rail-item.is-accent { color: $sky-300; }
+.gl-rail-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  margin-top: auto;
+  padding-top: .75rem;
+  border-top: 1px solid $line;
+
+  .avatar { --avatar-size: 2.25rem; }
+}
+.gl-topbar {
+  display: flex;
+  flex-wrap: wrap; // 390 寬的面板裡放不下時讓工具列換行，不撐出水平捲軸
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem .75rem;
+  min-height: $header-height-sm;
+  padding: .5rem .75rem;
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $ti-900;
+
+  .site-brand-mark { width: 2rem; height: 2rem; }
+  .avatar { --avatar-size: 2.25rem; }
+}
+.gl-topbar-tools {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.gl-note + .gl-topbar { margin-top: map-get($spacers, 4); }
+
+// ---------- 06 數據圖表 ----------
+// 期間篩選在所有圖的上方
+.gl-chart-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: map-get($spacers, 3) map-get($spacers, 5);
+}
+// 深色與淺色同一張圖上下排（全寬），日期上下對齊；並排會讓每張圖只剩一半寬，SVG 字太小
+.gl-chart-pair {
+  display: grid;
+  gap: map-get($spacers, 5);
+}
+// 和個人頁圖表 2 同一個 viewBox（960 × 280）、同一組字級：依圖卡實際寬度換算，畫面上約 10.3～14px
+.gl-chart .chart-svg.is-wide {
+  --chart-fs: 13px; // < 992：SVG 最小寬 760px
+
+  @include media-breakpoint-up(lg) { --chart-fs: 14px; }
+  @include media-breakpoint-up(xl) { --chart-fs: 13px; }
+  @include media-breakpoint-up(xxl) { --chart-fs: 12px; }
+}
+// 提示框的定位基準：寬度跟 SVG 一樣（< 992 也是 760px 最小寬，跟著圖卡內橫捲）
+.gl-chart-stage {
+  position: relative;
+
+  @include media-breakpoint-down(lg) { min-width: 760px; }
+}
+// 提示框示範：固定在 09/24 那一點（x 49.5%、y 37.65%）的右下方；浮起層＝1px $line-strong＋投影
+.gl-tooltip {
+  position: absolute;
+  top: calc(37.65% + .75rem);
+  left: calc(49.5% + .75rem);
+  display: grid;
+  gap: .125rem;
+  min-width: 11rem;
+  padding: .5rem .75rem;
+  border: 1px solid $line-strong;
+  border-radius: $border-radius;
+  background-color: $ti-800;
+  box-shadow: $shadow-float;
+  color: $fg;
+  font-size: $small-font-size;
+  line-height: 1.5;
+  pointer-events: none;
+
+  .mono { color: $fg-muted; }
+  .amount { color: $sky-300; font-size: .9375rem; }
+}
+// 淺色範例的提示框：白底、淺色組的字色
+.chart-card.is-light .gl-tooltip {
+  border-color: $chart-light-grid;
+  background-color: $chart-light-float;
+  box-shadow: 0 12px 28px rgba($ti-950, .18);
+  color: $chart-light-ink;
+
+  .mono { color: $chart-light-muted; }
+  .amount { color: $chart-light-line; }
+}
+// 圖表配色對照（深色預設、淺色範例）
+.gl-chart-tokens { min-width: 40rem; }
+
+// ---------- 07 狀態文案 ----------
+.gl-copies {
+  display: grid;
+  gap: map-get($spacers, 4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(xl) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.gl-copy {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: map-get($spacers, 4);
+  row-gap: map-get($spacers, 2);
+  padding: 1rem 1.125rem 1.125rem;
+
+  p { margin: 0; }
+}
+.gl-copy-id {
+  grid-row: span 4;
+  align-self: start;
+  min-width: 2.75rem;
+  padding: 0 .375rem;
+  border: 1px solid rgba($sky-400, .45);
+  border-radius: $border-radius-xs;
+  color: $sky-300;
+  font-family: $font-family-numeric;
+  font-size: .875rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  line-height: 1.7;
+  text-align: center;
+}
+.gl-copy-case {
+  font-weight: $font-weight-medium;
+  letter-spacing: .04em;
+}
+.gl-copy-where {
+  color: $fg-muted;
+  font-size: $small-font-size;
+
+  .mono { color: $fg; }
+}
+.gl-copy-text {
+  padding: .625rem .875rem;
+  border-left: 2px solid $line-strong;
+  border-radius: 0 $border-radius $border-radius 0;
+  background-color: $ti-900;
+}
+.gl-copy-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .75rem;
+  color: $fg-faint;
+  font-size: $small-font-size;
+}
+
+// ---------- 08 RWD ----------
+.gl-rwd-table { min-width: 52rem; }
+.gl-rwd-table td { white-space: normal; }
+// 手機外框（390px）：示範固定在底部的行動列
+// 手機行動列示範：照 390px 寬畫（行動列內容約需 360px，比這更窄金額會和追蹤按鈕重疊）
+// 模組內容區 ≥ 44rem 時手機在左、說明在右
+.gl-phone-demo {
+  display: grid;
+  gap: map-get($spacers, 5);
+
+  @container (min-width: 44rem) {
+    grid-template-columns: 24.375rem minmax(0, 1fr);
+    align-items: start;
+  }
+}
+.gl-phone {
+  max-width: 24.375rem;
+  overflow: hidden;
+  border: 1px solid $line-strong;
+  border-radius: $border-radius-lg;
+  background-color: $ti-950;
+
+  // < 576：面板裡只剩約 316px，放不下；往外推到螢幕兩側（面板內距 20＋面板框 1＋容器留白 16），和真實畫面同寬
+  @include media-breakpoint-down(sm) {
+    margin-inline: calc(-1 * (#{$panel-pad} + 1px + #{$container-padding-x * .5}));
+    border-inline: 0;
+    border-radius: 0;
+  }
+}
+.gl-phone-parts { margin: 0; }
+.gl-phone-screen {
+  display: grid;
+  gap: .5rem;
+  padding: 1rem 1rem 1.5rem;
+
+  span {
+    display: block;
+    height: .625rem;
+    border-radius: 1px;
+    background-color: $ti-800;
+  }
+  span:nth-child(2) { width: 82%; }
+  span:nth-child(3) { width: 64%; }
+}
+
+// ---------- 09 Do／Don't ----------
+.gl-pairs {
+  display: grid;
+  gap: map-get($spacers, 6);
+}
+.gl-pair {
+  display: grid;
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.gl-pair-title {
+  margin: 0;
+  font-size: $h3-font-size;
+
+  @include media-breakpoint-up(md) { grid-column: 1 / -1; }
+}
+// 一格判定：上緣 2px 狀態條（Do＝ok、Don't＝err）→ 判定列 → 舞台 → 一句原因
+.gl-verdict {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    height: 2px;
+    margin: -1px -1px 0;
+  }
+  &.is-do::before { background-color: $ok-ink; }
+  &.is-dont::before { background-color: $err-ink; }
+}
+.gl-verdict-label {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  padding: .5rem 1.125rem;
+  border-bottom: 1px solid $line;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  letter-spacing: .06em;
+
+  .is-do & { color: $ok-ink; }
+  .is-dont & { color: $err-ink; }
+}
+.gl-verdict-stage {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: map-get($spacers, 3);
+  min-height: 8.5rem;
+  padding: map-get($spacers, 5) 1.125rem;
+  background-color: $ti-900;
+
+  > * { margin: 0; }
+}
+.gl-verdict-why {
+  margin: 0;
+  padding: .875rem 1.125rem 1rem;
+  border-top: 1px solid $line;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+// 錯誤示範用的「壞樣子」（只出現在 Don't 舞台）
+.gl-bad-neon {
+  color: $sky-300;
+  font-family: $font-family-numeric;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: .2em;
+  text-shadow: 0 0 6px $sky-400, 0 0 18px $sky-400;
+}
+.gl-bad-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: map-get($spacers, 4);
+  padding: .375rem;
+
+  > .panel {
+    min-height: 3.5rem;
+    border-color: $sky-400;
+    box-shadow: $glow;
+  }
+}
+.gl-dots-only {
+  display: flex;
+  gap: map-get($spacers, 4);
+
+  .status-dot { width: .875rem; height: .875rem; }
+}
+.gl-code {
+  margin: 0;
+  padding: .75rem .875rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $ti-950;
+  color: $fg;
+  font-size: .8125rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.gl-mini-chart {
+  display: block;
+  width: 100%;
+  max-width: 18rem;
+  height: auto;
+
+  text {
+    fill: $fg-faint;
+    font-family: $font-family-monospace;
+    font-size: 9px;
+  }
+}
+.gl-mini-grid { stroke: $line-strong; stroke-width: 1; }
+.gl-mini-target { stroke: $fg-muted; stroke-width: 1.25; stroke-dasharray: 5 4; }
+.gl-mini-line { fill: none; stroke: $sky-400; stroke-width: 2; stroke-linejoin: round; }
+.gl-mini-line.is-second { stroke: $warn-ink; }
+.gl-mini-tier {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 3);
+  padding: .75rem 1rem;
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $ti-850;
+
+  &.is-soldout {
+    border-style: dashed;
+    border-color: $line-strong;
+    background: none;
+    color: $fg-faint;
+  }
+}
+
+// ---------- 04：分層示意（底色深淺＋1px 線，不用陰影）----------
+.gl-layer {
+  padding: .75rem .75rem 0;
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  font-size: $small-font-size;
+
+  > span {
+    display: block;
+    margin-bottom: .625rem;
+    color: $fg-muted;
+    font-family: $font-family-monospace;
+  }
+  &.is-950 { background-color: $ti-950; }
+  &.is-900 { background-color: $ti-900; }
+  &.is-850 { background-color: $ti-850; }
+  &.is-800 {
+    margin-bottom: .75rem;
+    padding-bottom: .125rem;
+    border-color: $control;
+    border-radius: $border-radius;
+    background-color: $ti-800;
+  }
+}
+.gl-glow-sample {
+  display: grid;
+  place-items: center;
+  width: 9rem;
+  min-height: 2.75rem;
+  color: $sky-300;
+  font-size: $font-size-sm;
+}
+
+// ---------- 05：回饋方案卡示範 ----------
+.gl-tiers > .gl-state { margin-top: map-get($spacers, 2); }
+// 權限狀態：模組列的靜態示範（不 sticky、有外框），兩種角色上下排、各佔全寬
+// 9 個項目約需 1,100px：模組內容區比這窄時，照個人頁 992–1199 的做法讓兩組各佔一列（不藏項目）
+.ac-bar.gl-acbar {
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  padding-inline: 1rem;
+}
+@container (max-width: 68.75rem) {
+  .gl-acbar .ac-bar-scroll { flex-wrap: wrap; }
+  .gl-acbar .ac-bar-group + .ac-bar-group {
+    flex-basis: 100%;
+    padding-left: 0;
+    border-top: 1px solid $line;
+    border-left: 0;
+  }
+}
+// 頁首示範
+.gl-rail-figure { margin: 0; }
+.gl-rail-item.is-login { color: $fg; }
+.gl-topbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+
+  .site-brand-name { font-size: 1.125rem; }
+}
+
+// ---------- 09：Do／Don't ----------
+// 四讀數：兩欄兩列
+.gl-mini-readouts {
+  --cols: 2;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  overflow: hidden;
+
+  > .readout { padding: .625rem .875rem; }
+}
+// 逾期面板放在窄的判定欄裡：一律用手機的兩欄排法（節點｜標題與日期上下排），不用 ≥ 768 的一列四欄
+.gl-verdict .pd-delay-panel {
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: .75rem 1rem;
+
+  > .sequence-node { grid-row: span 2; align-self: start; }
+}
+// 錯誤示範：英文大寫眉標
+.gl-bad-eyebrow {
+  margin-bottom: .25rem;
+  color: $sky-400;
+  font-family: $font-family-numeric;
+  font-size: .6875rem;
+  font-weight: 600;
+  letter-spacing: .32em;
+}

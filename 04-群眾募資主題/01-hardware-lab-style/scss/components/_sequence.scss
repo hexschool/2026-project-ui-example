@@ -1,0 +1,148 @@
+// ============================================================
+// ★ 發射序列 .sequence（里程碑時間軸 MilestoneTimeline 的本風格版）
+// ≥ 992px 橫向排列（站數由 --steps 決定，預設 4），< 992px 垂直排列；加 .sequence-xxl 改成 ≥ 1400px 才橫向
+// 站點是六角形節點：已完成＝實心充能漸層＋勾、進行中＝青空框＋發光脈動、未開始＝虛線空心、延遲＝珊瑚紅框
+// 站間軌道：已完成那一站之後的軌道是充能漸層，其他是虛線
+// 用在：專案細節的生產排程（4 站）、贊助紀錄詳情的生產進度（4 站、不放照片、.sequence-xxl）
+// 結帳與贊助成功的步驟條是同一套語言的精簡版 .launch-steps（components/_flow.scss，任何寬度都橫排）
+//
+// <ol class="sequence" style="--steps: 4">
+//   <li class="sequence-step is-done">
+//     <span class="sequence-node" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+//     <div class="sequence-body">
+//       <h3 class="sequence-title"><span class="sequence-no">里程碑 1</span><span class="sequence-sep">｜</span>設計定版</h3>
+//       <p class="sequence-meta"><span class="badge-state is-ok">…已完成</span><time class="mono" datetime="…">…</time></p>
+//       …
+//     </div>
+//   </li>
+//   <li class="sequence-step is-live">…</li>   進行中（節點裡可放 .status-dot 或圖示）
+//   <li class="sequence-step is-todo">…</li>   未開始（標題降為次要色）
+//   <li class="sequence-step is-err">…</li>    延遲
+// </ol>
+// 標題拆成「里程碑 N」.sequence-no、分隔線 .sequence-sep 與名稱三段：平常排成一行「里程碑 1｜設計定版」；
+// 992–1199 橫排時每站只有約 174px，一行放不下，改成「里程碑 N」小標在上、名稱在下，分隔線只留給讀屏（visually-hidden）
+// ============================================================
+
+// 六角形節點（40 × 36，平頂）：用 SVG 背景畫，虛線框也畫得出來
+$hex-points: "10,1 30,1 39,18 30,35 10,35 1,18";
+$hex-todo: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 36'><polygon points='#{$hex-points}' fill='%230A0E13' stroke='%233A4A5E' stroke-width='1.5' stroke-dasharray='3 3'/></svg>");
+$hex-live: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 36'><polygon points='#{$hex-points}' fill='%231A2C39' stroke='%234CC8F4' stroke-width='2'/></svg>");
+$hex-done: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 36'><defs><linearGradient id='g' x1='0' x2='1' y1='0' y2='0'><stop offset='0' stop-color='%233E7BFA'/><stop offset='1' stop-color='%234CC8F4'/></linearGradient></defs><polygon points='#{$hex-points}' fill='url(%23g)'/></svg>");
+$hex-err: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 36'><polygon points='#{$hex-points}' fill='%233A2A32' stroke='%23FF9B9B' stroke-width='2'/></svg>");
+
+// 預設 ≥ 992 變橫向；加 .sequence-xxl 則到 ≥ 1400 才橫向（放在 8 欄寬的模組裡時，1399 以下每站太窄，維持垂直）
+.sequence {
+  --steps: 4;
+  --node-w: 2.5rem;
+  --node-h: 2.25rem;
+  --gap: 1.5rem;
+  display: grid;
+  gap: var(--gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sequence-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--node-w) minmax(0, 1fr);
+  column-gap: 1rem;
+  align-content: start; // 同一列裡內容較少的站，不把多出來的高度分給節點那一列（標題才會對齊）
+  align-items: start;
+
+  // 站間軌道（垂直：節點下方往下接到下一站；橫向：節點右側往右接到下一站）
+  &:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: calc(var(--node-h) + .375rem);
+    bottom: calc(var(--gap) * -1 + .375rem);
+    left: calc(var(--node-w) / 2 - 1px);
+    width: 2px;
+    background: repeating-linear-gradient(180deg, $line-strong 0 4px, transparent 4px 8px);
+  }
+  &.is-done:not(:last-child)::after {
+    background: linear-gradient(180deg, $blue-500, $sky-400);
+  }
+}
+// 橫向排列：站點並排，軌道改成節點右側的水平線
+@mixin sequence-horizontal {
+  grid-template-columns: repeat(var(--steps), minmax(0, 1fr));
+
+  > .sequence-step {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 1rem;
+  }
+  > .sequence-step:not(:last-child)::after {
+    top: calc(var(--node-h) / 2 - 1px);
+    bottom: auto;
+    left: calc(var(--node-w) + .5rem);
+    right: calc(var(--gap) * -1 + .5rem);
+    width: auto;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, $line-strong 0 4px, transparent 4px 8px);
+  }
+  > .sequence-step.is-done:not(:last-child)::after { background: $grad-charge; }
+}
+.sequence:not(.sequence-xxl) {
+  @include media-breakpoint-up(lg) { @include sequence-horizontal; }
+}
+.sequence-xxl {
+  @include media-breakpoint-up(xxl) { @include sequence-horizontal; }
+}
+.sequence-node {
+  display: grid;
+  place-items: center;
+  width: var(--node-w);
+  height: var(--node-h);
+  background: no-repeat center / 100% 100% $hex-todo;
+  color: $fg-faint;
+  font-size: 1.125rem;
+  line-height: 1;
+}
+.is-done > .sequence-node {
+  background-image: $hex-done;
+  color: $btn-ink;
+}
+.is-live > .sequence-node {
+  background-image: $hex-live;
+  color: $sky-300;
+  filter: drop-shadow(0 0 6px rgba($sky-400, .55));
+  animation: node-pulse 2.4s ease-in-out infinite;
+}
+.is-err > .sequence-node {
+  background-image: $hex-err;
+  color: $err-ink;
+}
+@keyframes node-pulse {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba($sky-400, .55)); }
+  50%      { filter: drop-shadow(0 0 2px rgba($sky-400, .2)); }
+}
+
+.sequence-body { min-width: 0; }
+.sequence-title {
+  margin-bottom: .375rem;
+  font-size: $h3-font-size;
+}
+.is-todo .sequence-title { color: $fg-muted; }
+.sequence:not(.sequence-xxl) {
+  @include media-breakpoint-only(lg) {
+    .sequence-no {
+      display: block;
+      margin-bottom: .125rem;
+      color: $fg-muted;
+      font-size: $small-font-size;
+      font-weight: $font-weight-normal;
+      letter-spacing: .08em;
+    }
+    .sequence-sep { @include visually-hidden; }
+  }
+}
+.sequence-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .75rem;
+  margin-bottom: .5rem;
+  color: $fg-muted;
+  font-size: $small-font-size;
+}

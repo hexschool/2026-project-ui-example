@@ -1,0 +1,257 @@
+// ============================================================
+// 登入、註冊（2026-11 補頁；WIREFRAME_SPEC §3.05、§3.06）
+// 全出血雙面板 5：7：
+//   左 5 欄 $navy-800 面板，背景一路延伸到視窗左緣（::before 往左鋪 100vw，外層 .auth overflow 收掉），
+//     內容：白色標誌 → H1 → 說明 → 只有線與格線的裝飾折線圖（aria-hidden，沒有任何文字或數字）；≥ 992 跟著捲動黏在頁首下方
+//   右 7 欄白底：表單在 max 440px 的欄裡靠左（不包卡片）→ 切換連結 → 設計稿狀態示意（同欄寬）
+// < 992：左面板變成頁首下方一條深藍帶（H1＋說明），標誌與裝飾圖隱藏，表單接在下面
+// 這頁是深藍出現的四個位置之一（頁首上層、首頁 Hero、登入左面板、頁尾）
+// ============================================================
+
+.auth {
+  // 收掉左面板往視窗左緣延伸的背景，不產生水平捲軸；用 clip 而不是 hidden，才不會讓左面板的 sticky 失效
+  overflow-x: hidden;
+  overflow-x: clip;
+
+  @include media-breakpoint-up(lg) {
+    // 第一屏就是完整的雙面板：視窗高扣掉雙層頁首（56＋48）
+    min-height: calc(100vh - #{$site-bar-height + $site-tabs-height});
+  }
+  > .container,
+  > .container > .row {
+    @include media-breakpoint-up(lg) {
+      min-height: inherit;
+    }
+  }
+}
+
+// ---------- 左：深藍面板 ----------
+.auth-aside {
+  position: relative;
+  padding-block: map-get($spacers, 5);
+  color: $on-navy;
+
+  // 深藍底＋極淡圖表格線（同首頁 Hero 色帶），往左右延伸到視窗邊緣
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 -100vw;
+    z-index: 0;
+    background-color: $navy-800;
+    background-image:
+      linear-gradient($on-navy-grid 1px, transparent 1px),
+      linear-gradient(90deg, $on-navy-grid 1px, transparent 1px);
+    background-size: 48px 48px;
+    background-position: right top;
+  }
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7);
+    padding-right: map-get($spacers, 6);
+
+    // 桌機：只往左延伸到視窗左緣，右邊停在欄線
+    &::before {
+      right: 0;
+    }
+  }
+}
+.auth-aside-inner {
+  position: relative;
+  z-index: 1;
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: calc(#{$sticky-offset} + #{map-get($spacers, 4)});
+  }
+}
+// 白色標誌（裝飾：頁首已有連到首頁的標誌）
+.auth-brand {
+  display: none;
+  align-items: center;
+  gap: .625rem;
+  margin-bottom: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    display: flex;
+  }
+  .site-brand-mark {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+.auth-title {
+  margin-bottom: map-get($spacers, 2);
+  font-size: 1.875rem;
+  color: $on-navy;
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: map-get($spacers, 3);
+    font-size: 2.5rem;
+  }
+}
+.auth-lead {
+  max-width: 24em;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: $on-navy-muted;
+
+  @include media-breakpoint-up(lg) {
+    font-size: 1.0625rem;
+  }
+}
+// 裝飾折線圖：格線＋面積＋折線＋目標虛線＋端點，只有線（aria-hidden）
+.auth-chart {
+  display: none;
+  margin: map-get($spacers, 7) 0 0;
+  padding-top: map-get($spacers, 4);
+  border-top: 1px solid $on-navy-rule;
+
+  @include media-breakpoint-up(lg) {
+    display: block;
+  }
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+}
+.auth-chart-grid {
+  stroke: rgba($white, .14);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.auth-chart-base {
+  stroke: rgba($white, .4);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.auth-chart-area {
+  fill: rgba($data-dark, .14);
+}
+.auth-chart-goal {
+  stroke: $on-navy-faint;
+  stroke-width: 1;
+  stroke-dasharray: 5 4;
+  vector-effect: non-scaling-stroke;
+}
+.auth-chart-line {
+  fill: none;
+  stroke: $data-dark;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.auth-chart-dot {
+  fill: $navy-800;
+  stroke: $data-dark;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.auth-chart-dot.is-solid {
+  fill: $data-dark;
+}
+
+// ---------- 右：白底表單 ----------
+.auth-main {
+  padding-block: map-get($spacers, 5) map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7) map-get($spacers, 8);
+    padding-left: map-get($spacers, 7);
+  }
+  @include media-breakpoint-up(xl) {
+    padding-left: map-get($spacers, 8);
+  }
+}
+.auth-form-wrap {
+  max-width: 27.5rem; // 440px
+}
+.auth-form {
+  .form-control {
+    min-height: 3rem;
+  }
+}
+.auth-field + .auth-field {
+  margin-top: 1.25rem;
+}
+// 密碼標籤列：標籤左、「忘記密碼？」右
+.auth-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: $form-label-margin-bottom;
+
+  .form-label {
+    margin-bottom: 0;
+  }
+}
+// 沒有目的頁的佔位連結（忘記密碼？、服務條款、隱私權政策）：維持連結外觀
+.auth-link {
+  color: $link-color;
+  text-decoration: underline;
+  text-decoration-color: rgba($blue-600, .35);
+  text-underline-offset: $link-underline-offset;
+
+  &:hover {
+    color: $link-hover-color;
+    text-decoration-color: currentColor;
+  }
+}
+.auth-forgot {
+  font-size: .875rem;
+  font-weight: $font-weight-medium;
+}
+.auth-check {
+  margin-top: 1.25rem;
+  margin-bottom: 0;
+  font-size: .9375rem;
+
+  .form-check-label {
+    line-height: 1.6;
+  }
+  // 同意條款：方框和第一行文字對齊
+  .form-check-input {
+    margin-top: .25em;
+  }
+}
+.auth-submit {
+  margin-top: map-get($spacers, 4);
+}
+// 底部切換連結：上緣 1px 線，和表單分開
+.auth-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 .25rem;
+  margin: map-get($spacers, 4) 0 0;
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $line;
+  font-size: .9375rem;
+  color: $ink-muted;
+
+  .btn-text {
+    font-weight: $font-weight-bold;
+  }
+}
+
+// 狀態示意：同表單欄寬，和正式表單分開
+.auth-demo {
+  margin-top: map-get($spacers, 6);
+
+  .demo-state-stage {
+    padding: map-get($spacers, 4);
+  }
+  .auth-field + .auth-field {
+    margin-top: 1rem;
+  }
+}
+// 錯誤文字裡的連結（「可以直接登入」）：跟著錯誤色，加粗＋底線
+.invalid-feedback a {
+  font-weight: $font-weight-bold;
+  color: inherit;
+  text-underline-offset: $link-underline-offset;
+}

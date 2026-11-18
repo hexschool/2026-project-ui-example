@@ -1,0 +1,99 @@
+// ============================================================
+// 招牌元素 1：子彈圖式進度條 .meter（FundingProgress）
+// 軌道 $line；目標前段 $navy-800、目標後段 $blue-600、目標處 2px 白縫。2px 圓角，不做動畫（財報感：數字穩定）
+// 尺寸：.meter-lg 10px（首頁事實卡、專案條款表）／.meter 6px（專案卡、列表、首頁排行表）／.meter-sm 4px（贊助紀錄、底部行動列）
+//
+// 未達標：<div class="meter" style="--fill: 68%" aria-hidden="true"></div>
+// 剛好達標：<div class="meter is-full" aria-hidden="true"></div>（滿格＋末端刻度）
+// 超額達成：<div class="meter is-over" style="--goal: 40.5%" aria-hidden="true"></div>（--goal＝目標 ÷ 已募，CONTENT 附錄 B.5）
+// 大尺寸加刻度字：
+// <div class="meter-scale" style="--goal: 40.5%" aria-hidden="true">
+//   <div class="meter meter-lg is-over"></div>
+//   <div class="meter-ticks"><span>0</span><span class="meter-tick-goal">目標</span><span class="meter-tick-end">247%</span></div>
+// </div>
+// 進度條是裝飾（aria-hidden），數字一定以文字出現在旁邊；不用顏色深淺表示達成率高低
+// ============================================================
+
+.meter {
+  // --fill、--goal 不在這裡給預設值（用 var() 的備用值），才能從外層 .meter-scale 繼承
+  position: relative;
+  height: $meter-height;
+  border-radius: $radius-bar;
+  background-color: $meter-track;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--fill, 100%);
+    border-radius: inherit;
+    background-color: $meter-fill;
+  }
+}
+.meter-lg { height: $meter-height-lg; }
+.meter-sm { height: $meter-height-sm; }
+
+// 剛好達標：滿格＋末端一道上下突出的深色刻度
+.meter.is-full {
+  &::before {
+    width: 100%;
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    right: 0;
+    width: 2px;
+    background-color: $ink;
+  }
+}
+
+// 超額達成：滿格；目標前深藍、目標處 2px 白縫、目標後科技藍
+.meter.is-over::before {
+  width: 100%;
+  background: linear-gradient(90deg,
+    $meter-fill 0 calc(var(--goal, 100%) - 1px),
+    $meter-seam calc(var(--goal, 100%) - 1px) calc(var(--goal, 100%) + 1px),
+    $meter-over calc(var(--goal, 100%) + 1px) 100%);
+}
+
+// 刻度字（L 尺寸）：0、目標（對齊白縫）、達成率
+.meter-ticks {
+  position: relative;
+  height: 1.375rem;
+  margin-top: .375rem;
+  font-size: .75rem;
+  font-weight: $font-weight-medium;
+  line-height: 1;
+  color: $ink-muted;
+
+  > span {
+    position: absolute;
+    top: .375rem;
+    white-space: nowrap;
+  }
+  > span:first-child {
+    left: 0;
+  }
+  .meter-tick-goal {
+    left: var(--goal, 100%);
+    transform: translateX(-50%);
+    color: $ink;
+
+    // 目標刻度：白縫正下方一道 4px 短線
+    &::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -.375rem;
+      width: 1px;
+      height: .25rem;
+      background-color: $ink;
+    }
+  }
+  .meter-tick-end {
+    right: 0;
+    color: $blue-700;
+  }
+}

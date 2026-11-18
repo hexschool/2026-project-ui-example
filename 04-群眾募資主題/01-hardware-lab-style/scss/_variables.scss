@@ -1,0 +1,444 @@
+// ============================================================
+// 島造 ISLANDMAKE｜01 未來硬體實驗室：Bootstrap 5 變數覆寫（design token）
+// 規則：只在這裡改 Bootstrap 變數；元件與頁面樣式一律引用變數，不寫死色碼
+//
+// 概念：深夜航太控制室裡的一面遙測監控牆。每個提案是一次發射任務，
+//       贊助者盯著它的燃料（資金）一格格充滿。科技感只花在數字與進度，故事、表單、條款維持安靜易讀。
+//
+// 只有一套深色主題：<html data-bs-theme="dark"> 固定深色（不是 auto），
+// 淺色與 *-dark 兩組 Bootstrap 變數都設成同一組深色值，下拉選單、表單箭頭、btn-close、
+// Accordion、Offcanvas、Modal 都走深色。
+// 對比度以 WCAG 2.x 公式實算；沒有特別註明時，是對面板 $ti-850 的比值
+// ============================================================
+
+// ---------- 1. 色彩：深鈦灰、冷藍漸層、青空色 ----------
+// 中性色：由深到淺五層鈦灰
+$ti-950:      #0A0E13; // 頁面底（最深的鈦灰）、theme-color（主文字 16.6:1）
+$ti-900:      #0F151C; // 交替區塊、頁尾、左側控制欄（主文字 15.7、次要 8.7、淡 6.6）
+$ti-850:      #141B24; // 面板、卡片：主要的面（主文字 14.8、次要 8.2、淡 6.2）
+$ti-800:      #1A2330; // 輸入框、表頭、凸起面（主文字 13.6、次要 7.5、淡 5.7）
+$line:        #273241; // 1px 髮絲線（裝飾分隔，不承載意義；對面板 1.3:1）
+$line-strong: #3A4A5E; // 圖表格線、未開始的虛線節點、浮起層外框（1.9:1，裝飾）
+$control:     #6F829A; // 表單框線、停用文字（對輸入框 4.0、對面板 4.4，≥ 3:1）
+
+$fg:          #E8EEF5; // 主文字
+$fg-muted:    #A6B4C4; // 次要文字、標籤（8.2）
+$fg-faint:    #8C9CB0; // placeholder、時間戳（6.2；只用在 ≥ 13px）
+
+// 品牌：冷藍 → 青空
+$blue-500:    #3E7BFA; // 冷藍：充能條起點、圖表面積（只當圖形；對軌道 3.75）
+$blue-300:    #7EA6FF; // 文字連結（7.3）
+$sky-400:     #4CC8F4; // 青空：充能條終點、圖表折線、選中框（9.0）
+$sky-300:     #7DDCFA; // 大讀數、焦點環、live 文字（11.1）
+$cell-hi:     #B5ECFF; // 超額「電池格」的亮端
+$track:       #1F2A38; // 進度條軌道（冷藍起點 3.75、青空終點 7.5）
+$select-bg:   #1A2C39; // 選中的方案卡、地址卡、篩選標籤底（青空 10% 疊在面板；主文字 12.3、次要 6.8）
+$btn-ink:     #06101A; // 主要按鈕（漸層）上的深字（兩端 6.8／9.9）
+
+$grad-charge: linear-gradient(90deg, $blue-500, $sky-400);          // 充能條、序列已完成段、h2 前的短直線
+$grad-btn:    linear-gradient(90deg, #6A97FF, $sky-400);            // 主要按鈕
+$grad-cells:  linear-gradient(90deg, $sky-300, $cell-hi);           // 超額後的電池格
+$grad-band:   linear-gradient(110deg, #13234A, #0F3A55);            // 提案者轉換帶（主文字 13.2／10.2）
+
+// Guideline 第 6 章的「淺色底圖表」範例（.chart-card.is-light）：不是自動反轉，是另選一組在淺色底可讀的顏色
+// 對比都是對 $chart-light-bg
+$chart-light-bg:     #EEF3F8;
+$chart-light-ink:    #0F151C; // 標題、標註（16.4）
+$chart-light-muted:  #4D5E72; // 座標、副標（6.0）
+$chart-light-line:   #1F5FD6; // 數據線、橫條、連結（5.1）
+$chart-light-target: #2B3747; // 目標虛線（10.8）
+$chart-light-base:   #8193A8; // 基準線（2.8，裝飾）
+$chart-light-grid:   #CFD9E4; // 格線、外框（1.3，裝飾）
+$chart-light-head:   #DDE5EE; // 數據表表頭（文字 14.4）
+$chart-light-float:  #FFFFFF; // 提示框底（金額 #1F5FD6 5.7、日期 #4D5E72 6.7）
+
+// ---------- 6 種語意色調（WIREFRAME_SPEC §2.6）----------
+// 每種兩件組：文字色／底色（狀態色 16% 疊在面板 $ti-850）。徽章一律「圖示或圓點＋文字」，不只靠顏色
+$live-ink: #7DDCFA; $live-bg: #1D3745; // 進行中（8.0）：和品牌青空同色系，圓點帶微光
+$info-ink: #C3C9FF; $info-bg: #2C3347; // 等待中（7.9）：薰衣草紫，不用藍，否則和 live 分不開
+$warn-ink: #FFC24D; $warn-bg: #3A362B; // 注意（7.5）：琥珀
+$ok-ink:   #4FDB9A; $ok-bg:   #1D3A37; // 成功（7.0）：薄荷綠
+$err-ink:  #FF9B9B; $err-bg:  #3A2A32; // 錯誤（6.7）：淺一階的珊瑚紅
+$idle-ink: #C2CCD8; $idle-bg: #272F39; // 中性（8.3）：已下架另加 1px 虛線框
+
+// 給 _base.scss 用迴圈產生 .badge-state.is-ok、.callout.is-err、.text-warn… 的對照表（文字色, 底色）
+$tones: (
+  "live": ($live-ink, $live-bg),
+  "info": ($info-ink, $info-bg),
+  "warn": ($warn-ink, $warn-bg),
+  "ok":   ($ok-ink, $ok-bg),
+  "err":  ($err-ink, $err-bg),
+  "idle": ($idle-ink, $idle-bg),
+);
+
+$primary:   $sky-400;
+$secondary: $fg-muted;
+$success:   $ok-ink;
+$info:      $info-ink;
+$warning:   $warn-ink;
+$danger:    $err-ink;
+$light:     $fg;
+$dark:      $ti-950;
+
+$theme-colors: (
+  "primary":   $primary,
+  "secondary": $secondary,
+  "success":   $success,
+  "info":      $info,
+  "warning":   $warning,
+  "danger":    $danger,
+  "light":     $light,
+  "dark":      $dark,
+);
+
+$color-contrast-light: $fg;
+$color-contrast-dark:  $btn-ink;
+$min-contrast-ratio:   4.5;
+
+// ---------- 2. 頁面底色、文字（淺色與 *-dark 兩組設成同一組值）----------
+$body-bg:                    $ti-950;
+$body-color:                 $fg;
+$body-secondary-color:       $fg-muted;
+$body-secondary-bg:          $ti-850;
+$body-tertiary-color:        $fg-faint;
+$body-tertiary-bg:           $ti-900;
+$body-emphasis-color:        $fg;
+$border-color:               $line;
+$border-color-translucent:   rgba(#fff, .1);
+$headings-color:             $fg;
+$link-color:                 $blue-300;
+$link-hover-color:           $sky-300;
+$link-decoration:            underline;
+$link-underline-offset:      .25em;
+$mark-bg:                    $select-bg;
+$mark-color:                 $fg;
+$code-color:                 $sky-300;
+
+$body-bg-dark:               $body-bg;
+$body-color-dark:            $body-color;
+$body-secondary-color-dark:  $body-secondary-color;
+$body-secondary-bg-dark:     $body-secondary-bg;
+$body-tertiary-color-dark:   $body-tertiary-color;
+$body-tertiary-bg-dark:      $body-tertiary-bg;
+$body-emphasis-color-dark:   $body-emphasis-color;
+$border-color-dark:          $border-color;
+$border-color-translucent-dark: $border-color-translucent;
+$headings-color-dark:        $headings-color;
+$link-color-dark:            $link-color;
+$link-hover-color-dark:      $link-hover-color;
+$mark-bg-dark:               $mark-bg;
+$mark-color-dark:            $mark-color;
+$code-color-dark:            $code-color;
+
+// ---------- 3. 字體 ----------
+// Noto Sans TC 400／500／700：中文標題、內文、介面（標題 500＋字距 0.04–0.06em，冷靜的工程感；不用 900、不用明體）
+// Chakra Petch 500／600／700：切角幾何數字，像儀表段碼；金額、達成率、天數、刻度、副字標 ISLANDMAKE
+// JetBrains Mono 400／500：機器輸出的資料（贊助編號、日期時間、圖表座標、表格數字、卡號末四碼、步驟編號）
+$font-family-sans-serif: "Noto Sans TC", system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+$font-family-base:       $font-family-sans-serif;
+$font-family-numeric:    "Chakra Petch", "Noto Sans TC", sans-serif;
+$font-family-monospace:  "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Noto Sans TC", monospace;
+
+$font-size-root:     16px;
+$font-size-base:     1rem;
+$font-size-sm:       .875rem;
+$font-size-lg:       1.125rem;
+$small-font-size:    .8125rem; // 13px：標籤、時間戳（最小字級）
+$line-height-base:   1.75;
+$line-height-sm:     1.5;
+$line-height-lg:     1.6;
+
+$font-weight-light:    400;
+$font-weight-normal:   400;
+$font-weight-medium:   500;
+$font-weight-semibold: 500;
+$font-weight-bold:     700;
+$font-weight-bolder:   700;
+
+// 字級階層（Guideline「字級階層」章節即以此為準）
+$display-hero-size:  clamp(2.5rem, 1.5rem + 3.2vw, 4.25rem); // 首頁 H1：行高 1.2、字距 0.06em
+$h1-font-size:       2.25rem;   // 其他頁 H1：行高 1.3
+$h2-font-size:       1.625rem;  // 區塊標題：行高 1.35，左側 3px 充能短直線
+$h3-font-size:       1.1875rem; // 子標題、卡片標題：行高 1.45
+$h4-font-size:       1.0625rem;
+$h5-font-size:       1rem;
+$h6-font-size:       .875rem;
+$headings-font-weight:  500;
+$headings-line-height:  1.35;
+$headings-margin-bottom: .5rem;
+$lead-font-size:     1.125rem;
+$lead-font-weight:   400;
+
+// 讀數（Chakra Petch 600）
+$readout-xl:   3rem;     // 儀表板目前金額：全頁最大的數字
+$readout-l:    2.5rem;   // 達成率
+$readout-m:    1.75rem;  // StatTile
+$readout-s:    1.5rem;   // 卡片達成率
+$mono-size:    .8125rem; // JetBrains Mono 小字
+
+// 長文（專案故事）
+$story-font-size:   1.0625rem;
+$story-line-height: 1.9;
+$story-measure:     680px;
+
+// ---------- 4. 間距、網格、容器 ----------
+// 尺度 4／8／12／16／24／32／48／64／88（注意：和 Bootstrap 預設不同，g-4＝16px、g-5＝24px、py-7＝48px）
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: .25rem,  //  4
+  2: .5rem,   //  8
+  3: .75rem,  // 12
+  4: 1rem,    // 16
+  5: 1.5rem,  // 24
+  6: 2rem,    // 32
+  7: 3rem,    // 48
+  8: 4rem,    // 64
+  9: 5.5rem,  // 88
+);
+
+$grid-gutter-width:    1.5rem; // 24px
+$container-padding-x:  2rem;   // 手機左右各 16px（≥ 768 各 24px、≥ 992 各 32px，寫在 _base.scss）
+
+// ≥ 992 左側控制欄佔 88px，容器在「控制欄右邊的區域」裡置中，最大寬要扣掉 88px
+// （992 寬時可用區只有 904px，lg 若沿用 960 會撐出水平捲軸）
+$container-max-widths: (
+  sm:  540px,
+  md:  720px,
+  lg:  880px,
+  xl:  1080px,
+  xxl: 1280px,
+);
+
+$rail-width:         88px; // ≥ 992 左側直立控制欄
+$header-height-sm:   60px; // < 992 頂部橫列
+$sticky-offset:      24px; // ≥ 992 sticky 主控台、目錄、模組列的位移（沒有頂部頁首）
+$section-y:          3.5rem; // 區塊上下留白 56px（手機）
+$section-y-lg:       5.5rem; // 區塊上下留白 88px（≥ 992）
+$panel-pad:          1.25rem; // 面板內距 20px（≥ 992 改 24px）
+$panel-pad-lg:       1.5rem;
+
+// ---------- 5. 形狀：圓角、線、陰影、發光 ----------
+// 面板 6px、按鈕與輸入框 4px、徽章與篩選標籤 3px、進度條 2px；頭像圓形。沒有膠囊、沒有大圓角
+$border-width:        1px;
+$border-radius-xs:    2px;  // 進度條
+$border-radius-sm:    3px;  // 徽章、篩選標籤
+$border-radius:       4px;  // 按鈕、輸入框
+$border-radius-lg:    6px;  // 面板、卡片
+$border-radius-xl:    6px;
+$border-radius-xxl:   6px;
+$border-radius-pill:  3px;  // 本風格不用膠囊
+
+// 不用一般投影分層：面板之間靠 1px 線分
+// 浮起層（sticky 主控台、下拉、手機底部行動列、Modal）＝1px $line-strong 框＋這組投影
+$shadow-float:  0 16px 40px rgba(0, 0, 0, .45);
+// 發光：只給 live、選中、焦點、充能條、主要按鈕。文字一律不加 text-shadow；一屏不超過 3 處
+$glow:          0 0 0 1px rgba($sky-400, .45), 0 0 18px rgba($sky-400, .18);
+$glow-soft:     0 0 14px rgba($sky-400, .35);
+$box-shadow:    $shadow-float;
+$box-shadow-sm: 0 4px 12px rgba(0, 0, 0, .35);
+$box-shadow-lg: $shadow-float;
+$box-shadow-inset: none;
+
+// HUD 角括號：12px 長、1.5px 粗、青空 50%（只用在 4 處：首頁 Hero 主控台、專案儀表板、贊助成功確認環、贊助紀錄詳情左側主控台）
+$hud-color:   rgba($sky-400, .5);
+$hud-length:  12px;
+$hud-weight:  1.5px;
+
+// 網格紋理（只鋪在首頁 Hero 與頁面標題區）
+$grid-texture-line: rgba($line, .4);
+$grid-texture-size: 32px;
+
+// 焦點：#7DDCFA 2px＋2px 間隙＋外圈 4px 青空 25%
+$focus-ring-width:   2px;
+$focus-ring-color:   $sky-300;
+$focus-ring-shadow:  0 0 0 2px $ti-950, 0 0 0 4px $sky-300, 0 0 0 8px rgba($sky-400, .25);
+$focus-ring-box-shadow: $focus-ring-shadow;
+
+// ---------- 6. 元件 ----------
+// 按鈕
+$btn-padding-y:        .5rem;
+$btn-padding-x:        1.125rem;
+$btn-font-weight:      500;
+$btn-line-height:      1.5;
+$btn-border-radius:    $border-radius;
+$btn-border-radius-sm: $border-radius;
+$btn-border-radius-lg: $border-radius;
+$btn-padding-y-lg:     .75rem;
+$btn-padding-x-lg:     1.5rem;
+$btn-font-size-lg:     1.0625rem;
+$btn-focus-box-shadow: $focus-ring-shadow;
+$btn-disabled-opacity: 1;
+$btn-transition:       color .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease, filter .15s ease;
+
+// 表單
+$input-bg:                   $ti-800;
+$input-color:                $fg;
+$input-border-color:         $control;
+$input-border-radius:        $border-radius;
+$input-border-radius-sm:     $border-radius;
+$input-border-radius-lg:     $border-radius;
+$input-padding-y:            .625rem;
+$input-padding-x:            .875rem;
+$input-placeholder-color:    $fg-faint;
+$input-focus-bg:             $ti-800;
+$input-focus-color:          $fg;
+$input-focus-border-color:   $sky-400;
+$input-focus-box-shadow:     $focus-ring-shadow;
+$input-disabled-bg:          $ti-900;
+$input-disabled-color:       $control;
+$input-disabled-border-color: $line-strong;
+$input-group-addon-bg:       $ti-850;
+$input-group-addon-color:    $fg-muted;
+$input-group-addon-border-color: $control;
+$form-label-font-weight:     500;
+$form-label-color:           $fg;
+$form-text-color:            $fg-muted;
+$form-text-font-size:        $small-font-size;
+$form-select-indicator-color:       $fg-muted;
+$form-select-indicator-color-dark:  $fg-muted;
+$form-select-focus-box-shadow:      $focus-ring-shadow;
+$form-check-input-bg:               $ti-800;
+$form-check-input-border:           1px solid $control;
+$form-check-input-checked-color:    $btn-ink;
+$form-check-input-checked-bg-color: $sky-400;
+$form-check-input-checked-border-color: $sky-400;
+$form-check-input-focus-box-shadow: $focus-ring-shadow;
+$form-check-input-focus-border:     $sky-400;
+$form-check-input-border-radius:    $border-radius-sm;
+$form-switch-color:                 $fg-muted;
+$form-switch-color-dark:            $fg-muted;
+$form-switch-focus-color:           $sky-300;
+$form-switch-checked-color:         $btn-ink;
+$form-feedback-invalid-color:       $err-ink;
+$form-invalid-color:                $err-ink;
+$form-invalid-border-color:         $err-ink;
+$form-invalid-color-dark:           $err-ink;
+$form-invalid-border-color-dark:    $err-ink;
+$form-valid-color:                  $ok-ink;
+$form-valid-border-color:           $ok-ink;
+$form-valid-color-dark:             $ok-ink;
+$form-valid-border-color-dark:      $ok-ink;
+$enable-validation-icons:           false; // 錯誤文字前另外加圖示（_base.scss），輸入框內不放圖示
+
+// 卡片（遙測面板的底）
+$card-bg:            $ti-850;
+$card-border-color:  $line;
+$card-border-radius: $border-radius-lg;
+$card-cap-bg:        $ti-800;
+$card-spacer-y:      $panel-pad;
+$card-spacer-x:      $panel-pad;
+
+// 下拉、Modal、Offcanvas、Tooltip：浮起層＝1px $line-strong＋$shadow-float
+$dropdown-bg:                $ti-850;
+$dropdown-color:             $fg;
+$dropdown-border-color:      $line-strong;
+$dropdown-border-radius:     $border-radius-lg;
+$dropdown-box-shadow:        $shadow-float;
+$dropdown-link-color:        $fg;
+$dropdown-link-hover-color:  $fg;
+$dropdown-link-hover-bg:     $ti-800;
+$dropdown-link-active-color: $sky-300;
+$dropdown-link-active-bg:    $select-bg;
+$dropdown-divider-bg:        $line;
+$dropdown-header-color:      $fg-muted;
+
+$modal-content-bg:            $ti-850;
+$modal-content-color:         $fg;
+$modal-content-border-color:  $line-strong;
+$modal-content-border-radius: $border-radius-lg;
+$modal-content-box-shadow-xs: $shadow-float;
+$modal-content-box-shadow-sm-up: $shadow-float;
+$modal-header-border-color:   $line;
+$modal-footer-border-color:   $line;
+$modal-backdrop-bg:           #000;
+$modal-backdrop-opacity:      .72;
+
+$offcanvas-bg-color:     $ti-900;
+$offcanvas-color:        $fg;
+$offcanvas-border-color: $line-strong;
+$offcanvas-box-shadow:   $shadow-float;
+
+$tooltip-bg:    $ti-800;
+$tooltip-color: $fg;
+
+// Accordion（FAQ）：方角、＋／−
+$accordion-bg:                   $ti-850;
+$accordion-color:                $fg;
+$accordion-border-color:         $line;
+$accordion-border-radius:        $border-radius-lg;
+$accordion-inner-border-radius:  $border-radius-lg;
+$accordion-button-bg:            $ti-850;
+$accordion-button-color:         $fg;
+$accordion-button-active-bg:     $ti-800;
+$accordion-button-active-color:  $fg;
+$accordion-button-focus-box-shadow: inset 0 0 0 2px $sky-300;
+$accordion-icon-transform:       none;
+$accordion-icon-color:              $sky-300;
+$accordion-icon-active-color:       $sky-300;
+$accordion-icon-color-dark:         $sky-300;
+$accordion-icon-active-color-dark:  $sky-300;
+$accordion-button-icon:             url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='#{$sky-300}' stroke-width='1.6' stroke-linecap='square'><path d='M8 2.5v11M2.5 8h11'/></svg>");
+$accordion-button-active-icon:      url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='#{$sky-300}' stroke-width='1.6' stroke-linecap='square'><path d='M2.5 8h11'/></svg>");
+$accordion-button-icon-dark:        $accordion-button-icon;
+$accordion-button-active-icon-dark: $accordion-button-active-icon;
+
+// 表格
+$table-color:          $fg;
+$table-bg:             transparent;
+$table-border-color:   $line;
+$table-striped-bg:     rgba(#fff, .02);
+$table-hover-bg:       rgba($sky-400, .05);
+$table-th-font-weight: 500;
+$table-cell-padding-y: .625rem;
+$table-cell-padding-x: .75rem;
+
+// 分頁：方角
+$pagination-color:                 $fg;
+$pagination-bg:                    $ti-850;
+$pagination-border-color:          $line;
+$pagination-border-radius:         $border-radius;
+$pagination-hover-color:           $fg;
+$pagination-hover-bg:              $ti-800;
+$pagination-hover-border-color:    $line-strong;
+$pagination-focus-box-shadow:      $focus-ring-shadow;
+$pagination-focus-bg:              $ti-800;
+$pagination-focus-color:           $fg;
+$pagination-active-color:          $sky-300;
+$pagination-active-bg:             $select-bg;
+$pagination-active-border-color:   $sky-400;
+$pagination-disabled-color:        $control;
+$pagination-disabled-bg:           $ti-900;
+$pagination-disabled-border-color: $line;
+$pagination-padding-y:             .5rem;
+$pagination-padding-x:             .875rem;
+
+// 麵包屑：分隔符 /（JetBrains Mono）
+$breadcrumb-divider:       quote("/");
+$breadcrumb-divider-color: $fg-faint;
+$breadcrumb-active-color:  $fg-muted;
+$breadcrumb-font-size:     $font-size-sm;
+$breadcrumb-margin-bottom: .75rem;
+
+// 導覽、清單、其他
+$nav-link-color:       $fg-muted;
+$nav-link-hover-color: $fg;
+$nav-link-font-weight: 500;
+$list-group-bg:            $ti-850;
+$list-group-color:         $fg;
+$list-group-border-color:  $line;
+$list-group-hover-bg:      $ti-800;
+$list-group-active-bg:     $select-bg;
+$list-group-active-color:  $sky-300;
+$list-group-active-border-color: $sky-400;
+$progress-bg:              $track;
+$progress-border-radius:   $border-radius-xs;
+$hr-border-color:          $line;
+$hr-opacity:               1;
+$badge-font-weight:        500;
+$badge-border-radius:      $border-radius-sm;
+$alert-border-radius:      $border-radius-lg;
+// btn-close 維持 Bootstrap 預設的黑色圖示，data-bs-theme="dark" 時由 $btn-close-filter-dark 反白成淺色
+
+$zindex-rail:   1032; // 左側控制欄（高於 sticky 主控台、低於 Offcanvas）
+$zindex-search: 1033; // 控制欄展開的搜尋面板

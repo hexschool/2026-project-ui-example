@@ -1,0 +1,1062 @@
+// ============================================================
+// 全站基礎：字體、區塊節奏、焦點、按鈕、狀態徽章、提示框、貼紙、標籤與共用小工具
+// 用法與示範都在 guideline.html；新頁面直接套用，不要在 pages/* 另寫一份
+// ============================================================
+
+// 單一淺色主題：原生捲軸、日期選擇器也用淺色
+:root {
+  color-scheme: light;
+  accent-color: $grape;
+}
+
+// 粉圓只有 400：關掉瀏覽器的假粗體與假斜體（Noto Sans TC 有 700，不受影響）
+html {
+  font-synthesis: none;
+}
+
+body {
+  letter-spacing: $letter-spacing-body;
+  text-rendering: optimizeLegibility;
+}
+
+// ≥ 992px 時容器左右留白從 20px 放大成 32px（.row 的 gutter 是 32px，不會溢出）
+@include media-breakpoint-up(lg) {
+  .container,
+  .container-fluid {
+    --bs-gutter-x: 4rem;
+  }
+}
+
+// 標題：粉圓 400
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  font-weight: $font-weight-round;
+  letter-spacing: $letter-spacing-heading;
+  text-wrap: balance;
+}
+h1, .h1 { line-height: 1.25; }
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty;
+}
+
+// 粉圓上的 <strong>／<b> 不加粗（會合成假粗體）；要強調用顏色或字級
+h1, h2, h3, h4, h5, h6, .btn, .nav-link, .font-round, .sticker, .status {
+  strong, b { font-weight: inherit; }
+}
+
+// 漂浮膠囊頁首不遮住錨點目標與焦點（92px）
+html {
+  scroll-padding-top: $sticky-offset;
+}
+
+::selection {
+  background-color: $lemon-400;
+  color: $ink;
+}
+
+// ---------- 字體與數字 ----------
+// 粉圓：非 h 標籤但要用粉圓的地方（方案名稱、標籤、按鈕型連結）
+.font-round {
+  font-family: $font-family-round;
+  font-weight: $font-weight-round;
+  letter-spacing: $letter-spacing-heading;
+}
+
+// 大數字：Fredoka 600、比例字寬（單獨出現的數字不需要上下對齊）
+// 字級由所在位置決定：<data class="figure-num display-3" value="1235600">NT$ 1,235,600</data>
+.figure-num {
+  font-family: $font-family-figure;
+  font-weight: $font-weight-figure;
+  line-height: 1.1;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+// 表格、清單裡要上下對齊的數字：Noto Sans TC 等寬數字（Fredoka 不保證等寬）
+.num {
+  font-family: $font-family-sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.nowrap {
+  white-space: nowrap;
+}
+// 英文字標、步驟編號：Fredoka
+.latin {
+  font-family: $font-family-figure;
+  font-weight: 500;
+  letter-spacing: .06em;
+}
+
+.text-note {
+  font-size: $small-font-size;
+  color: $body-secondary-color;
+}
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、標點與 <wbr> 處換行，「帆布包」「量產備料」不會被拆開
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 欄位之間的小圓點 ----------
+// 用在 meta 列（<p><span>…</span><span>…</span></p>）：每個 span 前面都有一顆圓點，
+// span 用負的 margin-left 把圓點收進前一個欄位的間距；換行時行首那顆落在容器左緣外、被裁掉，
+// 所以圓點只會出現在同一行的兩個欄位之間，不會跑到新一行的開頭像清單符號
+@mixin meta-dots($space: .625rem, $dot: .25rem, $color: currentColor) {
+  $step: $space * 2 + $dot;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: $step;
+  overflow: hidden;
+
+  > span { margin-left: -$step; }
+  > span::before {
+    content: "";
+    display: inline-block;
+    width: $dot;
+    height: $dot;
+    margin: 0 $space;
+    border-radius: 50%;
+    background-color: $color;
+    vertical-align: middle;
+  }
+}
+
+// ---------- 洞洞板紋理 ----------
+// 只用在 Hero 面板、頁面標題區面板、空狀態、遊戲墊
+@mixin pegboard($dot: $pegboard-dot, $size: $pegboard-size) {
+  background-image: radial-gradient(circle, $dot 2px, transparent 2.5px);
+  background-size: $size $size;
+  background-position: ($size * .5) ($size * .5);
+}
+.pegboard {
+  @include pegboard;
+}
+
+// ---------- 區塊節奏 ----------
+// 區塊上下留白：手機 64px → 桌機 104px
+.section {
+  padding-block: map-get($spacers, 7);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 8);
+  }
+}
+.section-tight {
+  padding-block: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7);
+  }
+}
+.section-sakura { background-color: $sakura-50; }
+.section-lilac  { background-color: $lilac-50; }
+.section-card   { background-color: $card; }
+
+// 遊戲墊區塊：淡紫底＋洞洞板，上緣 48px 圓角（首頁「正在發生的提案」）
+.section-mat {
+  @include pegboard;
+  background-color: $lilac-50;
+  border-radius: 3rem 3rem 0 0;
+
+  @include media-breakpoint-down(md) {
+    border-radius: 2rem 2rem 0 0;
+  }
+}
+
+// 區塊標題：置中，上方一排 3 顆小積木（櫻、紫、黃，裝飾）＋ h2 ＋副標
+// <div class="section-title">
+//   <span class="title-blocks" aria-hidden="true"><i></i><i></i><i></i></span>
+//   <h2 id="…">…</h2>
+//   <p>副標</p>
+// </div>
+.section-title {
+  max-width: 44rem;
+  margin: 0 auto map-get($spacers, 5);
+  text-align: center;
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: map-get($spacers, 6);
+  }
+
+  h2, .h2 {
+    margin-bottom: map-get($spacers, 2);
+  }
+  > p {
+    margin-bottom: 0;
+    color: $body-secondary-color;
+  }
+  > :last-child { margin-bottom: 0; }
+}
+// 靠左的版本（卡片內、側欄旁的小區塊）
+.section-title-start {
+  margin-inline: 0;
+  text-align: start;
+
+  .title-blocks { justify-content: flex-start; }
+}
+.title-blocks {
+  display: flex;
+  justify-content: center;
+  gap: .3125rem;
+  margin-bottom: .75rem;
+
+  i {
+    display: block;
+    width: 1rem;
+    height: .75rem;
+    border-radius: 4px;
+    background-color: $sakura-300;
+    box-shadow: $box-shadow-inset;
+
+    &:nth-child(2) { background-color: $lilac-300; transform: translateY(-3px); }
+    &:nth-child(3) { background-color: $lemon-400; }
+  }
+}
+
+// ---------- 頁面標題區（首頁以外的頁面共用） ----------
+// 不是滿版色帶：容器內 40px 圓角的櫻花粉洞洞板面板；麵包屑 → H1 → 說明，左對齊
+// <header class="page-panel-wrap">
+//   <div class="container">
+//     <div class="page-panel">
+//       <nav aria-label="目前位置"><ol class="breadcrumb">…</ol></nav>
+//       <h1>頁面標題</h1>
+//       <p class="page-lead">一句說明</p>
+//     </div>
+//   </div>
+// </header>
+.page-panel-wrap {
+  padding-top: map-get($spacers, 4);
+}
+.page-panel {
+  @include pegboard;
+  position: relative;
+  overflow: clip;
+  padding: map-get($spacers, 4) map-get($spacers, 4) map-get($spacers, 5);
+  border-radius: $border-radius-xl;
+  background-color: $sakura-50;
+
+  @include media-breakpoint-up(lg) {
+    padding: map-get($spacers, 5) map-get($spacers, 6) map-get($spacers, 6);
+    border-radius: $border-radius-xxl;
+  }
+
+  .breadcrumb { margin-bottom: map-get($spacers, 2); }
+  h1, .h1 { margin-bottom: map-get($spacers, 2); }
+  > :last-child { margin-bottom: 0; }
+  // 面板裡可以散落 .deco（積木、小球），內容一律疊在裝飾上面
+  > :not(.deco) { position: relative; z-index: 1; }
+}
+// 淡紫版本（個人頁「玩具間名牌」等）
+.page-panel-lilac { background-color: $lilac-50; }
+// 只有麵包屑的版本（專案細節）
+.page-panel-crumb {
+  padding-block: map-get($spacers, 2);
+
+  .breadcrumb { margin-bottom: 0; }
+}
+.page-lead {
+  max-width: 36em;
+  margin-bottom: 0;
+  color: $body-secondary-color;
+}
+
+// ---------- 麵包屑：分隔是一顆小圓點；連結次要色、目前頁墨色 ----------
+.breadcrumb {
+  align-items: center;
+  font-family: $font-family-sans-serif;
+}
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.breadcrumb-item + .breadcrumb-item::before {
+  content: "";
+  width: .375rem;
+  height: .375rem;
+  margin-right: $breadcrumb-item-padding-x;
+  padding: 0;
+  border-radius: 50%;
+  background-color: $lilac-500;
+}
+.breadcrumb-item.active {
+  white-space: normal;
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: $body-secondary-color;
+  text-decoration: none;
+
+  &:hover {
+    color: $grape-700;
+    text-decoration: underline;
+  }
+}
+
+// ---------- 按鈕 ----------
+// 主要：.btn-primary（葡萄紫漸層＋白字），同一組動作只放一個
+// 強調：.btn-lemon（檸檬黃＋深字）：Hero「我要提案」、轉換帶、正向的下一步
+// 次要：.btn-outline-primary（白底＋淡紫框＋葡萄紫字）
+// 葡萄紫面上：.btn-on-grape（白底＋葡萄紫字；停用和其他按鈕一樣是灰紫淡底＋中性字）
+// 文字連結：.btn-text；圓形圖示鈕：.btn-icon
+// 塑膠按鍵感：上亮下暗的漸層＋下緣 3px 內陰影＋柔投影；按下時往下 1px（只動 transform，不推擠版面）
+.btn {
+  --bs-btn-focus-box-shadow: #{$focus-ring-double};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  letter-spacing: $letter-spacing-label;
+  transition: color .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .1s ease;
+
+  &:active { transform: translateY(1px); }
+}
+.btn-primary {
+  --bs-btn-color: #{$on-grape};
+  --bs-btn-bg: #{$grape};
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: #{$on-grape};
+  --bs-btn-hover-bg: #{$grape-700};
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: #{$on-grape};
+  --bs-btn-active-bg: #{$grape-800};
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-color: #{$tone-idle};
+  --bs-btn-disabled-bg: #{$tone-idle-bg};
+  --bs-btn-disabled-border-color: transparent;
+  background-image: linear-gradient(180deg, $grape-light, $grape);
+  box-shadow: $box-shadow-inset, 0 6px 14px rgba($grape, .25);
+
+  &:hover { background-image: linear-gradient(180deg, $grape, $grape-700); }
+  &:active,
+  &.active { background-image: none; box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .12), 0 3px 8px rgba($grape, .2); }
+  &:disabled,
+  &.disabled { background-image: none; box-shadow: none; }
+  &:focus-visible { box-shadow: $focus-ring-double; }
+}
+.btn-lemon {
+  --bs-btn-color: #{$ink};
+  --bs-btn-bg: #{$lemon-400};
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: #{$ink};
+  --bs-btn-hover-bg: #{$lemon-500};
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: #{$ink};
+  --bs-btn-active-bg: #{$lemon-500};
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-color: #{$tone-idle};
+  --bs-btn-disabled-bg: #{$tone-idle-bg};
+  --bs-btn-disabled-border-color: transparent;
+  box-shadow: inset 0 -3px 0 rgba($tone-warn, .22), 0 6px 14px rgba($tone-warn, .16);
+
+  &:active { box-shadow: inset 0 -1px 0 rgba($tone-warn, .22), 0 3px 8px rgba($tone-warn, .14); }
+  &:disabled,
+  &.disabled { box-shadow: none; }
+  &:focus-visible { box-shadow: $focus-ring-double; }
+}
+.btn-outline-primary {
+  --bs-btn-color: #{$grape-700};
+  --bs-btn-bg: #{$card};
+  --bs-btn-border-color: #{$lilac-300};
+  --bs-btn-hover-color: #{$grape-700};
+  --bs-btn-hover-bg: #{$lilac-50};
+  --bs-btn-hover-border-color: #{$grape};
+  --bs-btn-active-color: #{$grape-700};
+  --bs-btn-active-bg: #{$lilac-100};
+  --bs-btn-active-border-color: #{$grape};
+  --bs-btn-disabled-color: #{$tone-idle};
+  --bs-btn-disabled-bg: #{$page};
+  --bs-btn-disabled-border-color: #{$line-strong};
+}
+.btn-on-grape {
+  --bs-btn-color: #{$grape-700};
+  --bs-btn-bg: #{$card};
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: #{$grape-800};
+  --bs-btn-hover-bg: #{$lilac-50};
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: #{$grape-800};
+  --bs-btn-active-bg: #{$lilac-100};
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-color: #{$tone-idle};
+  --bs-btn-disabled-bg: #{$tone-idle-bg};
+  --bs-btn-disabled-border-color: transparent;
+  --bs-btn-focus-box-shadow: 0 0 0 2px #{$grape}, 0 0 0 5px #{$lemon-400};
+  box-shadow: $box-shadow-inset;
+
+  &:disabled,
+  &.disabled { box-shadow: none; }
+}
+// 危險文字按鈕（取消贊助）：平實、不加裝飾
+.btn-danger-text {
+  --bs-btn-color: #{$tone-err};
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: #{$tone-err};
+  --bs-btn-hover-bg: #{$tone-err-bg};
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: #{$tone-err};
+  --bs-btn-active-bg: #{$tone-err-bg};
+  --bs-btn-active-border-color: transparent;
+  font-family: $font-family-sans-serif;
+  font-weight: $font-weight-medium;
+  text-decoration: underline;
+  text-underline-offset: .3em;
+}
+// 圓形圖示鈕（追蹤、分享）：48px；.btn-sm 時 44px
+.btn-icon {
+  --bs-btn-padding-x: 0;
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  font-size: 1.125rem;
+
+  &.btn-sm { width: 2.75rem; height: 2.75rem; }
+}
+// 追蹤：aria-pressed="true" 時換成實心愛心（.bi-heart-fill 由 HTML 決定）
+.btn[aria-pressed="true"] .bi-heart-fill { color: $sakura-600; }
+
+// 文字連結型按鈕：葡萄紫字＋底線，內建 44px 觸控高度
+.btn-text {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: $font-family-round;
+  font-weight: $font-weight-round;
+  color: $grape;
+  text-decoration: underline;
+  text-decoration-color: rgba($grape, .35);
+  text-decoration-thickness: 2px;
+  text-underline-offset: .35em;
+
+  &:hover { color: $grape-700; text-decoration-color: currentColor; }
+  &:focus-visible { outline-offset: 4px; }
+}
+a:not([href]).btn,
+a:not([href]).btn-text {
+  cursor: default;
+}
+a:not([class]) {
+  text-decoration-color: rgba($grape, .4);
+  text-underline-offset: .3em;
+
+  &:hover { text-decoration-color: currentColor; }
+}
+
+// ---------- 表單 ----------
+.form-label {
+  font-family: $font-family-sans-serif;
+}
+.form-control,
+.form-select {
+  caret-color: $grape;
+}
+.form-control:-webkit-autofill {
+  -webkit-text-fill-color: $ink;
+  box-shadow: inset 0 0 0 100px $card;
+}
+// 膠囊輸入框（搜尋、自訂金額）
+.form-control-pill {
+  border-radius: $border-radius-pill;
+  padding-inline: 1.25rem;
+}
+.form-check-input:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+.form-switch .form-check-input {
+  width: 2.75em;
+  height: 1.5em;
+  margin-top: .15em;
+}
+.form-label-optional {
+  margin-left: map-get($spacers, 2);
+  color: $body-secondary-color;
+  font-size: $small-font-size;
+  font-weight: $font-weight-normal;
+}
+// 錯誤：圖示＋文字＋框＋字色（不只靠顏色；櫻花粉面上不放錯誤）
+// <div id="…Error" class="invalid-feedback"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>…</div>
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-width: 2px;
+}
+.invalid-feedback {
+  align-items: flex-start;
+  gap: .375rem;
+
+  .bi { flex-shrink: 0; line-height: inherit; }
+}
+.is-invalid ~ .invalid-feedback,
+.invalid-feedback.d-block,
+.was-validated :invalid ~ .invalid-feedback {
+  display: flex;
+}
+
+// ---------- 鍵盤焦點：3px 葡萄紫，外推 2px 露出底色當間隙 ----------
+:focus-visible {
+  outline: 3px solid $grape;
+  outline-offset: 2px;
+}
+.offcanvas:focus-visible,
+.modal:focus-visible,
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+.btn:focus-visible,
+.btn-close:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible {
+  outline: none; // 這些元件由 box-shadow 畫焦點環
+}
+.form-control:focus-visible,
+.form-select:focus-visible {
+  box-shadow: $focus-ring-double;
+}
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: $zindex-fixed + 10;
+  padding: .5rem 1rem;
+  border-radius: $border-radius-pill;
+  background: $grape;
+  color: $card;
+  &:focus { top: .75rem; }
+}
+
+// 減少動態時全部關閉：小球直接在定位、積木直接顯示、光圈靜止
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation: none !important;
+  }
+}
+
+// ---------- 圖片盒窗：固定比例、20px 圓角、裁切填滿 ----------
+// <div class="img-frame ratio ratio-4x3"><img src="…" alt="…"></div>
+.img-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: $border-radius-img;
+  background-color: $lilac-50;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+.ratio-4x5 { --bs-aspect-ratio: 125%; }
+.ratio-3x2 { --bs-aspect-ratio: 66.6667%; }
+
+// ---------- 頭像 ----------
+// 照片：<img class="avatar avatar-ring" src="images/proposer-avatar.jpg" alt="…" width="48" height="48">
+// 文字頭像：<span class="avatar avatar-text avatar-sakura" aria-hidden="true">彥</span>
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: $lilac-50;
+}
+.avatar-sm { width: 2.5rem; height: 2.5rem; }
+.avatar-lg { width: 4.5rem; height: 4.5rem; }
+.avatar-xl { width: 7.5rem; height: 7.5rem; }
+// 櫻花粉外圈（提案者照片）
+.avatar-ring {
+  box-shadow: 0 0 0 3px $card, 0 0 0 6px $sakura-300;
+}
+// 糖果色文字頭像
+.avatar-text {
+  font-family: $font-family-round;
+  font-size: 1.125rem;
+  color: $ink;
+  background-color: $lilac-100;
+}
+.avatar-sakura { background-color: $sakura-100; }
+.avatar-lemon  { background-color: $lemon-100; }
+.avatar-peach  { background-color: $peach-200; }
+
+// ---------- 狀態徽章（WIREFRAME_SPEC §2.6 的 6 種語意） ----------
+// 膠囊，一律「圖示（或圓點）＋文字」，不只靠顏色；狀態不旋轉、不加表情
+// <span class="status status-live has-dot">募資中</span>
+// <span class="status status-ok"><i class="bi bi-truck" aria-hidden="true"></i>已出貨</span>
+// 已下架：.status-idle.status-dashed
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .25rem .75rem;
+  border: 1.5px solid transparent;
+  border-radius: $border-radius-pill;
+  font-family: $font-family-sans-serif;
+  font-size: .875rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.4;
+  white-space: nowrap;
+
+  .bi { font-size: .9em; }
+}
+@each $name, $pair in $tones {
+  .status-#{$name} {
+    color: nth($pair, 1);
+    background-color: nth($pair, 2);
+  }
+}
+.status-err { border-color: rgba($tone-err, .55); }
+// 進行中的圓點（沒有圖示時用）
+.status.has-dot::before {
+  content: "";
+  width: .5rem;
+  height: .5rem;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+.status-dashed {
+  border: 1.5px dashed currentColor;
+}
+// 疊在照片上的徽章：加柔陰影，照片再亮也看得清楚
+.status-on-photo {
+  box-shadow: $box-shadow-sm;
+}
+
+// ---------- 提示框 Callout ----------
+// 圓角淡底＋左側圓形圖示；err 另加 1.5px 框（和櫻花粉區分）。不放關閉鈕
+// <div class="callout callout-ok"><i class="bi bi-shield-check callout-icon" aria-hidden="true"></i><div class="callout-body"><p>…</p></div></div>
+.callout {
+  display: flex;
+  gap: .75rem;
+  padding: 1rem 1.25rem;
+  border: 1.5px solid transparent;
+  border-radius: $border-radius;
+
+  > :last-child { margin-bottom: 0; }
+  p { color: $ink; }
+}
+.callout-body {
+  flex: 1;
+  min-width: 0;
+
+  > :last-child { margin-bottom: 0; }
+}
+.callout-icon {
+  flex-shrink: 0;
+  font-size: 1.125rem;
+  line-height: $line-height-base;
+}
+.callout-title {
+  margin-bottom: .25rem;
+  font-family: $font-family-sans-serif;
+  font-weight: $font-weight-bold;
+  color: inherit;
+}
+@each $name, $pair in $tones {
+  .callout-#{$name} {
+    color: nth($pair, 1);
+    background-color: nth($pair, 2);
+  }
+}
+.callout-err { border-color: rgba($tone-err, .55); }
+
+// ---------- 貼紙（分類） ----------
+// 膠囊、分類色底＋深字、微斜 -3°（只有兩三個字的分類名可以斜；狀態、金額不斜）
+// <span class="sticker sticker-sakura">設計生活</span>
+// 分類色：設計生活＝sakura、科技硬體＝lilac、出版與影像＝lemon、社會設計＝peach；其他分類用預設白底
+.sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .25rem .75rem;
+  border: 2px solid $card;
+  border-radius: $border-radius-pill;
+  background-color: $card;
+  color: $ink;
+  font-family: $font-family-round;
+  font-size: .875rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: $box-shadow-sm;
+  transform: rotate(-3deg);
+}
+@each $name, $pair in $category-colors {
+  .sticker-#{$name} { background-color: nth($pair, 1); }
+}
+.sticker-flat { transform: none; }
+
+// ---------- 小膠囊（資訊標籤：目標、贊助人數、剩餘天數、回饋門檻、預計出貨） ----------
+// <span class="pill"><i class="bi bi-flag" aria-hidden="true"></i>目標 NT$ 500,000</span>
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .25rem .75rem;
+  border-radius: $border-radius-pill;
+  background-color: $lilac-50;
+  color: $ink;
+  font-size: .875rem;
+  line-height: 1.5;
+  white-space: nowrap;
+
+  .bi { color: $grape; font-size: .9em; }
+}
+.pill-white { background-color: $card; }
+// 剩 ≤ 7 天的時間警示（注意色＋鬧鐘圖示，不只靠顏色）
+.pill-warn {
+  background-color: $tone-warn-bg;
+  color: $tone-warn;
+  font-weight: $font-weight-medium;
+
+  .bi { color: inherit; }
+}
+.pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------- 篩選標籤（FilterChip）：糖果膠囊，用 .btn-check＋label ----------
+// <input type="checkbox" class="btn-check" id="…" checked><label class="chip" for="…">募資中</label>
+// 選中：葡萄紫底＋白字＋勾（不只靠顏色）
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  padding: .375rem 1rem;
+  border: 2px solid $line;
+  border-radius: $border-radius-pill;
+  background-color: $card;
+  color: $ink;
+  font-family: $font-family-round;
+  font-size: .9375rem;
+  line-height: 1.4;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+
+  &:hover { border-color: $lilac-300; background-color: $lilac-50; color: $grape-700; }
+
+  .chip-count {
+    font-family: $font-family-figure;
+    font-size: .8125rem;
+    color: $ink-muted;
+  }
+}
+.btn-check:checked + .chip,
+.chip.active {
+  border-color: $grape;
+  background-color: $grape;
+  color: $on-grape;
+
+  .chip-count { color: $lilac-100; }
+
+  &::before {
+    content: "\F633"; // bi-check-lg
+    font-family: bootstrap-icons;
+    font-weight: normal;
+  }
+}
+.btn-check:focus-visible + .chip {
+  box-shadow: $focus-ring-double;
+}
+// 已套用標籤（可移除）
+.chip-applied {
+  min-height: 2.25rem;
+  padding: .25rem .375rem .25rem .875rem;
+  border-color: $lilac-300;
+  background-color: $lilac-50;
+  color: $grape-700;
+  cursor: default;
+
+  &:hover { background-color: $lilac-50; }
+}
+.chip-remove {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-block: -.5rem;
+  margin-right: -.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+
+  &:hover { color: $grape-800; }
+}
+
+// ---------- 糖果膠囊分頁（Tabs）：選中＝葡萄紫底白字 ----------
+// 首頁的專案分頁、個人頁的贊助紀錄篩選、留言篩選共用；手機在自己的容器內橫向捲動
+// <ul class="nav candy-tabs" role="tablist">…<button class="nav-link active" …>熱門中</button>…</ul>
+.candy-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: .5rem;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+  padding: .375rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-radius: $border-radius-pill;
+  background-color: $card;
+  box-shadow: $box-shadow-sm;
+
+  > *,
+  .nav-link { flex-shrink: 0; } // 項目不被擠扁，放不下時在容器內橫捲
+  .nav-link {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: .5rem 1.25rem;
+    border-radius: $border-radius-pill;
+    font-family: $font-family-round;
+    font-weight: $font-weight-round;
+    color: $ink;
+    white-space: nowrap;
+
+    &:hover { background-color: $lilac-50; color: $grape-700; }
+  }
+  .nav-link.active {
+    background-color: $grape;
+    color: $on-grape;
+  }
+  .nav-link:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 3px $grape, inset 0 0 0 5px $card;
+  }
+  .tab-count {
+    margin-left: .375rem;
+    font-family: $font-family-figure;
+    font-size: .8125rem;
+    color: $ink-muted;
+  }
+  .nav-link.active .tab-count { color: $lilac-100; }
+}
+.candy-tabs-start { margin-inline: 0; }
+
+// ---------- 表格：數字靠右、表頭小字 ----------
+.table > thead th {
+  font-size: .875rem;
+  font-weight: $font-weight-medium;
+  color: $ink-muted;
+  white-space: nowrap;
+}
+.table td.num,
+.table th.num {
+  text-align: right;
+}
+.table-frame {
+  overflow-x: auto;
+  border: 2px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $card;
+
+  .table { margin-bottom: 0; }
+  .table > :not(caption) > * > * { padding-inline: 1.25rem; }
+  .table > tbody > tr:last-child > * { border-bottom: 0; }
+}
+
+// ---------- 數字積木（StatTile）：小標籤 → 大數字（Fredoka）→ 一行補充 ----------
+// <div class="num-block num-block-sakura"><p class="num-block-label">贊助人數</p><p class="num-block-value figure-num">…</p><p class="num-block-note">↑ 今日 +37</p></div>
+// 顏色：預設白底；-sakura／-lilac／-lemon／-peach 淡底；.is-ok 成功底（準時出貨率 100%）
+.num-block {
+  position: relative;
+  padding: 1.25rem 1.25rem 1rem;
+  border-radius: $border-radius-lg;
+  background-color: $card;
+  box-shadow: $box-shadow-inset;
+
+  > :last-child { margin-bottom: 0; }
+}
+.num-block-label {
+  margin-bottom: .25rem;
+  font-size: .875rem;
+  font-weight: $font-weight-normal; // 也可以寫成 <dt>（Bootstrap 的 dt 預設 700）
+  color: $ink-muted;
+}
+.num-block-value {
+  margin-bottom: .25rem;
+  margin-left: 0;
+  font-size: 2rem;
+  color: $ink;
+
+  // 單位（人、天、件）：小一號，和數字之間留一點空
+  small {
+    margin-left: .25rem;
+    font-size: .5em;
+    font-weight: 500;
+    color: $ink-muted;
+  }
+}
+.num-block-note {
+  margin-bottom: 0;
+  font-size: .875rem;
+  color: $ink-muted;
+}
+.num-block-sakura { background-color: $sakura-100; }
+.num-block-lilac  { background-color: $lilac-100; }
+.num-block-lemon  { background-color: $lemon-100; }
+.num-block-peach  { background-color: #FFEDE3; }
+.num-block.is-ok  { background-color: $tone-ok-bg; .num-block-value { color: $tone-ok; } }
+
+// ---------- 定義清單：標籤在上、數字在下 ----------
+.stat-list {
+  margin: 0;
+
+  dt {
+    font-size: .875rem;
+    font-weight: $font-weight-normal;
+    color: $ink-muted;
+  }
+  dd { margin-bottom: 0; }
+}
+
+// ---------- 設計稿狀態示意 ----------
+// 頁面底部示範「另一種狀態」：上方虛線分隔、標籤「設計稿狀態示意」，和正式內容明顯分開
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag"><i class="bi bi-eye" aria-hidden="true"></i>設計稿狀態示意</p>
+//   <h2 id="…" class="demo-state-title">…</h2>
+//   <p class="text-note">什麼情況下出現</p>
+//   <div class="demo-state-grid">…<div class="demo-state-stage"><p class="demo-state-label">…</p>…</div>…</div>
+// </section>
+.demo-state {
+  margin-top: map-get($spacers, 8);
+  padding-top: map-get($spacers, 5);
+  border-top: 3px dashed $line-strong;
+
+  > .text-note { margin-bottom: map-get($spacers, 4); }
+}
+.demo-state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: map-get($spacers, 3);
+  padding: .25rem .875rem;
+  border: 1.5px dashed $track-dash;
+  border-radius: $border-radius-pill;
+  color: $ink-muted;
+  font-size: .875rem;
+}
+.demo-state-title {
+  margin-bottom: map-get($spacers, 1);
+  font-size: $h4-font-size;
+}
+.demo-state-grid {
+  display: grid;
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.demo-state-grid-3 {
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.demo-state-stage {
+  padding: map-get($spacers, 4);
+  border: 2px dashed $line-strong;
+  border-radius: $border-radius-xl;
+  background-color: rgba($card, .7);
+}
+.demo-state-label {
+  margin-bottom: map-get($spacers, 3);
+  font-family: $font-family-round;
+  font-size: .9375rem;
+  color: $ink-muted;
+}
+
+// ---------- 空狀態 ----------
+// 洞洞板圓角面板 → 線性 icon（白色圓形）→ 文案 → 一個主要行動；置中、最大寬 32em
+// 失敗、退款、錯誤類的空狀態加 .empty-state-plain（不用洞洞板）
+// <div class="empty-state"><i class="bi bi-search empty-state-icon" aria-hidden="true"></i><p>…</p><a class="btn btn-primary">…</a></div>
+.empty-state {
+  @include pegboard;
+  max-width: 36rem;
+  margin-inline: auto;
+  padding: map-get($spacers, 5) map-get($spacers, 4);
+  border-radius: $border-radius-xl;
+  background-color: $lilac-50;
+  text-align: center;
+
+  > p {
+    max-width: 28em;
+    margin: 0 auto map-get($spacers, 4);
+    color: $ink;
+  }
+  > :last-child { margin-bottom: 0; }
+}
+.empty-state-plain {
+  background-image: none;
+  background-color: $card;
+  border: 2px solid $line;
+}
+.empty-state-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: map-get($spacers, 3);
+  border-radius: 50%;
+  background-color: $card;
+  color: $grape;
+  font-size: 1.5rem;
+  box-shadow: $box-shadow-sm;
+}
+
+// ---------- 角色切換（account.html 的 data-role） ----------
+[data-role="backer"] .for-proposer,
+[data-role="proposer"] .for-backer {
+  display: none !important;
+}
+
+// ---------- 浮層 ----------
+.dropdown-menu {
+  box-shadow: var(--bs-dropdown-box-shadow);
+  padding: .5rem;
+
+  .dropdown-item { border-radius: $border-radius-sm; }
+}
+.modal-content {
+  box-shadow: $box-shadow-lg;
+}
+
+// ---------- 手機滿版橫向捲動列 ----------
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+  }
+}
+.bleed-x {
+  @include bleed-x;
+}

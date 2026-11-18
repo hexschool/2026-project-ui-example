@@ -1,0 +1,158 @@
+// ============================================================
+// 專案卡 ProjectCard（遙測面板版）：首頁「正在發生的提案」、Guideline
+// 深鈦灰面、1px 框、6px 圓角、上緣 2px 狀態條（募資中＝充能漸層）
+// ① 4:3 主視覺（下緣深色漸層；左上分類標籤，剩 ≤ 7 天時右上時間警示）→ ② h3 名稱 → ③ 提案者
+// → ④ 讀數列：達成率｜目前金額（中文標籤＋Chakra 讀數，1px 線分格）→ ⑤ M 充能條 → ⑥ 人數｜剩餘天數
+// 整張卡連到 project.html（.stretched-link）；卡片等高、資料列貼底
+// hover／focus：框線變青空 50%＋微光、圖片亮度 1.08，尺寸不變（不放大、不位移、不出現隱藏資訊）
+// .is-feature：便當格的大卡（768–1199 跨 2 欄、主視覺 16:9；≥ 1200 跨 2 欄 2 列，圖片填滿剩餘高度，約 4:3；≥ 768 讀數放大）
+//
+// <article class="project-card panel panel-strip is-live">
+//   <div class="project-card-media">
+//     <img src="images/project-01-canvas-bag.jpg" alt="…" width="1600" height="1066">
+//     <div class="project-card-flags"><span class="tag tag-overlay">設計生活</span></div>
+//   </div>
+//   <div class="project-card-body">
+//     <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">…</a></h3>
+//     <p class="project-card-maker">布作工房 第三代</p>
+//     <dl class="readouts project-card-readouts">…達成率｜目前金額…</dl>
+//     <div class="charge is-over" style="--target: 40.5%" aria-hidden="true"></div>
+//     <ul class="project-card-meta"><li>…人贊助</li><li>剩 … 天</li></ul>
+//   </div>
+// </article>
+// ============================================================
+
+.project-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  transition: border-color .15s ease, box-shadow .15s ease;
+
+  &:hover,
+  &:focus-within {
+    border-color: rgba($sky-400, .5);
+    box-shadow: 0 0 18px rgba($sky-400, .12);
+
+    .project-card-media img { filter: brightness(1.08); }
+  }
+}
+.project-card-media {
+  position: relative;
+  flex: 0 0 auto;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: $ti-800;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: filter .2s ease;
+  }
+
+  // 下緣深色漸層，讓圖片和下方面板接得順
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 55% 0 0;
+    background: linear-gradient(180deg, transparent, rgba($ti-850, .85));
+    pointer-events: none;
+  }
+}
+// 疊在圖片上的標籤：左上分類、右上時間警示
+.project-card-flags {
+  position: absolute;
+  z-index: 1;
+  top: .75rem;
+  left: .75rem;
+  right: .75rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: .375rem;
+  pointer-events: none;
+}
+
+.project-card-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  padding: 1rem 1.25rem 1.25rem;
+}
+.project-card-title {
+  margin-bottom: .25rem;
+  font-size: $h3-font-size;
+  line-height: 1.45;
+
+  a {
+    color: $fg;
+    text-decoration: none;
+
+    &:focus-visible { outline: 0; }
+    &::after { border-radius: $border-radius-lg; }
+    &:focus-visible::after { box-shadow: inset 0 0 0 2px $sky-300; }
+  }
+}
+.project-card-maker {
+  margin-bottom: 1rem;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+// 讀數列貼底：達成率｜目前金額
+.project-card-readouts {
+  margin-top: auto;
+  margin-bottom: .875rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  overflow: hidden;
+
+  grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); // 金額字數多，給它寬一點
+
+  .readout { padding: .625rem .75rem; }
+  .readout-value { font-size: $readout-s; }
+  .amount-value { font-size: 1.125rem; }
+}
+.project-card-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  margin: .75rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+
+  data {
+    color: $fg;
+    font-family: $font-family-numeric;
+    font-weight: 600;
+  }
+}
+
+// ---------- 便當格大卡 ----------
+// < 768：和一般卡相同；768–1199：跨 2 欄，主視覺 16:9；≥ 1200：跨 2 欄 2 列，主視覺填滿剩餘高度
+// 大卡的高度由右側兩張小卡決定，所以這兩張的主視覺在 ≥ 1200 改成 21:9（pages/_home.scss 的 .bento），
+// 大卡圖片才會落在 4:3 上下（1200 約 1.24、1440 約 1.41），整張大卡 810～840px，一個 900px 高的視窗看得完
+.project-card.is-feature {
+  @include media-breakpoint-up(md) {
+    .project-card-title { font-size: 1.375rem; }
+    .project-card-readouts .readout-value { font-size: $readout-l; }
+    .project-card-readouts .amount-value { font-size: $readout-m; }
+    .project-card-body { padding: 1.25rem 1.5rem 1.5rem; }
+    .project-card-media { aspect-ratio: 16 / 9; }
+  }
+  @include media-breakpoint-up(xl) {
+    .project-card-media {
+      flex: 1 1 auto;
+      min-height: 18rem;
+      aspect-ratio: auto;
+
+      img { position: absolute; inset: 0; }
+    }
+    .project-card-body { flex: 0 0 auto; }
+    .project-card-readouts { margin-top: 0; }
+  }
+}

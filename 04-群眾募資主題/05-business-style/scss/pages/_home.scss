@@ -1,0 +1,912 @@
+// ============================================================
+// 首頁 index.html（前綴 home-；事實卡 fact-card、類別表 cat-、條款 clause／terms、評價 review）
+// 構圖：深藍色帶（靠左一行 H1＋右側按鈕直排）→ 全寬 4 段事實卡壓在色帶下緣 → 條款格 4 欄
+//       → 類別表（左標題 4｜右清單 8）→ 冰灰區塊的「領先專案卡＋排行表」4：8 → 評價＋保障條款表 6：6 → 轉換帶
+// ============================================================
+
+// ---------- 區塊一：深藍色帶 ----------
+.home-hero {
+  --hero-overlap: 4rem;   // 事實卡壓在色帶上的高度
+  position: relative;
+
+  @include media-breakpoint-up(md) {
+    --hero-overlap: 6rem;
+  }
+  @include media-breakpoint-up(xl) {
+    --hero-overlap: 8.5rem;
+  }
+}
+.home-hero-band {
+  padding-block: map-get($spacers, 6) calc(var(--hero-overlap) + #{map-get($spacers, 5)});
+  background-color: $navy-800;
+  // 極淡的圖表格線（白 6%、48px 間距），只鋪在這條色帶
+  background-image:
+    linear-gradient($on-navy-grid 1px, transparent 1px),
+    linear-gradient(90deg, $on-navy-grid 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center top;
+  color: $on-navy;
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 7);
+  }
+}
+.home-hero-title {
+  margin-bottom: map-get($spacers, 3);
+  font-size: 2.25rem;
+  font-weight: $font-weight-bold;
+  line-height: $display-line-height;
+  letter-spacing: .02em;
+  color: $on-navy;
+
+  @include media-breakpoint-up(md) {
+    font-size: 2.75rem;
+  }
+  @include media-breakpoint-up(xl) {
+    font-size: map-get($display-font-sizes, 1);
+  }
+}
+.home-hero-lead {
+  max-width: 34em;
+  margin-bottom: 0;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: $on-navy-muted;
+
+  @include media-breakpoint-up(md) {
+    font-size: $lead-font-size;
+  }
+}
+// 兩顆按鈕：手機並排換行；≥ 992px 直排靠右下
+.home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+
+  @include media-breakpoint-up(lg) {
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 19rem;
+    margin-left: auto;
+  }
+  .btn {
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+}
+.home-hero-sheet {
+  position: relative;
+  margin-top: calc(var(--hero-overlap) * -1);
+}
+
+// ---------- 事實卡（Hero 專案卡）：4 段，以 1px 線分格 ----------
+// 手機：單欄 media → info → kpi → trend → meter → actions
+// md～lg：2 欄（圖｜名稱與動作；KPI｜走勢；進度條整列）
+// ≥ 1200：4 欄（圖｜名稱與動作｜KPI｜走勢），底部一整條大進度條
+.fact-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "media"
+    "info"
+    "kpi"
+    "trend"
+    "meter"
+    "actions";
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $white;
+  box-shadow: $box-shadow;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "media info"
+      "media actions"
+      "kpi   trend"
+      "meter meter";
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2.5fr) minmax(0, 3.7fr) minmax(0, 2.8fr);
+    grid-template-rows: 1fr auto;
+    grid-template-areas:
+      "media info    kpi   trend"
+      "media actions kpi   trend"
+      "meter meter   meter meter";
+  }
+}
+.fact-card-media   { grid-area: media; }
+.fact-card-info    { grid-area: info; }
+.fact-card-actions { grid-area: actions; }
+.fact-card-kpi     { grid-area: kpi; }
+.fact-card-trend   { grid-area: trend; }
+.fact-card-meter   { grid-area: meter; }
+
+.fact-card-media {
+  padding: 1rem 1rem 0;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.25rem;
+  }
+  .img-frame {
+    border: 1px solid $line;
+    border-radius: $radius-control;
+  }
+}
+// 圖上：左上 live「募資中」、右上「剩 12 天」（白底小標，12 天不是時間警示）
+.fact-card-badge {
+  position: absolute;
+  top: .625rem;
+  left: .625rem;
+  box-shadow: 0 0 0 1px rgba($white, .6);
+}
+.fact-card-days {
+  position: absolute;
+  top: .625rem;
+  right: .625rem;
+  padding: .1875rem .5rem;
+  border-radius: $radius-control;
+  background-color: $white;
+  font-size: .8125rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.4;
+  color: $ink;
+}
+
+.fact-card-info {
+  padding: 1rem 1rem 0;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.25rem 1.25rem 0;
+    border-left: 1px solid $line;
+  }
+}
+.fact-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem .75rem;
+  margin-bottom: .5rem;
+  font-size: .8125rem;
+  color: $ink-muted;
+}
+.fact-card-by {
+  padding-left: .75rem;
+  border-left: 1px solid $line;
+}
+.fact-card-title {
+  margin-bottom: 0;
+  font-size: 1.375rem;
+  line-height: 1.4;
+
+  a {
+    color: $ink;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+      text-decoration-color: rgba($ink, .4);
+      text-underline-offset: .2em;
+    }
+  }
+}
+.fact-card-actions {
+  display: flex;
+  gap: .5rem;
+  padding: 1rem;
+
+  @include media-breakpoint-up(md) {
+    align-items: flex-end;
+    padding: 1rem 1.25rem 1.25rem;
+    border-left: 1px solid $line;
+  }
+  .btn-primary {
+    flex-grow: 1;
+  }
+}
+
+// KPI：目前募得（附目標）跨整列，下方 3 格
+.fact-card-kpi.kpi-ribbon {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  margin-top: 1rem;
+  border-top: 1px solid $line;
+
+  @include media-breakpoint-up(md) {
+    margin-top: 0;
+  }
+  @include media-breakpoint-up(xl) {
+    border-top: 0;
+    border-left: 1px solid $line;
+  }
+
+  .kpi {
+    justify-content: center;
+    padding: .875rem 1rem;
+
+    @include media-breakpoint-up(xl) {
+      padding-inline: 1.125rem;
+    }
+  }
+  .kpi.is-wide {
+    grid-column: 1 / -1;
+
+    .kpi-value {
+      font-size: 1.875rem;
+
+      @include media-breakpoint-up(xxl) {
+        font-size: 2.125rem;
+      }
+    }
+  }
+  .kpi-value {
+    font-size: 1.25rem;
+
+    @include media-breakpoint-up(xxl) {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+.fact-card-trend {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.25rem 1rem 1rem;
+  border-top: 1px solid $line;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.25rem;
+    border-left: 1px solid $line;
+  }
+  @include media-breakpoint-up(xl) {
+    border-top: 0;
+  }
+  .sparkline {
+    padding-top: 1.25rem; // 讓「目標」標註與最高點不貼邊
+  }
+}
+.fact-card-meter {
+  padding: 1rem 1rem .5rem;
+  border-top: 1px solid $line;
+
+  @include media-breakpoint-up(md) {
+    padding: 1rem 1.25rem .625rem;
+    background-color: $ice-50;
+  }
+}
+
+// ---------- 區塊二：條款格 ----------
+.home-values {
+  padding-top: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 8);
+  }
+}
+.clause {
+  height: 100%;
+  padding-top: 1.25rem;
+  border-top: 2px solid $navy-800;
+}
+.clause-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-bottom: 1rem;
+  border-radius: $radius-control;
+  background-color: $ice-100;
+  font-size: 1.125rem;
+  line-height: 1;
+  color: $navy-800;
+}
+.clause-title {
+  margin-bottom: .375rem;
+  font-size: 1.0625rem;
+}
+.clause-text {
+  margin-bottom: 0;
+  font-size: .9375rem;
+  color: $ink-muted;
+}
+
+// ---------- 區塊三：類別表 ----------
+.home-cats {
+  padding-top: 0;
+
+  .container {
+    @include media-breakpoint-up(lg) {
+      padding-top: map-get($spacers, 2);
+    }
+  }
+}
+.home-cats-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "head"
+    "table"
+    "more";
+  gap: map-get($spacers, 4);
+  padding-top: map-get($spacers, 6);
+  border-top: 1px solid $line;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "head table"
+      "more table";
+    column-gap: $grid-gutter-width * 2;
+    row-gap: map-get($spacers, 5);
+    padding-top: map-get($spacers, 7);
+  }
+}
+.home-cats-head {
+  grid-area: head;
+
+  h2 {
+    margin-bottom: 0;
+  }
+  .link-arrow {
+    margin-top: map-get($spacers, 3);
+  }
+}
+.home-cats-more {
+  grid-area: more;
+
+  .label {
+    margin-bottom: .5rem;
+  }
+}
+// .tag-list、.tag-link 在 components/_tag.scss（列表、專案細節也用）
+
+.cat-table {
+  grid-area: table;
+  margin: 0;
+
+  // 768px 以下：2 欄小卡
+  @include media-breakpoint-down(md) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem;
+  }
+  @include media-breakpoint-up(md) {
+    border-top: 1px solid $ink;
+  }
+}
+.cat-row {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $white;
+  color: $ink;
+  text-decoration: none;
+  transition: background-color .15s ease;
+
+  &:hover {
+    color: $ink;
+    background-color: $ice-50;
+  }
+  &:hover .cat-row-title {
+    text-decoration: underline;
+    text-decoration-color: rgba($ink, .4);
+    text-underline-offset: .2em;
+  }
+
+  // ≥ 768px：表格列（縮圖｜名稱｜進行中｜累積｜箭頭）
+  @include media-breakpoint-up(md) {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr) 6.5rem 9rem 1.25rem;
+    align-items: center;
+    column-gap: 1.25rem;
+    padding: .875rem .75rem;
+    overflow: visible;
+    border: 0;
+    border-bottom: 1px solid $line;
+    border-radius: 0;
+  }
+}
+.cat-row-thumb {
+  @include media-breakpoint-up(md) {
+    border-radius: $radius-control;
+  }
+}
+.cat-row-name {
+  display: flex;
+  flex-direction: column;
+  gap: .125rem;
+  padding: .75rem .75rem 0;
+
+  @include media-breakpoint-up(md) {
+    padding: 0;
+  }
+}
+.cat-row-cat {
+  font-size: .8125rem;
+  font-weight: $font-weight-medium;
+  color: $ink-muted;
+}
+.cat-row-title {
+  font-size: 1rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.45;
+
+  @include media-breakpoint-up(md) {
+    font-size: 1.125rem;
+  }
+}
+// 數字欄：標籤在上、數字在下（文字仍是原文「進行中 24 件」「累積 NT$ 8,240 萬」）
+.cat-row-stat {
+  display: flex;
+  align-items: baseline;
+  gap: .375rem;
+  padding: .25rem .75rem 0;
+
+  .label {
+    display: inline;
+  }
+  @include media-breakpoint-up(md) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .125rem;
+    padding: 0;
+
+    &.is-money {
+      align-items: flex-end;
+      text-align: right;
+    }
+  }
+}
+.cat-row-stat.is-money {
+  padding-bottom: .875rem;
+
+  @include media-breakpoint-up(md) {
+    padding-bottom: 0;
+  }
+}
+.cat-row-num {
+  font-size: .9375rem;
+  font-weight: $font-weight-semibold;
+  white-space: nowrap;
+
+  @include media-breakpoint-up(md) {
+    font-size: 1.125rem;
+  }
+}
+.cat-row-arrow {
+  display: none;
+  color: $ink-muted;
+
+  @include media-breakpoint-up(md) {
+    display: block;
+  }
+}
+
+// ---------- 區塊四：正在發生的提案：領先專案卡＋排行表 ----------
+// 每個分頁：第 1 件是數據卡（左上角 01），其餘是排行表 .lb（像基金月報的「前十大持有」）
+// ≥ 1200 且排行表有 3 列以上（熱門中、已達標）：4：8 並排，卡片的圖片拉高到和排行表一樣高
+// 其他情況（768 以上；≥ 1200 時排行表只有 2 列的即將結束、最新上架）：卡片變橫式 4：8、排行表在下，避免右側大片留白
+// < 768：卡片直式，排行表每列變小卡
+.home-tabs {
+  margin-bottom: map-get($spacers, 4);
+}
+.home-board {
+  display: grid;
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(xl) {
+    &:has(.lb-row:nth-child(3)) {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+      align-items: stretch;
+    }
+  }
+}
+.home-board-lead {
+  min-width: 0;
+}
+// 名次 01：圖片左上角的深藍小方塊（裝飾；排行表從 02 開始）
+.home-board-rank {
+  position: absolute;
+  top: .75rem;
+  left: .75rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 1.75rem;
+  padding-inline: .375rem;
+  border-radius: $radius-control;
+  background-color: $navy-800;
+  font-size: .875rem;
+  font-weight: $font-weight-semibold;
+  color: $white;
+}
+.home-board-card {
+  // 圖片用絕對定位填滿框（橫式時框的高度由右欄內容決定；直式並排時框會被拉高）
+  > .img-frame > img {
+    @include media-breakpoint-up(md) {
+      position: absolute;
+      inset: 0;
+    }
+  }
+  // 橫式 4：8（這套不用 5：7）
+  @include media-breakpoint-up(md) {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+
+    > .img-frame {
+      min-height: 15rem;
+      aspect-ratio: auto;
+      border-right: 1px solid $line;
+      border-bottom: 0;
+    }
+    .project-card-body {
+      padding: 1.25rem 1.5rem 1.5rem;
+    }
+  }
+  // 直式並排（≥ 1200、排行表 3 列以上）：圖片 4:3 起跳，多出來的高度都給圖片
+  @include media-breakpoint-up(xl) {
+    .home-board:has(.lb-row:nth-child(3)) & {
+      display: flex;
+
+      > .img-frame {
+        flex: 1 0 auto;
+        min-height: 0;
+        aspect-ratio: 4 / 3;
+        border-right: 0;
+        border-bottom: 1px solid $line;
+      }
+      .project-card-body {
+        flex-grow: 0;
+        padding: 1rem 1.25rem 1.25rem;
+      }
+    }
+  }
+}
+
+// 排行表：白色面板；≥ 768 每列兩行（名稱一行，數字一行），數字欄與表頭對齊
+.lb {
+  --lb-cols: 2rem 6rem 3.75rem minmax(0, 1fr) 7.5rem 4.25rem 3.75rem;
+  --lb-gap: 1rem;
+  --lb-pad: 1rem;
+  align-self: start;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $white;
+  box-shadow: $shadow-card;
+
+  @include media-breakpoint-up(md) {
+    --lb-pad: 1.25rem;
+  }
+}
+// 表頭：只在 ≥ 768 出現（純視覺，aria-hidden；每格數字前有視覺隱藏的標籤）
+.lb-head {
+  display: none;
+
+  @include media-breakpoint-up(md) {
+    display: grid;
+    grid-template-columns: var(--lb-cols);
+    column-gap: var(--lb-gap);
+    align-items: end;
+    padding: .625rem var(--lb-pad);
+    border-bottom: 1px solid $line-strong;
+    background-color: $ice-100;
+    font-size: $kpi-label-size;
+    font-weight: $font-weight-medium;
+    line-height: 1.4;
+    color: $ink-muted;
+    text-align: right;
+    white-space: nowrap;
+  }
+}
+.lb-head-rate {
+  grid-column: 3;
+}
+// 長條欄的表頭：只在目標刻度（100%＝長條的 1/6）的位置標「目標」
+.lb-head-bar {
+  position: relative;
+  align-self: stretch;
+}
+.lb-head-goal {
+  position: absolute;
+  bottom: 0;
+  left: calc(100% / 6);
+  transform: translateX(-50%);
+}
+.lb-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lb-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  grid-template-areas:
+    "thumb name"
+    "rate  rate"
+    "nums  nums";
+  gap: .75rem 1rem;
+  padding: var(--lb-pad);
+  transition: background-color .15s ease;
+
+  & + & {
+    border-top: 1px solid $line;
+  }
+  &:hover,
+  &:focus-within {
+    background-color: $ice-50;
+  }
+  &:hover .lb-title a,
+  &:focus-within .lb-title a {
+    text-decoration: underline;
+    text-decoration-color: rgba($ink, .4);
+  }
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: var(--lb-cols);
+    grid-template-areas:
+      "rank thumb name name name name name"
+      "rank thumb rate rate nums nums nums";
+    column-gap: var(--lb-gap);
+    row-gap: .5rem;
+  }
+}
+.lb-rank {
+  display: none;
+
+  @include media-breakpoint-up(md) {
+    grid-area: rank;
+    display: block;
+    padding-top: .125rem;
+    font-size: .9375rem;
+    font-weight: $font-weight-semibold;
+    color: $ink-faint;
+  }
+}
+.lb-thumb {
+  grid-area: thumb;
+  align-self: start;
+  border: 1px solid $line;
+  border-radius: $radius-control;
+}
+.lb-name {
+  grid-area: name;
+  min-width: 0;
+}
+.lb-title {
+  margin-bottom: .25rem;
+  font-size: 1rem;
+  line-height: 1.45;
+
+  a {
+    color: $ink;
+    text-decoration: none;
+    text-underline-offset: .2em;
+  }
+}
+.lb-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .75rem;
+  margin: 0;
+  font-size: .8125rem;
+  line-height: 1.5;
+  color: $ink-muted;
+}
+// 標籤：< 768 顯示（小卡），≥ 768 只給讀屏（表頭已經寫了）
+.lb-label {
+  font-size: .75rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.4;
+  color: $ink-muted;
+
+  @include media-breakpoint-up(md) {
+    @include visually-hidden;
+  }
+}
+// 達成率＋長條：< 768「標籤 … 數字」一行、長條在下；≥ 768 用 subgrid 對齊表頭的「達成率｜長條」兩欄
+.lb-rate {
+  grid-area: rate;
+  display: grid;
+  gap: .375rem;
+  min-width: 0;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: subgrid;
+    align-items: center;
+  }
+}
+.lb-rate-value {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .5rem;
+  margin: 0;
+
+  data {
+    font-size: 1.125rem;
+    font-weight: $font-weight-semibold;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  @include media-breakpoint-up(md) {
+    justify-content: flex-end;
+
+    data {
+      font-size: 1rem;
+    }
+  }
+}
+// 共用刻度的長條：整條＝600%，裡面的 .meter 寬度＝達成率 ÷ 6（未達標時是目標的寬度、填到達成率）
+// 虛線刻度＝目標 100%（全區唯一的虛線），和 .meter 自己的目標白縫在同一個位置
+.lb-bar {
+  position: relative;
+  height: $meter-height;
+  border-radius: $radius-bar;
+  background-color: $ice-100;
+
+  .meter {
+    width: var(--w);
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    top: -.3125rem;
+    bottom: -.3125rem;
+    left: calc(100% / 6);
+    border-left: 1px dashed $ink-muted;
+  }
+}
+// 目前募得｜贊助人數｜剩餘天數：< 768 三格 KPI（標籤在上，1px 直線分格）；≥ 768 subgrid 對齊表頭、數字靠右
+.lb-nums {
+  grid-area: nums;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+  margin: 0;
+
+  > div {
+    min-width: 0;
+  }
+  > div + div {
+    padding-left: .75rem;
+    margin-left: .75rem;
+    border-left: 1px solid $line;
+  }
+  dd {
+    margin: 0;
+    font-size: .9375rem;
+    font-weight: $font-weight-semibold;
+    white-space: nowrap;
+  }
+  @include media-breakpoint-up(md) {
+    grid-template-columns: subgrid;
+    align-items: center;
+
+    > div {
+      text-align: right;
+    }
+    > div + div {
+      padding-left: 0;
+      margin-left: 0;
+      border-left: 0;
+    }
+  }
+}
+
+// ---------- 區塊五：評價＋保障條款表＋轉換帶 ----------
+.review-list {
+  display: grid;
+  gap: 1rem;
+}
+.review {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: 1rem;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $white;
+  box-shadow: $shadow-card;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 8.5rem minmax(0, 1fr);
+    gap: 1.25rem;
+    padding: 1.25rem;
+  }
+}
+.review-photo {
+  align-self: start;
+  border-radius: $radius-control;
+}
+.review-quote {
+  margin: .625rem 0 .5rem;
+
+  p {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+}
+.review-by {
+  font-size: .8125rem;
+  font-weight: $font-weight-medium;
+  color: $ink-muted;
+}
+
+.terms {
+  margin: 0;
+  border-top: 1px solid $ink;
+}
+.terms-row {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  column-gap: .75rem;
+  padding-block: 1.125rem;
+  border-bottom: 1px solid $line;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 2.5rem minmax(0, 11rem) minmax(0, 1fr);
+    column-gap: 1.25rem;
+  }
+}
+.terms-no {
+  grid-row: span 2;
+  font-size: .8125rem;
+  font-weight: $font-weight-semibold;
+  line-height: 1.7;
+  color: $blue-700;
+
+  @include media-breakpoint-up(sm) {
+    grid-row: auto;
+  }
+}
+.terms-title {
+  margin-bottom: .25rem;
+  font-size: 1rem;
+  line-height: 1.6;
+
+  @include media-breakpoint-up(sm) {
+    margin-bottom: 0;
+  }
+}
+.terms-text {
+  margin-bottom: 0;
+  font-size: .9375rem;
+  color: $ink-muted;
+}
+
+.propose-band {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem 2rem;
+  margin-top: map-get($spacers, 7);
+  padding: 1.75rem 1.5rem;
+  border-radius: $border-radius;
+  background-color: $ice-100;
+
+  @include media-breakpoint-up(lg) {
+    padding: 2.25rem 2.5rem;
+  }
+}
+.propose-band-title {
+  margin-bottom: 0;
+  font-size: 1.375rem;
+
+  @include media-breakpoint-up(lg) {
+    font-size: $h2-font-size;
+  }
+}

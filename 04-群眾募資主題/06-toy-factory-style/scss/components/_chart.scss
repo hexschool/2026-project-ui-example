@@ -1,0 +1,236 @@
+// ============================================================
+// 圖表卡（募資數據；Guideline 也用）
+// 32px 圓角白底；數據線 $grape、面積 $lilac-500 20%、目標線是唯一的虛線（$ink-muted）、端點是葡萄紫小球
+// 座標與標註用文字色，不用數據色；格線 1px 退居背景；單一數列不放圖例
+// < 768px：SVG 最小寬 600px，只有圖卡內可以橫捲
+//
+// <section class="chart-card" aria-labelledby="…">
+//   <div class="chart-card-head"><div><h3 class="chart-title">…</h3><p class="chart-sub"><span>…</span><span>…</span></p></div>
+//   <button class="btn-text" data-bs-toggle="collapse" …>切換表格檢視</button></div>
+//   <div class="chart-scroll"><svg class="chart-svg" viewBox="0 0 640 186" role="img" aria-label="…">…</svg></div>
+//   <div class="collapse chart-table"><div class="table-frame"><table class="table table-sm">…</table></div></div>
+// </section>
+//
+// 積木長條（各回饋方案銷售分佈）：同一個數據色、末端圓角、數值標在尖端
+// <ol class="bar-list"><li class="bar-row" style="--bar: 86.7%"><span class="bar-label">…</span>
+//   <span class="bar-track"><span class="bar-fill"></span><span class="bar-value">…</span></span><span class="bar-note">…</span></li></ol>
+//
+// 提示框（.chart-tooltip，SVG 裡的 <g>）：「09/24（四）」換行「當日募資 NT$ 72,000」；梅子紫底、淡紫字
+// 深色底（.chart-dark）：梅子紫圖卡，數據改 $on-plum-data、文字 $on-plum／$on-plum-muted、格線半透明；提示框反過來用白底
+// 目前頁面只有淺色圖卡；深色版與提示框的樣子寫在 Guideline，給之後的深色區塊或簡報用
+// ============================================================
+
+.chart-card {
+  min-width: 0; // 放在 grid／flex 裡時，SVG 的最小寬只在卡片內橫捲，不撐開版面
+  padding: 1.25rem 1.25rem 1.5rem;
+  border-radius: $border-radius-xl;
+  background-color: $card;
+  box-shadow: $shadow-card;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.75rem 2rem 2rem;
+  }
+}
+.chart-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .5rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.chart-title {
+  margin-bottom: .25rem;
+  font-size: 1.25rem;
+}
+.chart-sub {
+  margin: 0;
+  font-size: .875rem;
+  color: $ink-muted;
+  @include meta-dots($space: .5rem);
+}
+.chart-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+.chart-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  font-family: $font-family-sans-serif;
+
+  @include media-breakpoint-down(md) {
+    min-width: 600px;
+  }
+}
+.chart-grid line {
+  stroke: $line;
+  stroke-width: 1;
+}
+.chart-axis text {
+  fill: $ink-muted;
+  font-family: $font-family-figure;
+  font-size: 11px;
+}
+.chart-area {
+  fill: rgba($lilac-500, .2);
+}
+.chart-line {
+  fill: none;
+  stroke: $grape;
+  stroke-width: 3;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.chart-target {
+  stroke: $ink-muted;
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+}
+.chart-notes text,
+.chart-svg > text {
+  fill: $ink;
+  font-size: 11px;
+}
+.chart-label-strong {
+  font-weight: $font-weight-bold;
+}
+// 標註點：空心；端點：葡萄紫小球（白框＋高光）
+.chart-dot {
+  fill: $card;
+  stroke: $grape;
+  stroke-width: 2.5;
+}
+.chart-ball {
+  fill: $grape;
+  stroke: $card;
+  stroke-width: 2;
+}
+.chart-ball-shine {
+  fill: rgba($card, .9);
+}
+.chart-table {
+  margin-top: 1.25rem;
+
+  .table { font-size: .875rem; }
+  // 欄位不擠成兩行：放不下時在外框裡橫捲
+  .table th,
+  .table td { white-space: nowrap; }
+  .table-frame { max-height: 22rem; }
+}
+
+// ---------- 積木長條 ----------
+.bar-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "label note"
+    "track track";
+  align-items: center;
+  gap: .375rem 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 6.5rem minmax(0, 1fr) 10rem;
+    grid-template-areas: "label track note";
+  }
+}
+.bar-label {
+  grid-area: label;
+  font-family: $font-family-round;
+  color: $ink;
+}
+// 右側留 7.5rem 給尖端的數值：長條的百分比只算內容寬，最長那條的數值也放得進軌道
+.bar-track {
+  grid-area: track;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  min-width: 0;
+  padding-right: 7.5rem;
+}
+// 長條長度＝金額 ÷ 最高金額
+.bar-fill {
+  flex-shrink: 0;
+  width: var(--bar);
+  min-width: .5rem;
+  height: 1.5rem;
+  border-radius: $border-radius-xs $border-radius-sm $border-radius-sm $border-radius-xs;
+  background-color: $lilac-500;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .12);
+}
+.bar-value {
+  font-family: $font-family-figure;
+  font-size: .9375rem;
+  font-weight: 600;
+  color: $ink;
+  white-space: nowrap;
+}
+.bar-note {
+  grid-area: note;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .375rem;
+  font-size: .875rem;
+  color: $ink-muted;
+  text-align: right;
+
+  @include media-breakpoint-up(md) {
+    justify-content: flex-start;
+    text-align: left;
+  }
+}
+.bar-flag {
+  padding: .0625rem .5rem;
+  border: 1.5px solid $line-strong;
+  border-radius: $border-radius-pill;
+  font-size: .75rem;
+  color: $ink-muted;
+}
+
+// ---------- 提示框（SVG 內的 <g class="chart-tooltip">） ----------
+.chart-svg .chart-tooltip rect { fill: $ink; }
+.chart-svg .chart-tooltip text { fill: $on-plum; font-size: 12px; }
+.chart-svg .chart-tooltip .chart-tooltip-guide {
+  stroke: $ink-muted;
+  stroke-width: 1;
+}
+
+// ---------- 深色底 ----------
+.chart-dark {
+  background-color: $plum-900;
+  box-shadow: none;
+  color: $on-plum;
+
+  .chart-title { color: $on-plum; }
+  .chart-sub { color: $on-plum-muted; }
+  code { color: $on-plum-data; }
+  .chart-grid line { stroke: rgba($on-plum, .16); }
+  .chart-axis text { fill: $on-plum-muted; }
+  .chart-area { fill: rgba($on-plum-data, .18); }
+  .chart-line { stroke: $on-plum-data; }
+  .chart-target { stroke: $on-plum-muted; }
+  .chart-notes text,
+  .chart-svg > text { fill: $on-plum; }
+  .chart-dot { fill: $plum-900; stroke: $on-plum-data; }
+  .chart-ball { fill: $on-plum-data; stroke: $plum-900; }
+  .chart-svg .chart-tooltip rect { fill: $card; }
+  .chart-svg .chart-tooltip text { fill: $ink; }
+  .chart-svg .chart-tooltip .chart-tooltip-guide { stroke: $on-plum-muted; }
+
+  .bar-label,
+  .bar-value { color: $on-plum; }
+  .bar-note { color: $on-plum-muted; }
+  .bar-fill { background-color: $on-plum-data; }
+  .bar-flag { border-color: rgba($on-plum, .32); color: $on-plum-muted; }
+}

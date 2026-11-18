@@ -1,0 +1,423 @@
+// ============================================================
+// 招牌元素 5：圖表 .chart-card ＋ .chart（折線／面積）＋ .bar-chart（橫條）
+// 圖表語法統一：標題 h3＋副標（期間 ‧ 單位）＋右上「切換表格檢視」（Collapse 展開數據表）；
+// 格線 1px 實線淡色、目標虛線全圖唯一、直接標註、端點圓點、表格檢視的數字靠右
+//
+// 折線圖的做法：繪圖區是一張 SVG（viewBox 0 0 576 140、preserveAspectRatio="none"、線條 non-scaling-stroke），
+// 寬度跟著卡片伸縮；座標文字、直接標註、圓點都是 HTML，用 --x、--y（百分比）定位，字不會跟著變形
+//
+// <section class="chart-card">
+//   <div class="chart-card-head"><div><h3 class="chart-card-title">…</h3><p class="chart-card-sub">期間 ‧ 單位</p></div>
+//     <button class="btn btn-text chart-toggle" data-bs-toggle="collapse" …>切換表格檢視</button></div>
+//   <div class="chart-scroll"><div class="chart" role="img" aria-label="重點描述">
+//     <div class="chart-y" aria-hidden="true"><span style="--y: 100%">0</span>…</div>
+//     <div class="chart-plot" aria-hidden="true"><svg viewBox="0 0 576 140" preserveAspectRatio="none">
+//       <g class="chart-grid">…</g><g class="chart-series"><path class="chart-area"/><polyline class="chart-line"/></g>
+//       <line class="chart-target"/></svg>
+//       <span class="chart-dot" style="--x: 9.32%; --y: 64.29%"></span>
+//       <span class="chart-note is-above" style="--x: …; --y: …">09/17 達標</span></div>
+//     <div class="chart-x" aria-hidden="true"><span style="--x: 0%">09/15</span>…</div>
+//   </div></div>
+//   <div id="…" class="collapse"><table class="table data-table chart-table">…</table></div>
+// </section>
+//
+// 深色底：單獨一張圖在 .chart 加 .is-dark；整張圖卡（含標題、橫條圖、表格檢視）在 .chart-card 加 .is-dark
+// 數據色換成 $data-dark（不是自動反轉）。深藍面只用在頁首工具列、首頁 Hero 色帶、登入左欄、頁尾，
+// 深色圖卡目前只在 Guideline 對照示範，頁面上的圖一律白底
+// 顏色全部走 CSS 變數，SVG 裡不寫色碼
+// ============================================================
+
+// 深色底的圖表變數（.chart.is-dark 與 .chart-card.is-dark 共用）
+@mixin chart-dark-vars {
+  --chart-line: #{$data-dark};
+  --chart-area: #{rgba($data-dark, .16)};
+  --chart-grid: #{rgba($white, .12)};
+  --chart-base: #{rgba($white, .32)};
+  --chart-target: #{$on-navy-link};
+  --chart-text: #{$on-navy-link};
+  --chart-strong: #{$white};
+  --chart-dot-bg: #{$navy-900};
+}
+
+.chart-card {
+  padding: 1.25rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $white;
+  box-shadow: $shadow-card;
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 4);
+  }
+}
+.chart-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  margin-bottom: 1.25rem;
+}
+.chart-card-title {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.45;
+}
+.chart-card-sub {
+  margin: .25rem 0 0;
+  font-size: .8125rem;
+  color: $ink-muted;
+}
+.chart-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.25rem;
+  padding-inline: 0;
+  font-size: .875rem;
+}
+
+// 手機：圖表本身給最小寬度，只有圖卡裡面可以橫捲（頁面不橫捲）
+.chart-scroll {
+  overflow-x: auto;
+}
+
+.chart {
+  --chart-line: #{$blue-600};
+  --chart-area: #{rgba($blue-600, .12)};
+  --chart-grid: #{$line};
+  --chart-base: #{$line-strong};
+  --chart-target: #{$ink-muted};
+  --chart-text: #{$ink-muted};
+  --chart-strong: #{$ink};
+  --chart-dot-bg: #{$white};
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: .625rem;
+  padding-top: .5rem;
+  font-variant-numeric: tabular-nums lining-nums;
+
+  @include media-breakpoint-down(md) {
+    min-width: 35rem;
+  }
+
+  &.is-dark {
+    @include chart-dark-vars;
+    padding: 1.25rem 1rem .75rem;
+    border-radius: $border-radius;
+    background-color: $navy-900;
+  }
+}
+// y 軸：數字靠右，對齊格線
+.chart-y {
+  position: relative;
+  grid-row: 1;
+  grid-column: 1;
+  min-width: 2.25rem;
+  font-size: .75rem;
+  line-height: 1;
+  color: var(--chart-text);
+
+  span {
+    position: absolute;
+    top: var(--y);
+    right: 0;
+    transform: translateY(-50%);
+    white-space: nowrap;
+  }
+}
+.chart-plot {
+  position: relative;
+  grid-row: 1;
+  grid-column: 2;
+  height: 11rem;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+}
+// x 軸：起訖靠邊，中間置中
+.chart-x {
+  position: relative;
+  grid-column: 2;
+  height: 1rem;
+  margin-top: .5rem;
+  font-size: .75rem;
+  line-height: 1;
+  color: var(--chart-text);
+
+  span {
+    position: absolute;
+    top: 0;
+    left: var(--x);
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  span:first-child {
+    transform: none;
+  }
+  span:last-child {
+    transform: translateX(-100%);
+  }
+}
+
+.chart-grid line {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.chart-grid line:first-child {
+  stroke: var(--chart-base);
+}
+.chart-area {
+  fill: var(--chart-area);
+}
+.chart-line {
+  fill: none;
+  stroke: var(--chart-line);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+// 目標線：全圖唯一的虛線
+.chart-target {
+  stroke: var(--chart-target);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+  vector-effect: non-scaling-stroke;
+}
+// 標註引線
+.chart-guide {
+  stroke: var(--chart-text);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+// 載入時由左往右描出一次（700ms）；prefers-reduced-motion 時不動
+.chart-series {
+  animation: chart-reveal .7s ease-out both;
+}
+@keyframes chart-reveal {
+  from { clip-path: inset(-8px 100% -8px -8px); }
+  to   { clip-path: inset(-8px -8px -8px -8px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chart-series {
+    animation: none;
+  }
+}
+
+// 圓點與直接標註（HTML，--x、--y 是繪圖區的百分比）
+.chart-dot {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  width: .625rem;
+  height: .625rem;
+  margin: -.3125rem 0 0 -.3125rem;
+  border: 2px solid var(--chart-line);
+  border-radius: 50%;
+  background-color: var(--chart-dot-bg);
+}
+.chart-note {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  font-size: .75rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.35;
+  color: var(--chart-strong);
+  white-space: nowrap;
+
+  // 右上：標註底緣和圓點齊，陡降的線不會穿過字
+  &.is-right { transform: translate(.75rem, calc(-100% + .375rem)); }
+  &.is-left { transform: translate(calc(-100% - .75rem), -50%); }
+  &.is-above { transform: translate(-50%, calc(-100% - .625rem)); text-align: center; }
+  &.is-below { transform: translate(-50%, .5rem); }
+  &.is-above.is-end { transform: translate(-100%, calc(-100% - .625rem)); text-align: right; }
+  &.is-below.is-end { transform: translate(-100%, .375rem); }
+  &.is-plain { color: var(--chart-text); }
+
+  // 「NT$ 274,000」在上、說明在下
+  &.is-right .chart-note-num {
+    display: block;
+  }
+}
+.chart-note-num {
+  font-weight: $font-weight-semibold;
+  color: var(--chart-strong);
+}
+
+// ---------- 橫條圖（名目分類：五條同一個數據色，數值標在長條尖端） ----------
+// <ol class="bar-chart"><li class="bar-chart-row" style="--r: .867">
+//   <span class="bar-chart-label">雙入組</span>
+//   <span class="bar-chart-track"><span class="bar-chart-bar"></span><data class="bar-chart-value">NT$ 1,209,600</data></span>
+//   <span class="bar-chart-note">288</span></li></ol>
+// --r＝金額 ÷ 最大值（0～1）；長條最長只到「軌道寬 − 數值文字」，數值不會被擠出去
+.bar-chart {
+  --chart-line: #{$blue-600};
+  display: grid;
+  gap: .875rem;
+  margin: 0;
+  padding: 0;
+  font-variant-numeric: tabular-nums lining-nums;
+  list-style: none;
+}
+.bar-chart-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "label note"
+    "track track";
+  align-items: center;
+  gap: .25rem .75rem;
+  font-size: .875rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 6.5rem minmax(0, 1fr) 9.5rem;
+    grid-template-areas: "label track note";
+  }
+}
+.bar-chart-label {
+  grid-area: label;
+  font-weight: $font-weight-medium;
+  color: $ink;
+}
+.bar-chart-track {
+  grid-area: track;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  min-width: 0;
+}
+.bar-chart-bar {
+  flex: none;
+  width: calc((100% - 7.5rem) * var(--r, 1));
+  min-width: 2px;
+  height: .875rem;
+  border-radius: $radius-bar;
+  background-color: var(--chart-line);
+}
+.bar-chart-value {
+  font-weight: $font-weight-semibold;
+  color: $ink;
+  white-space: nowrap;
+}
+.bar-chart-note {
+  grid-area: note;
+  font-size: .8125rem;
+  color: $ink-muted;
+  white-space: nowrap;
+}
+
+// 表格檢視
+.chart-table-wrap {
+  margin-top: 1.25rem;
+  border-top: 1px solid $line;
+}
+.chart-table {
+  font-size: .875rem;
+
+  // 方案名稱、欄名、金額都不在字中間斷行（390 寬時「標準單入組」會被拆開）；外層 .table-responsive 會橫向捲動
+  th,
+  td {
+    white-space: nowrap;
+  }
+}
+
+// ---------- 提示框 .chart-tip（滑過或聚焦某一天時出現；設計稿固定顯示一個） ----------
+// 格式固定兩行：日期（星期）在上、「數列名稱＋金額」在下（當日募資 NT$ 72,000）；
+// 白底圖用深藍底白字，深色底圖反過來用白底深字
+// <span class="chart-tip" style="--x: 47.36%; --y: 39.54%"><span class="chart-tip-date">09/24（四）</span>當日募資 NT$ 72,000</span>
+.chart-tip {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  z-index: 2;
+  padding: .4375rem .625rem;
+  border-radius: $radius-control;
+  background-color: $tooltip-bg;
+  box-shadow: $box-shadow-sm;
+  font-size: .75rem;
+  font-weight: $font-weight-semibold;
+  line-height: 1.4;
+  color: $white;
+  white-space: nowrap;
+  transform: translate(-50%, calc(-100% - .5rem));
+  pointer-events: none;
+
+  // 靠右側有其他標註時：提示框往左展開，右緣超過圓點 1rem
+  &.is-left {
+    transform: translate(calc(-100% + 1rem), calc(-100% - .5rem));
+  }
+
+  .is-dark & {
+    background-color: $white;
+    color: $ink;
+  }
+}
+.chart-tip-date {
+  display: block;
+  font-weight: $font-weight-normal;
+  color: $on-navy-muted;
+
+  .is-dark & {
+    color: $ink-muted;
+  }
+}
+
+// ---------- 深色圖卡：卡片換 navy-900，裡面的 .chart、.bar-chart、表格檢視一起換色 ----------
+.chart-card.is-dark {
+  border-color: $navy-900;
+  background-color: $navy-900;
+  box-shadow: none;
+  color: $white;
+
+  // .chart、.bar-chart 自己定義了白底的變數，要寫在它們身上才蓋得過
+  .chart,
+  .bar-chart {
+    @include chart-dark-vars;
+  }
+  .chart-card-title {
+    color: $white;
+  }
+  .chart-card-sub {
+    color: $on-navy-link;
+  }
+  .btn-text {
+    --bs-btn-color: #{$data-dark};
+    --bs-btn-hover-color: #{$white};
+    --bs-btn-active-color: #{$white};
+    text-decoration-color: rgba($data-dark, .45);
+  }
+  .bar-chart-label,
+  .bar-chart-value {
+    color: $white;
+  }
+  .bar-chart-note {
+    color: $on-navy-link;
+  }
+  .chart-table-wrap {
+    border-top-color: $on-navy-rule;
+  }
+  .data-table {
+    --bs-table-color: #{$white};
+    color: $white;
+
+    > thead > tr > th {
+      border-bottom-color: rgba($white, .32);
+      background-color: rgba($white, .06);
+      color: $on-navy-link;
+    }
+    > :not(caption) > * > * {
+      border-bottom-color: $on-navy-rule;
+      color: $white;
+    }
+    > tbody > tr:hover > * {
+      background-color: rgba($white, .06);
+    }
+  }
+}

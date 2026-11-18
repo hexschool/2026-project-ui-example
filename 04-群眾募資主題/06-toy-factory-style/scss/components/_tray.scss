@@ -1,0 +1,101 @@
+// ============================================================
+// 底部玩具托盤（專案細節；所有寬度都有）
+// ≥ 992px：置中、最大 880px 的白色膠囊，離底 16px
+// < 992px：滿寬底部列（就是 MobileActionBar），上緣 24px 圓角，避開 iPhone 底部安全區
+// 內容：目前金額＋達成率｜剩餘天數 → 迷你滾球軌道（≥ 768px）→ 追蹤 → 主要按鈕
+// z-index 用 $zindex-fixed（1030），低於 Offcanvas（1045）與 Modal（1055）
+// 頁面要在 <body> 加 .has-tray：頁尾多留托盤的高度，錨點捲動也不會停在托盤後面
+//
+// <div class="toy-tray" role="region" aria-label="快速贊助"><div class="toy-tray-inner">…</div></div>
+// ============================================================
+
+$toy-tray-space: 6.5rem; // 托盤高度＋離底 16px＋一點呼吸
+
+.toy-tray {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: $zindex-fixed;
+  padding: .625rem ($container-padding-x * .5) calc(.625rem + env(safe-area-inset-bottom));
+  border-radius: $border-radius-lg $border-radius-lg 0 0;
+  background-color: $card;
+  box-shadow: 0 -8px 24px rgba($grape, .14);
+
+  @include media-breakpoint-up(lg) {
+    left: 50%;
+    right: auto;
+    bottom: 1rem;
+    width: min(55rem, calc(100% - 4rem));
+    padding: .5rem .5rem .5rem 1.75rem;
+    border: 2px solid $line;
+    border-radius: $border-radius-pill;
+    box-shadow: $shadow-raised;
+    transform: translateX(-50%);
+  }
+}
+.toy-tray-inner {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+
+  @include media-breakpoint-up(md) {
+    gap: 1rem;
+  }
+}
+.toy-tray-info {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.toy-tray-amount {
+  display: block;
+  font-size: 1.125rem;
+  line-height: 1.25;
+  white-space: nowrap;
+
+  @include media-breakpoint-up(md) {
+    font-size: 1.375rem;
+  }
+}
+.toy-tray-meta {
+  align-items: center;
+  margin: 0;
+  font-size: .8125rem;
+  color: $ink-muted;
+  white-space: nowrap;
+  // 兩個欄位之間一顆小圓點（圖形，不是文字；換行時不會出現在行首）
+  @include meta-dots($space: .5rem);
+}
+.toy-tray-rollway {
+  display: none;
+
+  @include media-breakpoint-up(md) {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 6rem;
+    margin-top: .75rem;
+  }
+}
+.toy-tray-inner > .btn-icon {
+  margin-left: auto;
+
+  @include media-breakpoint-up(md) {
+    margin-left: 0;
+  }
+}
+.toy-tray-cta {
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  @include media-breakpoint-down(sm) {
+    --bs-btn-padding-x: 1.125rem;
+  }
+}
+
+// 頁尾與錨點捲動都讓出托盤的高度
+.has-tray .site-footer {
+  padding-bottom: calc(#{map-get($spacers, 5)} + #{$toy-tray-space});
+}
+html:has(> body.has-tray) {
+  scroll-padding-bottom: $toy-tray-space;
+}

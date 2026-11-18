@@ -1,0 +1,1486 @@
+// ============================================================
+// 專案細節 project.html
+// 構圖（像股票報價頁＋公開說明書）：標題區橫在主視覺上方（冰灰帶）→ 全寬「募資行情列」壓在冰灰帶下緣
+// → 主視覺｜右側 sticky「條款表」（進度條、走勢、按鈕）＋回饋方案 5 欄比較矩陣＋全寬贊助小計列＋里程碑追蹤表
+// ============================================================
+
+$pd-quote-lift: 2.5rem; // 40px：≥ 992 行情列往上壓進冰灰帶的距離（標題區與提案者小卡底部要多留這麼多）
+
+// ---------- 區塊一＋二：Grid ----------
+// < 992：單欄「麵包屑 → 主視覺 → 標題 → 行情列 → 條款表 → 提案者小卡 → 頁內導覽＋故事」
+// ≥ 992：8fr 4fr；冰灰帶蓋住麵包屑與標題兩列，行情列橫跨兩欄、往上壓進冰灰帶 40px
+.pd-layout {
+  display: grid;
+  isolation: isolate; // 冰灰帶用 z-index: -1 墊在底下，不跑出這一區
+  padding-bottom: $section-y;
+
+  @include media-breakpoint-up(lg) {
+    padding-bottom: $section-y-lg;
+  }
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "crumb"
+    "media"
+    "head"
+    "quote"
+    "aside"
+    "who"
+    "story";
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    grid-template-areas:
+      "crumb crumb"
+      "head  who"
+      "quote quote"
+      "media aside"
+      "story aside";
+    column-gap: map-get($spacers, 5);
+  }
+  @include media-breakpoint-up(xl) {
+    column-gap: map-get($spacers, 6);
+  }
+}
+
+// 冰灰帶：用兩層 box-shadow 往左右出血到視窗邊緣（底下多 1px 的線），clip-path 只裁掉上下。
+// clip-path 會建立堆疊環境（畫在一般內容之上），所以給 z-index: -1 墊到麵包屑與標題下面
+.pd-band {
+  display: none;
+
+  @include media-breakpoint-up(lg) {
+    display: block;
+    z-index: -1;
+    grid-area: 1 / 1 / 3 / -1;
+    background-color: $ice-50;
+    box-shadow: 0 0 0 100vmax $ice-50, 0 1px 0 100vmax $line;
+    clip-path: inset(0 -100vmax -1px);
+  }
+}
+
+.pd-crumb {
+  grid-area: crumb;
+  padding-top: map-get($spacers, 3);
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 4);
+  }
+  .breadcrumb {
+    flex-wrap: nowrap;
+    margin-bottom: 0;
+    font-size: .875rem;
+  }
+  .breadcrumb-item {
+    flex: none;
+  }
+  .breadcrumb-item.active {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+}
+
+// ---------- 標題區 ----------
+.pd-head {
+  grid-area: head;
+  padding-top: map-get($spacers, 4);
+
+  // 底部多留 40px 給往上壓的行情列
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 3) $pd-quote-lift + map-get($spacers, 5);
+  }
+}
+.pd-title {
+  margin-bottom: map-get($spacers, 2);
+  font-size: 1.875rem;
+
+  @include media-breakpoint-up(lg) {
+    font-size: $h1-font-size;
+  }
+}
+.pd-lead {
+  max-width: 40em;
+  margin-bottom: map-get($spacers, 3);
+  font-size: 1.0625rem;
+  color: $ink-muted;
+}
+
+// ---------- 提案者小卡（冰灰帶右側；< 992 接在條款表之後） ----------
+.pd-who {
+  grid-area: who;
+  display: flex;
+  align-items: flex-start;
+  gap: map-get($spacers, 3);
+  margin-top: map-get($spacers, 3);
+  padding: map-get($spacers, 3) 1.25rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $white;
+  box-shadow: $shadow-card;
+
+  @include media-breakpoint-up(lg) {
+    align-self: end;
+    margin: 0 0 $pd-quote-lift + map-get($spacers, 5);
+  }
+}
+.pd-who-body {
+  min-width: 0;
+}
+.pd-who-name {
+  margin: 0;
+  font-weight: $font-weight-bold;
+
+  a {
+    color: $ink;
+    text-decoration: none;
+
+    &:hover {
+      color: $blue-700;
+      text-decoration: underline;
+    }
+  }
+}
+.pd-who-place {
+  margin: .125rem 0 .625rem;
+  font-size: .875rem;
+  color: $ink-muted;
+}
+.pd-who-tags {
+  gap: .375rem;
+}
+
+// ---------- 募資行情列（儀表板的數字部分）：全寬 4 格，目前募得那格最寬 ----------
+// < 768：2 欄，目前募得與剩餘天數各占一整列；768–991：一列 1.5：1：1：1；≥ 992 一列 1.7：1：1：1，往上壓進冰灰帶
+.pd-quote {
+  position: relative; // 疊在冰灰帶（z-index: -1）上面
+  grid-area: quote;
+  min-width: 0;
+  margin-top: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    margin-top: -$pd-quote-lift;
+  }
+}
+.pd-quote-kpis {
+  box-shadow: $box-shadow; // 跨在冰灰帶與白底之間的浮起層（同首頁事實卡）
+
+  @include media-breakpoint-down(md) {
+    > .pd-quote-raised,
+    > .kpi:last-child {
+      grid-column: 1 / -1;
+    }
+  }
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
+  }
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 1.7fr) repeat(3, minmax(0, 1fr));
+  }
+  .kpi {
+    justify-content: flex-start;
+
+    @include media-breakpoint-up(xl) {
+      padding: 1.375rem 1.5rem;
+    }
+  }
+}
+// 目前募得：全頁最大的數字
+.pd-quote-raised .kpi-value {
+  font-size: 1.875rem;
+
+  @include media-breakpoint-up(lg) {
+    font-size: 2.5rem;
+  }
+  @include media-breakpoint-up(xl) {
+    font-size: $kpi-size-money;
+  }
+}
+.pd-quote-rate {
+  @include media-breakpoint-up(xl) {
+    font-size: $kpi-size-rate;
+  }
+}
+
+// ---------- 主視覺＋縮圖列 ----------
+.pd-media {
+  grid-area: media;
+  min-width: 0;
+  margin-top: map-get($spacers, 3);
+
+  @include media-breakpoint-up(lg) {
+    margin-top: map-get($spacers, 5);
+  }
+}
+.pd-shot {
+  border-radius: $border-radius;
+}
+// 「專案影片 2:14」：深藍半透明小牌（白字 13px）
+.pd-video-label {
+  position: absolute;
+  top: .75rem;
+  left: .75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .25rem .625rem;
+  border-radius: $radius-control;
+  background-color: rgba($navy-900, .86);
+  font-size: .8125rem;
+  font-weight: $font-weight-medium;
+  color: $white;
+}
+// 播放鈕：4px 方角的深藍方塊（不是圓形發光鈕）
+.pd-video-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: -1.75rem 0 0 -1.75rem;
+  border: 0;
+  border-radius: $radius-control;
+  background-color: $navy-800;
+  font-size: 1.75rem;
+  color: $white;
+  box-shadow: $box-shadow;
+
+  &:hover {
+    background-color: $navy-900;
+  }
+}
+// 縮圖列＝Carousel 指示器：覆寫 Bootstrap 的細條樣式
+.pd-thumbs.carousel-indicators {
+  position: static;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  justify-content: start; // 蓋掉 Bootstrap 的置中，否則手機橫捲時第一張會被裁掉一半
+  gap: .5rem;
+  margin: .75rem 0 0;
+  padding: 0;
+
+  @include media-breakpoint-down(sm) {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 26%;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .pd-thumb {
+    position: relative;
+    box-sizing: border-box;
+    flex: initial;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border: 0;
+    border-radius: $radius-control;
+    background-color: $ice-50;
+    text-indent: 0;
+    opacity: 1;
+    transition: none;
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    // 外框疊在圖片上：未選 1px 淺框，選中 2px 企業深藍
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 1px solid $line;
+      border-radius: inherit;
+    }
+    &:hover::after {
+      border-color: $control;
+    }
+    &.active::after {
+      border: 2px solid $navy-800;
+    }
+  }
+}
+.pd-thumb-count {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba($navy-900, .62);
+  font-size: 1.125rem;
+  font-weight: $font-weight-semibold;
+  color: $white;
+}
+
+// ---------- 條款表（儀表板的進度與行動部分）：進度條 → 募資期間 → 累積走勢 → 按鈕 → 安心提示 ----------
+// ≥ 992 sticky；768–991 卡片內左右兩欄（進度｜按鈕）；< 768 單欄
+.pd-aside {
+  grid-area: aside;
+  min-width: 0;
+  margin-top: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-offset;
+    align-self: start;
+    margin-top: map-get($spacers, 5);
+  }
+}
+.pd-terms {
+  padding: 1.25rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $white;
+  box-shadow: $shadow-card;
+
+  @include media-breakpoint-up(lg) {
+    padding: map-get($spacers, 4);
+    box-shadow: $box-shadow; // sticky 浮起層
+  }
+}
+.pd-aside .pd-terms {
+  @include media-breakpoint-only(md) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: map-get($spacers, 4);
+    align-items: start;
+  }
+}
+.pd-terms-meter {
+  margin-bottom: map-get($spacers, 3);
+}
+.pd-terms-period {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  margin: 0 0 1rem;
+  padding-block: .625rem;
+  border-block: 1px solid $line;
+  font-size: .875rem;
+
+  dt {
+    font-weight: $font-weight-medium;
+    color: $ink-muted;
+  }
+  dd {
+    margin: 0;
+    color: $ink;
+  }
+}
+// 走勢圖放大成 240×130（約 376×204px）：折線（不能用 non-scaling-stroke）調細一點，畫面上約 2–2.5px
+.pd-terms-trend {
+  margin-bottom: 1.25rem;
+
+  .sparkline-line {
+    stroke-width: 1.5;
+  }
+}
+.pd-terms-cta {
+  margin-bottom: .75rem;
+}
+.pd-terms-secondary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .5rem;
+  margin-bottom: map-get($spacers, 3);
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: .5rem;
+  }
+}
+.pd-terms-note {
+  font-size: .875rem;
+}
+// 縮小版條款表（狀態示意 S3／S4／S5）
+.pd-terms.is-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .875rem;
+  box-shadow: $shadow-card;
+
+  .meter {
+    align-self: stretch;
+  }
+}
+.pd-terms-mini-amount {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: $font-weight-semibold;
+  line-height: 1.1;
+}
+.pd-terms-mini-text {
+  margin: 0;
+  font-size: .9375rem;
+}
+
+// ---------- 頁內導覽＋故事 ----------
+.pd-story-area {
+  grid-area: story;
+  min-width: 0;
+  margin-top: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    margin-top: map-get($spacers, 5);
+  }
+}
+// 頁內導覽：底線錨點列，數量用小灰底
+.pd-pagenav {
+  margin-bottom: map-get($spacers, 4);
+
+  ul {
+    display: flex;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+    overflow-x: auto;
+    border-bottom: 1px solid $line;
+    list-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  li {
+    flex: none;
+  }
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding-block: .625rem;
+    border-bottom: 3px solid transparent;
+    font-weight: $font-weight-medium;
+    color: $ink-muted;
+    text-decoration: none;
+
+    &:hover {
+      color: $ink;
+    }
+  }
+  li:first-child a {
+    border-bottom-color: $blue-600;
+    color: $ink;
+  }
+}
+
+// 故事目錄：sticky 列（< 992 貼在 56px 頁首下；≥ 992 貼在 48px 分頁列下），冰灰底、章節編號用 CSS 計數
+.story-toc {
+  position: sticky;
+  top: $site-bar-height;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  margin-bottom: map-get($spacers, 2);
+  border-bottom: 1px solid $line;
+  background-color: $ice-50;
+
+  @include media-breakpoint-up(lg) {
+    top: $site-tabs-height;
+  }
+}
+.story-toc-label {
+  display: none;
+  flex: none;
+  margin: 0;
+  padding: 0 1rem;
+  border-right: 1px solid $line;
+  font-size: $kpi-label-size;
+  font-weight: $font-weight-medium;
+  color: $ink-muted;
+
+  // 1400 以上欄寬才放得下「本頁目錄」＋ 6 個連結；更窄時省掉標籤，連結不必橫捲
+  @include media-breakpoint-up(xxl) {
+    display: block;
+  }
+}
+.story-toc-list {
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow-x: auto;
+  counter-reset: toc;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: .375rem;
+    min-height: 2.75rem;
+    padding: .5rem;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    font-size: .875rem;
+    font-weight: $font-weight-medium;
+    color: $ink-muted;
+    white-space: nowrap;
+    counter-increment: toc;
+
+    @include media-breakpoint-up(xxl) {
+      padding-inline: .75rem;
+    }
+
+    &::before {
+      content: counter(toc, decimal-leading-zero);
+      font-size: .75rem;
+      color: $ink-faint;
+
+      // 992–1199 故事欄只有 500px 寬：拿掉編號，6 個連結剛好一列
+      @include media-breakpoint-only(lg) {
+        display: none;
+      }
+    }
+    &:hover {
+      color: $ink;
+    }
+    &.active {
+      border-bottom-color: $blue-600;
+      color: $ink;
+
+      &::before {
+        color: $blue-700;
+      }
+    }
+  }
+}
+
+// 故事長文：680px、1.0625rem／1.85
+.story {
+  max-width: 42.5rem;
+  font-size: 1.0625rem;
+  line-height: 1.85;
+
+  p {
+    margin-bottom: 1.25rem;
+  }
+  // 段落小標（專案故事目前只用到 h2；h3 的樣子在 Guideline 長文示範）
+  h3 {
+    margin: 2rem 0 .5rem;
+    font-size: $story-h3-size;
+    line-height: 1.5;
+  }
+}
+.story-part {
+  // 錨點跳轉時讓開頁首＋故事目錄（< 992：56＋44＋20；≥ 992：48＋44＋20）
+  scroll-margin-top: 7.5rem;
+
+  @include media-breakpoint-up(lg) {
+    scroll-margin-top: 7rem;
+  }
+
+  h2 {
+    margin: 2.5rem 0 .75rem;
+    font-size: 1.375rem;
+  }
+  &:first-child h2 {
+    margin-top: 1.5rem;
+  }
+}
+// 清單：深藍小方塊（和專案分類的標記一致）
+.story-list {
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    padding-left: 1.125rem;
+  }
+  li + li {
+    margin-top: .375rem;
+  }
+  li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .78em;
+    width: 6px;
+    height: 6px;
+    background-color: $navy-800;
+  }
+}
+.story-figure {
+  margin: 1.5rem 0 2rem;
+
+  .img-frame {
+    border: 1px solid $line;
+    border-radius: $border-radius;
+  }
+  figcaption {
+    margin-top: .5rem;
+    font-size: .8125rem;
+    line-height: 1.5;
+    color: $ink-muted;
+  }
+}
+// 規格表：財務表格（上緣深線、列頭冰灰、數值靠左、只畫橫線）
+.story-specs {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  border-top: 1px solid $ink;
+  font-size: .9375rem;
+  line-height: 1.5;
+
+  th,
+  td {
+    padding: .75rem 1rem;
+    border-bottom: 1px solid $line;
+    vertical-align: top;
+  }
+  th {
+    width: 7.5rem;
+    background-color: $ice-100;
+    font-size: .8125rem;
+    font-weight: $font-weight-medium;
+    color: $ink-muted;
+  }
+  td {
+    color: $ink;
+  }
+}
+
+// ---------- 回饋方案：5 欄比較矩陣 ----------
+.tier-matrix {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-rows: repeat(6, auto);
+    row-gap: 0;
+  }
+}
+.tier {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 1.25rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $white;
+  box-shadow: $shadow-card;
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+
+  // 768–1199：卡內左資訊、右按鈕靠底
+  @include media-breakpoint-between(md, xl) {
+    grid-template-columns: minmax(0, 1fr) 13rem;
+    grid-template-areas:
+      "top     action"
+      "title   action"
+      "content action"
+      "stock   action"
+      "ship    action";
+    column-gap: map-get($spacers, 5);
+    padding: 1.25rem 1.5rem;
+
+    > .tier-top { grid-area: top; }
+    > .tier-title { grid-area: title; }
+    > .tier-content { grid-area: content; }
+    > .tier-stock { grid-area: stock; }
+    > .tier-ship { grid-area: ship; }
+    > .tier-action { grid-area: action; }
+  }
+
+  // ≥ 1200：subgrid，6 列和隔壁欄對齊；每列之間 1px 線
+  @include media-breakpoint-up(xl) {
+    grid-row: span 6;
+    grid-template-rows: subgrid;
+    padding: 0;
+
+    > div {
+      padding: .875rem 1.125rem;
+    }
+    > div + div {
+      border-top: 1px solid $line;
+    }
+    > .tier-top {
+      padding-top: 1.25rem;
+    }
+    > .tier-action {
+      padding-bottom: 1.25rem;
+    }
+  }
+
+  &:not(.is-soldout):hover {
+    border-color: $line-strong;
+    box-shadow: $shadow-card-hover;
+  }
+}
+// < 1200 直列時的段落間距
+@include media-breakpoint-down(xl) {
+  .tier-top { margin-bottom: .125rem; }
+  .tier-title { margin-bottom: .75rem; }
+  .tier-content { margin-bottom: .75rem; }
+  .tier-stock { margin-bottom: .375rem; }
+  .tier-action { margin-top: 1rem; }
+}
+@include media-breakpoint-between(md, xl) {
+  .tier-action {
+    align-self: end;
+    margin-top: 0;
+  }
+}
+
+.tier-price {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: $font-weight-semibold;
+  line-height: 1.2;
+  color: $ink;
+  white-space: nowrap;
+}
+.tier-name {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.45;
+}
+.tier-tags {
+  gap: .375rem;
+  margin-top: .5rem;
+}
+.tier-items {
+  margin: 0;
+  padding: 0;
+  font-size: .9375rem;
+  line-height: 1.55;
+  list-style: none;
+
+  li {
+    position: relative;
+    padding-left: .875rem;
+  }
+  li + li {
+    margin-top: .25rem;
+  }
+  li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .65em;
+    width: 5px;
+    height: 5px;
+    background-color: $navy-800;
+  }
+}
+.tier-note {
+  margin: 0;
+  font-size: .9375rem;
+  line-height: 1.55;
+}
+.tier-stock {
+  font-size: .875rem;
+
+  p {
+    margin: 0;
+  }
+}
+.tier-stock-limit {
+  color: $ink-muted;
+}
+.tier-stock-low {
+  font-weight: $font-weight-bold;
+  color: $warn-fg;
+}
+// 限量容量條（4px）：已選購 ÷ 限量
+.capacity {
+  position: relative;
+  height: 4px;
+  margin-top: .5rem;
+  border-radius: $radius-bar;
+  background-color: $line;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--taken, 0%);
+    border-radius: inherit;
+    background-color: $navy-800;
+  }
+  &.is-low::before {
+    background-color: $warn-fg;
+  }
+}
+.tier-ship {
+  font-size: .875rem;
+  color: $ink-muted;
+
+  p {
+    margin: 0;
+  }
+}
+
+// 選擇鈕：<label> 的 ::after 蓋滿整張卡，整張卡都可點
+.tier-btn {
+  --bs-btn-color: #{$navy-800};
+  --bs-btn-bg: #{$white};
+  --bs-btn-border-color: #{$navy-800};
+  --bs-btn-hover-color: #{$navy-800};
+  --bs-btn-hover-bg: #{$ice-50};
+  --bs-btn-hover-border-color: #{$navy-800};
+  --bs-btn-active-color: #{$white};
+  --bs-btn-active-bg: #{$navy-800};
+  --bs-btn-active-border-color: #{$navy-800};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: $border-radius;
+  }
+}
+.tier-btn-on {
+  display: none;
+  align-items: center;
+  gap: .375rem;
+}
+.tier-soldout-note {
+  margin: .5rem 0 0;
+  font-size: .8125rem;
+  line-height: 1.5;
+  color: $ink-muted;
+}
+
+// 選中：上緣 4px 企業深藍＋淡藍底＋1px 藍框＋按鈕變實心「✓ 已選擇」
+.tier:has(.btn-check:checked) {
+  border-color: $blue-600;
+  background-color: $blue-50;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    height: 4px;
+    border-radius: $border-radius $border-radius 0 0;
+    background-color: $navy-800;
+  }
+  .tier-btn {
+    border-color: $navy-800;
+    background-color: $navy-800;
+    color: $white;
+  }
+  .tier-btn-idle {
+    display: none;
+  }
+  .tier-btn-on {
+    display: inline-flex;
+  }
+}
+.tier:has(.btn-check:focus-visible) {
+  outline: 2px solid $blue-600;
+  outline-offset: 2px;
+}
+// 已額滿：冰灰底、虛線框、字降一階；按鈕停用（不可點）
+.tier.is-soldout {
+  border-style: dashed;
+  border-color: $line-strong;
+  background-color: $ice-50;
+  box-shadow: none;
+
+  .tier-price,
+  .tier-name,
+  .tier-items {
+    color: $ink-muted;
+  }
+  .tier-items li::before,
+  .capacity::before {
+    background-color: $ink-faint;
+  }
+  @include media-breakpoint-up(xl) {
+    > div + div {
+      border-top-style: dashed;
+      border-top-color: $line-strong;
+    }
+  }
+  .tier-btn {
+    border-color: $line;
+    background-color: $ice-100;
+    color: $ink-muted;
+    pointer-events: none;
+
+    &::after {
+      content: none;
+    }
+  }
+}
+
+// ---------- 全寬贊助小計列（不 sticky）：左 自訂金額｜中 小計表｜右 下一步 ----------
+.pledge-bar {
+  display: grid;
+  margin-top: map-get($spacers, 4);
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $white;
+  box-shadow: $shadow-card;
+
+  > * {
+    min-width: 0;
+    padding: 1.25rem;
+  }
+  > * + * {
+    border-top: 1px solid $line;
+  }
+
+  @include media-breakpoint-up(md) {
+    > * {
+      padding: map-get($spacers, 4);
+    }
+  }
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 3fr);
+
+    > * + * {
+      border-top: 0;
+      border-left: 1px solid $line;
+    }
+  }
+}
+.pledge-bar-title {
+  margin-bottom: .25rem;
+  font-weight: $font-weight-bold;
+  color: $ink;
+}
+.pledge-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: .5rem 1rem;
+}
+.pledge-input {
+  flex: 1 1 12rem;
+  max-width: 16rem;
+
+  .form-control {
+    font-weight: $font-weight-semibold;
+  }
+}
+.pledge-min {
+  margin: .75rem 0 0;
+}
+.pledge-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-top: .875rem;
+}
+// 小計表（贊助小計列與狀態示意共用）
+.pledge-rows {
+  margin: .5rem 0 0;
+  font-size: .9375rem;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: .4375rem;
+    border-bottom: 1px solid $line;
+  }
+  dt {
+    font-weight: $font-weight-normal;
+    color: $ink-muted;
+  }
+  dd {
+    margin: 0;
+    font-weight: $font-weight-medium;
+    text-align: right;
+    color: $ink;
+  }
+  .pledge-total {
+    align-items: baseline;
+    margin-top: .25rem;
+    padding-top: .625rem;
+    border-top: 1px solid $ink;
+    border-bottom: 0;
+
+    dt {
+      font-weight: $font-weight-bold;
+      color: $ink;
+    }
+    dd {
+      font-size: 1.5rem;
+      font-weight: $font-weight-semibold;
+    }
+  }
+}
+.pledge-bar-next {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: .875rem;
+}
+
+// ---------- 生產排程：里程碑追蹤表 ----------
+.ms-heading {
+  align-items: flex-end;
+}
+.ms-heading-title {
+  margin-bottom: 0;
+}
+.ms-heading-sub {
+  display: block;
+  margin-top: .25rem;
+  font-size: 1rem;
+  font-weight: $font-weight-medium;
+  color: $ink-muted;
+}
+.ms-heading-lead {
+  max-width: 40em;
+  margin: map-get($spacers, 2) 0 0;
+  font-size: .9375rem;
+  color: $ink-muted;
+}
+.ms-summary {
+  gap: .375rem;
+}
+
+.ms-table {
+  --ms-cols: minmax(13rem, 3fr) 7rem 9.5rem minmax(0, 6fr);
+  --ms-node-x: 1rem;
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $white;
+  box-shadow: $shadow-card;
+
+  @include media-breakpoint-up(lg) {
+    --ms-node-x: 1.5rem;
+  }
+}
+// 表頭：純視覺（每格前另有視覺隱藏的欄名）
+.ms-table-head {
+  display: none;
+
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: var(--ms-cols);
+    column-gap: 1.5rem;
+    padding: .625rem 1.5rem;
+    border-bottom: 1px solid $line-strong;
+    background-color: $ice-100;
+    font-size: .8125rem;
+    font-weight: $font-weight-medium;
+    color: $ink-muted;
+  }
+}
+.ms-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ms-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: .5rem 1rem;
+  padding: 1.25rem 1rem 1.25rem 3.25rem;
+
+  & + & {
+    border-top: 1px solid $line;
+  }
+  &:hover {
+    background-color: $ice-50;
+  }
+
+  > .ms-name,
+  > .ms-update,
+  > .ms-photos-wrap {
+    grid-column: 1 / -1;
+  }
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: var(--ms-cols);
+    align-items: start;
+    gap: .75rem 1.5rem;
+    padding: 1.25rem 1.5rem;
+
+    > .ms-name { grid-column: 1; }
+    > .ms-status { grid-column: 2; }
+    > .ms-when { grid-column: 3; }
+    > .ms-update { grid-column: 4; }
+    > .ms-photos-wrap { grid-column: 2 / -1; }
+  }
+
+  // 連接線：節點中心 x＝--ms-node-x＋12px；第一列從節點中心開始、最後一列到節點中心結束
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--ms-node-x) + 11px);
+    width: 2px;
+    background-color: $line-strong;
+  }
+  &:first-child::before {
+    top: 2rem;
+  }
+  &:last-child::before {
+    bottom: auto;
+    height: 2rem;
+  }
+  &.is-done::before {
+    background-color: $navy-800;
+  }
+  // 進行中：上半段（接已完成）深藍、下半段淺
+  &.is-live::before {
+    background: linear-gradient($navy-800 0 2rem, $line-strong 2rem 100%);
+  }
+  // 未開始：虛線
+  &.is-todo::before {
+    background: repeating-linear-gradient(to bottom, $line-strong 0 4px, transparent 4px 8px);
+  }
+}
+.ms-name {
+  @include media-breakpoint-up(lg) {
+    padding-left: 2.25rem;
+  }
+}
+// 節點 24px：已完成實心勾、進行中藍環脈動、未開始虛線空心
+.ms-node {
+  position: absolute;
+  top: 1.25rem;
+  left: var(--ms-node-x);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background-color: $white;
+  font-size: .875rem;
+  line-height: 1;
+
+  .is-done > .ms-name > & {
+    background-color: $navy-800;
+    color: $white;
+  }
+  .is-live > .ms-name > & {
+    border: 2px solid $blue-600;
+
+    &::before {
+      content: "";
+      width: .5rem;
+      height: .5rem;
+      border-radius: 50%;
+      background-color: $blue-600;
+    }
+    &::after {
+      content: "";
+      position: absolute;
+      inset: -6px;
+      border: 1.5px solid $blue-600;
+      border-radius: 50%;
+      animation: ms-pulse 2.4s ease-in-out infinite;
+    }
+  }
+  .is-todo > .ms-name > & {
+    border: 2px dashed $control;
+  }
+}
+@keyframes ms-pulse {
+  0%, 100% { opacity: 0; }
+  50%      { opacity: .7; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ms-node::after {
+    animation: none !important;
+    opacity: .5;
+  }
+}
+.ms-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+}
+.ms-when {
+  font-size: .9375rem;
+  color: $ink;
+  white-space: nowrap;
+
+  @include media-breakpoint-up(lg) {
+    padding-top: .125rem;
+  }
+}
+.ms-status {
+  @include media-breakpoint-up(lg) {
+    padding-top: .0625rem;
+  }
+}
+.ms-update {
+  font-size: .9375rem;
+
+  p {
+    margin: 0;
+  }
+}
+.ms-update-date {
+  font-weight: $font-weight-semibold;
+  color: $ink;
+}
+.ms-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  min-height: 2.25rem;
+  margin-top: .25rem;
+  padding-inline: 0;
+  font-size: .875rem;
+
+  .bi {
+    transition: transform .2s ease;
+  }
+  &[aria-expanded="true"] .bi {
+    transform: rotate(180deg);
+  }
+}
+.ms-photos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+
+  .img-frame {
+    flex: 0 0 auto;
+    width: calc(50% - .375rem);
+    max-width: 10rem;
+    border: 1px solid $line;
+    border-radius: $radius-control;
+  }
+}
+.ms-more {
+  padding-inline: 0;
+  font-size: .875rem;
+}
+// 延遲狀態範例
+.ms-delay-demo {
+  margin-top: map-get($spacers, 5);
+}
+.ms-delay-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .75rem;
+
+  .btn {
+    margin-top: .25rem;
+  }
+}
+.ms-delay-dates {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+// ---------- 關於提案者 ----------
+.pd-proposer-photo {
+  border-radius: $border-radius;
+}
+.pd-proposer-id {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.pd-proposer-name {
+  margin: 0;
+  font-size: 1.125rem;
+}
+.pd-proposer-place {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  margin: .25rem 0 0;
+  font-size: .875rem;
+  color: $ink-muted;
+}
+.pd-proposer-bio {
+  margin-bottom: map-get($spacers, 5);
+  font-size: 1.125rem;
+  line-height: 1.8;
+}
+.pd-record-title {
+  margin-bottom: .75rem;
+  font-size: 1rem;
+}
+
+// ---------- 留言討論 ----------
+.pd-comments-intro h2 {
+  margin-bottom: map-get($spacers, 3);
+}
+.pd-comments-count {
+  font-size: .75em;
+  font-weight: $font-weight-medium;
+  color: $ink-muted;
+}
+.comment-form {
+  display: flex;
+  gap: .75rem;
+  margin-bottom: map-get($spacers, 4);
+  padding: 1rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $white;
+  box-shadow: $shadow-card;
+}
+.comment-form-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.comment-form-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: .5rem;
+}
+.comment-list {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid $line;
+  list-style: none;
+}
+.comment {
+  padding-block: 1.25rem;
+  border-bottom: 1px solid $line;
+}
+.comment-main {
+  display: flex;
+  gap: .75rem;
+}
+.comment-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.comment-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .625rem;
+  margin-bottom: .25rem;
+  font-size: .8125rem;
+  color: $ink-muted;
+}
+.comment-name {
+  font-size: .9375rem;
+  font-weight: $font-weight-bold;
+  color: $ink;
+}
+.comment-text {
+  margin: 0;
+  font-size: .9375rem;
+}
+// 提案者回覆：冰灰底＋左 3px 企業深藍線＋live「提案者」
+.comment-reply {
+  margin: .875rem 0 0 3.25rem;
+  padding: .875rem 1rem;
+  border-left: 3px solid $navy-800;
+  border-radius: 0 $radius-control $radius-control 0;
+  background-color: $ice-50;
+
+  @include media-breakpoint-down(sm) {
+    margin-left: 1.5rem;
+  }
+}
+.pd-comment-empty {
+  margin: 0;
+  padding: map-get($spacers, 4) 0;
+  border-bottom: 1px solid $line;
+  text-align: center;
+  color: $ink-muted;
+}
+
+// ---------- 風險＋FAQ ----------
+.pd-block-title {
+  margin-bottom: map-get($spacers, 3);
+}
+// 風險揭露：字級不小於內文
+.pd-risk {
+  font-size: 1rem;
+  line-height: 1.75;
+
+  p + p {
+    margin-top: .75rem;
+  }
+}
+.pd-faq .accordion-button {
+  font-weight: $font-weight-medium;
+}
+
+// 狀態示意區：接在冰灰的風險區之後，上方留白收一點
+.pd-demo {
+  padding-top: map-get($spacers, 6);
+}
+
+// ---------- 手機底部行動列（< 992） ----------
+.pd-actionbar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: $zindex-fixed;
+  padding: .625rem 0 calc(.625rem + env(safe-area-inset-bottom));
+  border-top: 1px solid $line;
+  background-color: $white;
+  box-shadow: 0 -8px 24px rgba($ink, .12);
+}
+.pd-actionbar-inner {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+}
+.pd-actionbar-figures {
+  flex: 1 1 auto;
+  min-width: 0;
+
+  .meter {
+    max-width: 10rem;
+  }
+}
+.pd-actionbar-amount {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: $font-weight-semibold;
+  line-height: 1.2;
+  color: $ink;
+  white-space: nowrap;
+}
+.pd-actionbar-meta {
+  margin: .125rem 0 .375rem;
+  font-size: .8125rem;
+  color: $ink-muted;
+  white-space: nowrap;
+}
+// 底部行動列不能蓋住頁尾最後一段
+@include media-breakpoint-down(lg) {
+  body:has(.pd-actionbar) {
+    padding-bottom: 5.25rem;
+  }
+}

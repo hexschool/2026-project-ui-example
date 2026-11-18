@@ -1,0 +1,593 @@
+// ============================================================
+// 流程頁共用元件（2026-11 補頁：贊助結帳、贊助成功、贊助紀錄詳情）
+// 1. 積木步驟條 .brick-steps（CheckoutSteps）
+// 2. 疊疊卡 .stack-card（彩色標頭帶＋積木圖示；結帳的收件、付款，詳情頁的卡片牆）
+// 3. 選擇卡 .option-card（AddressOption、PaymentOption：radio＋label）
+// 4. 明細清單 .detail-list（DetailList）
+// 5. 贊助摘要零件 .pledge-*（PledgeSummary：結帳的禮物盒、詳情頁的我的方案）
+// 6. 危險按鈕 .btn-danger（取消贊助確認對話框）
+// 可愛只放在步驟積木與標頭積木；金額、日期、退款、錯誤、取消一律平實
+// ============================================================
+
+// ---------- 1. 積木步驟條 ----------
+// 3 塊積木一列，像疊在桌上的一排積木；上緣兩顆凸點
+// 已完成＝馬卡龍紫積木＋白色圓點裡的葡萄紫勾（可點回上一步時是連結）
+// 目前＝檸檬黃積木＋深字；還沒到＝白底虛線框積木、次要色
+// 白字在 $lilac-500 只有 3.3，所以已完成的文字放在 $lilac-300 積木上（墨 7.8），勾放在白色圓點裡（葡萄紫 6.45）
+//
+// <nav class="brick-steps" aria-label="贊助步驟">
+//   <ol>
+//     <li class="is-done"><a class="brick-step" href="project.html#rewards"><span class="brick-step-node" aria-hidden="true"><i class="bi bi-check-lg"></i></span><span class="brick-step-label">選擇方案<span class="visually-hidden">（已完成）</span></span></a></li>
+//     <li class="is-current" aria-current="step"><span class="brick-step"><span class="brick-step-node" aria-hidden="true">2</span><span class="brick-step-label">填寫收件資訊</span></span></li>
+//     <li class="is-todo"><span class="brick-step">…3…完成贊助</span></li>
+//   </ol>
+// </nav>
+.brick-steps {
+  ol {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .5rem;
+    margin: 0;
+    padding: .5rem 0 0; // 凸點的空間
+    list-style: none;
+
+    @include media-breakpoint-up(sm) {
+      gap: .75rem;
+    }
+  }
+  li { display: flex; }
+}
+.brick-step {
+  --brick-bg: #{$card};
+  --brick-edge: rgba($ink, .08);
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .375rem;
+  min-height: 4.75rem;
+  padding: .625rem .375rem;
+  border: 2px solid transparent;
+  border-radius: .875rem;
+  background-color: var(--brick-bg);
+  color: $ink;
+  font-family: $font-family-round;
+  font-size: .8125rem;
+  line-height: 1.35;
+  letter-spacing: $letter-spacing-label;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: inset 0 -4px 0 var(--brick-edge);
+  transition: background-color .15s ease, border-color .15s ease;
+
+  // 凸點
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: calc(-.5rem - 2px);
+    width: 1.25rem;
+    height: .5rem;
+    border-radius: .3125rem .3125rem 0 0;
+    background-color: var(--brick-bg);
+    pointer-events: none;
+  }
+  &::before { left: 20%; }
+  &::after { right: 20%; }
+
+  @include media-breakpoint-up(sm) {
+    flex-direction: row;
+    gap: .625rem;
+    min-height: 3.75rem;
+    padding: .625rem 1rem;
+    font-size: 1rem;
+
+    &::before,
+    &::after { width: 1.5rem; }
+  }
+}
+.brick-step-node {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background-color: $card;
+  color: $ink;
+  font-family: $font-family-figure;
+  font-size: .9375rem;
+  font-weight: $font-weight-figure;
+  line-height: 1;
+
+  .bi { font-size: 1.0625rem; }
+}
+.brick-step-label { min-width: 0; }
+
+.brick-steps .is-done .brick-step {
+  --brick-bg: #{$lilac-300};
+  --brick-edge: rgba($grape, .18);
+
+  .brick-step-node { color: $grape; }
+}
+// 可以點回上一步：hover 只換底色與底線
+.brick-steps .is-done a.brick-step:hover {
+  --brick-bg: #{mix($lilac-300, $lilac-500, 70%)}; // 墨 6.6
+
+  .brick-step-label {
+    text-decoration: underline;
+    text-underline-offset: .3em;
+  }
+}
+.brick-steps .is-current .brick-step {
+  --brick-bg: #{$lemon-400};
+  --brick-edge: rgba($tone-warn, .22);
+}
+// 贊助成功頁：3 步都完成，目前這一步多一圈葡萄紫框（不只靠顏色：還有 aria-current）
+.brick-steps .is-done.is-current .brick-step {
+  border-color: $grape;
+}
+.brick-steps .is-todo .brick-step {
+  --brick-bg: #{$card};
+  border: 2px dashed $track-dash;
+  color: $ink-muted;
+  box-shadow: none;
+
+  &::before,
+  &::after {
+    top: calc(-.5rem - 2px);
+    border: 2px dashed $track-dash;
+    border-bottom: 0;
+    background-color: $page;
+  }
+  .brick-step-node {
+    background-color: $track;
+    color: $ink-muted;
+  }
+}
+
+// ---------- 2. 疊疊卡：白身體＋彩色標頭帶（-50／-100 階）＋標頭裡的積木圖示（-300 階） ----------
+// <section class="stack-card stack-card-sakura" aria-labelledby="…">
+//   <div class="stack-card-head">
+//     <span class="stack-card-icon" aria-hidden="true"><i class="bi bi-house"></i></span>
+//     <div><h2 id="…" class="stack-card-title">收件資訊</h2><p class="stack-card-lead">…</p></div>
+//   </div>
+//   <div class="stack-card-body">…</div>
+// </section>
+// 顏色：-sakura／-lilac／-lemon／-peach；.stack-card-plain 是白底、沒有積木圖示（取消贊助這類平實的卡）
+.stack-card {
+  --stack-tint: #{$sakura-50};
+  --stack-block: #{$sakura-300};
+  position: relative;
+  min-width: 0;
+  border: 2px solid $line;
+  border-radius: $border-radius-xl;
+  background-color: $card;
+  box-shadow: $shadow-card;
+}
+.stack-card-sakura { --stack-tint: #{$sakura-50}; --stack-block: #{$sakura-300}; }
+.stack-card-lilac  { --stack-tint: #{$lilac-50};  --stack-block: #{$lilac-300}; }
+.stack-card-lemon  { --stack-tint: #{$lemon-100}; --stack-block: #{$lemon-400}; }
+.stack-card-peach  { --stack-tint: #FFEDE3;       --stack-block: #{$peach-200}; }
+.stack-card-head {
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+  padding: 1.125rem 1.25rem;
+  border-radius: calc(#{$border-radius-xl} - 2px) calc(#{$border-radius-xl} - 2px) 0 0;
+  background-color: var(--stack-tint);
+
+  @include media-breakpoint-up(sm) {
+    gap: 1rem;
+    padding: 1.25rem 1.75rem;
+  }
+}
+// 標頭的積木：圓角方塊＋上方兩顆凸點＋下緣厚度
+.stack-card-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  align-self: flex-start;
+  width: 2.75rem;
+  height: 2.5rem;
+  margin-top: .375rem;
+  border-radius: .625rem;
+  background-color: var(--stack-block);
+  color: $ink;
+  font-size: 1.25rem;
+  box-shadow: inset 0 -3px 0 rgba($ink, .1);
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: -.3125rem;
+    width: .75rem;
+    height: .3125rem;
+    border-radius: .1875rem .1875rem 0 0;
+    background-color: inherit;
+  }
+  &::before { left: .375rem; }
+  &::after { right: .375rem; }
+}
+.stack-card-title {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.4;
+}
+.stack-card-lead {
+  margin: .25rem 0 0;
+  font-size: .9375rem;
+  color: $ink-muted;
+}
+.stack-card-body {
+  padding: 1.25rem 1.25rem 1.5rem;
+
+  > :last-child { margin-bottom: 0; }
+
+  @include media-breakpoint-up(sm) {
+    padding: 1.5rem 1.75rem 1.75rem;
+  }
+}
+// 平實版：白底、沒有積木、沒有陰影（取消贊助）
+.stack-card-plain {
+  --stack-tint: transparent;
+  box-shadow: none;
+
+  .stack-card-head {
+    padding-bottom: 0;
+  }
+}
+
+// ---------- 3. 選擇卡（地址、付款）：radio＋label，整張卡可點 ----------
+// 框粗細固定 3px（選中只換顏色，版面不跳）；選中＝檸檬淡底＋葡萄紫框＋右上葡萄紫圓形勾貼紙＋較深陰影
+// 沒選時右上是一個空心圓（看得出可以選），不只靠顏色
+// <div class="option-grid">
+//   <div class="option">
+//     <input class="btn-check" type="radio" name="address" id="addressHome" value="home" checked required>
+//     <label class="option-card" for="addressHome">
+//       <span class="option-mark" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+//       <span class="option-head"><span class="option-name">陳柏宇</span><span class="status status-live">…預設地址</span></span>
+//       <span class="option-line">0912-345-678</span>
+//     </label>
+//   </div>
+// </div>
+// .option-grid 在 ≥ 576px 兩欄；加 .option-grid-stack 一律單欄（窄卡片裡）
+.option-grid {
+  display: grid;
+  gap: 1rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.option-grid-stack {
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.option {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+.option-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .25rem;
+  width: 100%;
+  padding: 1.125rem 3.25rem 1.125rem 1.25rem;
+  border: 3px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $card;
+  color: $ink;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+
+  &:hover { border-color: $lilac-300; }
+}
+// 空心圓 → 選中時變成凸出卡片上緣的葡萄紫勾貼紙（兩者都是絕對定位，不推擠內容）
+.option-mark {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid $control;
+  border-radius: 50%;
+  background-color: $card;
+  color: transparent;
+  font-size: 1.125rem;
+
+  .bi { line-height: 1; }
+}
+.btn-check:checked + .option-card {
+  border-color: $grape;
+  background-color: $lemon-100;
+  box-shadow: $shadow-raised;
+
+  .option-mark {
+    top: -.75rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 3px solid $card;
+    background-color: $grape;
+    color: $on-grape;
+    box-shadow: 0 4px 10px rgba($grape, .35);
+  }
+}
+.btn-check:focus-visible + .option-card {
+  outline: 3px solid $grape;
+  outline-offset: 3px;
+}
+.option-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .625rem;
+  margin-bottom: .125rem;
+}
+.option-name {
+  font-family: $font-family-round;
+  font-size: 1.125rem;
+  line-height: 1.4;
+  letter-spacing: $letter-spacing-heading;
+}
+.option-line {
+  display: block;
+  font-size: .9375rem;
+  line-height: 1.7;
+  color: $ink-muted;
+}
+// 付款方式：彩色圓形圖示＋名稱＋說明
+.option-icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-bottom: .375rem;
+  border-radius: 50%;
+  background-color: $lilac-100;
+  color: $grape;
+  font-size: 1.25rem;
+}
+// 不能選的地址摘要（目前的收件地址）：同樣的版面，沒有 radio
+.option-card-static {
+  padding-right: 1.25rem;
+  cursor: default;
+
+  &:hover { border-color: $line; }
+}
+
+// ---------- 4. 明細清單：左標籤、右值，列之間點線 ----------
+// <dl class="detail-list"><div><dt>贊助編號</dt><dd class="num">IM-20260918-0016</dd></div>…<div class="is-total">…</div></dl>
+// < 576px 標籤在上、值在下
+.detail-list {
+  margin: 0;
+
+  > div {
+    display: grid;
+    gap: .125rem;
+    padding-block: .75rem;
+    border-top: 2px dotted $line-strong;
+
+    &:first-child {
+      padding-top: 0;
+      border-top: 0;
+    }
+    &:last-child { padding-bottom: 0; }
+  }
+  dt {
+    font-size: .875rem;
+    font-weight: $font-weight-normal;
+    color: $ink-muted;
+  }
+  dd { margin: 0; }
+
+  @include media-breakpoint-up(sm) {
+    > div {
+      grid-template-columns: 7rem minmax(0, 1fr);
+      align-items: baseline;
+      gap: 1rem;
+    }
+    dt { font-size: .9375rem; }
+    dd { text-align: right; }
+  }
+}
+// 總額那一列：Fredoka 大一號
+.detail-list .is-total {
+  dt { color: $ink; }
+  dd {
+    font-family: $font-family-figure;
+    font-size: 1.5rem;
+    font-weight: $font-weight-figure;
+    line-height: 1.2;
+  }
+}
+
+// ---------- 5. 贊助摘要零件（PledgeSummary） ----------
+// 專案：盒窗縮圖＋名稱＋提案者
+.pledge-project {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.pledge-project-thumb {
+  flex: 0 0 6.5rem;
+  width: 6.5rem;
+  border: 3px solid $card;
+  box-shadow: $box-shadow-sm;
+
+  @include media-breakpoint-up(sm) {
+    flex-basis: 8.5rem;
+    width: 8.5rem;
+  }
+}
+.pledge-project-name {
+  margin: 0 0 .125rem;
+  font-family: $font-family-round;
+  font-size: 1.1875rem;
+  line-height: 1.4;
+  letter-spacing: $letter-spacing-heading;
+}
+.pledge-project-maker {
+  margin: 0;
+  font-size: .9375rem;
+  color: $ink-muted;
+}
+// 已選方案：小標＋更換方案
+.pledge-plan-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  margin-bottom: .25rem;
+}
+.pledge-label {
+  margin: 0;
+  font-size: .875rem;
+  color: $ink-muted;
+}
+// 方案名稱：檸檬黃吊牌（圓角牌＋打孔圓點），和專案細節的方案卡價格吊牌同一個造型
+.pledge-plan-name {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  margin: 0 0 1rem;
+  padding: .25rem 1.125rem .25rem 2.125rem;
+  border-radius: .875rem;
+  background-color: $lemon-400;
+  color: $ink;
+  font-family: $font-family-round;
+  font-size: 1.25rem;
+  line-height: 1.3;
+  letter-spacing: $letter-spacing-heading;
+  box-shadow: inset 0 -3px 0 rgba($tone-warn, .18);
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: .875rem;
+    top: 50%;
+    width: .625rem;
+    height: .625rem;
+    margin-top: -.3125rem;
+    border-radius: 50%;
+    background-color: $card;
+    box-shadow: inset 0 1px 2px rgba($ink, .35);
+  }
+}
+// 回饋內容：彩色圓點清單（同方案卡的 .reward-items）
+.pledge-items {
+  display: grid;
+  gap: .25rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    position: relative;
+    padding-left: 1.25rem;
+    line-height: 1.75;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: .125rem;
+      top: .65em;
+      width: .5rem;
+      height: .5rem;
+      border-radius: 50%;
+      background-color: $sakura-600;
+    }
+    &:nth-child(3n + 2)::before { background-color: $lilac-500; }
+    &:nth-child(3n)::before { background-color: $grape; }
+  }
+}
+// 顏色說明（Notion FAQ 原文）
+.pledge-note {
+  margin: 0;
+  font-size: .9375rem;
+  color: $ink-muted;
+}
+.pledge-note-label {
+  display: inline-block;
+  margin-right: .5rem;
+  padding: 0 .5rem;
+  border-radius: $border-radius-pill;
+  background-color: $card;
+  color: $ink;
+  font-size: .8125rem;
+  font-weight: $font-weight-medium;
+  vertical-align: .0625rem;
+}
+// 金額：白色內卡（或淡紫內卡 .pledge-rows-tint），數字等寬靠右，總計最大字
+.pledge-rows {
+  margin: 0;
+  padding: .625rem 1.125rem;
+  border-radius: $border-radius;
+  background-color: $card;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding-block: .375rem;
+  }
+  dt {
+    flex-shrink: 0;
+    font-size: .9375rem;
+    font-weight: $font-weight-normal;
+    color: $ink-muted;
+  }
+  dd {
+    margin: 0;
+    text-align: right;
+  }
+}
+.pledge-rows-tint { background-color: $lilac-50; }
+.pledge-total {
+  margin-top: .375rem;
+  padding-top: .75rem !important;
+  border-top: 2px dashed $line-strong;
+
+  dt { color: $ink; }
+  dd {
+    font-family: $font-family-figure;
+    font-size: 1.75rem;
+    font-weight: $font-weight-figure;
+    line-height: 1.15;
+  }
+}
+.pledge-fineprint {
+  display: flex;
+  gap: .5rem;
+  margin: 1rem 0 0;
+  font-size: .875rem;
+  line-height: 1.7;
+  color: $ink-muted;
+
+  .bi {
+    flex-shrink: 0;
+    color: $tone-ok;
+    line-height: inherit;
+  }
+}
+
+// ---------- 6. 危險按鈕（確定取消贊助）：錯誤色實心，同樣有塑膠按鍵的下緣厚度 ----------
+.btn-danger {
+  box-shadow: $box-shadow-inset;
+
+  &:active { box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .12); }
+  &:focus-visible { box-shadow: $focus-ring-double; }
+}

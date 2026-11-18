@@ -1,0 +1,219 @@
+// ============================================================
+// 頁首：漂浮膠囊
+// header 本身透明、sticky（離頂 12px）；內層 .site-capsule 是左右對齊容器的白色膠囊（高 64px、柔陰影）
+// Logo＝三塊積木疊成的島＋「島造」（粉圓）＋ ISLANDMAKE（Fredoka）
+// 主導覽是小膠囊，目前頁＝檸檬黃底＋深字＋左側小圓點；右側膠囊搜尋框、我要提案（葡萄紫膠囊）、頭像（櫻花粉外圈）
+// < 992px：膠囊內 Logo＋搜尋鈕＋頭像＋漢堡；展開時膠囊變成 28px 圓角的面板往下長（:has(.show)）
+// check-layout.mjs 會比對 <a class="skip-link"> 到 </header>，<header class="site-header"> 不能加 class
+// ============================================================
+
+.site-header {
+  position: sticky;
+  top: $site-header-gap;
+  z-index: $zindex-sticky;
+  margin-top: $site-header-gap;
+  pointer-events: none; // 膠囊以外的透明區不擋住底下的內容
+
+  > .container > * { pointer-events: auto; }
+}
+
+.site-capsule {
+  --bs-navbar-padding-y: .5rem;
+  --bs-navbar-padding-x: .5rem;
+  min-height: $site-header-height;
+  padding: .5rem .5rem .5rem 1rem;
+  border-radius: $border-radius-pill;
+  background-color: $card;
+  box-shadow: 0 10px 28px rgba($grape, .14), 0 0 0 2px rgba($lilac-100, .9);
+
+  // 漢堡選單展開時：膠囊變成圓角面板
+  &:has(.navbar-collapse.show),
+  &:has(.navbar-collapse.collapsing) {
+    border-radius: 1.75rem;
+  }
+
+  @include media-breakpoint-up(lg) {
+    padding-left: 1.25rem;
+    flex-wrap: nowrap;
+  }
+}
+
+// ---------- Logo ----------
+.site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .625rem;
+  margin-right: 0;
+  padding-block: 0;
+  color: $ink;
+  text-decoration: none;
+
+  img {
+    display: block;
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  &:hover { color: $ink; }
+}
+.site-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+.site-brand-name {
+  font-family: $font-family-round;
+  font-size: 1.375rem;
+  letter-spacing: .12em;
+}
+.site-brand-sub {
+  margin-top: .25rem;
+  font-family: $font-family-figure;
+  font-size: .625rem;
+  font-weight: 600;
+  letter-spacing: .16em;
+  color: $grape;
+}
+
+// ---------- 主導覽：小膠囊 ----------
+.site-nav {
+  gap: .25rem;
+
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    min-height: 2.75rem;
+    padding: .5rem 1rem;
+    border-radius: $border-radius-pill;
+    font-family: $font-family-round;
+    font-weight: $font-weight-round;
+    color: $ink;
+    transition: background-color .15s ease, color .15s ease;
+
+    &:hover { background-color: $lilac-50; color: $grape-700; }
+  }
+  // 目前頁：檸檬黃底＋深字＋左側小圓點（不只靠顏色）
+  .nav-link.active {
+    background-color: $lemon-400;
+    color: $ink;
+
+    &::before {
+      content: "";
+      width: .5rem;
+      height: .5rem;
+      border-radius: 50%;
+      background-color: $ink;
+    }
+  }
+
+  @include media-breakpoint-up(lg) {
+    margin-left: 1.5rem;
+  }
+  @include media-breakpoint-up(xl) {
+    margin-left: 2.5rem;
+  }
+}
+
+// ---------- 右側：搜尋、我要提案、頭像 ----------
+.site-header-actions {
+  align-items: center;
+  gap: .625rem;
+  margin-left: auto;
+}
+.site-search {
+  position: relative;
+  width: 12.5rem;
+
+  .bi {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $grape;
+    pointer-events: none;
+  }
+  .form-control {
+    height: 2.75rem;
+    padding-left: 2.625rem;
+    border-color: transparent;
+    border-radius: $border-radius-pill;
+    background-color: $lilac-50;
+    font-size: .9375rem;
+
+    &:hover { border-color: $lilac-300; }
+    &:focus { background-color: $card; border-color: $grape; }
+  }
+
+  @include media-breakpoint-up(xl) {
+    width: 16rem;
+  }
+}
+.site-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+
+  img {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 2px $card, 0 0 0 4px $sakura-300;
+  }
+  &:hover img { box-shadow: 0 0 0 2px $card, 0 0 0 4px $grape; }
+}
+
+// < 992px 的圖示鈕（搜尋、漢堡）
+.site-icon-link {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background-color: transparent;
+  color: $ink;
+  font-size: 1.25rem;
+  transition: background-color .15s ease, color .15s ease;
+
+  &:hover { background-color: $lilac-50; color: $grape-700; }
+  &:focus { box-shadow: none; }
+  &:focus-visible { outline: 3px solid $grape; outline-offset: 0; }
+}
+.navbar-toggler.site-icon-link {
+  border: 0;
+  &[aria-expanded="true"] { background-color: $lilac-100; color: $grape-700; }
+}
+
+// < 992px：展開的選單
+@include media-breakpoint-down(lg) {
+  .site-capsule .navbar-collapse {
+    padding: .5rem .25rem .5rem 0;
+  }
+  .site-nav {
+    padding-top: .5rem;
+    border-top: 2px dashed $line;
+
+    .nav-link { padding-inline: 1rem; }
+  }
+  .site-nav-propose {
+    margin-top: .5rem;
+  }
+}
+
+// < 992px：放大鏡展開的搜尋列（白色圓角面板，接在膠囊下方）
+.site-search-mobile {
+  margin-top: .5rem;
+
+  .site-search-panel {
+    padding: .5rem;
+    border-radius: 1.75rem;
+    background-color: $card;
+    box-shadow: 0 10px 28px rgba($grape, .14), 0 0 0 2px rgba($lilac-100, .9);
+  }
+  .site-search { width: 100%; }
+}

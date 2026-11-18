@@ -1,0 +1,535 @@
+// ============================================================
+// 島造 ISLANDMAKE｜05 現代商務創新：Bootstrap 5 變數覆寫（design token）
+// 規則：只在這裡改 Bootstrap 變數；元件與頁面樣式一律引用變數，不寫死色碼
+//
+// 概念：上市公司年報＋基金月報（factsheet）合在一起的投資人資訊站。
+// 純白紙面、企業深藍、科技冰灰；整齊的表格與指標列，數字一律等寬（tabular-nums）。
+// 單一淺色主題：不使用 data-bs-theme，作業系統切成深色時畫面維持白底深字。
+// 對比度以 WCAG 2.x 公式計算；沒註明時是對頁面底色白 #FFFFFF 的比值
+// ============================================================
+
+// ---------- 1. 色彩：純白、企業深藍、科技冰灰 ----------
+
+// 面：純白是頁面與卡片；冰灰兩階做交替區塊、表頭、KPI 列底
+$white:       #FFFFFF; // 頁面底、卡片、輸入框
+$ice-50:      #F4F6F9; // 科技冰灰：交替區塊、頁面標題區、個人頁側欄（主文字 16.2:1、次要 6.9:1、淡 4.9:1）
+$ice-100:     #E9EEF3; // 表頭、KPI 列底、轉換帶（主文字 15.0:1、次要 6.4:1；$ink-faint 只有 4.58:1，不要放在這上面）
+
+// 線：裝飾線不承載資訊；表單框線要達非文字 3:1
+$line:        #DCE2EA; // 1px 分隔線、表格橫線、進度條軌道（裝飾）
+$line-strong: #C3CDD8; // 卡片 hover 框線、次要按鈕框線、虛線框（裝飾）
+$control:     #7A8797; // 表單框線：輸入框、核取方塊、篩選標籤（對白 3.7:1）
+
+// 字：墨色三階
+$ink:         #0E1A2B; // 主文字、標題（17.5:1）
+$ink-muted:   #46566A; // 次要文字、表頭、標籤、圖表目標虛線（7.5:1）
+$ink-faint:   #5E6C7F; // placeholder、註腳、停用文字（5.35:1；只放白底與 $ice-50）
+
+// 企業深藍：頁首上層、首頁 Hero 色帶、登入左面板、頁尾、主要按鈕
+$navy-900:    #0A1F3C; // 頁首上層、頁尾、深色圖表底、theme-color（白字 16.5:1）
+$navy-800:    #0F2D57; // 企業深藍：主要按鈕、Hero 色帶、進度條目標前段（白字 13.7:1）
+
+// 科技藍：單一數據色、文字連結、進度條超額段。三種藍要分得出來：
+// 主要按鈕＝$navy-800 實心白字；連結＝$blue-600＋底線；live 徽章＝淡藍底＋$blue-700 字＋實心圓點
+$blue-600:    #1F5FD1; // 數據色、連結（白 5.8:1、冰灰 5.4:1、對軌道 $line 4.5:1）
+$blue-700:    #1A4FB5; // live 文字、連結 hover（白 7.4:1）
+$blue-50:     #E7EEFC; // 選中的淡藍底（矩陣選中欄、地址卡選中、live 徽章底）
+$data-dark:   #7EB0FF; // 深色底圖表的數據線（對 $navy-900 7.5:1）
+
+// 深藍底上的文字（頁首上層、Hero 色帶、登入左面板、頁尾）
+$on-navy:         $white;   // 主文字（navy-900 16.5:1、navy-800 13.7:1）
+$on-navy-muted:   #C9D6E8;  // Hero 副標（對 navy-800 9.3:1）
+$on-navy-link:    #AFC0D6;  // 頁尾連結、副字標（對 navy-900 8.9:1）
+$on-navy-faint:   #9FB3CF;  // 次要小字、版權列（對 navy-800 6.4:1、對 navy-900 7.7:1）
+$on-navy-rule:    rgba($white, .12); // 深藍底上的分隔線（裝飾）
+$on-navy-grid:    rgba($white, .06); // Hero 色帶的圖表格線紋理（裝飾）
+
+// 6 種語意色調（WIREFRAME_SPEC §2.6）：每種一組「文字色／底色」，圓點與框線用文字色
+// 括號內是文字色對自己底色的對比
+$live-fg: #1A4FB5; $live-bg: #E7EEFC; // 進行中：募資中、進行中的里程碑、提案者回覆、預設地址（6.4:1）
+$info-fg: #5A3FB8; $info-bg: #EEEAFA; // 等待中：已達標待生產、即將開始（6.3:1）
+$warn-fg: #8A5200; $warn-bg: #FFF2D4; // 注意：生產中、審核中、即將額滿、剩 ≤ 7 天（5.8:1）
+$ok-fg:   #0E6B47; $ok-bg:   #E2F3EB; // 成功：已出貨、募資成功、已完成、超額達成、準時出貨率（5.7:1；白底 6.5:1）
+$err-fg:  #B3261E; $err-bg:  #FCEAE8; // 錯誤：審核未通過、募資失敗、延遲、欄位錯誤（5.6:1；白底 6.5:1）
+$idle-fg: #4B5563; $idle-bg: #EEF1F4; // 中性：草稿、未開始、已退款、已下架、已額滿（6.7:1；已下架加虛線框）
+
+// Sass map：.status、.callout、Guideline 的色票都由這份 map 產生
+$tones: (
+  "live": ($live-fg, $live-bg),
+  "info": ($info-fg, $info-bg),
+  "warn": ($warn-fg, $warn-bg),
+  "ok":   ($ok-fg,   $ok-bg),
+  "err":  ($err-fg,  $err-bg),
+  "idle": ($idle-fg, $idle-bg),
+);
+
+$primary:   $navy-800;  // 主要按鈕＝企業深藍實心白字
+$secondary: $ink-muted;
+$success:   $ok-fg;
+$info:      $info-fg;
+$warning:   $warn-fg;
+$danger:    $err-fg;
+$light:     $ice-50;
+$dark:      $navy-900;
+
+$theme-colors: (
+  "primary":   $primary,
+  "secondary": $secondary,
+  "success":   $success,
+  "info":      $info,
+  "warning":   $warning,
+  "danger":    $danger,
+  "light":     $light,
+  "dark":      $dark,
+);
+
+$color-contrast-light: $white;
+$color-contrast-dark:  $ink;
+$min-contrast-ratio:   4.5;
+
+// 只有一套淺色主題，不輸出 [data-bs-theme="dark"] 那一份變數
+$enable-dark-mode: false;
+
+// ---------- 全站底色與文字 ----------
+$body-bg:               $white;
+$body-color:            $ink;
+$body-secondary-color:  $ink-muted;
+$body-secondary-bg:     $ice-50;
+$body-tertiary-color:   $ink-faint;
+$body-tertiary-bg:      $ice-50;
+$body-emphasis-color:   $ink;
+$border-color:          $line;
+$border-color-translucent: rgba($ink, .1);
+$headings-color:        $ink;
+
+// 連結：科技藍＋底線，hover 深一階
+$link-color:            $blue-600;
+$link-hover-color:      $blue-700;
+$link-decoration:       underline;
+$link-underline-offset: .22em;
+
+$primary-text-emphasis:   $navy-800;
+$secondary-text-emphasis: $ink;
+$success-text-emphasis:   $ok-fg;
+$info-text-emphasis:      $info-fg;
+$warning-text-emphasis:   $warn-fg;
+$danger-text-emphasis:    $err-fg;
+$light-text-emphasis:     $ink;
+$dark-text-emphasis:      $ink;
+
+$primary-bg-subtle:       $blue-50;
+$secondary-bg-subtle:     $ice-50;
+$success-bg-subtle:       $ok-bg;
+$info-bg-subtle:          $info-bg;
+$warning-bg-subtle:       $warn-bg;
+$danger-bg-subtle:        $err-bg;
+$light-bg-subtle:         $ice-50;
+$dark-bg-subtle:          $ice-100;
+
+$primary-border-subtle:   $line-strong;
+$secondary-border-subtle: $line;
+$success-border-subtle:   mix($ok-fg, $ok-bg, 35%);
+$info-border-subtle:      mix($info-fg, $info-bg, 35%);
+$warning-border-subtle:   mix($warn-fg, $warn-bg, 35%);
+$danger-border-subtle:    mix($err-fg, $err-bg, 35%);
+$light-border-subtle:     $line;
+$dark-border-subtle:      $line-strong;
+
+// 元件的「選中」：企業深藍底＋白字（分頁、核取方塊、篩選標籤、下拉選單共用）
+$component-active-bg:    $navy-800;
+$component-active-color: $white;
+
+// 焦點環：科技藍 2px，外推 2px 露出底色當間隙；深藍底上改用 $data-dark（_base.scss）
+$focus-ring-width:   2px;
+$focus-ring-opacity: 1;
+$focus-ring-blur:    0;
+$focus-ring-color:   $blue-600;
+$focus-ring-double:  0 0 0 2px $white, 0 0 0 4px $blue-600; // 自訂：內圈白色間隙、外圈科技藍
+$focus-ring-box-shadow: $focus-ring-double;
+$focus-on-navy:      $data-dark; // 自訂：深藍底上的焦點色（對 navy-900 7.5:1）
+
+$code-color: $blue-700;
+$mark-bg:    $blue-50;
+$mark-color: $ink;
+
+$hr-color:   $line;
+$hr-opacity: 1;
+
+// ---------- 2. 字體與字級 ----------
+// IBM Plex Sans 負責西文與數字，中文落到 Noto Sans TC。全站數字 tabular-nums lining-nums（_base.scss），
+// 大數字也等寬，表格與 KPI 欄位能上下對齊。不用明體、圓體、等寬字體
+$font-family-sans-serif: "IBM Plex Sans", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+$font-family-base:       $font-family-sans-serif;
+$headings-font-family:   $font-family-sans-serif;
+$display-font-family:    $font-family-sans-serif;
+
+$font-size-base:   1rem;      // 16px
+$font-size-sm:     .875rem;   // 14px
+$font-size-lg:     1.125rem;  // 18px
+$small-font-size:  .8125rem;  // 13px：註腳、標籤
+$font-size-table:  .9375rem;  // 自訂：表格 15px
+
+// 載入：Noto Sans TC 400／500／700；IBM Plex Sans 400／500／600／700
+$font-weight-light:    400;
+$font-weight-normal:   400;
+$font-weight-medium:   500;
+$font-weight-semibold: 600; // Plex 數字用；中文沒有 600，會用 700
+$font-weight-bold:     700;
+$font-weight-bolder:   700;
+
+$line-height-base: 1.7;
+$line-height-sm:   1.5;
+$line-height-lg:   1.85;
+
+// 字級階差小（約 1.2 倍），靠字重與位置分層
+$h1-font-size: 2.25rem;   // 36px：頁面 H1
+$h2-font-size: 1.5rem;    // 24px：區塊標題（下方 14px 副標）
+$h3-font-size: 1.125rem;  // 18px：子標題、卡片標題
+$h4-font-size: 1rem;
+$h5-font-size: .9375rem;
+$h6-font-size: .875rem;
+
+$headings-font-weight:   700;
+$headings-line-height:   1.35;
+$headings-margin-bottom: .5rem;
+
+$display-font-sizes: (
+  1: 3.5rem,   // 56px：首頁 H1（≥ 1200 一行放完）
+  2: 3rem,
+  3: 2.5rem,
+  4: 2.25rem,
+  5: 2rem,
+  6: 1.75rem,
+);
+$display-font-weight: 700;
+$display-line-height: 1.15;
+
+$lead-font-size:   1.125rem; // 18px
+$lead-font-weight: 400;
+
+// 自訂：KPI 數字（Plex 600、等寬）
+$kpi-size:        2rem;     // 32px：KPI 列、StatTile
+$kpi-size-sm:     1.375rem; // 22px：專案卡的達成率、目前募得
+$kpi-size-money:  2.75rem;  // 44px：專案細節募資行情列的「目前募得」（全頁最大數字）
+$kpi-size-rate:   2.25rem;  // 36px：專案細節募資行情列的達成率
+$kpi-label-size:  .8125rem; // 13px：標籤（500、$ink-muted）
+
+// 自訂：專案故事長文（WIREFRAME_SPEC §4.2 的下限：內文 ≥ 16px、行高 ≥ 1.8、段距 ≥ 1em）
+$story-max-width:     42.5rem;   // 680px
+$story-font-size:     1.0625rem; // 17px
+$story-line-height:   1.85;
+$story-paragraph-gap: 1.25em;
+$story-h2-size:       1.375rem;  // 22px，上 2.5rem／下 .75rem
+$story-h3-size:       1.125rem;  // 18px（Guideline 示範）
+
+// ---------- 3. 間距：8px 基準 ----------
+// 尺度 4／8／16／24／32／48／64／80（12px 只在元件內部用 .75rem）
+// 注意：5 是 32px（Bootstrap 預設是 48px），48px 請用 6
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * .25, // 4px
+  2: $spacer * .5,  // 8px
+  3: $spacer,       // 16px
+  4: $spacer * 1.5, // 24px
+  5: $spacer * 2,   // 32px
+  6: $spacer * 3,   // 48px
+  7: $spacer * 4,   // 64px
+  8: $spacer * 5,   // 80px
+);
+
+$grid-gutter-width:   1.5rem;  // 24px
+$container-padding-x: 2rem;    // 左右各 16px；≥ 992px 改 24px（_base.scss）。需 ≥ gutter，否則 .row 會溢出
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  xxl: 1320px,
+);
+
+// 自訂：區塊上下留白（手機 48px／≥ 992px 80px）
+$section-y:     3rem;
+$section-y-lg:  5rem;
+
+// ---------- 4. 圓角與陰影 ----------
+// 卡片、面板、圖表卡 6px；按鈕、輸入框、徽章、篩選標籤 4px（不是膠囊）；頭像圓形
+$border-width:       1px;
+$border-radius-sm:   .25rem;  // 4px
+$border-radius:      .375rem; // 6px
+$border-radius-lg:   .375rem; // 6px
+$border-radius-xl:   .375rem;
+$border-radius-xxl:  .375rem;
+$border-radius-pill: 50rem;   // 只給頭像、狀態圓點、radio、開關
+$radius-control:     .25rem;  // 自訂：按鈕、輸入框、徽章、篩選標籤
+$radius-bar:         2px;     // 自訂：進度條
+
+$enable-shadows: false;
+// 卡片＝1px 框＋極淡陰影；浮起層（sticky 條款表、下拉、Modal、手機底部行動列）＝較深的柔陰影。不用硬陰影、不用發光
+$box-shadow-sm:     0 1px 2px rgba($ink, .05);  // 卡片
+$box-shadow:        0 8px 24px rgba($ink, .12); // 浮起層
+$box-shadow-lg:     0 16px 40px rgba($ink, .16); // Modal
+$box-shadow-inset:  inset 0 1px 2px rgba($ink, .05);
+$shadow-card:       $box-shadow-sm;                                  // 自訂
+$shadow-card-hover: 0 2px 4px rgba($ink, .06), 0 6px 16px rgba($ink, .07); // 自訂：hover 加深一階（尺寸不變）
+
+$enable-negative-margins: true;
+
+// ---------- 5. 頁首（雙層）與 sticky 位移 ----------
+// 上層 56px 深藍工具列（Logo、寬搜尋、我要提案、頭像）＋下層 48px 白色分頁導覽。
+// ≥ 992px 時整個 header 用 position: sticky; top: -56px，捲動後只剩下層黏住；< 992px 是單層 56px，sticky top: 0
+$site-bar-height:  3.5rem; // 56px
+$site-tabs-height: 3rem;   // 48px
+$sticky-offset:    4.5rem; // 72px：≥ 992 為 48＋24；< 992 為 56＋16。sticky 的條款表、故事目錄、側欄、篩選欄都用這個
+$scroll-pad:       4rem;   // 64px：≥ 992 錨點捲動（48＋16）
+$scroll-pad-sm:    4.5rem; // 72px：< 992 錨點捲動（56＋16）
+
+// ---------- 6. 元件 ----------
+// 按鈕：主要＝企業深藍；深藍底上用 .btn-light（白底深藍字）與 .btn-outline-light（白框白字）
+$btn-padding-y:        .625rem;  // 高約 44px
+$btn-padding-x:        1.25rem;
+$btn-font-size:        .9375rem;
+$btn-line-height:      1.5;
+$btn-padding-y-sm:     .4375rem; // 高約 36px（頁首工具列）；觸控寬度另外保證
+$btn-padding-x-sm:     .875rem;
+$btn-font-size-sm:     .875rem;
+$btn-padding-y-lg:     .75rem;   // 高約 50px
+$btn-padding-x-lg:     1.5rem;
+$btn-font-size-lg:     1rem;
+$btn-font-weight:      500;
+$btn-border-radius:    $radius-control;
+$btn-border-radius-sm: $radius-control;
+$btn-border-radius-lg: $radius-control;
+$btn-disabled-opacity: 1; // 停用不疊透明度，改成冰灰底＋淡字（_base.scss）
+$btn-focus-width:      $focus-ring-width;
+$btn-link-disabled-color: $ink-faint;
+
+// 表單：白底、表單框線（3.7:1）、placeholder（5.35:1）
+$input-bg:                    $white;
+$input-color:                 $ink;
+$input-border-color:          $control;
+$input-placeholder-color:     $ink-faint;
+$input-plaintext-color:       $ink;
+$input-padding-y:             .625rem;
+$input-padding-x:             .875rem;
+$input-font-size:             1rem;
+$input-border-radius:         $radius-control;
+$input-focus-bg:              $white;
+$input-focus-color:           $ink;
+$input-focus-border-color:    $blue-600;
+$input-focus-box-shadow:      0 0 0 1px $blue-600; // 與 1px 框合成 2px 科技藍
+$input-disabled-bg:           $ice-50;
+$input-disabled-color:        $ink-faint;
+$input-disabled-border-color: $line-strong;
+$input-group-addon-bg:        $ice-50;
+$input-group-addon-color:     $ink-muted;
+$input-group-addon-border-color: $control;
+$form-label-font-size:        .875rem;
+$form-label-font-weight:      500;
+$form-label-color:            $ink;
+$form-label-margin-bottom:    .375rem;
+$form-text-color:             $ink-muted;
+$form-text-font-size:         .8125rem;
+
+$form-select-indicator-color:  $ink-muted;
+$form-select-focus-box-shadow: $input-focus-box-shadow;
+
+$form-check-input-bg:                   $white;
+$form-check-input-border:               1px solid $control;
+$form-check-input-border-radius:        .25rem;
+$form-check-input-checked-color:        $white;
+$form-check-input-checked-bg-color:     $navy-800;
+$form-check-input-checked-border-color: $navy-800;
+$form-check-input-focus-border:         $blue-600;
+$form-check-input-focus-box-shadow:     $focus-ring-double;
+$form-check-input-width:                1.125em;
+
+$form-switch-color:         $control;
+$form-switch-focus-color:   $blue-600;
+$form-switch-checked-color: $white;
+$form-switch-width:         2.25em;
+
+$form-feedback-valid-color:   $ok-fg;
+$form-feedback-invalid-color: $err-fg;
+$form-feedback-font-size:     .8125rem;
+
+$btn-close-color:         $ink;
+$btn-close-opacity:       .7;
+$btn-close-hover-opacity: 1;
+$btn-close-focus-shadow:  $focus-ring-double;
+
+// 卡片（數據卡）：白底、1px 框、6px 圓角、極淡陰影
+$card-bg:            $white;
+$card-color:         $ink;
+$card-border-color:  $line;
+$card-border-radius: $border-radius;
+$card-cap-bg:        $ice-50;
+$card-spacer-y:      1.5rem;
+$card-spacer-x:      1.5rem;
+$card-box-shadow:    $shadow-card;
+
+// 導覽列：下層分頁導覽是底線分頁（目前頁 3px 科技藍底線＋$ink 字，其他 $ink-muted）
+$navbar-padding-y:             0;
+$navbar-padding-x:             0;
+$navbar-nav-link-padding-x:    0;
+$navbar-light-color:           $ink-muted;
+$navbar-light-hover-color:     $ink;
+$navbar-light-active-color:    $ink;
+$nav-link-font-size:           .9375rem;
+$nav-link-font-weight:         500;
+$nav-link-color:               $ink-muted;
+$nav-link-hover-color:         $ink;
+$nav-link-disabled-color:      $ink-faint;
+$nav-tabs-border-color:        $line;
+$nav-tabs-link-active-color:   $ink;
+$nav-tabs-link-active-bg:      $white;
+$nav-pills-link-active-bg:     $navy-800;
+$nav-pills-link-active-color:  $white;
+$nav-underline-border-width:   3px;
+$nav-underline-link-active-color: $ink;
+
+$dropdown-bg:                 $white;
+$dropdown-color:              $ink;
+$dropdown-border-color:       $line;
+$dropdown-border-radius:      $border-radius;
+$dropdown-divider-bg:         $line;
+$dropdown-box-shadow:         $box-shadow;
+$dropdown-link-color:         $ink;
+$dropdown-link-hover-color:   $ink;
+$dropdown-link-hover-bg:      $ice-50;
+$dropdown-link-active-color:  $white;
+$dropdown-link-active-bg:     $navy-800;
+$dropdown-link-disabled-color: $ink-faint;
+$dropdown-header-color:       $ink-muted;
+$dropdown-item-padding-y:     .625rem;
+
+$modal-content-bg:            $white;
+$modal-content-color:         $ink;
+$modal-content-border-color:  $line;
+$modal-content-border-radius: $border-radius;
+$modal-content-box-shadow-xs: $box-shadow-lg;
+$modal-content-box-shadow-sm-up: $box-shadow-lg;
+$modal-header-border-color:   $line;
+$modal-footer-border-color:   $line;
+$modal-backdrop-bg:           $navy-900;
+$modal-backdrop-opacity:      .5;
+$offcanvas-bg-color:          $white;
+$offcanvas-color:             $ink;
+$offcanvas-border-color:      $line;
+$offcanvas-backdrop-bg:       $navy-900;
+$offcanvas-backdrop-opacity:  .5;
+
+$list-group-color:              $ink;
+$list-group-bg:                 $white;
+$list-group-border-color:       $line;
+$list-group-border-radius:      $border-radius;
+$list-group-hover-bg:           $ice-50;
+$list-group-active-color:       $white;
+$list-group-active-bg:          $navy-800;
+$list-group-active-border-color: $navy-800;
+$list-group-action-color:       $ink-muted;
+$list-group-action-hover-color: $ink;
+$list-group-action-active-bg:   $ice-50;
+
+// Accordion：1px 線分隔、＋／− 圖示（FAQ）
+$accordion-color:               $ink;
+$accordion-bg:                  $white;
+$accordion-border-color:        $line;
+$accordion-border-radius:       $border-radius;
+$accordion-inner-border-radius: $border-radius;
+$accordion-button-color:        $ink;
+$accordion-button-active-bg:    $ice-50;
+$accordion-button-active-color: $ink;
+$accordion-button-padding-y:    1rem;
+$accordion-button-padding-x:    1.25rem;
+$accordion-body-padding-x:      1.25rem;
+$accordion-body-padding-y:      1rem;
+$accordion-icon-width:          1rem;
+$accordion-icon-transform:      none;
+$accordion-button-focus-box-shadow: inset 0 0 0 2px $blue-600;
+$accordion-button-icon:         url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='#{$ink}' stroke-width='1.6' stroke-linecap='round'><path d='M8 2.5v11M2.5 8h11'/></svg>");
+$accordion-button-active-icon:  url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='#{$ink}' stroke-width='1.6' stroke-linecap='round'><path d='M2.5 8h11'/></svg>");
+
+// 徽章（.status 是本風格的狀態徽章，見 _base.scss）
+$badge-font-size:     .8125rem;
+$badge-font-weight:   500;
+$badge-color:         $white;
+$badge-border-radius: $radius-control;
+$badge-padding-y:     .3125em;
+$badge-padding-x:     .5em;
+
+// 麵包屑：分隔符號斜線
+$breadcrumb-divider:        quote("/");
+$breadcrumb-font-size:      .875rem;
+$breadcrumb-divider-color:  $line-strong;
+$breadcrumb-active-color:   $ink;
+$breadcrumb-item-padding-x: .5rem;
+$breadcrumb-margin-bottom:  .75rem;
+
+// 分頁：4px 方格，目前頁企業深藍
+$pagination-padding-y:            .5rem;
+$pagination-padding-x:            .875rem;
+$pagination-color:                $ink;
+$pagination-bg:                   $white;
+$pagination-border-color:         $line;
+$pagination-hover-color:          $ink;
+$pagination-hover-bg:             $ice-50;
+$pagination-hover-border-color:   $line-strong;
+$pagination-focus-color:          $ink;
+$pagination-focus-bg:             $white;
+$pagination-focus-box-shadow:     $focus-ring-double;
+$pagination-active-color:         $white;
+$pagination-active-bg:            $navy-800;
+$pagination-active-border-color:  $navy-800;
+$pagination-disabled-color:       $ink-faint;
+$pagination-disabled-bg:          $ice-50;
+$pagination-disabled-border-color: $line;
+$pagination-border-radius:        $radius-control;
+
+$tooltip-bg:            $navy-900;
+$tooltip-color:         $white;
+$tooltip-opacity:       1;
+$tooltip-border-radius: $radius-control;
+$popover-bg:            $white;
+$popover-border-color:  $line;
+$popover-border-radius: $border-radius;
+
+// 表格：只畫橫線不畫直線；表頭冰灰底；數字欄靠右
+$table-color:          $ink;
+$table-bg:             transparent;
+$table-border-color:   $line;
+$table-striped-bg:     $ice-50;
+$table-hover-bg:       $ice-50;
+$table-active-bg:      $blue-50;
+$table-cell-padding-y: .75rem;
+$table-cell-padding-x: .75rem;
+$table-cell-padding-y-sm: .5rem;
+$table-cell-padding-x-sm: .5rem;
+$table-th-font-weight: 500;
+$table-head-bg:        $ice-100; // 自訂：表頭底色（.table-head 使用）
+
+$alert-border-radius: $radius-control;
+$alert-padding-y:     1rem;
+$alert-padding-x:     1.25rem;
+
+// 進度條（Bootstrap 的 .progress 只在 Guideline 對照用；募資進度條是 .meter，見 components/_meter.scss）
+$progress-bg:            $line;
+$progress-bar-bg:        $navy-800;
+$progress-border-radius: $radius-bar;
+$progress-height:        .375rem;
+
+$figure-caption-color: $ink-muted;
+
+// ---------- 7. 本風格的招牌：子彈圖式進度條、迷你走勢 ----------
+// .meter：目標前 $navy-800、目標後 $blue-600、目標處 2px 白縫；L 10px／M 6px／S 4px
+$meter-track:      $line;
+$meter-fill:       $navy-800;
+$meter-over:       $blue-600;
+$meter-seam:       $white;
+$meter-height-lg:  10px;
+$meter-height:     6px;
+$meter-height-sm:  4px;
+// .sparkline：面積＋折線（$blue-600）、目標虛線（$ink-muted）、端點圓點
+$spark-line:       $blue-600;
+$spark-area:       rgba($blue-600, .12);
+$spark-goal:       $ink-muted;

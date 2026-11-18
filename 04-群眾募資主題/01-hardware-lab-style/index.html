@@ -1,0 +1,999 @@
+<!doctype html>
+<html lang="zh-Hant-TW" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>島造 ISLANDMAKE 在地製造提案平台</title>
+  <meta name="description" content="島造 ISLANDMAKE：專注台灣在地設計與製造的群眾募資平台。只收說得出產地、講得清排程的提案，每個專案都公開生產排程。">
+  <meta name="theme-color" content="#0A0E13">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Chakra Petch（數字、英文副字標 500／600／700）、JetBrains Mono（資料 400／500）、Noto Sans TC（中文 400／500／700） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（10 個頁面共用）
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，10 個 .html 要一起改，
+      改完執行 npm run check 確認都與這份範本一致。
+    - 頁首是「左側直立控制欄」：≥ 992px 固定在左緣、全高、寬 88px（body 加 padding-left: 88px）；
+      < 992px 變成頂部 60px 橫列（Logo 左；搜尋、頭像、選單在右），選單展開成全寬深色面板。
+    - 每頁只需要調整一處「目前頁面」標示：頁首導覽目前頁的 <a class="nav-link"> 加 active 與 aria-current="page"
+      （開始標籤要寫成 <a class="nav-link active" href="…" aria-current="page">，屬性順序不能動，check-layout.mjs 依此比對）
+      · index.html → 首頁　· projects.html → 探索專案　· account.html → 我的島造
+      · project.html → 探索專案（只加 active，不加 aria-current）
+      · backing.html → 我的島造（只加 active，不加 aria-current，它是個人頁的子頁）
+      · guideline.html、login.html、register.html、checkout.html、order-result.html → 不標示
+    - 全站以「已登入的提案者 陳柏宇」呈現；未登入的頁首只在 guideline.html 的元件狀態示範
+      （2026-11 補的登入、註冊頁也照範本放已登入的頁首）
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="site-rail" aria-label="主要導覽">
+        <a class="site-brand" href="index.html" aria-label="島造 ISLANDMAKE 首頁">
+          <svg class="site-brand-mark" viewBox="0 0 40 40" width="40" height="40" aria-hidden="true">
+            <path class="site-brand-plate" d="M9 .5h30.5v30.5l-8.5 8.5H.5V9z"/>
+            <path class="site-brand-orbit" d="M5.5 27.5C10 18 21.5 10.5 35 11"/>
+            <path class="site-brand-island" d="M9.5 30.5c2.2-4.6 5.6-7.6 9.4-7.9 2.2-.2 3.2 1.3 5.1 1.2 1.9-.1 3.1-1.6 5.2-1.1 1.6.4 2 2 1.1 3.5-1.6 2.7-5.6 4.6-10.6 5-4 .3-7.6-.1-10.2-.7z"/>
+            <circle class="site-brand-node" cx="35" cy="11" r="2.2"/>
+          </svg>
+          <span class="site-brand-text" aria-hidden="true">
+            <span class="site-brand-name">島造</span>
+            <span class="site-brand-en">ISLANDMAKE</span>
+          </span>
+        </a>
+
+        <!-- 992px 以下的圖示列：搜尋 → 頭像 → 選單（桌機另一組在控制欄裡，讓 Tab 順序與畫面順序一致） -->
+        <div class="site-rail-tools d-lg-none">
+          <button class="btn btn-ghost btn-icon" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearchMobile" aria-controls="siteSearchMobile" aria-expanded="false" aria-label="搜尋專案">
+            <i class="bi bi-search" aria-hidden="true"></i>
+          </button>
+          <a class="site-avatar" href="account.html" aria-label="我的島造（陳柏宇）">
+            <img class="avatar" src="images/proposer-avatar.jpg" alt="" width="40" height="40">
+          </a>
+          <button class="btn btn-ghost btn-icon site-menu-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+            <i class="bi bi-list" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <!-- ≥ 992px 一直顯示（直立控制欄的中段與下段）；< 992px 是漢堡選單展開的全寬面板 -->
+        <div id="siteNav" class="collapse site-rail-body">
+          <ul class="site-nav">
+            <li><a class="nav-link active" href="index.html" aria-current="page"><i class="bi bi-house" aria-hidden="true"></i><span>首頁</span></a></li>
+            <li><a class="nav-link" href="projects.html"><i class="bi bi-compass" aria-hidden="true"></i><span>探索專案</span></a></li>
+            <li><a class="nav-link" href="account.html"><i class="bi bi-person-badge" aria-hidden="true"></i><span>我的島造</span></a></li>
+          </ul>
+          <button class="site-rail-btn d-none d-lg-flex" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearchMobile" aria-controls="siteSearchMobile" aria-expanded="false">
+            <i class="bi bi-search" aria-hidden="true"></i><span>搜尋</span>
+          </button>
+          <div class="site-rail-foot">
+            <a class="site-rail-btn site-propose" href="index.html#propose"><i class="bi bi-plus-square" aria-hidden="true"></i><span>我要提案</span></a>
+            <a class="site-avatar d-none d-lg-inline-flex" href="account.html" aria-label="我的島造（陳柏宇）">
+              <img class="avatar" src="images/proposer-avatar.jpg" alt="" width="40" height="40">
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <!-- 搜尋面板：控制欄的放大鏡切換；≥ 992px 浮在控制欄右側上方（不推擠版面），< 992px 浮在頂部橫列下方 -->
+      <div id="siteSearchMobile" class="collapse site-search-panel">
+        <form class="site-search" role="search" action="projects.html">
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <input class="form-control" type="search" name="q" placeholder="搜尋專案或提案者" aria-label="搜尋專案或提案者">
+          <button class="btn btn-primary" type="submit">搜尋</button>
+        </form>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!--
+        首頁共用寫法
+        - 文案逐字取自主題的 CONTENT.md §2；Notion 沒寫的介面文字（「看這個專案」「看全部專案」）取自附錄 B.6
+        - 數字與單位之間用不換行空白（1,042&nbsp;人、12&nbsp;天）；金額、達成率、人數用 <data value>
+        - 長標題在詞組之間放 <wbr>，配合 .text-phrase 只在這些位置換行
+        - 首頁是全站唯一的置中構圖（Hero）；其他區塊標題一律靠左，左側一道充能短直線
+      -->
+
+      <!--
+        區塊一：首屏視覺與品牌宣言
+        Hero 置中（網格紋理＋頂部冷藍光暈）：H1 兩行 → 副標 → 兩顆按鈕
+        下方一台寬 10 欄的「任務主控台」（Hero 專案卡，帆布包）：
+          ≥ 992px：左 5 主視覺 16:9＋名稱＋提案者｜右 7 讀數格（目前募得 XL、目標、達成率 L、贊助人數、剩餘天數）
+                   底部一整條 L 充能條（超額，刻度 40.5%）＋「看這個專案」＋追蹤
+          < 992px：靠左單欄：圖 → 名稱 → 金額 → 充能條 → 3 格讀數 → 按鈕（DOM 順序就是手機順序，桌機用 grid 排位置）
+        Notion 指定的五項資料（名稱、達成 247%、NT$ 1,235,600／目標 NT$ 500,000、1,042 人贊助、剩 12 天）都在讀數格裡
+      -->
+      <section class="home-hero" aria-labelledby="home-hero-title">
+        <div class="container">
+          <div class="home-hero-intro">
+            <h1 id="home-hero-title" class="home-hero-title"><span>好東西不必</span><span>等大公司做。</span></h1>
+            <p class="home-hero-lead">島造只收說得出產地、講得清排程的提案。你支持的每一筆錢，都看得到它變成什麼。</p>
+            <div class="home-hero-actions">
+              <a class="btn btn-primary btn-lg" href="projects.html">探索募資中的專案</a>
+              <a class="btn btn-outline-sky btn-lg" href="#propose">我要提案</a>
+            </div>
+          </div>
+
+          <div class="row justify-content-center">
+            <div class="col-xl-10">
+              <article class="console home-console panel panel-strip is-live hud" aria-labelledby="hero-card-title">
+                <div class="console-head">
+                  <span class="badge-state is-live"><span class="status-dot" aria-hidden="true"></span>募資中</span>
+                  <span class="console-head-meta">設計生活</span>
+                </div>
+
+                <div class="console-body home-console-grid">
+                  <div class="home-console-media">
+                    <div class="home-console-photo">
+                      <img src="images/hero-canvas-bag.jpg" alt="原胚色帆布通勤包放在布作工房的工作檯上" width="1600" height="1066" fetchpriority="high">
+                    </div>
+                    <h2 id="hero-card-title" class="home-console-title text-phrase">一只走十年的<wbr>台南帆布包</h2>
+                    <p class="home-console-maker">布作工房 第三代</p>
+                  </div>
+
+                  <dl class="readouts home-console-amount">
+                    <div class="readout">
+                      <dt class="label">目前募得</dt>
+                      <dd class="readout-value readout-xl readout-sky"><data value="1235600">NT$ 1,235,600</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目標</dt>
+                      <dd class="readout-value readout-xs"><data value="500000">NT$ 500,000</data></dd>
+                    </div>
+                  </dl>
+
+                  <!-- L 充能條：超額（247%），目標刻度在 40.5%（CONTENT 附錄 B.5）；裝飾，數字已在讀數格 -->
+                  <div class="charge-scale home-console-charge" style="--target: 40.5%" aria-hidden="true">
+                    <span class="charge-marker">目標</span>
+                    <div class="charge charge-l is-over"></div>
+                    <div class="charge-ticks"><span>0</span><span class="is-target">100%</span><span class="is-end">247%</span></div>
+                  </div>
+
+                  <dl class="readouts home-console-stats">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value readout-l"><data value="247">247%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">贊助人數</dt>
+                      <dd class="readout-value"><data value="1042">1,042</data><span class="unit">人贊助</span></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">剩餘天數</dt>
+                      <dd class="readout-value"><span class="unit">剩</span><data value="12">12</data><span class="unit">天</span></dd>
+                    </div>
+                  </dl>
+
+                  <div class="home-console-actions">
+                    <a class="btn btn-primary btn-lg" href="project.html">看這個專案<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    <button class="btn btn-ghost btn-lg btn-icon btn-follow" type="button" aria-pressed="false" aria-label="追蹤專案">
+                      <i class="bi bi-heart" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!--
+        區塊二：品牌核心痛點解決
+        一條橫向面板切 4 格（不是 4 張分開的卡）：40px 切角圖示框 → h3 → 說明，格間直立 1px 線
+        < 576px 1 欄、576px 起 2 欄、992px 起 4 欄；Notion 的 emoji（🏭📅📊🛡️）換成 Bootstrap Icons
+      -->
+      <section class="section home-values" aria-labelledby="home-values-title">
+        <div class="container">
+          <div class="section-heading">
+            <div>
+              <h2 id="home-values-title" class="text-phrase">為什麼在島造<wbr>贊助比較放心？</h2>
+            </div>
+          </div>
+          <ul class="value-strip">
+            <li class="value-cell">
+              <span class="cut-box" aria-hidden="true"><i class="bi bi-buildings"></i></span>
+              <h3 class="value-title">產地與工廠公開</h3>
+              <p>每個專案都必須揭露材料來源與生產夥伴，查得到才上得了架。</p>
+            </li>
+            <li class="value-cell">
+              <span class="cut-box" aria-hidden="true"><i class="bi bi-calendar2-check"></i></span>
+              <h3 class="value-title">排程寫成合約</h3>
+              <p>設計、打樣、生產、出貨四個里程碑公開上牆，逾期會主動通知你。</p>
+            </li>
+            <li class="value-cell">
+              <span class="cut-box" aria-hidden="true"><i class="bi bi-graph-up"></i></span>
+              <h3 class="value-title">金流進度透明</h3>
+              <p>募資金額、贊助人數、剩餘天數即時更新，數字不經人工修改。</p>
+            </li>
+            <li class="value-cell">
+              <span class="cut-box" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+              <h3 class="value-title">未達標全額退</h3>
+              <p>募資期滿未達目標金額，款項自動原路退回，不收任何手續費。</p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!--
+        區塊三：專案分類與主題策展（4 張 4:5 卡；手機也維持 2 欄）
+        圖片滿版、底部疊一塊深色半透明讀數條：分類名 → h3 情境主標 → 進行中件數、累積金額（所有寬度常駐顯示）
+        hover／focus 只換框線色與圖片亮度，尺寸不變
+      -->
+      <section id="categories" class="section pt-0" aria-labelledby="home-categories-title">
+        <div class="container">
+          <div class="section-heading">
+            <div>
+              <h2 id="home-categories-title">你想讓什麼被做出來？</h2>
+              <p>從一只包到一部紀錄片，挑一個你願意等的東西。</p>
+            </div>
+            <a class="btn-text d-none d-sm-inline-flex" href="projects.html">瀏覽全部分類<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          </div>
+
+          <div class="row row-cols-2 row-cols-lg-4 g-3 g-lg-5">
+            <div class="col">
+              <a class="category-card" href="projects.html">
+                <div class="category-card-media"><img src="images/category-design-living.jpg" alt="" width="1066" height="1600"></div>
+                <div class="category-card-panel">
+                  <p class="category-card-name">設計生活</p>
+                  <h3 class="category-card-title text-phrase">用得久一點的<wbr>日常物</h3>
+                  <p class="category-card-stats">
+                    <span>進行中 <strong class="num-display">24</strong>&nbsp;件</span>
+                    <span>累積 <strong class="num-display">NT$ 8,240</strong>&nbsp;萬</span>
+                  </p>
+                </div>
+              </a>
+            </div>
+            <div class="col">
+              <a class="category-card" href="projects.html">
+                <div class="category-card-media"><img src="images/category-hardware.jpg" alt="" width="1066" height="1600"></div>
+                <div class="category-card-panel">
+                  <p class="category-card-name">科技硬體</p>
+                  <h3 class="category-card-title text-phrase">台灣做得出來的<wbr>硬體</h3>
+                  <p class="category-card-stats">
+                    <span>進行中 <strong class="num-display">11</strong>&nbsp;件</span>
+                    <span>累積 <strong class="num-display">NT$ 1.2</strong>&nbsp;億</span>
+                  </p>
+                </div>
+              </a>
+            </div>
+            <div class="col">
+              <a class="category-card" href="projects.html">
+                <div class="category-card-media"><img src="images/category-publishing.jpg" alt="" width="1066" height="1600"></div>
+                <div class="category-card-panel">
+                  <p class="category-card-name">出版與影像</p>
+                  <h3 class="category-card-title text-phrase">值得被印出來的<wbr>故事</h3>
+                  <p class="category-card-stats">
+                    <span>進行中 <strong class="num-display">18</strong>&nbsp;件</span>
+                    <span>累積 <strong class="num-display">NT$ 2,760</strong>&nbsp;萬</span>
+                  </p>
+                </div>
+              </a>
+            </div>
+            <div class="col">
+              <a class="category-card" href="projects.html">
+                <div class="category-card-media"><img src="images/category-social-design.jpg" alt="" width="1066" height="1600"></div>
+                <div class="category-card-panel">
+                  <p class="category-card-name">社會設計</p>
+                  <h3 class="category-card-title text-phrase">讓某些人<wbr>日子好過一點</h3>
+                  <p class="category-card-stats">
+                    <span>進行中 <strong class="num-display">9</strong>&nbsp;件</span>
+                    <span>累積 <strong class="num-display">NT$ 1,480</strong>&nbsp;萬</span>
+                  </p>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <div class="home-more-categories">
+            <p class="label mb-0">其他分類</p>
+            <ul class="list-unstyled d-flex flex-wrap gap-2 mb-0">
+              <li><a class="tag" href="projects.html">食品飲料</a></li>
+              <li><a class="tag" href="projects.html">遊戲桌遊</a></li>
+              <li><a class="tag" href="projects.html">時尚服飾</a></li>
+              <li><a class="tag" href="projects.html">空間與地方</a></li>
+            </ul>
+            <a class="btn-text d-sm-none" href="projects.html">瀏覽全部分類<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          </div>
+        </div>
+      </section>
+
+      <!--
+        區塊四：熱門與即將結束的專案（本頁最重要的轉換區：$ti-900 交替區塊）
+        分頁籤是方角分段控制（Bootstrap Tab）；各分頁的卡片見 CONTENT.md 附錄 B.2
+        便當格 .bento：≥ 1200px 3 欄、第 1 張大卡跨 2 欄 2 列（右側兩張小卡主視覺 21:9，大卡整張在一個視窗高內）；768–1199px 2 欄（大卡跨 2 欄，落單的最後一張也跨 2 欄）；< 768px 1 欄
+        剩 ≤ 7 天的專案（OrbitLight 5 天、好握餐具 3 天、街屋立面 7 天）在圖片右上加時間警示徽章
+      -->
+      <section id="featured" class="section section-alt" aria-labelledby="home-featured-title">
+        <div class="container">
+          <div class="section-heading">
+            <div>
+              <h2 id="home-featured-title">正在發生的提案</h2>
+              <p>數字每分鐘更新，倒數七天內的專案會標上提醒。</p>
+            </div>
+            <a class="btn-text" href="projects.html">看全部專案<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          </div>
+
+          <div class="home-tabs bleed-x">
+            <ul class="nav seg" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-hot" data-bs-toggle="tab" data-bs-target="#pane-hot" type="button" role="tab" aria-controls="pane-hot" aria-selected="true">熱門中</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-ending" data-bs-toggle="tab" data-bs-target="#pane-ending" type="button" role="tab" aria-controls="pane-ending" aria-selected="false">即將結束</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-new" data-bs-toggle="tab" data-bs-target="#pane-new" type="button" role="tab" aria-controls="pane-new" aria-selected="false">最新上架</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-funded" data-bs-toggle="tab" data-bs-target="#pane-funded" type="button" role="tab" aria-controls="pane-funded" aria-selected="false">已達標</button>
+              </li>
+            </ul>
+          </div>
+
+          <div class="tab-content">
+            <!-- 熱門中（預設）：Notion 的 4 個推薦例在前，再補 2 件；便當格＝第 1 張大卡跨 2 欄 2 列、右側 2 張小卡、第 3 列 3 張 -->
+            <div class="tab-pane fade show active" id="pane-hot" role="tabpanel" aria-labelledby="tab-hot" tabindex="0">
+              <div class="bento">
+              <article class="project-card panel panel-strip is-live is-feature">
+                <div class="project-card-media">
+                  <img src="images/project-01-canvas-bag.jpg" alt="原胚、墨綠、炭黑三色帆布通勤包" width="1600" height="1066">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">設計生活</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">一只走十年的<wbr>台南帆布包</a></h3>
+                  <p class="project-card-maker">布作工房 第三代</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="247">247%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="1235600">NT$ 1,235,600</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge is-over" style="--target: 40.5%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="1042">1,042</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="12">12</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              <article class="project-card panel panel-strip is-live">
+                <div class="project-card-media">
+                  <img src="images/project-02-orbitlight.jpg" alt="磁吸底座與多支燈管模組組成的桌上照明" width="1600" height="1066">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">科技硬體</span>
+                        <span class="badge-state is-warn"><i class="bi bi-alarm" aria-hidden="true"></i>剩 5&nbsp;天</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">OrbitLight <wbr>模組化<wbr>桌上照明系統</a></h3>
+                  <p class="project-card-maker">微光製造所</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="586">586%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="5274000">NT$ 5,274,000</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge is-over" style="--target: 17.1%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="2318">2,318</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="5">5</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              <article class="project-card panel panel-strip is-live">
+                <div class="project-card-media">
+                  <img src="images/project-03-documentary.jpg" alt="遠洋漁船甲板上整理漁網的漁工與拍攝中的攝影機" width="1600" height="1066">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">出版與影像</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">《海的另一邊》<wbr>遠洋漁工紀錄片</a></h3>
+                  <p class="project-card-maker">第三視角工作室</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="68">68%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="680000">NT$ 680,000</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge" style="--fund: 68%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="497">497</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="21">21</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              <article class="project-card panel panel-strip is-live">
+                <div class="project-card-media">
+                  <img src="images/project-04-grip-cutlery.jpg" alt="加粗矽膠握柄的湯匙、叉子與刀" width="1600" height="1066">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">社會設計</span>
+                        <span class="badge-state is-warn"><i class="bi bi-alarm" aria-hidden="true"></i>剩 3&nbsp;天</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">好握餐具｜<wbr>為手部退化設計的<wbr>一套餐具</a></h3>
+                  <p class="project-card-maker">共生設計實驗室</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="134">134%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="402000">NT$ 402,000</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge is-over" style="--target: 74.6%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="613">613</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="3">3</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              <article class="project-card panel panel-strip is-live">
+                <div class="project-card-media">
+                  <img src="images/project-05-bamboo-notebook.jpg" alt="竹炭染色布封面的筆記本與平攤的再生紙內頁" width="1600" height="1066">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">設計生活</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">寫了會回來的<wbr>竹纖維筆記本</a></h3>
+                  <p class="project-card-maker">再生紙研所</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="159">159%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="318400">NT$ 318,400</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge is-over" style="--target: 62.8%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="886">886</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="9">9</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              <article class="project-card panel panel-strip is-live">
+                <div class="project-card-media">
+                  <img src="images/project-06-island-boardgame.jpg" alt="手繪台灣原生動植物卡牌與棲地板塊的桌遊" width="1600" height="1066">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">遊戲桌遊</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">島嶼生態｜<wbr>台灣原生種<wbr>策略桌遊</a></h3>
+                  <p class="project-card-maker">山貓遊戲設計</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="307">307%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="1847500">NT$ 1,847,500</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge is-over" style="--target: 32.5%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="1566">1,566</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="16">16</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              </div>
+            </div>
+
+            <!-- 即將結束：剩餘 7 天內，依天數由少到多；1 大 2 小 -->
+            <div class="tab-pane fade" id="pane-ending" role="tabpanel" aria-labelledby="tab-ending" tabindex="0">
+              <div class="bento">
+              <article class="project-card panel panel-strip is-live is-feature">
+                <div class="project-card-media">
+                  <img src="images/project-04-grip-cutlery.jpg" alt="加粗矽膠握柄的湯匙、叉子與刀" width="1600" height="1066" loading="lazy">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">社會設計</span>
+                        <span class="badge-state is-warn"><i class="bi bi-alarm" aria-hidden="true"></i>剩 3&nbsp;天</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">好握餐具｜<wbr>為手部退化設計的<wbr>一套餐具</a></h3>
+                  <p class="project-card-maker">共生設計實驗室</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="134">134%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="402000">NT$ 402,000</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge is-over" style="--target: 74.6%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="613">613</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="3">3</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              <article class="project-card panel panel-strip is-live">
+                <div class="project-card-media">
+                  <img src="images/project-02-orbitlight.jpg" alt="磁吸底座與多支燈管模組組成的桌上照明" width="1600" height="1066" loading="lazy">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">科技硬體</span>
+                        <span class="badge-state is-warn"><i class="bi bi-alarm" aria-hidden="true"></i>剩 5&nbsp;天</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">OrbitLight <wbr>模組化<wbr>桌上照明系統</a></h3>
+                  <p class="project-card-maker">微光製造所</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="586">586%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="5274000">NT$ 5,274,000</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge is-over" style="--target: 17.1%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="2318">2,318</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="5">5</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              <article class="project-card panel panel-strip is-live">
+                <div class="project-card-media">
+                  <img src="images/project-08-street-facades.jpg" alt="攤開的手繪台灣街屋立面圖集與測繪工具" width="1600" height="1066" loading="lazy">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">出版與影像</span>
+                        <span class="badge-state is-warn"><i class="bi bi-alarm" aria-hidden="true"></i>剩 7&nbsp;天</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">街屋立面｜<wbr>台灣老屋<wbr>測繪圖集</a></h3>
+                  <p class="project-card-maker">測繪筆記</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="136">136%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="1094200">NT$ 1,094,200</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge is-over" style="--target: 73.1%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="724">724</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="7">7</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              </div>
+            </div>
+
+            <!-- 最新上架：剩餘天數最多的 3 件；1 大 2 小 -->
+            <div class="tab-pane fade" id="pane-new" role="tabpanel" aria-labelledby="tab-new" tabindex="0">
+              <div class="bento">
+              <article class="project-card panel panel-strip is-live is-feature">
+                <div class="project-card-media">
+                  <img src="images/project-07-coffee-cup.jpg" alt="咖啡渣壓製的隨行杯與一小堆咖啡渣" width="1600" height="1066" loading="lazy">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">食品飲料</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">回到土裡的<wbr>咖啡渣杯</a></h3>
+                  <p class="project-card-maker">循環物料實驗室</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="47">47%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="212000">NT$ 212,000</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge" style="--fund: 47.1%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="388">388</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="28">28</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              <article class="project-card panel panel-strip is-live">
+                <div class="project-card-media">
+                  <img src="images/project-03-documentary.jpg" alt="遠洋漁船甲板上整理漁網的漁工與拍攝中的攝影機" width="1600" height="1066" loading="lazy">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">出版與影像</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">《海的另一邊》<wbr>遠洋漁工紀錄片</a></h3>
+                  <p class="project-card-maker">第三視角工作室</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="68">68%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="680000">NT$ 680,000</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge" style="--fund: 68%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="497">497</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="21">21</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              <article class="project-card panel panel-strip is-live">
+                <div class="project-card-media">
+                  <img src="images/project-06-island-boardgame.jpg" alt="手繪台灣原生動植物卡牌與棲地板塊的桌遊" width="1600" height="1066" loading="lazy">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">遊戲桌遊</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">島嶼生態｜<wbr>台灣原生種<wbr>策略桌遊</a></h3>
+                  <p class="project-card-maker">山貓遊戲設計</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="307">307%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="1847500">NT$ 1,847,500</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge is-over" style="--target: 32.5%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="1566">1,566</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="16">16</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              </div>
+            </div>
+
+            <!-- 已達標：達成率 ≥ 100%，由高到低；便當格同熱門中 -->
+            <div class="tab-pane fade" id="pane-funded" role="tabpanel" aria-labelledby="tab-funded" tabindex="0">
+              <div class="bento">
+              <article class="project-card panel panel-strip is-live is-feature">
+                <div class="project-card-media">
+                  <img src="images/project-02-orbitlight.jpg" alt="磁吸底座與多支燈管模組組成的桌上照明" width="1600" height="1066" loading="lazy">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">科技硬體</span>
+                        <span class="badge-state is-warn"><i class="bi bi-alarm" aria-hidden="true"></i>剩 5&nbsp;天</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">OrbitLight <wbr>模組化<wbr>桌上照明系統</a></h3>
+                  <p class="project-card-maker">微光製造所</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="586">586%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="5274000">NT$ 5,274,000</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge is-over" style="--target: 17.1%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="2318">2,318</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="5">5</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              <article class="project-card panel panel-strip is-live">
+                <div class="project-card-media">
+                  <img src="images/project-06-island-boardgame.jpg" alt="手繪台灣原生動植物卡牌與棲地板塊的桌遊" width="1600" height="1066" loading="lazy">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">遊戲桌遊</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">島嶼生態｜<wbr>台灣原生種<wbr>策略桌遊</a></h3>
+                  <p class="project-card-maker">山貓遊戲設計</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="307">307%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="1847500">NT$ 1,847,500</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge is-over" style="--target: 32.5%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="1566">1,566</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="16">16</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              <article class="project-card panel panel-strip is-live">
+                <div class="project-card-media">
+                  <img src="images/project-01-canvas-bag.jpg" alt="原胚、墨綠、炭黑三色帆布通勤包" width="1600" height="1066" loading="lazy">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">設計生活</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">一只走十年的<wbr>台南帆布包</a></h3>
+                  <p class="project-card-maker">布作工房 第三代</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="247">247%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="1235600">NT$ 1,235,600</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge is-over" style="--target: 40.5%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="1042">1,042</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="12">12</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              <article class="project-card panel panel-strip is-live">
+                <div class="project-card-media">
+                  <img src="images/project-05-bamboo-notebook.jpg" alt="竹炭染色布封面的筆記本與平攤的再生紙內頁" width="1600" height="1066" loading="lazy">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">設計生活</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">寫了會回來的<wbr>竹纖維筆記本</a></h3>
+                  <p class="project-card-maker">再生紙研所</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="159">159%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="318400">NT$ 318,400</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge is-over" style="--target: 62.8%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="886">886</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="9">9</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              <article class="project-card panel panel-strip is-live">
+                <div class="project-card-media">
+                  <img src="images/project-08-street-facades.jpg" alt="攤開的手繪台灣街屋立面圖集與測繪工具" width="1600" height="1066" loading="lazy">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">出版與影像</span>
+                        <span class="badge-state is-warn"><i class="bi bi-alarm" aria-hidden="true"></i>剩 7&nbsp;天</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">街屋立面｜<wbr>台灣老屋<wbr>測繪圖集</a></h3>
+                  <p class="project-card-maker">測繪筆記</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="136">136%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="1094200">NT$ 1,094,200</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge is-over" style="--target: 73.1%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="724">724</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="7">7</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              <article class="project-card panel panel-strip is-live">
+                <div class="project-card-media">
+                  <img src="images/project-04-grip-cutlery.jpg" alt="加粗矽膠握柄的湯匙、叉子與刀" width="1600" height="1066" loading="lazy">
+                  <div class="project-card-flags">
+                    <span class="tag tag-overlay">社會設計</span>
+                        <span class="badge-state is-warn"><i class="bi bi-alarm" aria-hidden="true"></i>剩 3&nbsp;天</span>
+                  </div>
+                </div>
+                <div class="project-card-body">
+                  <h3 class="project-card-title text-phrase"><a class="stretched-link" href="project.html">好握餐具｜<wbr>為手部退化設計的<wbr>一套餐具</a></h3>
+                  <p class="project-card-maker">共生設計實驗室</p>
+                  <dl class="readouts project-card-readouts">
+                    <div class="readout">
+                      <dt class="label">達成率</dt>
+                      <dd class="readout-value"><data value="134">134%</data></dd>
+                    </div>
+                    <div class="readout">
+                      <dt class="label">目前金額</dt>
+                      <dd class="readout-value amount-value"><data value="402000">NT$ 402,000</data></dd>
+                    </div>
+                  </dl>
+                  <div class="charge is-over" style="--target: 74.6%" aria-hidden="true"></div>
+                  <ul class="project-card-meta">
+                    <li><data value="613">613</data>&nbsp;人贊助</li>
+                    <li>剩 <data value="3">3</data>&nbsp;天</li>
+                  </ul>
+                </div>
+              </article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!--
+        區塊五：贊助者回饋與平台保障（桌機 6：6；< 992px 上下排，評價在上）
+        左：評價卡做成「通訊紀錄」（1:1 實拍｜引言＋Mono 署名＋ok「已收到回饋」；手機也維持圖左文右 4：8）
+        右：三項平台保障（切角圖示框＋h3＋說明，列間髮絲線）
+        底部：給提案者的轉換帶 #propose（深色冷藍漸層面板，左 h2、右主要按鈕；< 992px 上下排、按鈕靠左）
+      -->
+      <section class="section" aria-labelledby="home-proof-title">
+        <div class="container">
+          <div class="section-heading">
+            <div>
+              <h2 id="home-proof-title" class="text-phrase">已經收到的人怎麼說 <wbr>＆ 平台保障</h2>
+            </div>
+          </div>
+
+          <div class="row g-6 g-xl-7">
+            <div class="col-lg-6">
+              <div class="d-grid gap-4">
+                <figure class="comm-card panel">
+                  <img class="comm-card-photo" src="images/ugc-canvas-bag.jpg" alt="贊助者拍攝的墨綠色帆布包通勤實拍" width="1200" height="1200">
+                  <p class="comm-card-badge"><span class="badge-state is-ok"><i class="bi bi-box-seam" aria-hidden="true"></i>已收到回饋</span></p>
+                  <blockquote class="comm-card-quote">
+                    <p>「去年贊助的帆布包，說三月出貨就三月到，連打樣延期都有發公告，這很難得。」</p>
+                  </blockquote>
+                  <figcaption class="comm-card-author">@daily_carry_tw</figcaption>
+                </figure>
+                <figure class="comm-card panel">
+                  <img class="comm-card-photo" src="images/ugc-desk-light.jpg" alt="贊助者拍攝的桌上照明實際使用畫面" width="1200" height="1200">
+                  <p class="comm-card-badge"><span class="badge-state is-ok"><i class="bi bi-box-seam" aria-hidden="true"></i>已收到回饋</span></p>
+                  <blockquote class="comm-card-quote">
+                    <p>「第一次贊助硬體，看到工廠照片一週更新一次，心裡踏實很多。」</p>
+                  </blockquote>
+                  <figcaption class="comm-card-author">@desk_setup_lab</figcaption>
+                </figure>
+              </div>
+            </div>
+
+            <div class="col-lg-6">
+              <ul class="guarantee-list panel">
+                <li class="guarantee-item">
+                  <span class="cut-box" aria-hidden="true"><i class="bi bi-arrow-counterclockwise"></i></span>
+                  <div>
+                    <h3 class="guarantee-title">未達標全額退款</h3>
+                    <p>募資失敗不扣款、不收手續費，款項 7 個工作天內原路退回。</p>
+                  </div>
+                </li>
+                <li class="guarantee-item">
+                  <span class="cut-box" aria-hidden="true"><i class="bi bi-bell"></i></span>
+                  <div>
+                    <h3 class="guarantee-title">排程逾期主動告知</h3>
+                    <p>任一里程碑逾期超過 14 天，平台會代為通知所有贊助者並要求說明。</p>
+                  </div>
+                </li>
+                <li class="guarantee-item">
+                  <span class="cut-box" aria-hidden="true"><i class="bi bi-search"></i></span>
+                  <div>
+                    <h3 class="guarantee-title">上架前人工審核</h3>
+                    <p>每個專案都經過產地、樣品與生產能力查核後才開放募資。</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 給提案者的轉換帶：「了解如何提案」本次沒有目的頁，用 button -->
+          <div id="propose" class="propose-band">
+            <h2 class="propose-band-title text-phrase">你手上也有一個<wbr>做到一半的東西嗎？</h2>
+            <button class="btn btn-primary btn-lg" type="button">了解如何提案<i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="row gy-7">
+          <div class="col-lg-4">
+            <a class="site-brand site-brand-footer" href="index.html" aria-label="島造 ISLANDMAKE 首頁">
+              <svg class="site-brand-mark" viewBox="0 0 40 40" width="40" height="40" aria-hidden="true">
+                <path class="site-brand-plate" d="M9 .5h30.5v30.5l-8.5 8.5H.5V9z"/>
+                <path class="site-brand-orbit" d="M5.5 27.5C10 18 21.5 10.5 35 11"/>
+                <path class="site-brand-island" d="M9.5 30.5c2.2-4.6 5.6-7.6 9.4-7.9 2.2-.2 3.2 1.3 5.1 1.2 1.9-.1 3.1-1.6 5.2-1.1 1.6.4 2 2 1.1 3.5-1.6 2.7-5.6 4.6-10.6 5-4 .3-7.6-.1-10.2-.7z"/>
+                <circle class="site-brand-node" cx="35" cy="11" r="2.2"/>
+              </svg>
+              <span class="site-brand-text" aria-hidden="true">
+                <span class="site-brand-name">島造</span>
+                <span class="site-brand-en">ISLANDMAKE</span>
+              </span>
+            </a>
+            <p class="site-footer-lead">
+              專注台灣在地設計與製造的群眾募資平台。不做快消、不做轉賣，只收「說得出材料從哪來、工廠在哪裡、什麼時候能交到你手上」的提案。
+            </p>
+          </div>
+          <!-- 三組連結，組與組之間一道直立髮絲線；還沒有頁面的連結是不帶 href 的佔位連結 -->
+          <div class="col-lg-8">
+            <div class="site-footer-groups">
+              <div class="site-footer-group">
+                <h2 class="site-footer-title">贊助者</h2>
+                <ul class="site-footer-links">
+                  <li><a href="projects.html">探索專案</a></li>
+                  <li><a href="account.html#backings">我的贊助紀錄</a></li>
+                  <li><a>追蹤中的專案</a></li>
+                  <li><a href="project.html#faq">贊助常見問題</a></li>
+                </ul>
+              </div>
+              <div class="site-footer-group">
+                <h2 class="site-footer-title">提案者</h2>
+                <ul class="site-footer-links">
+                  <li><a href="index.html#propose">我要提案</a></li>
+                  <li><a href="account.html#my-projects">提案管理</a></li>
+                  <li><a href="account.html#dashboard">募資數據</a></li>
+                  <li><a>排程與出貨規範</a></li>
+                </ul>
+              </div>
+              <div class="site-footer-group">
+                <h2 class="site-footer-title">平台</h2>
+                <ul class="site-footer-links">
+                  <li><a>關於島造</a></li>
+                  <li><a>審核標準</a></li>
+                  <li><a>退款政策</a></li>
+                  <li><a>聯絡我們</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 島造 ISLANDMAKE 在地製造提案平台｜<wbr>本站為課程設計稿範例，專案與金額皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

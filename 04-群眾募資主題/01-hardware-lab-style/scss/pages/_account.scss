@@ -1,0 +1,640 @@
+// ============================================================
+// 個人頁 account.html
+// 構圖：操作員識別列（頭像＋青空細外環、H1、認證提案者、角色切換）
+//   → ★ 橫向 sticky 模組列（取代側欄；兩組「贊助｜提案」；ScrollSpy）→ 全寬內容一頁長捲動：
+//   我的贊助紀錄（4 讀數格 → 分段篩選 → ≥ 1200 兩欄任務卡）→ 我的提案（全寬狀態看板）
+//   → 募資數據（4 讀數格 → ★ 圖表 2 主螢幕 → 圖表 1 同軸對齊 → 圖表 3 橫條｜表格）→ 收件資訊＋帳號設定 7：5
+// < 992：模組列換成頂部 Dropdown；全部單欄；統計 2 × 2
+// ============================================================
+
+// ---------- 角色切換：同一個版型、兩種角色（WIREFRAME_SPEC §5；js/main.js 第 6 項）----------
+[data-role="backer"] .for-proposer,
+[data-role="proposer"] .for-backer { display: none !important; }
+
+// ---------- 操作員識別列 ----------
+.ac-id-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: map-get($spacers, 5) map-get($spacers, 7);
+  margin-top: map-get($spacers, 4);
+}
+.ac-id {
+  display: flex;
+  align-items: center;
+  gap: map-get($spacers, 4);
+  min-width: 0;
+
+  @include media-breakpoint-up(md) { gap: map-get($spacers, 5); }
+
+  .avatar { flex-shrink: 0; }
+}
+.ac-id-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .75rem;
+  margin: 0;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+.ac-id-name {
+  color: $fg;
+  font-size: 1rem;
+  font-weight: $font-weight-medium;
+}
+.ac-role {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  @include media-breakpoint-up(md) { align-items: flex-end; }
+}
+
+// ---------- ★ 橫向模組列（≥ 992 貼在視窗頂端）----------
+// 不放 HUD、不發光：目前區塊＝青空字＋下緣 2px 充能線；項目多時在列內橫捲（容器邊緣不出現捲軸）
+.ac-bar {
+  position: sticky;
+  top: 0;
+  z-index: $zindex-sticky;
+  border-bottom: 1px solid $line;
+  background-color: $ti-900;
+}
+// 9 個項目約需 1,100px：≥ 1400 一列排開；1200–1399 縮小項目內距後仍是一列；
+// 992–1199 放不下，兩組各佔一列（不藏項目，資訊常駐顯示）
+.ac-bar-scroll {
+  display: flex;
+  align-items: stretch;
+  gap: 0 map-get($spacers, 4);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+
+  @include media-breakpoint-only(lg) { flex-wrap: wrap; }
+  @include media-breakpoint-up(xxl) { column-gap: map-get($spacers, 5); }
+}
+.ac-bar-group {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: map-get($spacers, 2);
+
+  & + & {
+    padding-left: map-get($spacers, 4);
+    border-left: 1px solid $line;
+
+    @include media-breakpoint-only(lg) {
+      flex-basis: 100%;
+      padding-left: 0;
+      border-top: 1px solid $line;
+      border-left: 0;
+    }
+    @include media-breakpoint-up(xxl) { padding-left: map-get($spacers, 5); }
+  }
+}
+.ac-bar-label {
+  margin: 0;
+  padding: 0 .375rem;
+  border: 1px solid $line-strong;
+  border-radius: $border-radius-sm;
+  color: $fg-faint;
+  font-size: $small-font-size;
+  letter-spacing: .1em;
+  line-height: 1.6;
+}
+.ac-bar-nav {
+  flex-wrap: nowrap;
+
+  .nav-link {
+    --pad: .5rem;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    min-height: 3.5rem;
+    padding: 0 var(--pad);
+    color: $fg-muted;
+    font-size: .9375rem;
+    font-weight: $font-weight-medium;
+    letter-spacing: .04em;
+    white-space: nowrap;
+
+    &::after {
+      content: "";
+      position: absolute;
+      right: var(--pad);
+      bottom: -1px;
+      left: var(--pad);
+      height: 2px;
+      border-radius: $border-radius-xs;
+    }
+    &[href]:hover { color: $fg; }
+    &:focus-visible { outline: 0; box-shadow: inset 0 0 0 2px $sky-300; }
+    &.active {
+      color: $sky-300;
+
+      &::after { background: $grad-charge; }
+    }
+
+    @include media-breakpoint-only(lg) { min-height: 3rem; }
+    @include media-breakpoint-up(xxl) { --pad: .75rem; }
+  }
+}
+// 未讀數：實心青空小方塊（和 .tab-count 的淡數字區分）
+.ac-unread {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding-inline: .25rem;
+  border-radius: $border-radius-sm;
+  background-color: $sky-400;
+  color: $btn-ink;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+// < 992：頂部下拉（不 sticky）
+.ac-dropdown {
+  margin-top: map-get($spacers, 5);
+
+  .dropdown-toggle {
+    justify-content: space-between;
+    min-height: 3rem;
+  }
+  .dropdown-item {
+    gap: .5rem;
+
+    .tab-count,
+    .ac-unread { margin-left: auto; }
+  }
+}
+
+// ---------- 內容區 ----------
+.ac-body { padding-bottom: $section-y; }
+.ac-demo { margin-top: map-get($spacers, 5); }
+.ac-section {
+  padding-block: map-get($spacers, 7);
+
+  & + & { border-top: 1px solid $line; }
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 8);
+    scroll-margin-top: 5rem; // 992–1199 模組列兩列（97px）
+  }
+  @include media-breakpoint-up(xl) {
+    scroll-margin-top: 2.5rem; // 加上 html 的 scroll-padding 24px＝模組列（57px）下方
+  }
+}
+// 角色升級入口（一般會員）：模組列下方一條轉換帶
+.ac-upgrade {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 4) map-get($spacers, 5);
+  margin-top: map-get($spacers, 6);
+  padding: map-get($spacers, 5) $panel-pad;
+  border: 1px solid rgba($sky-400, .3);
+  border-radius: $border-radius-lg;
+  background: $grad-band;
+
+  @include media-breakpoint-up(lg) { padding-inline: map-get($spacers, 6); }
+}
+.ac-upgrade-title {
+  margin: 0;
+  font-size: $h3-font-size;
+  font-weight: $font-weight-medium;
+}
+
+// 統計列：Notion 的一行文字拆成 4 格，文字照原文、只放大數字；格線＝底色從 1px gap 露出來
+.ac-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0 0 map-get($spacers, 5);
+  padding: 0;
+  list-style: none;
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $line;
+  overflow: hidden;
+
+  @include media-breakpoint-up(lg) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  > li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 .375rem;
+    padding: .875rem .75rem;
+    background-color: $ti-850;
+    color: $fg-muted;
+    font-size: $font-size-sm;
+
+    @include media-breakpoint-up(sm) { padding-inline: 1rem; }
+    @include media-breakpoint-up(lg) { padding: 1rem 1.25rem; }
+  }
+  > li.is-ok {
+    color: $ok-ink;
+
+    .ac-stat-num { color: $ok-ink; }
+  }
+}
+.ac-stat-num {
+  color: $fg;
+  font-family: $font-family-numeric;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+  line-height: 1.3;
+  white-space: nowrap;
+
+  @include media-breakpoint-up(sm) { font-size: 1.375rem; }
+  @include media-breakpoint-up(xl) { font-size: 1.625rem; }
+}
+.ac-filter { margin-bottom: map-get($spacers, 5); }
+
+// ---------- 我的贊助紀錄：任務卡（≥ 1200 兩欄）----------
+// 上：縮圖 4:3＋名稱、提案者、方案｜中：$ti-900 狀態帶（徽章＋說明、募資中加 S 充能條）｜下：操作列
+.ac-missions {
+  display: grid;
+  gap: map-get($spacers, 4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: map-get($spacers, 5);
+  }
+}
+.ac-mission {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+.ac-mission-top {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: map-get($spacers, 4);
+  padding: $panel-pad;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 9rem minmax(0, 1fr);
+    gap: map-get($spacers, 5);
+  }
+  @include media-breakpoint-up(lg) { padding: $panel-pad-lg; }
+}
+.ac-mission-thumb img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+}
+.ac-mission-title {
+  margin-bottom: .125rem;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+
+  a {
+    color: $fg;
+    text-decoration: none;
+
+    &:hover {
+      color: $sky-300;
+      text-decoration: underline;
+      text-underline-offset: .25em;
+    }
+  }
+}
+.ac-mission-maker {
+  margin-bottom: .5rem;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+// 一行補充（方案｜金額｜日期）：項目之間 1px 直立髮絲線
+// 每一項前面都有分隔線，整列往左推一格再用 clip-path 裁掉：換行後每一行的開頭不會多一條線
+.ac-meta {
+  --sep: calc(1.25rem + 1px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: .125rem;
+  margin: 0 0 0 calc(-1 * var(--sep));
+  padding: 0;
+  list-style: none;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+  clip-path: inset(0 0 0 var(--sep));
+
+  > li {
+    display: inline-flex;
+    align-items: baseline;
+    gap: .25rem; // 文字與 Mono 數字之間（inline-flex 會吃掉空白）
+  }
+  > li::before {
+    content: "";
+    align-self: center;
+    width: 1px;
+    height: .875em;
+    margin: 0 .375rem 0 .625rem; // ＋gap .25rem＝左右各 .625rem
+    background-color: $line-strong;
+  }
+  .mono { color: $fg; }
+}
+.ac-mission-status {
+  display: grid;
+  flex: 1 0 auto;
+  align-content: start;
+  gap: .625rem;
+  padding: .875rem $panel-pad;
+  border-top: 1px solid $line;
+  background-color: $ti-900;
+
+  @include media-breakpoint-up(lg) { padding-inline: $panel-pad-lg; }
+}
+.ac-mission-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .875rem;
+}
+.ac-mission-note {
+  margin: 0;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+.ac-mission-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  padding: .75rem $panel-pad;
+  border-top: 1px solid $line;
+
+  @include media-breakpoint-up(lg) { padding-inline: $panel-pad-lg; }
+}
+.ac-cancel {
+  margin-left: auto;
+  font-size: $font-size-sm;
+}
+// 募資失敗 ‧ 已退款：整張卡降一階（更深的底、標題次要色、縮圖降透明度）
+.ac-mission.is-muted {
+  background-color: $ti-900;
+
+  .ac-mission-title a { color: $fg-muted; }
+  .ac-mission-title a:hover { color: $sky-300; }
+  .ac-mission-thumb img {
+    opacity: .5;
+    filter: grayscale(.6);
+  }
+  .ac-mission-status { background-color: $ti-950; }
+}
+
+// ---------- 我的提案：全寬狀態看板 ----------
+// 每列左緣 2px 狀態條；≥ 992 三段 5：4：3（徽章＋名稱｜數據或說明｜操作靠右）
+.ac-board {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $ti-850;
+  overflow: hidden;
+}
+.ac-board-row {
+  --tone: #{$line-strong};
+  position: relative;
+  display: grid;
+  gap: map-get($spacers, 4);
+  padding: map-get($spacers, 5) $panel-pad;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 2px;
+    background: var(--tone);
+  }
+  & + & { border-top: 1px solid $line; }
+
+  // wireframe 是 5：4：3；中段要放退件原因 Callout，這一套給中段多一點（4：5：3）
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 5fr) minmax(0, 3fr);
+    align-items: center;
+    gap: map-get($spacers, 6);
+    padding-inline: $panel-pad-lg;
+  }
+}
+.ac-board-row.is-live { --tone: #{linear-gradient(180deg, $sky-400, $blue-500)}; }
+.ac-board-row.is-warn { --tone: #{$warn-ink}; }
+.ac-board-row.is-ok   { --tone: #{$ok-ink}; }
+// 審核未通過：整列 err 框（退件原因在列表層就看得到）
+.ac-board-row.is-rejected {
+  --tone: #{$err-ink};
+  background-color: rgba($err-ink, .04);
+  box-shadow: inset 0 0 0 1px rgba($err-ink, .5);
+}
+// 草稿：整列降一階
+.ac-board-row.is-muted {
+  --tone: #{$control};
+  background-color: $ti-900;
+
+  .ac-board-title { color: $fg-muted; }
+}
+.ac-board-name {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .5rem;
+}
+.ac-board-title {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+}
+.ac-board-mid {
+  display: grid;
+  gap: .5rem;
+  min-width: 0;
+
+  .callout { margin: 0; }
+}
+.ac-board-figures {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .125rem .75rem;
+  margin: 0;
+
+  .mono { color: $fg-muted; font-size: $font-size-sm; }
+}
+.ac-board-missing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+.ac-board-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+
+  @include media-breakpoint-up(lg) { justify-content: flex-end; }
+}
+// 狀態示意：提案的募資失敗、已下架
+.ac-board-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: $panel-pad;
+
+  p { margin: 0; }
+  &.is-muted { background-color: $ti-900; }
+}
+
+// ---------- 募資數據 ----------
+.ac-period {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1.5rem;
+  margin-bottom: map-get($spacers, 5);
+}
+.ac-period-range {
+  margin: 0;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+// 4 讀數格：< 576 金額與達成率各佔一整列；≥ 1200 4 欄（992–1199 的 4 欄放不下 NT$ 1,235,600）
+.ac-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin: 0 0 map-get($spacers, 5);
+
+  @include media-breakpoint-down(sm) {
+    > :nth-child(-n+2) { grid-column: 1 / -1; }
+  }
+  @include media-breakpoint-up(lg) { gap: map-get($spacers, 4); }
+  @include media-breakpoint-up(xl) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  dd { margin: 0; }
+}
+.ac-tile-rate {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: start;
+  column-gap: .75rem;
+
+  > dt,
+  > dd { grid-column: 1; }
+  > .ac-tile-gauge {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    align-self: center;
+  }
+}
+.ac-gauge { width: 5.25rem; }
+
+// 圖表：主螢幕（圖表 2）與圖表 1 同一個 viewBox 寬、同一組 x 座標，日期上下對齊
+// SVG 文字是 viewBox 單位：依實際寬度調 --chart-fs，讓字級維持在 10.5–14px
+.ac-page .chart-card + .chart-card { margin-top: map-get($spacers, 5); }
+.ac-page .chart-svg.is-wide {
+  --chart-fs: 13px; // < 992：SVG 最小寬 760px，約 10.3px
+
+  @include media-breakpoint-up(lg) { --chart-fs: 14px; }  // 約 10.7px
+  @include media-breakpoint-up(xl) { --chart-fs: 13px; }  // 約 12.6px
+  @include media-breakpoint-up(xxl) { --chart-fs: 12px; } // 約 14px
+}
+// 圖表 3：≥ 1400 橫條｜表格並排（表格約需 520px）；表格收起時橫條佔滿
+.ac-bars {
+  @include media-breakpoint-up(xxl) {
+    display: flex;
+    align-items: flex-start;
+    gap: map-get($spacers, 6);
+
+    > .hbar-list {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    > .ac-bars-table { flex: 0 0 46%; }
+    .chart-table { margin-top: 0; }
+  }
+}
+.ac-insight { margin: map-get($spacers, 5) 0 0; }
+
+// ---------- 收件資訊＋帳號設定（≥ 992 7：5）----------
+.ac-address {
+  padding: $panel-pad;
+
+  @include media-breakpoint-up(lg) { padding: $panel-pad-lg; }
+
+  & + & { margin-top: map-get($spacers, 4); }
+}
+.ac-address-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  margin-bottom: map-get($spacers, 4);
+}
+.ac-address-tools {
+  display: flex;
+  gap: 1.25rem;
+}
+.ac-address-alt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: map-get($spacers, 4);
+}
+.ac-address-name {
+  margin-bottom: .25rem;
+  font-weight: $font-weight-medium;
+}
+.ac-address-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.ac-settings {
+  padding: $panel-pad;
+
+  @include media-breakpoint-up(lg) {
+    padding: $panel-pad-lg;
+    scroll-margin-top: 2.5rem;
+  }
+
+  & + .ac-settings,
+  & + .callout { margin-top: map-get($spacers, 4); }
+  .form-switch + .form-switch { margin-top: .5rem; }
+}
+.ac-settings-title {
+  margin-bottom: map-get($spacers, 4);
+  font-size: 1.0625rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.5;
+}
+legend.ac-settings-title {
+  float: left;
+  width: 100%;
+  padding: 0;
+}

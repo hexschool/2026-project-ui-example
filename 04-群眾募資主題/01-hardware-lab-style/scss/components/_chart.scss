@@ -1,0 +1,229 @@
+// ============================================================
+// 圖表卡 ChartCard（個人頁募資數據、Guideline 第 6 章）
+// 標題（h3）＋副標（期間 ‧ 單位）＋「切換表格檢視」＋圖表本體＋可展開的數據表
+// 規則：單一數列一色（青空折線＋冷藍淡面積）、禁止雙軸、格線 1px 實線退居背景、只有目標線是虛線並直接標註、
+//       只標端點與極值、每張圖都有表格檢視、單一數列不放圖例；圖表本身不發光
+//
+// 深色是預設；.is-light 是淺色底範例（#EEF3F8，Guideline 並排比較用）：不是自動反轉，是另選一組在淺色底可讀的顏色
+// SVG 裡不寫色碼，全部用 class，顏色由這裡的 CSS 變數決定
+//
+// <article class="chart-card panel" aria-labelledby="chart1-title">
+//   <div class="chart-card-head">
+//     <div><h3 id="chart1-title" class="chart-card-title">…</h3><p class="chart-card-sub">…</p></div>
+//     <button class="btn-text collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#chart1-table" aria-expanded="false" aria-controls="chart1-table">切換表格檢視</button>
+//   </div>
+//   <div class="chart-scroll"><svg class="chart-svg" viewBox="0 0 640 186" role="img" aria-label="…">…</svg></div>
+//   <div id="chart1-table" class="collapse"><div class="table-responsive chart-table"><table class="table table-lab table-sm">…</table></div></div>
+// </article>
+//
+// SVG 文字的大小是 viewBox 單位，會跟著圖表縮放：頁面可以依斷點改 --chart-fs，讓實際字級維持在 11–15px
+// （手機座標文字 ≥ 10px）。標註用 paint-order 描一圈底色，壓過格線時仍然清楚
+// ============================================================
+.chart-card {
+  --chart-line: #{$sky-400};
+  --chart-area: #{rgba($blue-500, .2)};
+  --chart-grid: #{$line};
+  --chart-base: #{$line-strong};
+  --chart-text: #{$fg-faint};
+  --chart-note: #{$fg};
+  --chart-halo: #{$ti-850};
+  --chart-point-bg: #{$ti-950};
+  --chart-target: #{$fg-muted};
+  --chart-bar: #{$sky-400};
+  min-width: 0; // 放在 grid／flex 裡時，不讓 SVG 的最小寬撐開整張卡
+  padding: $panel-pad;
+
+  @include media-breakpoint-up(lg) { padding: $panel-pad-lg; }
+}
+// 色值在 _variables.scss 的 $chart-light-*（Guideline 第 6 章的配色對照表照它寫）
+.chart-card.is-light {
+  --chart-line: #{$chart-light-line};
+  --chart-area: #{rgba($chart-light-line, .14)};
+  --chart-grid: #{$chart-light-grid};
+  --chart-base: #{$chart-light-base};
+  --chart-text: #{$chart-light-muted};
+  --chart-note: #{$chart-light-ink};
+  --chart-halo: #{$chart-light-bg};
+  --chart-point-bg: #{$chart-light-bg};
+  --chart-target: #{$chart-light-target};
+  --chart-bar: #{$chart-light-line};
+  border-color: $chart-light-grid;
+  background-color: $chart-light-bg;
+  color: $chart-light-ink;
+
+  .chart-card-title { color: $chart-light-ink; }
+  .chart-card-sub,
+  .hbar-label span { color: $chart-light-muted; }
+  .chart-screen {
+    --chart-halo: #{$chart-light-bg};
+    border-color: $chart-light-grid;
+    background-color: $chart-light-bg;
+  }
+
+  // 卡內的「切換表格檢視」與數據表也換成淺色組，不沿用深色頁面的冷藍連結與深色表頭
+  .btn-text { color: $chart-light-line; }
+  .btn-text:hover { color: $chart-light-ink; }
+  .btn-text:focus-visible { outline-color: $chart-light-line; }
+  .table-lab {
+    --#{$prefix}table-color: #{$chart-light-ink};
+    --#{$prefix}table-border-color: #{$chart-light-grid};
+    border-color: $chart-light-grid;
+    color: $chart-light-ink;
+
+    > thead th {
+      background-color: $chart-light-head;
+      color: $chart-light-ink;
+    }
+    > :not(caption) > * > * {
+      border-color: $chart-light-grid;
+      color: $chart-light-ink;
+    }
+  }
+}
+.chart-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  margin-bottom: map-get($spacers, 4);
+
+  .btn-text { flex-shrink: 0; }
+}
+.chart-card-title {
+  margin-bottom: .125rem;
+  font-size: 1.125rem;
+}
+.chart-card-sub {
+  margin: 0;
+  color: $fg-muted;
+  font-size: $small-font-size;
+}
+
+// 主螢幕：圖表外再包一層 $ti-900 內嵌面板（只給全寬的主圖用）
+.chart-screen {
+  padding: map-get($spacers, 4) map-get($spacers, 4) map-get($spacers, 3);
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $ti-900;
+  --chart-halo: #{$ti-900};
+}
+
+// < 768（.is-wide 是 < 992）SVG 有最小寬，只有圖卡內可以橫向捲動
+.chart-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+.chart-svg {
+  --chart-fs: 12px;
+  display: block;
+  width: 100%;
+  min-width: 600px;
+  height: auto;
+  overflow: visible;
+  font-family: $font-family-base;
+
+  @include media-breakpoint-up(md) { min-width: 0; }
+
+  text {
+    fill: var(--chart-text);
+    font-size: var(--chart-fs);
+  }
+}
+.chart-svg.is-wide {
+  @include media-breakpoint-down(lg) { min-width: 760px; }
+}
+.chart-svg .chart-x,
+.chart-svg .chart-y {
+  font-family: $font-family-monospace;
+}
+.chart-grid { stroke: var(--chart-grid); stroke-width: 1; }
+.chart-grid.is-base { stroke: var(--chart-base); }
+.chart-area { fill: var(--chart-area); }
+.chart-line {
+  fill: none;
+  stroke: var(--chart-line);
+  stroke-width: 2.25;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.chart-point {
+  fill: var(--chart-point-bg);
+  stroke: var(--chart-line);
+  stroke-width: 2.25;
+}
+.chart-target {
+  stroke: var(--chart-target);
+  stroke-width: 1.25;
+  stroke-dasharray: 6 5;
+}
+.chart-svg .chart-note {
+  fill: var(--chart-note);
+  font-weight: $font-weight-medium;
+  paint-order: stroke;
+  stroke: var(--chart-halo);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.chart-svg .chart-note.is-strong { font-family: $font-family-numeric; font-weight: 600; }
+.chart-svg .chart-note.is-target { fill: var(--chart-target); }
+
+// 圖表 3：HTML／CSS 橫條。長條最長＝欄寬扣掉數值的空間，其他依比例（--w：金額 ÷ 最大金額）
+// <ul class="hbar-list" aria-label="…">
+//   <li class="hbar-row">
+//     <p class="hbar-label"><strong>標準單入組</strong><span class="mono">612</span></p>
+//     <div class="hbar"><span class="hbar-fill" style="--w: 1"></span><span class="hbar-value">NT$ 1,395,360</span></div>
+//   </li>
+// </ul>
+.hbar-list {
+  display: grid;
+  gap: map-get($spacers, 4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hbar-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 .625rem;
+  margin-bottom: .375rem;
+  font-size: $font-size-sm;
+
+  strong { font-weight: $font-weight-medium; }
+  span { color: $fg-muted; }
+  span + span::before {
+    content: "‧";
+    margin-right: .625rem;
+  }
+}
+.hbar {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+}
+.hbar-fill {
+  flex: 0 0 calc((100% - 8rem) * var(--w));
+  min-width: 3px;
+  height: .875rem;
+  border-radius: 0 $border-radius-xs $border-radius-xs 0;
+  background-color: var(--chart-bar);
+}
+.hbar-value {
+  font-family: $font-family-numeric;
+  font-size: .9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+// 表格檢視
+.chart-table {
+  margin-top: map-get($spacers, 4);
+  max-height: 22rem;
+  overflow: auto;
+
+  .table { font-size: $font-size-sm; }
+  .table > :not(caption) > * > * { padding: .4375rem .75rem; }
+  th, td { white-space: nowrap; }
+  th[scope="row"] { font-weight: 400; }
+}

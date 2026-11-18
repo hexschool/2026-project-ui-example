@@ -1,0 +1,1244 @@
+// ============================================================
+// 全站基礎：字體、區塊節奏、按鈕、表單、焦點、共用小工具
+// 以及本風格的共用類別（用法寫在每段開頭的註解，README「共用類別」有總表）：
+//   .panel（遙測面板）、.panel-strip（上緣狀態條）、.hud（HUD 角括號）、.is-selected（選中發光）
+//   .charge（★ 充能條）、.readouts／.readout（讀數格）、.stat-tile（數據卡）
+//   .badge-state／.status-dot（狀態徽章）、.tag（標籤）、.callout（提示框）
+//   .chip（篩選標籤）、.seg（方角分段控制，當分頁籤用）、.cut-box（切角圖示框）
+//   .page-head（頁面標題區）、.section-heading（區塊標題列）、.title-mark（h2 前的充能短直線）
+//   .empty-state、.demo-state（設計稿狀態示意）
+// ============================================================
+
+// 固定深色（<html data-bs-theme="dark">）：原生捲軸、日期選擇器、表單控制項都走深色
+:root {
+  color-scheme: dark;
+  accent-color: $sky-400;
+}
+
+body {
+  letter-spacing: .02em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+
+  // ≥ 992：左側直立控制欄佔 88px，頁面內容（含頁尾）都在它右邊
+  @include media-breakpoint-up(lg) {
+    padding-left: $rail-width;
+  }
+}
+
+// 錨點與焦點不被頁首遮住：< 992 扣掉 60px 頂部橫列＋16px；≥ 992 沒有頂部頁首，只留 24px
+html {
+  scroll-padding-top: $header-height-sm + 16px;
+
+  @include media-breakpoint-up(lg) {
+    scroll-padding-top: $sticky-offset;
+  }
+}
+
+::selection {
+  background-color: rgba($sky-400, .35);
+  color: $fg;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  letter-spacing: .04em;
+  text-wrap: balance; // 標題多行時平均分配，避免最後一行只剩一兩個字
+}
+h1, .h1 { line-height: 1.3; }
+h3, .h3 { line-height: 1.45; }
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty; // 內文避免孤字
+}
+
+// 手機的 H1、區塊標題縮小一階
+@include media-breakpoint-down(md) {
+  h1, .h1 { font-size: 1.875rem; }
+  h2, .h2 { font-size: 1.4375rem; }
+}
+
+// 容器左右留白：手機 16px、≥ 768 各 24px、≥ 992 各 32px
+@include media-breakpoint-up(md) {
+  .container,
+  .container-fluid {
+    --#{$prefix}gutter-x: 3rem;
+  }
+}
+@include media-breakpoint-up(lg) {
+  .container,
+  .container-fluid {
+    --#{$prefix}gutter-x: 4rem;
+  }
+}
+
+// 內文連結：冷藍文字＋底線，hover 變青空
+a:not([class]) {
+  text-decoration-thickness: 1px;
+  text-underline-offset: .25em;
+
+  &:hover { text-decoration-thickness: 2px; }
+}
+
+// ---------- 數字與字型工具 ----------
+// .num-display：Chakra Petch 切角數字（獨立的大數字：金額、達成率、天數）
+// .mono：JetBrains Mono 小字（贊助編號、日期時間、圖表座標、步驟編號）
+// .num：表格、清單裡需要上下對齊的數字（等寬數字）
+.num-display {
+  font-family: $font-family-numeric;
+  font-weight: 600;
+  font-variant-numeric: lining-nums;
+  letter-spacing: .01em;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.mono {
+  font-family: $font-family-monospace;
+  font-size: $mono-size;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+// 金額（比例字寬、不換行）：<data class="amount" value="1235600">NT$ 1,235,600</data>
+.amount {
+  font-family: $font-family-numeric;
+  font-weight: 600;
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+
+// 標籤：數字上方的「目前募得」「達成率」，中文標籤不用 Mono
+.label {
+  display: block;
+  margin-bottom: map-get($spacers, 1);
+  color: $fg-muted;
+  font-size: $small-font-size;
+  font-weight: $font-weight-medium;
+  letter-spacing: .08em;
+  line-height: 1.5;
+}
+
+.text-note {
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+.text-faint { color: $fg-faint !important; }
+.text-muted-lab { color: $fg-muted !important; }
+
+// 品名、標題、短說明：只在空白與 <wbr> 處換行，詞組不被拆開；不要用在長段落
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// h2 前的充能短直線（3px 寬、1em 高、冷藍→青空），.section-heading 裡的 h2 自動套用
+.title-mark {
+  position: relative;
+  padding-left: .875rem;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .2em;
+    width: 3px;
+    height: 1em;
+    border-radius: 1px;
+    background: linear-gradient(180deg, $sky-400, $blue-500);
+  }
+}
+
+// ---------- 區塊節奏 ----------
+// 區塊上下留白：手機 56px → 桌機 88px；.section-tight 緊湊區塊 32 → 56px
+.section {
+  padding-block: $section-y;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: $section-y-lg;
+  }
+}
+.section-tight {
+  padding-block: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    padding-block: $section-y;
+  }
+}
+// 交替區塊：再深一階的鈦灰，上下各一條髮絲線
+.section-alt {
+  background-color: $ti-900;
+  border-block: 1px solid $line;
+}
+
+// 區塊標題列：左側 h2（充能短直線）＋副標，右側（可選）一個連結；不置中
+// <div class="section-heading">
+//   <div><h2>…</h2><p>…</p></div>
+//   <a class="btn-text" href="…">…<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+// </div>
+.section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: map-get($spacers, 3) map-get($spacers, 5);
+  margin-bottom: map-get($spacers, 6);
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: 2.5rem;
+  }
+
+  h2, .h2 {
+    @extend .title-mark;
+    margin-bottom: map-get($spacers, 2);
+  }
+  p {
+    max-width: 36em;
+    margin-bottom: 0;
+    padding-left: .875rem; // 和 h2 文字對齊（扣掉短直線）
+    color: $fg-muted;
+  }
+}
+
+// 網格紋理：32px 髮絲線（只鋪在首頁 Hero 與頁面標題區）
+@mixin grid-texture {
+  background-image:
+    linear-gradient($grid-texture-line 1px, transparent 1px),
+    linear-gradient(90deg, $grid-texture-line 1px, transparent 1px);
+  background-size: $grid-texture-size $grid-texture-size;
+  background-position: -1px -1px;
+}
+.grid-texture { @include grid-texture; }
+
+// ---------- 頁面標題區（首頁以外）----------
+// 網格紋理帶＋麵包屑（分隔符 /，Mono）→ H1 → 說明；下緣一條髮絲線
+// <div class="page-head">
+//   <div class="container">
+//     <nav aria-label="麵包屑"><ol class="breadcrumb">…</ol></nav>
+//     <h1 class="page-title">探索專案</h1>
+//     <p class="page-lead">…</p>
+//   </div>
+// </div>
+.page-head {
+  @include grid-texture;
+  padding-block: map-get($spacers, 6) map-get($spacers, 6);
+  background-color: $ti-950;
+  border-bottom: 1px solid $line;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7) map-get($spacers, 7);
+  }
+}
+.page-title {
+  margin-bottom: map-get($spacers, 2);
+  font-size: $h1-font-size;
+  font-weight: $font-weight-medium;
+  letter-spacing: .05em;
+
+  @include media-breakpoint-down(md) { font-size: 1.875rem; }
+}
+.page-lead {
+  max-width: 40em;
+  margin-bottom: 0;
+  color: $fg-muted;
+  font-size: $lead-font-size;
+}
+// 只有麵包屑的標題區（專案細節）
+.page-head-slim {
+  padding-block: map-get($spacers, 4);
+  background-image: none;
+
+  @include media-breakpoint-up(lg) { padding-block: map-get($spacers, 4); }
+
+  .breadcrumb { margin-bottom: 0; }
+}
+
+// 麵包屑：分隔符 / 用 JetBrains Mono；最後一項是目前頁
+.breadcrumb {
+  flex-wrap: wrap;
+  row-gap: map-get($spacers, 1);
+}
+.breadcrumb-item + .breadcrumb-item::before {
+  font-family: $font-family-monospace;
+}
+.breadcrumb a {
+  color: $fg-muted;
+  text-decoration: none;
+
+  &:hover {
+    color: $sky-300;
+    text-decoration: underline;
+    text-underline-offset: .25em;
+  }
+}
+.breadcrumb-item.active { word-break: keep-all; }
+
+// ---------- 按鈕 ----------
+// 主要：.btn-primary（冷藍→青空漸層＋深字，不加外光暈）一個畫面只放一顆最重要的
+// 發光的名額（一個畫面最多 3 處）留給 L 充能條、主控台的 live 燈、序列進行中節點與選中，按鈕只靠漸層區分
+// 次要：.btn-outline-sky（1px 青空框、透明底）
+// 中性：.btn-ghost（1px 線框，工具按鈕、取消）
+// 危險：.btn-outline-danger（珊瑚紅框，取消贊助這類層級低的危險動作）
+// 文字：.btn-text（冷藍連結＋箭頭）；圖示鈕：.btn-icon（44 × 44）
+// hover 只換亮度、底色、框線，不位移、不放大
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 2.75rem; // 觸控目標 44px
+  letter-spacing: .04em;
+  word-break: keep-all;
+
+  .bi { font-size: 1.0625em; }
+
+  &:focus-visible { outline: 0; }
+}
+.btn-lg { min-height: 3.25rem; }
+.btn-sm {
+  min-height: 2.25rem;
+  padding: .25rem .75rem;
+  font-size: $font-size-sm;
+}
+.btn-primary {
+  --#{$prefix}btn-color: #{$btn-ink};
+  --#{$prefix}btn-bg: #{$sky-400};
+  --#{$prefix}btn-border-color: transparent;
+  --#{$prefix}btn-hover-color: #{$btn-ink};
+  --#{$prefix}btn-hover-bg: #{$sky-400};
+  --#{$prefix}btn-hover-border-color: transparent;
+  --#{$prefix}btn-active-color: #{$btn-ink};
+  --#{$prefix}btn-active-bg: #{$sky-400};
+  --#{$prefix}btn-active-border-color: transparent;
+  --#{$prefix}btn-disabled-color: #{$control};
+  --#{$prefix}btn-disabled-bg: #{$ti-800};
+  --#{$prefix}btn-disabled-border-color: #{$line-strong};
+  background-image: $grad-btn;
+
+  &:hover { filter: brightness(1.08); }
+  &:active { filter: brightness(.96); }
+  &:focus-visible { box-shadow: $focus-ring-shadow; }
+
+  &:disabled,
+  &.disabled {
+    background-image: none;
+    border-style: dashed;
+    box-shadow: none;
+    filter: none;
+  }
+}
+.btn-outline-sky {
+  --#{$prefix}btn-color: #{$sky-300};
+  --#{$prefix}btn-bg: transparent;
+  --#{$prefix}btn-border-color: #{$sky-400};
+  --#{$prefix}btn-hover-color: #{$sky-300};
+  --#{$prefix}btn-hover-bg: #{$select-bg};
+  --#{$prefix}btn-hover-border-color: #{$sky-300};
+  --#{$prefix}btn-active-color: #{$fg};
+  --#{$prefix}btn-active-bg: #{$select-bg};
+  --#{$prefix}btn-active-border-color: #{$sky-300};
+  --#{$prefix}btn-disabled-color: #{$control};
+  --#{$prefix}btn-disabled-bg: transparent;
+  --#{$prefix}btn-disabled-border-color: #{$line-strong};
+}
+.btn-ghost {
+  --#{$prefix}btn-color: #{$fg};
+  --#{$prefix}btn-bg: transparent;
+  --#{$prefix}btn-border-color: #{$line-strong};
+  --#{$prefix}btn-hover-color: #{$fg};
+  --#{$prefix}btn-hover-bg: #{$ti-800};
+  --#{$prefix}btn-hover-border-color: #{$control};
+  --#{$prefix}btn-active-color: #{$fg};
+  --#{$prefix}btn-active-bg: #{$ti-800};
+  --#{$prefix}btn-active-border-color: #{$fg-muted};
+  --#{$prefix}btn-disabled-color: #{$control};
+  --#{$prefix}btn-disabled-bg: transparent;
+  --#{$prefix}btn-disabled-border-color: #{$line};
+}
+.btn-outline-danger {
+  --#{$prefix}btn-color: #{$err-ink};
+  --#{$prefix}btn-bg: transparent;
+  --#{$prefix}btn-border-color: #{rgba($err-ink, .6)};
+  --#{$prefix}btn-hover-color: #{$err-ink};
+  --#{$prefix}btn-hover-bg: #{$err-bg};
+  --#{$prefix}btn-hover-border-color: #{$err-ink};
+  --#{$prefix}btn-active-color: #{$err-ink};
+  --#{$prefix}btn-active-bg: #{$err-bg};
+  --#{$prefix}btn-active-border-color: #{$err-ink};
+}
+.btn:disabled,
+.btn.disabled {
+  border-style: dashed;
+}
+
+// 文字連結型按鈕：冷藍＋箭頭，hover 加底線；高度 44px
+.btn-text {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $blue-300;
+  font-weight: $font-weight-medium;
+  text-decoration: none;
+  letter-spacing: .04em;
+  word-break: keep-all;
+
+  &:hover {
+    color: $sky-300;
+    text-decoration: underline;
+    text-underline-offset: .3em;
+  }
+}
+
+// 圖示按鈕：44 × 44 方塊（追蹤 ♡、分享、搜尋、選單）
+.btn-icon {
+  width: 2.75rem;
+  padding: 0;
+  flex: 0 0 auto;
+}
+// 追蹤：aria-pressed="true" 時愛心實心＋青空框
+.btn-follow[aria-pressed="true"] {
+  --#{$prefix}btn-color: #{$sky-300};
+  --#{$prefix}btn-bg: #{$select-bg};
+  --#{$prefix}btn-border-color: #{$sky-400};
+  --#{$prefix}btn-hover-color: #{$sky-300};
+  --#{$prefix}btn-hover-bg: #{$select-bg};
+  --#{$prefix}btn-hover-border-color: #{$sky-300};
+
+  .bi-heart::before { content: map-get($bootstrap-icons-map, "heart-fill"); }
+}
+
+// ---------- 狀態徽章（WIREFRAME_SPEC §2.6）----------
+// 狀態色文字＋16% 色底＋圖示或圓點，不只靠顏色
+// <span class="badge-state is-live"><span class="status-dot" aria-hidden="true"></span>募資中</span>
+// <span class="badge-state is-ok"><i class="bi bi-check-circle" aria-hidden="true"></i>募資成功</span>
+// .is-dashed：1px 虛線框（已下架，和草稿區分）；.is-lg：大一號
+.badge-state {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .125rem .5rem;
+  border: 1px solid transparent;
+  border-radius: $border-radius-sm;
+  font-size: $small-font-size;
+  font-weight: $font-weight-medium;
+  letter-spacing: .04em;
+  line-height: 1.6;
+  white-space: nowrap;
+
+  .bi { font-size: 1.05em; }
+
+  &.is-dashed { border-style: dashed; border-color: currentColor; }
+  &.is-lg { padding: .25rem .625rem; font-size: $font-size-sm; }
+}
+@each $name, $pair in $tones {
+  .badge-state.is-#{$name} {
+    background-color: nth($pair, 2);
+    color: nth($pair, 1);
+  }
+  .text-#{$name} { color: nth($pair, 1) !important; } // 面板上的狀態文字（例如「↑ 今日 +37」）
+}
+
+// 狀態圓點：一般是實心圓點，不發光
+// 只有主控台標頭的 live 燈（.console-head 裡的 .is-live 徽章，每個主控台一顆）帶微光並脈動（只改陰影透明度，不改尺寸）；
+// 其他地方需要單獨示範發光燈時加 .status-dot.is-live（Guideline 用）
+.status-dot {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: .5rem;
+  height: .5rem;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+.is-live .status-dot,
+.status-dot.is-live { background-color: $live-ink; }
+.console-head .is-live .status-dot,
+.status-dot.is-live {
+  box-shadow: 0 0 0 3px rgba($sky-400, .2), 0 0 8px rgba($sky-400, .7);
+  animation: dot-pulse 2.4s ease-in-out infinite;
+}
+@keyframes dot-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba($sky-400, .2), 0 0 8px rgba($sky-400, .7); }
+  50%      { box-shadow: 0 0 0 5px rgba($sky-400, 0), 0 0 4px rgba($sky-400, .35); }
+}
+
+// 一般標籤：分類、地點；.tag-overlay：疊在圖片上的深色半透明標籤
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .125rem .5rem;
+  border: 1px solid $line-strong;
+  border-radius: $border-radius-sm;
+  background-color: $ti-800;
+  color: $fg-muted;
+  font-size: $small-font-size;
+  font-weight: $font-weight-medium;
+  letter-spacing: .04em;
+  line-height: 1.6;
+  white-space: nowrap;
+  text-decoration: none;
+}
+a.tag {
+  min-height: 2.75rem;
+  padding-inline: .875rem;
+
+  &:hover { border-color: rgba($sky-400, .6); color: $fg; }
+}
+.tag-overlay {
+  border-color: rgba(#fff, .14);
+  background-color: rgba($ti-950, .8);
+  color: $fg;
+  backdrop-filter: blur(6px);
+}
+
+// ---------- 遙測面板 ----------
+// 深鈦灰面、1px 髮絲框、6px 圓角；面板之間靠線分，不靠陰影
+// .panel-strip：上緣 2px 狀態條（加 .is-live 變充能漸層＝募資中，其他狀態是 $line-strong）
+// .is-selected：選中＝青空框＋微光（發光只給選中、live、焦點、充能條、主要按鈕）
+// <article class="panel panel-strip is-live">…</article>
+.panel {
+  position: relative;
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $ti-850;
+}
+.panel-pad {
+  padding: $panel-pad;
+
+  @include media-breakpoint-up(lg) { padding: $panel-pad-lg; }
+}
+.panel-strip::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  height: 2px;
+  border-radius: $border-radius-lg $border-radius-lg 0 0;
+  background: $line-strong;
+  pointer-events: none;
+}
+.panel-strip.is-live::before { background: $grad-charge; }
+.is-selected {
+  border-color: $sky-400 !important;
+  background-color: $select-bg;
+  box-shadow: $glow;
+}
+
+// ★ HUD 角括號：12px 長、1.5px 粗的 L 形四角，畫在 ::after，比面板外推 5px
+// 只用在 4 處：首頁 Hero 主控台、專案儀表板、贊助成功確認環、贊助紀錄詳情左側主控台（其他地方用了會變廉價）
+.hud { position: relative; }
+.hud::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  pointer-events: none;
+  background:
+    linear-gradient($hud-color, $hud-color) top left / #{$hud-length} #{$hud-weight},
+    linear-gradient($hud-color, $hud-color) top left / #{$hud-weight} #{$hud-length},
+    linear-gradient($hud-color, $hud-color) top right / #{$hud-length} #{$hud-weight},
+    linear-gradient($hud-color, $hud-color) top right / #{$hud-weight} #{$hud-length},
+    linear-gradient($hud-color, $hud-color) bottom left / #{$hud-length} #{$hud-weight},
+    linear-gradient($hud-color, $hud-color) bottom left / #{$hud-weight} #{$hud-length},
+    linear-gradient($hud-color, $hud-color) bottom right / #{$hud-length} #{$hud-weight},
+    linear-gradient($hud-color, $hud-color) bottom right / #{$hud-weight} #{$hud-length};
+  background-repeat: no-repeat;
+}
+
+// 切角圖示框（40px，左上與右下切角）：品牌核心痛點、平台保障、空狀態
+// <span class="cut-box" aria-hidden="true"><i class="bi bi-buildings"></i></span>
+.cut-box {
+  --cut: 8px;
+  --size: 2.5rem;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: var(--size);
+  height: var(--size);
+  background-color: rgba($sky-400, .12);
+  color: $sky-300;
+  font-size: 1.25rem;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+}
+
+// ---------- ★ 充能條（FundingProgress）----------
+// 進度條是裝飾（aria-hidden），數字一定要以文字出現在旁邊
+// 未達標：  <div class="charge" style="--fund: 68%" aria-hidden="true"></div>       填色＝實心漸層到達成率
+// 剛好達標：<div class="charge is-full" aria-hidden="true"></div>                    滿格＋末端刻度
+// 超額：    <div class="charge is-over" style="--target: 40.5%" aria-hidden="true"></div>
+//           滿格；在 --target（目標 ÷ 已募，CONTENT 附錄 B.5）畫一道 2px 刻度，刻度之後是更亮的「電池格」
+// 尺寸：預設 M（卡片、列表，8px）、.charge-l L（Hero 主控台、專案儀表板，12px，另有每 3.6s 一道掃光）、.charge-s S（贊助紀錄、底部行動列，4px）
+// 外發光只給 L（一個畫面通常只有一條）；M／S 只有漸層＋上緣 1px 高光，列表一次出現 8 條也不會滿屏發光
+// 載入時填色由 0 長到定位（只動 transform，元素尺寸一開始就是最終值）；prefers-reduced-motion 時關閉
+.charge {
+  --fund: 0%;
+  --target: 100%;
+  --h: .5rem;
+  --tick: 3px; // 刻度上下凸出的長度
+  position: relative;
+  height: var(--h);
+  border-radius: $border-radius-xs;
+  background-color: $track;
+
+  // 填色
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--fund);
+    border-radius: inherit;
+    background: $grad-charge;
+    box-shadow: inset 0 1px 0 rgba(#fff, .22);
+    transform-origin: left center;
+    animation: charge-fill .9s cubic-bezier(.2, .8, .2, 1) both;
+  }
+  &.is-full::before,
+  &.is-over::before { width: 100%; }
+
+  // 超額：目標前是充能漸層，目標後是電池格（每 6px 一格、格間 2px 露出軌道）
+  &.is-over::before {
+    background:
+      linear-gradient(90deg, $blue-500, $sky-400 var(--target), transparent var(--target)),
+      repeating-linear-gradient(90deg, transparent 0 4px, $track 4px 6px),
+      $grad-cells;
+  }
+
+  // 目標刻度（剛好達標畫在末端）
+  &.is-full { --target: 100%; }
+  &.is-full::after,
+  &.is-over::after {
+    content: "";
+    position: absolute;
+    top: calc(var(--tick) * -1);
+    bottom: calc(var(--tick) * -1);
+    left: var(--target);
+    width: 2px;
+    margin-left: -1px;
+    border-radius: 1px;
+    background-color: $fg;
+  }
+}
+.charge-s { --h: .25rem; --tick: 2px; }
+.charge-l {
+  --h: .75rem;
+  --tick: 4px;
+
+  // L 尺寸：一道 40px 寬的亮帶由左掃到右（每 3.6s）
+  &::before {
+    background:
+      linear-gradient(90deg, transparent, rgba(#fff, .5), transparent) no-repeat,
+      $grad-charge;
+    background-size: 40px 100%, 100% 100%;
+    background-position: -40px 0, 0 0;
+    box-shadow: inset 0 1px 0 rgba(#fff, .22), $glow-soft;
+    animation:
+      charge-fill .9s cubic-bezier(.2, .8, .2, 1) both,
+      charge-sweep-2 3.6s linear 1s infinite;
+  }
+  &.is-over::before {
+    background:
+      linear-gradient(90deg, transparent, rgba(#fff, .5), transparent) no-repeat,
+      linear-gradient(90deg, $blue-500, $sky-400 var(--target), transparent var(--target)),
+      repeating-linear-gradient(90deg, transparent 0 4px, $track 4px 6px),
+      $grad-cells;
+    background-size: 40px 100%, 100% 100%, 100% 100%, 100% 100%;
+    background-position: -40px 0, 0 0, 0 0, 0 0;
+    animation:
+      charge-fill .9s cubic-bezier(.2, .8, .2, 1) both,
+      charge-sweep-4 3.6s linear 1s infinite;
+  }
+}
+@keyframes charge-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes charge-sweep-2 {
+  from { background-position: -40px 0, 0 0; }
+  to   { background-position: calc(100% + 40px) 0, 0 0; }
+}
+@keyframes charge-sweep-4 {
+  from { background-position: -40px 0, 0 0, 0 0, 0 0; }
+  to   { background-position: calc(100% + 40px) 0, 0 0, 0 0, 0 0; }
+}
+
+// L 尺寸的刻度標註（選用）：刻度上方小三角＋「目標」，下方 0／目標／達成率刻度字（Mono）
+// <div class="charge-scale" style="--target: 40.5%" aria-hidden="true">
+//   <span class="charge-marker">目標</span>
+//   <div class="charge charge-l is-over"></div>
+//   <div class="charge-ticks"><span>0</span><span class="is-target">100%</span><span class="is-end">247%</span></div>
+// </div>
+.charge-scale {
+  --target: 100%;
+  position: relative;
+  padding-top: 1.5rem;
+
+  .charge { --target: inherit; }
+}
+.charge-marker {
+  position: absolute;
+  top: 0;
+  left: var(--target);
+  transform: translateX(-50%);
+  color: $fg;
+  font-size: .75rem;
+  font-weight: $font-weight-medium;
+  line-height: 1;
+  letter-spacing: .06em;
+  white-space: nowrap;
+
+  &::after {
+    content: "";
+    display: block;
+    width: 0;
+    height: 0;
+    margin: .25rem auto 0;
+    border-inline: 4px solid transparent;
+    border-top: 5px solid $fg;
+  }
+}
+.charge-ticks {
+  position: relative;
+  height: 1.25rem;
+  margin-top: .5rem;
+  color: $fg-faint;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  line-height: 1.25rem;
+
+  span { position: absolute; top: 0; white-space: nowrap; }
+  span:first-child { left: 0; }
+  .is-target { left: var(--target); transform: translateX(-50%); color: $fg-muted; }
+  .is-end { right: 0; color: $sky-300; }
+}
+
+// ---------- 讀數格（標籤＋Chakra 讀數，1px 線分格）----------
+// <dl class="readouts" style="--cols: 3">
+//   <div class="readout"><dt class="label">達成率</dt><dd class="readout-value readout-l"><data value="247">247</data><span class="unit">%</span></dd></div>
+//   …
+// </dl>
+// 格線＝容器底色從 1px gap 露出來；--cols 決定欄數（手機另外用 utilities 或頁面樣式調）
+.readouts {
+  --cols: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  background-color: $line;
+
+  > .readout { background-color: $ti-850; }
+}
+.readout {
+  min-width: 0;
+  padding: .875rem 1rem;
+
+  > dt { margin-bottom: .25rem; }
+  > dd { margin: 0; }
+}
+// 讀數：Chakra Petch 600；中文單位（人、天、%後的中文）用 Noto Sans TC，同一行基線對齊
+.readout-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: .25rem;
+  margin: 0;
+  color: $fg;
+  font-family: $font-family-numeric;
+  font-size: $readout-m;
+  font-weight: 600;
+  font-variant-numeric: lining-nums;
+  letter-spacing: .01em;
+  line-height: 1.15;
+  white-space: nowrap;
+
+  .unit {
+    color: $fg-muted;
+    font-family: $font-family-base;
+    font-size: 1rem;
+    font-weight: $font-weight-medium;
+    letter-spacing: .02em;
+  }
+}
+.readout-xl { font-size: clamp(2rem, 1.4rem + 2.4vw, #{$readout-xl}); }
+.readout-l  { font-size: clamp(1.75rem, 1.3rem + 1.8vw, #{$readout-l}); }
+.readout-s  { font-size: $readout-s; }
+.readout-xs { font-size: 1.125rem; }
+.readout-sky { color: $sky-300; }
+.readout-meta {
+  margin: .375rem 0 0;
+  color: $fg-muted;
+  font-size: $small-font-size;
+  line-height: 1.5;
+}
+
+// 數據卡 StatTile：小標籤 → 大數字 → 一行補充
+// <div class="stat-tile panel"><p class="label">…</p><p class="readout-value">…</p><p class="readout-meta">…</p></div>
+// .is-ok：強調格（準時出貨率 100%）＝ok 框＋微光＋字大一級
+.stat-tile {
+  height: 100%;
+  padding: 1rem 1.125rem;
+
+  > .label { margin-bottom: .375rem; }
+  > .readout-value { margin-bottom: 0; }
+}
+.stat-tile.is-ok {
+  border-color: rgba($ok-ink, .6);
+  box-shadow: 0 0 0 1px rgba($ok-ink, .25), 0 0 16px rgba($ok-ink, .12);
+
+  .readout-value { color: $ok-ink; font-size: $readout-l; }
+}
+
+// ---------- 提示框 Callout ----------
+// 左側 2px 狀態色線＋16% 色底＋圖示（不加關閉鈕）。字級和內文相同
+// <div class="callout is-ok"><i class="bi bi-shield-check callout-icon" aria-hidden="true"></i><div>…</div></div>
+.callout {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: .875rem 1rem;
+  border: 1px solid $line;
+  border-left-width: 2px;
+  border-radius: $border-radius;
+  background-color: $ti-850;
+  color: $fg;
+
+  > div > :last-child { margin-bottom: 0; }
+}
+.callout-icon {
+  flex: 0 0 auto;
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+.callout-title {
+  margin-bottom: .25rem;
+  font-weight: $font-weight-bold;
+}
+@each $name, $pair in $tones {
+  .callout.is-#{$name} {
+    border-color: rgba(nth($pair, 1), .35);
+    border-left-color: nth($pair, 1);
+    background-color: nth($pair, 2);
+
+    .callout-icon,
+    .callout-title { color: nth($pair, 1); }
+  }
+}
+
+// ---------- 篩選標籤 FilterChip ----------
+// <input type="checkbox" class="btn-check" id="s1" checked><label class="chip" for="s1">募資中</label>
+// 3px 方角；選中＝青空 10% 底＋青空框＋勾（不只靠顏色）
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.75rem;
+  padding: .375rem .875rem;
+  border: 1px solid $line-strong;
+  border-radius: $border-radius-sm;
+  background-color: $ti-850;
+  color: $fg-muted;
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.4;
+  letter-spacing: .04em;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+
+  &:hover { border-color: $control; color: $fg; }
+}
+.chip-count {
+  color: $fg-faint;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+}
+.btn-check:checked + .chip {
+  border-color: $sky-400;
+  background-color: $select-bg;
+  color: $fg;
+
+  &::before {
+    content: map-get($bootstrap-icons-map, "check-lg");
+    color: $sky-300;
+    font-family: bootstrap-icons;
+    font-weight: normal;
+    line-height: 1;
+  }
+  .chip-count { color: $sky-300; }
+}
+.btn-check:focus-visible + .chip { box-shadow: $focus-ring-shadow; }
+.btn-check:disabled + .chip { border-style: dashed; color: $control; cursor: not-allowed; }
+
+// 已套用的篩選：青空底框＋移除鈕
+.chip-applied {
+  display: inline-flex;
+  align-items: center;
+  gap: .125rem;
+  padding-left: .625rem;
+  border: 1px solid rgba($sky-400, .5);
+  border-radius: $border-radius-sm;
+  background-color: $select-bg;
+  color: $fg;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  button {
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: $sky-300;
+
+    &:hover { color: $fg; }
+    &:focus-visible { outline: 2px solid $sky-300; outline-offset: -4px; }
+  }
+}
+
+// ---------- 方角分段控制（分頁籤、篩選、角色切換）----------
+// <ul class="nav seg" role="tablist"><li class="nav-item" role="presentation"><button class="nav-link active" …>熱門中</button></li>…</ul>
+// 也可以用在按鈕群組：<div class="seg" role="group"><button class="seg-btn" aria-pressed="true">…</button></div>
+// 手機在自己的容器內橫向捲動（.seg 不換行，overflow-x: auto）
+.seg {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 2px;
+  max-width: 100%;
+  padding: 3px;
+  margin: 0;
+  list-style: none;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $ti-950;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+
+  .nav-item { flex: 0 0 auto; }
+  .nav-link,
+  .seg-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    min-height: 2.5rem;
+    padding: .375rem 1rem;
+    border: 1px solid transparent;
+    border-radius: $border-radius-sm;
+    background: none;
+    color: $fg-muted;
+    font-size: .9375rem;
+    font-weight: $font-weight-medium;
+    letter-spacing: .04em;
+    white-space: nowrap;
+
+    &:hover { background-color: $ti-800; color: $fg; }
+    // 捲動容器會裁掉外擴的焦點環，改畫在內側
+    &:focus-visible { outline: 0; box-shadow: inset 0 0 0 2px $sky-300; }
+  }
+  .nav-link.active,
+  .seg-btn[aria-pressed="true"],
+  .seg-btn.active {
+    border-color: rgba($sky-400, .5);
+    background-color: $select-bg;
+    color: $sky-300;
+  }
+}
+.tab-count {
+  color: inherit;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+  opacity: .85;
+}
+
+// ---------- 頭像 ----------
+// 照片：<img class="avatar" …>；文字頭像：<span class="avatar avatar-letter" aria-hidden="true">宇</span>
+// .avatar-ring：青空細外環（個人頁操作員識別列）
+.avatar {
+  --avatar-size: 2.75rem;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  border: 1px solid $line-strong;
+  border-radius: 50%;
+  background-color: $ti-800;
+  object-fit: cover;
+}
+.avatar-letter {
+  color: $sky-300;
+  font-size: calc(var(--avatar-size) * .42);
+  font-weight: $font-weight-medium;
+  line-height: 1;
+}
+.avatar-lg { --avatar-size: 4.5rem; }
+.avatar-ring { box-shadow: 0 0 0 2px $ti-950, 0 0 0 3px $sky-400; }
+
+// ---------- 圖片 ----------
+// .img-frame：髮絲框的圖片外框；.media-shade：圖片下緣疊深色漸層（讓疊在上面的標籤更清楚）
+.img-frame {
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $ti-800;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+.media-shade::after {
+  content: "";
+  position: absolute;
+  inset: 45% 0 0;
+  background: linear-gradient(180deg, transparent, rgba($ti-950, .72));
+  pointer-events: none;
+}
+
+// ---------- 可橫向捲動的容器（圖表、表格、縮圖列）----------
+.scroll-x {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+// 576px 以下讓橫向捲動列貼齊螢幕兩側，第一項仍對齊版心
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: calc(var(--#{$prefix}gutter-x) * -.5);
+    padding-inline: calc(var(--#{$prefix}gutter-x) * .5);
+  }
+}
+.bleed-x { @include bleed-x; }
+
+// ---------- 表單 ----------
+.form-label { letter-spacing: .04em; }
+.form-control,
+.form-select { min-height: 2.875rem; }
+.form-control:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 100px $ti-800 inset;
+  -webkit-text-fill-color: $fg;
+}
+.form-control:hover:not(:disabled):not(:focus),
+.form-select:hover:not(:disabled):not(:focus) { border-color: $fg-faint; }
+.form-check { min-height: 1.75rem; }
+.form-check-input { margin-top: .3em; }
+.form-check-input:focus:not(:focus-visible) { box-shadow: none; }
+.form-check-label { font-weight: $font-weight-normal; }
+.input-group-text { font-family: $font-family-numeric; font-weight: 600; }
+// 錯誤：框線換成珊瑚紅並加一圈內陰影（看起來 2px，但不改尺寸）；下方一定有 .invalid-feedback 文字＋圖示
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: $err-ink;
+  box-shadow: inset 0 0 0 1px $err-ink;
+}
+.invalid-feedback {
+  font-size: $small-font-size;
+  font-weight: $font-weight-medium;
+
+  &::before {
+    content: map-get($bootstrap-icons-map, "exclamation-triangle-fill");
+    margin-right: .375rem;
+    font-family: bootstrap-icons;
+    vertical-align: -.125em;
+  }
+}
+
+// 數據表：表頭 $ti-800、Mono 數字靠右、列之間髮絲線
+// <div class="table-responsive"><table class="table table-lab">…<td class="num">…</td>
+.table-lab {
+  margin-bottom: 0;
+  border: 1px solid $line;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: $border-radius-lg;
+  overflow: hidden;
+
+  > thead th {
+    background-color: $ti-800;
+    color: $fg-muted;
+    font-size: $small-font-size;
+    font-weight: $font-weight-medium;
+    letter-spacing: .06em;
+    white-space: nowrap;
+  }
+  > tbody > tr:last-child > * { border-bottom-width: 0; }
+  .num {
+    font-family: $font-family-monospace;
+    font-size: .875rem;
+    text-align: right;
+  }
+}
+
+// ---------- 浮起層：下拉、對話框、Offcanvas ----------
+.dropdown-menu { padding: .375rem; }
+.dropdown-item {
+  border-radius: $border-radius-sm;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+}
+.modal-content { box-shadow: $shadow-float; }
+.offcanvas { box-shadow: $shadow-float; }
+
+// Accordion（FAQ）：題目之間 8px 間隔，每題一個獨立面板；＋／−圖示
+.accordion-item {
+  margin-bottom: .5rem;
+  border-radius: $accordion-border-radius !important;
+  overflow: hidden;
+
+  &:not(:first-of-type) { border-top: 1px solid $line; }
+}
+.accordion-button {
+  font-weight: $font-weight-medium;
+  letter-spacing: .04em;
+  border-radius: 0 !important;
+
+  &:not(.collapsed) { box-shadow: inset 0 -1px 0 $line; }
+}
+
+// 分頁：數字用 Mono
+.page-link {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-family-monospace;
+  font-size: .875rem;
+}
+.pagination { gap: .25rem; }
+.page-item .page-link { border-radius: $border-radius !important; }
+
+// ---------- 鍵盤焦點 ----------
+// 一般元素：2px 青空外框＋2px 間隙；按鈕與輸入框用 $focus-ring-shadow（多一圈 25% 青空外暈）
+:focus-visible {
+  outline: $focus-ring-width solid $focus-ring-color;
+  outline-offset: 2px;
+}
+.btn:focus-visible,
+.btn-close:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible,
+.page-link:focus-visible,
+.accordion-button:focus-visible {
+  outline: 0;
+}
+.offcanvas:focus-visible,
+.modal:focus-visible,
+[tabindex="-1"]:focus-visible,
+main:focus-visible { outline: 0; }
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  top: -4rem;
+  left: 1rem;
+  z-index: $zindex-search + 10;
+  padding: .625rem 1rem;
+  border-radius: $border-radius;
+  background-color: $sky-400;
+  color: $btn-ink;
+  font-weight: $font-weight-bold;
+  text-decoration: none;
+
+  &:focus { top: 1rem; }
+
+  @include media-breakpoint-up(lg) { left: calc(#{$rail-width} + 1rem); }
+}
+
+// ---------- 空狀態 ----------
+// <div class="empty-state">
+//   <span class="cut-box cut-box-lg" aria-hidden="true"><i class="bi bi-inbox"></i></span>
+//   <p>Notion 的狀態文案</p>
+//   <a class="btn btn-primary" href="projects.html">探索專案</a>
+// </div>
+.empty-state {
+  max-width: 32em;
+  margin-inline: auto;
+  padding: map-get($spacers, 6) map-get($spacers, 4);
+  text-align: center;
+
+  > .cut-box { margin-bottom: map-get($spacers, 4); }
+  > p {
+    margin-bottom: map-get($spacers, 4);
+    color: $fg;
+  }
+  > :last-child { margin-bottom: 0; }
+}
+.cut-box-lg {
+  --size: 4rem;
+  --cut: 12px;
+  font-size: 1.75rem;
+}
+
+// ---------- 設計稿狀態示意 ----------
+// 和正式內容以 1px 虛線分隔；標籤用 Mono 方框
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag">設計稿狀態示意</p>
+//   <h2 id="…" class="demo-state-title">…</h2>
+//   <p class="text-note">什麼情況下出現</p>
+//   <div class="row …">…<div class="demo-case">…</div>…</div>
+// </section>
+.demo-state {
+  margin-top: map-get($spacers, 8);
+  padding-top: map-get($spacers, 6);
+  border-top: 1px dashed $line-strong;
+}
+.demo-state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: map-get($spacers, 3);
+  padding: .125rem .5rem;
+  border: 1px dashed $control;
+  border-radius: $border-radius-sm;
+  color: $fg-muted;
+  font-size: $small-font-size;
+  letter-spacing: .06em;
+}
+.demo-state-title {
+  margin-bottom: map-get($spacers, 2);
+  font-size: 1.375rem;
+}
+// 每個示意情境一格：小標＋說明＋畫面
+.demo-case {
+  height: 100%;
+  padding: map-get($spacers, 5);
+  border: 1px dashed $line-strong;
+  border-radius: $border-radius-lg;
+}
+.demo-case-title {
+  margin-bottom: map-get($spacers, 1);
+  font-size: 1rem;
+  font-weight: $font-weight-bold;
+}
+.demo-case > .text-note { margin-bottom: map-get($spacers, 4); }
+
+// ---------- 減少動態 ----------
+// 充能條直接顯示最終長度、掃光與脈動移除、描繪動畫直接畫滿
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

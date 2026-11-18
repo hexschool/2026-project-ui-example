@@ -1,0 +1,294 @@
+// ============================================================
+// 招牌：募資進度的三種玩具（落實 Notion「小球滾動／積木堆疊」）
+// 都是裝飾（aria-hidden="true"），數字一定要以文字出現在旁邊。資料介面同 02：
+//   未達標  style="--value: 68%"
+//   剛好達標 .is-full
+//   超額    .is-over＋style="--target: 40.5%"（目標 ÷ 已募，CONTENT 附錄 B.5）
+//
+// 1. 積木條 .blocks（M／S）：12 格圓角積木。目標內＝馬卡龍紫 500、超過目標＝櫻花粉 600、空格＝軌道色
+//    M 尺寸超額時在目標處插一面小檸檬旗（旗桿葡萄墨）
+//    <div class="blocks blocks-md is-over" style="--target: 40.5%" aria-hidden="true"><span></span></div>
+// 2. 滾球軌道 .rollway（L、mini）：14px 軌道＋28px 葡萄紫小球，小球停在達成位置（超額時停在最右端）
+//    <div class="rollway is-over" style="--target: 40.5%" aria-hidden="true">
+//      <span class="rollway-track"></span><span class="rollway-flag">目標</span>
+//      <span class="rollway-run"><span class="rollway-ball"></span></span>
+//    </div>
+// 3. 積木塔 .tower（只在首頁 Hero 卡）：每 100% 一層，247%＝兩層滿＋第三層 47%
+//    <div class="tower" aria-hidden="true">
+//      <span class="tower-layer is-over" style="--fill: 47%"></span>
+//      <span class="tower-layer is-over" data-tick="200%"></span>
+//      <span class="tower-layer" data-tick="100%"></span>
+//    </div>
+// 動態：積木一格格放上去（填色 scaleX，遮罩在外層）、小球從起點滾到定位（輕微回彈），都只跑一次
+// ============================================================
+
+// 積木遮罩：一格圓角方塊（右側留 3/24 的縫），橫向重複 12 次
+$blocks-cell-mask: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 12' preserveAspectRatio='none'><rect width='21' height='12' rx='3.5'/></svg>");
+
+@keyframes blocks-build {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+// ---------- 1. 積木條 ----------
+.blocks {
+  --blocks-h: #{map-get($blocks-heights, "md")};
+  position: relative;
+  height: var(--blocks-h);
+
+  // 軌道＋積木遮罩（填色在裡面，所以填色長出來時看起來是一格格出現）
+  > span {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background-color: $progress-track;
+    -webkit-mask: $blocks-cell-mask 0 0 / calc(100% / #{$blocks-cells}) 100% repeat-x;
+    mask: $blocks-cell-mask 0 0 / calc(100% / #{$blocks-cells}) 100% repeat-x;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: var(--value, 0%);
+      background-color: $progress-fill;
+      transform-origin: left center;
+      animation: blocks-build .8s cubic-bezier(.2, .8, .2, 1) both;
+    }
+  }
+
+  // 剛好達標：滿格
+  &.is-full > span::before { width: 100%; }
+
+  // 超額：滿格，目標之前紫、之後櫻
+  &.is-over > span::before {
+    width: 100%;
+    background: linear-gradient(90deg, $progress-fill var(--target), $progress-over var(--target));
+  }
+}
+.blocks-md { --blocks-h: #{map-get($blocks-heights, "md")}; }
+.blocks-sm { --blocks-h: #{map-get($blocks-heights, "sm")}; }
+
+// M 尺寸超額：目標處插一面小檸檬旗（旗桿葡萄墨；上方要留 10px 給旗子）
+.blocks-md.is-over {
+  margin-top: .625rem;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    left: var(--target);
+    pointer-events: none;
+  }
+  // 旗桿
+  &::before {
+    top: -.625rem;
+    bottom: -.1875rem;
+    width: 2px;
+    margin-left: -1px;
+    border-radius: 2px;
+    background-color: $ink;
+  }
+  // 旗面
+  &::after {
+    top: -.625rem;
+    width: .75rem;
+    height: .5625rem;
+    margin-left: 1px;
+    background-color: $progress-flag;
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+    filter: drop-shadow(0 0 .5px $ink);
+  }
+}
+
+// ---------- 2. 滾球軌道 ----------
+@keyframes rollway-run {
+  from { transform: translateX(calc(-100% + var(--ball))); }
+  to   { transform: none; }
+}
+@keyframes rollway-spin {
+  from { transform: rotate(-540deg); }
+  to   { transform: none; }
+}
+
+.rollway {
+  --track-h: #{$rollway-height};
+  --ball: #{$rollway-ball};
+  --pos: var(--value, 0%);
+  position: relative;
+  height: var(--ball);
+  margin-top: 1.5rem; // 目標旗與「目標」字的空間
+
+  &.is-full,
+  &.is-over { --pos: 100%; }
+}
+// 軌道：圓角長條，目標之前紫、之後櫻（超額）；未達標時只填到小球的位置
+.rollway-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--track-h);
+  margin-top: calc(var(--track-h) * -.5);
+  overflow: hidden;
+  border-radius: $border-radius-pill;
+  background-color: $progress-track;
+  box-shadow: inset 0 2px 3px rgba($grape, .12);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--pos);
+    border-radius: inherit;
+    background-color: $progress-fill;
+    transform-origin: left center;
+    animation: blocks-build 1.1s cubic-bezier(.2, .8, .2, 1) both;
+  }
+}
+.rollway.is-over .rollway-track::before {
+  background: linear-gradient(90deg, $progress-fill var(--target), $progress-over var(--target));
+}
+// 目標旗：旗桿葡萄墨＋檸檬旗面＋上方「目標」小字。未達標時旗子插在終點
+.rollway-flag {
+  position: absolute;
+  left: var(--target, 100%);
+  bottom: 50%;
+  height: calc(var(--track-h) * .5 + 1.375rem);
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 2px;
+  background-color: $ink;
+  font-family: $font-family-round;
+  font-size: .75rem;
+  line-height: 1;
+  color: $ink;
+  white-space: nowrap;
+
+  // 旗面
+  &::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 0;
+    width: .875rem;
+    height: .6875rem;
+    background-color: $progress-flag;
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+    filter: drop-shadow(0 0 .5px $ink);
+  }
+  // 「目標」字放在旗子左上方，不壓到旗面
+  > span {
+    position: absolute;
+    right: .375rem;
+    top: -.125rem;
+  }
+}
+// 小球：外層 .rollway-run 的寬度＝小球停的位置，載入時整條從左邊滑進來（只動 transform）
+.rollway-run {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: clamp(var(--ball), calc(var(--pos) + var(--ball) * .5), 100%);
+  height: var(--ball);
+  animation: rollway-run 1.1s cubic-bezier(.3, 1.2, .55, 1) both;
+}
+.rollway-ball {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: var(--ball);
+  height: var(--ball);
+  border-radius: 50%;
+  // 葡萄紫小球：一道淡紫色環帶（滾動時看得出在轉）＋白色高光
+  background:
+    radial-gradient(circle at 34% 30%, rgba($card, .95) 0 12%, rgba($card, 0) 13%),
+    linear-gradient(115deg, transparent 0 42%, rgba($lilac-300, .75) 42% 56%, transparent 56%),
+    radial-gradient(circle at 40% 35%, $grape-light, $grape 55%, $grape-800);
+  box-shadow: 0 4px 8px rgba($grape, .35);
+  animation: rollway-spin 1.1s cubic-bezier(.3, 1.2, .55, 1) both;
+}
+
+// 迷你版（底部托盤）：8px 軌道、18px 小球、沒有「目標」字
+.rollway-mini {
+  --track-h: #{$rollway-mini-height};
+  --ball: #{$rollway-mini-ball};
+  margin-top: .5rem;
+
+  .rollway-flag {
+    height: calc(var(--track-h) * .5 + .75rem);
+
+    &::before { width: .625rem; height: .5rem; }
+    > span { display: none; }
+  }
+}
+
+// ---------- 3. 積木塔（首頁 Hero 卡） ----------
+// 由上到下：最上層（部分）→ 第二層 → 第一層（底）；第一層是目標內（紫），之後是超額（櫻）
+.tower {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 5.25rem;
+  margin-right: 2.375rem; // 右側刻度字的空間
+}
+.tower-layer {
+  --fill: 100%;
+  position: relative;
+  display: block;
+  height: 1rem;
+
+  // 5 塊積木一層
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, $progress-fill var(--fill), $progress-track var(--fill));
+    -webkit-mask: $blocks-cell-mask 0 0 / 20% 100% repeat-x;
+    mask: $blocks-cell-mask 0 0 / 20% 100% repeat-x;
+    transform-origin: center bottom;
+    animation: tower-drop .5s cubic-bezier(.3, 1.3, .6, 1) both;
+  }
+  &.is-over::before {
+    background: linear-gradient(90deg, $progress-over var(--fill), $progress-track var(--fill));
+  }
+  // 層的刻度：100%、200%
+  &[data-tick]::after {
+    content: attr(data-tick);
+    position: absolute;
+    left: calc(100% + .375rem);
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: $font-family-figure;
+    font-size: .6875rem;
+    font-weight: 500;
+    line-height: 1;
+    color: $ink-muted;
+  }
+  // 由下往上依序疊上去
+  &:nth-last-child(1)::before { animation-delay: .1s; }
+  &:nth-last-child(2)::before { animation-delay: .35s; }
+  &:nth-last-child(3)::before { animation-delay: .6s; }
+}
+@keyframes tower-drop {
+  from { transform: translateY(-.75rem) scaleY(.6); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+// ---------- 4. 達成率泡泡（首頁 Hero 卡、專案細節遊戲墊） ----------
+// 檸檬黃圓角泡泡＋深字（10.9）；左下角收尖，像對話泡泡
+// <data class="rate-bubble figure-num" value="247">247%</data>
+.rate-bubble {
+  display: inline-grid;
+  place-items: center;
+  min-width: 6.5rem;
+  padding: .375rem 1rem .5rem;
+  border-radius: 1.5rem 1.5rem 1.5rem .375rem;
+  background-color: $lemon-400;
+  color: $ink;
+  font-size: 2.25rem;
+  box-shadow: inset 0 -3px 0 rgba($tone-warn, .18);
+
+  @include media-breakpoint-up(sm) {
+    font-size: 2.75rem;
+  }
+}

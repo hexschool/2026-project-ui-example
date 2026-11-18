@@ -1,0 +1,325 @@
+// ============================================================
+// 贊助結帳 checkout.html（co-）＋贊助成功 order-result.html（or-）
+// 兩頁共用：.flow-top（步驟條的位置）、.flow-col（置中窄版 760px）；步驟條、疊疊卡、選擇卡、明細清單在 components/_flow.scss
+//
+// 結帳：置中單欄，彩色卡一張張往下堆（收件 → 付款 → 禮物盒摘要），所有寬度同一個順序、不 sticky
+// 成功：淡紫洞洞板上掛著一張 640px 的吊牌（頂部打孔、細繩、下緣扇貝邊）
+// ============================================================
+
+// ---------- 兩頁共用 ----------
+.flow-top {
+  padding-top: map-get($spacers, 4);
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 5);
+  }
+}
+.flow-col {
+  max-width: 47.5rem; // 760px
+  margin-inline: auto;
+}
+
+// =================== 贊助結帳 ===================
+.co-head {
+  margin: map-get($spacers, 5) 0 map-get($spacers, 5);
+  text-align: center;
+
+  @include media-breakpoint-up(sm) {
+    margin: map-get($spacers, 6) 0;
+  }
+  h1 { margin-bottom: map-get($spacers, 2); }
+}
+.co-lead {
+  max-width: 30em;
+  margin: 0 auto;
+  color: $body-secondary-color;
+}
+// 卡片一張張往下堆
+.co-stack {
+  display: grid;
+  gap: map-get($spacers, 5);
+
+  @include media-breakpoint-up(sm) {
+    gap: 2.5rem;
+  }
+}
+.co-add {
+  margin-top: map-get($spacers, 3);
+}
+
+// 信用卡欄位：白色圓角子卡；選「行動支付」時隱藏（CSS :has()；不支援 :has() 的瀏覽器會一直顯示，不會擋住付款）
+.co-card-fields {
+  margin-top: map-get($spacers, 4);
+  padding: 1.25rem 1.25rem 1.5rem;
+  border: 2px solid $line;
+  border-radius: $border-radius-img;
+  background-color: $card;
+  box-shadow: $box-shadow-sm;
+
+  @include media-breakpoint-up(sm) {
+    padding: 1.5rem 1.5rem 1.75rem;
+  }
+}
+.co-pay:has(#payMobile:checked) .co-card-fields {
+  display: none;
+}
+.co-pay-note {
+  .bi { color: $grape; }
+}
+
+// 禮物盒摘要：最後一張卡
+.co-summary {
+  padding: 3rem 1.25rem 1.5rem;
+
+  @include media-breakpoint-up(sm) {
+    padding: 3.25rem 2rem 2rem;
+  }
+}
+.co-summary-title {
+  margin-bottom: map-get($spacers, 4);
+  font-size: 1.5rem;
+  text-align: center;
+}
+.co-summary-grid {
+  display: grid;
+  gap: map-get($spacers, 4);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: start;
+    gap: map-get($spacers, 5);
+  }
+}
+.co-summary-divider {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 2px dashed $lilac-300;
+}
+.co-total dd {
+  font-size: 2.25rem;
+}
+.co-ship {
+  margin: map-get($spacers, 3) 0 0;
+}
+.co-submit {
+  margin-top: map-get($spacers, 4);
+}
+
+// =================== 贊助成功 ===================
+// 淡紫洞洞板：上方掛鉤＋細繩；吊牌掛在下面
+$or-hole-y:      1.875rem; // 孔的圓心離吊牌上緣 30px
+$or-hole-r:      .6875rem; // 孔半徑 11px
+$or-board-top:   4.5rem;   // 吊牌上緣離板子上緣 72px
+$or-scallop:     .75rem;   // 扇貝邊的高度 12px
+
+.or-board {
+  @include pegboard;
+  position: relative;
+  overflow: clip;
+  max-width: 56rem;
+  margin: map-get($spacers, 5) auto 0;
+  padding: $or-board-top map-get($spacers, 3) map-get($spacers, 6);
+  border-radius: $border-radius-xl;
+  background-color: $lilac-50;
+
+  @include media-breakpoint-up(sm) {
+    padding-inline: map-get($spacers, 5);
+    border-radius: $border-radius-xxl;
+  }
+  @include media-breakpoint-up(lg) {
+    padding-bottom: map-get($spacers, 7);
+  }
+}
+// 掛鉤：葡萄紫小球（裝飾）
+.or-peg {
+  position: absolute;
+  left: 50%;
+  top: 1.5rem;
+  z-index: 2;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-left: -.625rem;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 30%, rgba($card, .95) 0 12%, rgba($card, 0) 13%),
+    radial-gradient(circle at 40% 35%, $grape-light, $grape 55%, $grape-800);
+  box-shadow: 0 3px 6px rgba($grape, .3);
+}
+// 細繩：從掛鉤繞下來，穿過吊牌的孔（畫在吊牌後面，只有板子上與孔裡看得到）
+.or-string {
+  position: absolute;
+  left: 50%;
+  top: calc(2.125rem - 6px); // 掛鉤圓心（24＋10px）對齊路徑起點
+  z-index: 0;
+  width: 4rem;
+  height: 5.5rem;
+  margin-left: -2rem;
+  overflow: visible;
+
+  path {
+    fill: none;
+    stroke: $lilac-500;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+}
+.or-board > .deco { z-index: 0; }
+
+.or-tag-wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 40rem; // 640px
+  margin-inline: auto;
+  filter: drop-shadow(0 10px 18px rgba($grape, .14));
+
+  // 孔的金屬圈（在遮罩外面，所以另外畫）：中間透空
+  &::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: $or-hole-y;
+    z-index: 2;
+    width: calc(#{$or-hole-r * 2} + 8px);
+    height: calc(#{$or-hole-r * 2} + 8px);
+    margin: calc(-#{$or-hole-r} - 4px) 0 0 calc(-#{$or-hole-r} - 4px);
+    border: 4px solid $lilac-300;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+}
+// 吊牌：白底、上緣 32px 圓角；孔與扇貝邊用遮罩挖出來
+.or-tag {
+  position: relative;
+  padding: 3.75rem 1.25rem calc(2rem + #{$or-scallop});
+  border-radius: $border-radius-xl $border-radius-xl 0 0;
+  background-color: $card;
+  text-align: center;
+  // 3 層遮罩：孔（挖掉）、吊牌本體（扣掉最下面一條）、扇貝（一排半圓）
+  mask-image:
+    radial-gradient(circle $or-hole-r at 50% $or-hole-y, #000 calc(100% - .5px), transparent 100%),
+    linear-gradient(#000, #000),
+    radial-gradient(circle $or-scallop at 50% 0, #000 calc(100% - .5px), transparent 100%);
+  mask-position: 0 0, 0 0, 50% 100%;
+  mask-size: 100% 100%, 100% calc(100% - #{$or-scallop - .0625rem}), ($or-scallop * 2) $or-scallop;
+  mask-repeat: no-repeat, no-repeat, round no-repeat;
+  mask-composite: exclude, add, add;
+
+  @include media-breakpoint-up(sm) {
+    padding: 4rem 2.5rem calc(2.5rem + #{$or-scallop});
+  }
+}
+.or-tag-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+}
+// 成功圖示：白色圓泡＋成功色淡圈
+.or-check {
+  display: grid;
+  place-items: center;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background-color: $card;
+  color: $tone-ok;
+  font-size: 3.25rem;
+  line-height: 1;
+  box-shadow: 0 0 0 6px $tone-ok-bg, $box-shadow;
+
+  .bi { line-height: 1; }
+}
+// 3 塊疊好的積木（裝飾）：由下往上 櫻、紫、黃
+.or-stack {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: -.125rem;
+
+  i {
+    display: block;
+    height: .875rem;
+    border-radius: .3125rem;
+    box-shadow: inset 0 -3px 0 rgba($ink, .1);
+
+    &:nth-child(1) { width: 2.5rem; background-color: $sakura-300; }
+    &:nth-child(2) { width: 2rem; background-color: $lilac-300; }
+    &:nth-child(3) { width: 1.5rem; background-color: $lemon-400; transform: rotate(-6deg); }
+  }
+}
+.or-title {
+  margin-bottom: map-get($spacers, 2);
+}
+.or-lead {
+  max-width: 30em;
+  margin: 0 auto;
+  color: $body-secondary-color;
+}
+// 點線分段
+.or-part {
+  margin-top: 1.75rem;
+  padding-top: 1.75rem;
+  border-top: 3px dotted $line-strong;
+  text-align: start;
+}
+.or-part-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+
+  // 標題前一塊小積木（裝飾）
+  &::before {
+    content: "";
+    flex-shrink: 0;
+    width: .875rem;
+    height: .625rem;
+    border-radius: 3px;
+    background-color: $sakura-300;
+    box-shadow: inset 0 -2px 0 rgba($ink, .1);
+  }
+}
+.or-part:nth-of-type(2) .or-part-title::before { background-color: $lilac-300; }
+.or-part:nth-of-type(3) .or-part-title::before { background-color: $lemon-400; }
+
+// 專案那一列：縮圖＋名稱（有縮圖，標籤改成垂直置中，不貼底）
+.detail-list .or-project-row {
+  @include media-breakpoint-up(sm) {
+    align-items: center;
+  }
+}
+.or-project-row dd {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+
+  @include media-breakpoint-up(sm) {
+    justify-content: flex-end;
+  }
+}
+.or-thumb {
+  flex: 0 0 4.5rem;
+  width: 4.5rem;
+  border-radius: $border-radius-sm;
+}
+.or-ship-date {
+  margin: 0 0 .25rem;
+  font-size: 2.25rem;
+  color: $ink;
+}
+.or-ship-note {
+  margin: 0;
+  color: $body-secondary-color;
+}
+.or-actions {
+  display: grid;
+  gap: .75rem;
+  margin-top: map-get($spacers, 4);
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -1,0 +1,303 @@
+// ============================================================
+// 贊助紀錄詳情 backing.html（class 前綴 bk-）
+// 構圖（方向說明 2.6）：頁面標題區（麵包屑 → H1＋贊助編號 Mono｜回到贊助紀錄）
+//   → 4：8（992～1199 為 5：7）：左 4 sticky 主控台（專案摘要＋付款資訊，.hud）｜右 8 模組堆疊
+//     （我的方案 → 收件資訊＋Collapse 改地址 → 生產與交付進度：迷你發射序列 → 取消贊助）
+//   生產進度 ≥ 1400 才橫向（.sequence-xxl）
+//   → 設計稿狀態示意（≥ 768 兩欄，縮小版主控台卡＋該狀態才有的內容）
+// < 992：單欄，專案摘要最前、付款資訊接著、取消贊助最後（狀態示意之前）
+// 修改收件資訊用 Bootstrap Collapse、取消贊助用 Bootstrap Modal，沒有新增 JS
+// ============================================================
+
+// ---------- 頁面標題區 ----------
+.bk-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: map-get($spacers, 3) map-get($spacers, 6);
+}
+.bk-head-meta { margin-top: map-get($spacers, 1); }
+
+// ---------- 主體 4：8 ----------
+.bk-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: map-get($spacers, 5);
+
+  // 992～1199 版心較窄，左欄先放寬到 5：7，避免專案名稱與贊助編號被擠成好幾行
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+    column-gap: map-get($spacers, 6);
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    column-gap: map-get($spacers, 7);
+  }
+}
+.bk-aside {
+  min-width: 0;
+
+  // 視窗高度放得下整個主控台時才 sticky，矮螢幕照常捲走
+  @include media-breakpoint-up(lg) {
+    @media (min-height: 50rem) {
+      position: sticky;
+      top: $sticky-offset;
+    }
+  }
+}
+.bk-main {
+  display: grid;
+  gap: map-get($spacers, 5);
+  min-width: 0;
+}
+
+// ---------- 左欄主控台：專案摘要＋付款資訊 ----------
+// 主控台本身當容器：欄寬不夠時縮圖變小、付款資訊改成標籤在上
+.bk-console { container-type: inline-size; }
+.bk-summary > * + * { margin-top: map-get($spacers, 4); }
+.bk-summary .pledge-project-thumb { width: 5.5rem; }
+.bk-payment .detail-list > div { grid-template-columns: 5.5em minmax(0, 1fr); }
+@container (max-width: 21rem) {
+  .bk-summary .pledge-project-thumb { width: 4.5rem; }
+  .bk-payment .detail-list > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+}
+.bk-summary-title {
+  margin-bottom: .125rem;
+  font-size: 1.125rem;
+  line-height: 1.45;
+}
+// 目前達成 247% ‧ 剩 12 天：中文照原文，數字用 Chakra 放大
+.bk-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .25rem .5rem;
+  margin: 0;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+
+  .num-display {
+    color: $sky-300;
+    font-size: $readout-s;
+  }
+  .bk-stats-days .num-display {
+    color: $fg;
+    font-size: 1.25rem;
+  }
+}
+.bk-stats-sep { color: $line-strong; }
+// 付款資訊：主控台裡的第二段，標頭列同主控台的 console-head
+.bk-console-sub {
+  border-top: 1px solid $line;
+  border-radius: 0;
+}
+.bk-console-sub-title {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: .06em;
+}
+.bk-payment-note {
+  display: flex;
+  gap: .5rem;
+  margin: map-get($spacers, 4) 0 0;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+  line-height: 1.7;
+
+  .bi { color: $ok-ink; }
+}
+
+// ---------- 右欄模組 ----------
+// 我的方案：左 方案名稱＋回饋內容＋顏色｜右 金額明細＋預計出貨（中間一道直立髮絲線）
+.bk-plan {
+  display: grid;
+  gap: map-get($spacers, 5);
+
+  @container (min-width: 36rem) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 17rem);
+    gap: 0;
+
+    > :first-child { padding-right: map-get($spacers, 5); }
+    > :last-child {
+      padding-left: map-get($spacers, 5);
+      border-left: 1px solid $line;
+    }
+  }
+}
+.bk-plan-name {
+  margin-bottom: map-get($spacers, 3);
+  font-size: $h3-font-size;
+}
+.bk-color {
+  margin: map-get($spacers, 3) 0 0;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+  line-height: 1.7;
+
+  strong {
+    margin-right: .5rem;
+    color: $fg;
+    font-weight: $font-weight-medium;
+  }
+}
+.bk-plan .ledger-total .readout-value { font-size: $readout-m; }
+.bk-ship {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  margin: map-get($spacers, 4) 0 0;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+
+  .bk-ship-value { color: $fg; font-size: 1rem; }
+  .num-display { font-size: 1.125rem; }
+}
+
+// 收件資訊：目前的地址（靜態）｜修改收件資訊＋說明
+.bk-address-row {
+  display: grid;
+  gap: map-get($spacers, 4);
+
+  @container (min-width: 36rem) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 15rem);
+    align-items: start;
+    gap: map-get($spacers, 5);
+  }
+}
+.bk-address {
+  padding: 1rem 1.125rem;
+  border: 1px solid rgba($sky-400, .5);
+  border-radius: $border-radius-lg;
+  background-color: $ti-900;
+
+  .option-card-title { margin-bottom: .375rem; }
+}
+.bk-address-side {
+  .btn { margin-bottom: map-get($spacers, 3); }
+  p {
+    margin: 0;
+    color: $fg-muted;
+    font-size: $font-size-sm;
+  }
+}
+// 展開後的地址選擇
+.bk-ship-edit {
+  margin-top: map-get($spacers, 5);
+  padding-top: map-get($spacers, 5);
+  border-top: 1px dashed $line-strong;
+}
+.bk-ship-edit-legend {
+  float: none;
+  width: auto;
+  margin-bottom: map-get($spacers, 3);
+  font-size: 1rem;
+  font-weight: $font-weight-medium;
+  letter-spacing: .04em;
+}
+.bk-ship-edit-note {
+  margin: map-get($spacers, 4) 0;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+}
+
+// 生產與交付進度：迷你發射序列（≥ 1400 橫向 4 站，不放照片）
+.bk-sequence {
+  --gap: 1.25rem;
+
+  .sequence-title { font-size: 1.0625rem; }
+}
+.bk-update {
+  margin: 0;
+  font-size: .9375rem;
+  line-height: 1.7;
+}
+.is-todo .bk-update { color: $fg-muted; }
+.bk-update-date {
+  display: block;
+  color: $fg-muted;
+  font-family: $font-family-monospace;
+  font-size: $mono-size;
+}
+.bk-progress-foot {
+  margin-top: map-get($spacers, 4);
+  padding-top: map-get($spacers, 3);
+  border-top: 1px solid $line;
+}
+
+// 取消贊助：規則＋這筆的期限與退款｜危險外框按鈕（層級低）
+.bk-cancel {
+  display: grid;
+  gap: map-get($spacers, 4);
+
+  @container (min-width: 36rem) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: map-get($spacers, 6);
+  }
+
+  p:last-child { margin-bottom: 0; }
+}
+
+// ---------- 取消贊助確認對話框（Modal 與狀態示意的靜態樣子共用）----------
+.bk-modal .modal-title {
+  font-size: 1.25rem;
+  letter-spacing: .04em;
+}
+.bk-modal .modal-body p { margin: 0; }
+// 靜態樣子不加 .modal：Bootstrap 的 --bs-modal-* 定義在 .modal 上，這裡用同一組 Sass 變數補上
+.bk-dialog-demo {
+  --#{$prefix}modal-padding: #{$modal-inner-padding};
+  --#{$prefix}modal-color: #{$modal-content-color};
+  --#{$prefix}modal-bg: #{$modal-content-bg};
+  --#{$prefix}modal-border-color: #{$modal-content-border-color};
+  --#{$prefix}modal-border-width: #{$modal-content-border-width};
+  --#{$prefix}modal-border-radius: #{$modal-content-border-radius};
+  --#{$prefix}modal-box-shadow: #{$modal-content-box-shadow-xs};
+  --#{$prefix}modal-inner-border-radius: #{$modal-content-inner-border-radius};
+  --#{$prefix}modal-header-padding: #{$modal-header-padding};
+  --#{$prefix}modal-header-border-color: #{$modal-header-border-color};
+  --#{$prefix}modal-header-border-width: #{$modal-header-border-width};
+  --#{$prefix}modal-title-line-height: #{$modal-title-line-height};
+  --#{$prefix}modal-footer-gap: #{$modal-footer-margin-between};
+  --#{$prefix}modal-footer-bg: #{$modal-footer-bg};
+  --#{$prefix}modal-footer-border-color: #{$modal-footer-border-color};
+  --#{$prefix}modal-footer-border-width: #{$modal-footer-border-width};
+  max-width: 32rem;
+  margin-inline: auto;
+}
+
+// ---------- 設計稿狀態示意 ----------
+// 縮小版主控台（不加 HUD 角括號）：標頭列放狀態徽章，內容是專案摘要＋這個狀態才有的內容
+.bk-demo-console .console-body > * + * { margin-top: map-get($spacers, 4); }
+.bk-demo-console .pledge-project-thumb { width: 5.5rem; }
+.bk-demo-block {
+  padding-top: map-get($spacers, 4);
+  border-top: 1px solid $line;
+
+  > .label { margin-bottom: map-get($spacers, 2); }
+}
+.bk-demo-progress {
+  margin: 0;
+  color: $fg-muted;
+  font-size: $font-size-sm;
+
+  strong { color: $fg; font-weight: $font-weight-bold; }
+}
+// 募資失敗 ‧ 已退款：整塊降一階（同個人頁卡片 4：更深的底、縮圖降透明度）
+.bk-demo-console.is-muted {
+  background-color: $ti-900;
+
+  .console-head { background-color: $ti-950; }
+  .pledge-project-name { color: $fg-muted; }
+  .pledge-project-thumb {
+    opacity: .5;
+    filter: grayscale(.6);
+  }
+}
