@@ -1,0 +1,181 @@
+// ============================================================
+// 我的課程 my-courses.html：卡片格，不是一門一列
+// 標題區：左邊麵包屑、H1、說明；右邊 3 張小統計卡（Manrope 數字）＋「購買紀錄」連結
+// → 霜藍軌道上的分段控制（全部 3／學習中 2／已完成 1，aria-pressed，js/main.js 第 6 項真的篩選）
+// → 3 欄直式白卡（< 768 單欄、768–991 兩欄）：封面 16:9 → 狀態 → 課名 → 講師 → 進度 → 上次看到／完課日期 → 按鈕
+// ============================================================
+
+// ---------- 標題區 ----------
+.mc-head {
+  display: grid;
+  gap: 2rem;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 3rem;
+  }
+}
+.mc-head-text {
+  > nav { margin-bottom: .75rem; }
+  h1 { margin-bottom: .5rem; }
+}
+.mc-head-side {
+  display: grid;
+  gap: .5rem;
+  justify-items: start;
+
+  @include media-breakpoint-up(lg) { justify-items: end; }
+}
+// 3 張小統計卡：390 寬也並排
+.mc-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .75rem;
+  width: 100%;
+  margin: 0;
+
+  @include media-breakpoint-up(sm) { gap: 1rem; }
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(3, 8.5rem);
+    width: auto;
+  }
+}
+.mc-stat {
+  display: flex;
+  flex-direction: column-reverse; // 視覺上數字在上、標籤在下；DOM 仍是 dt → dd
+  gap: .125rem;
+  padding: .875rem 1rem;
+
+  @include media-breakpoint-up(lg) { padding: 1rem 1.25rem; }
+
+  dt {
+    color: $slate;
+    font-size: .8125rem;
+    font-weight: $font-weight-normal;
+    line-height: 1.6;
+    @include media-breakpoint-up(sm) { font-size: .875rem; }
+  }
+  dd {
+    margin: 0;
+    color: $slate;
+    font-size: .875rem;
+    line-height: 1.2;
+  }
+  .num {
+    margin-right: .25rem;
+    color: $ink;
+    font-size: 1.625rem;
+    font-weight: $font-weight-semibold;
+    @include media-breakpoint-up(lg) { font-size: 1.75rem; }
+  }
+}
+
+// ---------- 分段控制 ----------
+.mc-filter {
+  margin-bottom: 2rem;
+
+  .num { font-weight: $font-weight-semibold; } // 和文字之間的 8px 是 .btn 的 gap
+}
+
+// ---------- 我的課程卡（MyCourseCard） ----------
+// <li class="col" data-status="學習中">
+//   <article class="lite-card is-snug mc-card" aria-labelledby="…">
+//     <div class="img-frame mc-card-cover"><img …></div>
+//     <div class="mc-card-body">
+//       <p class="mc-card-status"><span class="tag tag-learning">…學習中</span></p>
+//       <h2 class="mc-card-title">…</h2>
+//       <p class="course-card-teacher">…</p>
+//       <div class="mc-card-progress"><div class="progress" role="progressbar" …></div><p class="progress-text num">…</p></div>
+//       <dl class="mc-card-last">…上次看到…</dl>（已完課：<p class="mc-card-last">…完課</p>）
+//       <a class="btn btn-primary w-100" href="learn.html">繼續上課</a>
+//     </div>
+//   </article>
+// </li>
+.mc-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.mc-card-cover {
+  aspect-ratio: 16 / 9;
+}
+.mc-card-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  padding: 1rem .5rem .5rem;
+}
+.mc-card-status {
+  margin: 0 0 .75rem;
+}
+.mc-card-title {
+  margin-bottom: .75rem;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.55;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+
+  @include media-breakpoint-up(lg) { font-size: 1.125rem; }
+}
+.mc-card-progress {
+  margin: .5rem 0 1rem;
+}
+// 上次看到／完課日期：一塊霜藍小框，常駐顯示（不靠 hover）
+.mc-card-last {
+  margin: 0 0 1.25rem;
+  padding: .75rem 1rem;
+  border-radius: $border-radius;
+  background-color: $frost;
+  font-size: .9375rem;
+  line-height: 1.6;
+
+  dt {
+    color: $slate;
+    font-size: .8125rem;
+    font-weight: $font-weight-normal;
+  }
+  dd {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .75rem;
+    margin: 0;
+    color: $ink;
+  }
+  .num { flex: 0 0 auto; color: $glacier-deep; font-weight: $font-weight-semibold; }
+}
+p.mc-card-last {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  color: $ink;
+
+  .bi { color: $pine; }
+}
+.mc-card-btn {
+  margin-top: auto;
+}
+// 已完課：降一階（封面淡一點、進度條改松綠，和「已完課」標籤同色；文字對比不變）
+.mc-card.is-done {
+  .mc-card-cover img { opacity: .82; }
+  .progress-bar { background-color: $pine; } // 對軌道 4.54:1
+}
+
+// ---------- 設計稿狀態示意：還沒有任何課程時 ----------
+.mc-demo-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1.5rem;
+  margin-bottom: 1rem;
+
+  p {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: $font-weight-medium;
+    line-height: 1.35;
+  }
+}

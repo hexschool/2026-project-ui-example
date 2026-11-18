@@ -1,0 +1,326 @@
+// ============================================================
+// 我的課程 my-courses.html（2026-11 補頁，class 前綴 mycourses-、mycourse-）
+// 標題區：左 H1＋說明；右 3 個色塊泡泡統計（向日葵、天空、珊瑚）＋購買紀錄連結（< 992px 排在說明下方）
+// 粗膠囊篩選（.nav-pills-bold，按鈕帶 aria-pressed，js/main.js 切換 .active）
+// 課程卡：貼紙卡＋頂部色條；圓角封面下緣疊一個 96px 甜甜圈進度（招牌，12px 粗環）；已完課換成勳章（.medal-animate-view）
+// 欄數：< 768px 1 欄、768～991px 2 欄、≥ 992px 3 欄錯落（第 1 張左轉 1.5°、第 2 張往下 64px、第 3 張右轉 1.5° 往下 24px；靜態，不影響其他卡）
+// ============================================================
+
+.mycourses-header { margin-bottom: 1.75rem; }
+.mycourses-header-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem 2.5rem;
+}
+.mycourses-header-text {
+  flex: 1 1 18rem;
+  min-width: 0;
+
+  h1 { margin-bottom: .5rem; }
+}
+.mycourses-header-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+
+  @include media-breakpoint-up(lg) { align-items: flex-end; }
+}
+
+// 色塊泡泡：數字在上（Baloo 2）、標籤在下；dl 的順序是 dt → dd，畫面用 column-reverse 讓數字在上
+.mycourses-stats {
+  display: flex;
+  gap: .875rem;
+  margin: 0;
+
+  @include media-breakpoint-up(sm) { gap: 1.25rem; }
+}
+.mycourses-stat {
+  display: flex;
+  flex: none;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  background: $sunflower;
+  box-shadow: $shadow-hard;
+  text-align: center;
+
+  dt {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  dd {
+    margin: 0 0 .125rem;
+    font-weight: 800;
+    line-height: 1.1;
+
+    .num {
+      margin-right: .125rem;
+      font-size: 1.875rem;
+      font-weight: 800;
+    }
+  }
+
+  &.is-sky   { background: $sky; }
+  &.is-coral { background: $coral; }
+
+  @include media-breakpoint-up(sm) {
+    width: 112px;
+    height: 112px;
+
+    dd .num { font-size: 2.25rem; }
+  }
+}
+.mycourses-orders .bi { font-size: 1.125em; }
+
+// ---------- 篩選 ----------
+// < 576px 三顆膠囊要排在同一列（SPEC）：不換行、平分整列寬，左右內距與數量小圓章縮小（360 寬也放得下）
+.mycourses-filter {
+  margin-bottom: 2rem;
+
+  @include media-breakpoint-down(sm) {
+    flex-wrap: nowrap;
+    gap: .375rem;
+
+    .nav-link {
+      flex: 1 1 auto;
+      justify-content: center;
+      gap: .25rem;
+      padding-inline: .5rem;
+    }
+    .mycourses-filter-count {
+      min-width: 24px;
+      height: 24px;
+      margin-left: 0;
+      font-size: .875rem;
+    }
+  }
+}
+.mycourses-filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  margin-left: .25rem;
+  padding: .125rem .375rem 0;
+  border: 2px solid $ink;
+  border-radius: $border-radius-pill;
+  background: $white;
+  font-size: .9375rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+// ---------- 課程清單 ----------
+.mycourses-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+
+  > li {
+    display: flex;
+    min-width: 0;
+  }
+  > li[hidden] { display: none; } // 篩選時 js 加 hidden；上面的 display: flex 會蓋掉瀏覽器預設，這裡補回來
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem 1.75rem; }
+  // ≥ 992px：3 張貼紙卡錯落貼在桌上（招牌，和 02 北歐的 3 欄整齊輕卡區隔）
+  //   高度各自依內容（不拉齊），第 1 張左轉 1.5°、第 2 張往下 64px 不轉、第 3 張右轉 1.5° 並往下 24px
+  //   都是靜態的 rotate／translate（不影響格線，也不會因為 hover 改變）；篩選後照「顯示中的順序」算，
+  //   不支援 of 語法的瀏覽器就是整齊的 3 欄。旋轉後卡角最多往外 8px，版心左右的留白放得下
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    padding-bottom: 4rem; // 往下錯開的那張多出來的高度
+
+    > :nth-child(1 of :not([hidden])) { rotate: -1.5deg; }
+    > :nth-child(2 of :not([hidden])) { translate: 0 4rem; }
+    > :nth-child(3 of :not([hidden])) { rotate: 1.5deg; translate: 0 1.5rem; }
+  }
+  @include media-breakpoint-up(xl) { column-gap: 2.25rem; }
+}
+
+.mycourse {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.mycourse-media {
+  position: relative;
+  margin: .75rem .75rem 0;
+}
+.mycourse-cover {
+  aspect-ratio: 16 / 9;
+  border: 2px solid $ink;
+  border-radius: $radius-image;
+  overflow: hidden;
+  background: $sky-soft;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// 甜甜圈進度（招牌）：96px，壓在封面右下緣，一半在封面外
+.mycourse-donut,
+.mycourse-medal {
+  position: absolute;
+  right: .75rem;
+  bottom: -48px;
+  width: 96px;
+  height: 96px;
+}
+.mycourse-medal { bottom: -54px; }
+.mycourse-donut {
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    filter: drop-shadow(3px 3px 0 $ink);
+  }
+}
+.mycourse-donut-face { fill: $white; stroke: $ink; stroke-width: 2; }
+.mycourse-donut-track { fill: none; stroke: $sky-soft; stroke-width: 12; }
+.mycourse-donut-bar {
+  fill: none;
+  stroke: $sky-deep;
+  stroke-width: 12;
+  stroke-dasharray: var(--p) 100;
+  transform: rotate(-90deg);
+  transform-origin: 48px 48px;
+}
+.mycourse-donut-hole { fill: $white; stroke: $ink; stroke-width: 2; }
+.mycourse-donut-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: .125rem;
+  font-family: $font-family-num;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+
+  .num { font-size: 1.375rem; }
+}
+
+.mycourse-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: 1rem 1.25rem 1.5rem;
+
+  @include media-breakpoint-up(xl) { padding-inline: 1.5rem; }
+}
+// 狀態 chip＋進度文字：甜甜圈往封面下方突出 48px（勳章 54px），扣掉內距 16 後只壓到 chip 那一列（chip 在左、圓在右）；
+// chip 高 30＋間距 12，進度文字從圓的下緣之後才開始，可以用滿整列寬
+.mycourse-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .75rem;
+}
+.mycourse-progress-text {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+}
+.mycourse-title {
+  margin: 0;
+  font-size: 1.1875rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+// 上次看到：淡天空小框（標籤＋時間一列、單元名一列）；完課日期是淡葉綠
+.mycourse-last {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "label time"
+    "unit  unit";
+  align-items: center;
+  gap: .25rem .75rem;
+  width: 100%;
+  margin: 0;
+  padding: .625rem .875rem .75rem;
+  border: 2px solid $ink;
+  border-radius: 1rem;
+  background: $sky-soft;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  line-height: 1.6;
+
+  &.is-done {
+    display: flex;
+    gap: .5rem;
+    background: $leaf-soft;
+
+    .bi { color: $leaf-deep; font-size: 1.125rem; }
+  }
+}
+.mycourse-last-label {
+  grid-area: label;
+  justify-self: start;
+  padding: 0 .625rem;
+  border: 2px solid $ink;
+  border-radius: $border-radius-pill;
+  background: $white;
+  font-weight: 800;
+}
+.mycourse-last-time {
+  display: inline-flex;
+  grid-area: time;
+  justify-self: end;
+  align-items: center;
+  gap: .25rem;
+  font-size: 1.0625rem;
+  font-weight: 800;
+
+  .bi { color: $sky-deep; font-size: 1rem; }
+}
+.mycourse-last-unit {
+  grid-area: unit;
+  text-wrap: balance; // 992～1199px 卡片窄，「3-2 從土球到碗：拇指下壓的角度」折兩行時不讓「度」單獨一行
+  .num { font-weight: 800; }
+}
+.mycourse-action {
+  width: 100%;
+  margin-top: auto;
+}
+
+// ---------- 設計稿狀態示意：還沒有任何課程時 ----------
+.mycourses-demo-head {
+  margin-bottom: 1.5rem;
+
+  .page-lead { margin-bottom: .25rem; }
+}
+.mycourses-demo-title {
+  margin: 0 0 .375rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.mycourses-empty {
+  max-width: 40rem;
+  padding: 2.5rem 1.5rem;
+}

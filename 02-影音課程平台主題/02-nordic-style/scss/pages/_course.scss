@@ -1,0 +1,333 @@
+// ============================================================
+// 課程詳情 course.html
+// 構圖（≥ 992px）：8：4。左欄：白卡框裡的播放器 → 分類、H1、副標、meta 膠囊列 → 這堂課你會做出什麼（一張卡）
+//   → 課程章節（每一章是一張分開的白卡）→ 講師（一張卡）→ 評價（總覽卡＋評價卡）→ 常見問題（每題一張卡）
+//   右欄：sticky 白色購買卡（top: var(--sticky-top)），陪著整頁
+// < 992px：播放器 → 課程資訊 → 購買卡（一般流向，不 sticky）→ 其餘區塊
+// Bootstrap 的 row 做不到「右欄跨過左欄兩段、手機時插在兩段中間」，所以用 CSS Grid
+// ============================================================
+
+.course-crumb {
+  margin-bottom: 1rem;
+
+  .breadcrumb { margin-bottom: 0; }
+}
+
+.course-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    grid-template-rows: auto 1fr;
+    column-gap: $grid-gutter-width;
+
+    .course-top   { grid-column: 1; grid-row: 1; }
+    .course-aside { grid-column: 2; grid-row: 1 / span 2; }
+    .course-rest  { grid-column: 1; grid-row: 2; }
+  }
+  @include media-breakpoint-up(xl) {
+    column-gap: 3rem;
+  }
+}
+
+// 錨點：扣掉頁首（--sticky-top 96px）
+#trial,
+#purchase,
+.course-section {
+  scroll-margin-top: var(--sticky-top);
+}
+#trial:focus,
+#purchase:focus {
+  outline: 0;
+}
+
+// ---------- 課程資訊 ----------
+.course-intro {
+  padding-top: 2rem;
+
+  @include media-breakpoint-up(lg) { padding-top: 2.5rem; }
+}
+.course-category {
+  margin-bottom: .5rem;
+  color: $glacier-deep;
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+  letter-spacing: $letter-spacing-label;
+}
+.course-title {
+  margin-bottom: .75rem;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.course-lead {
+  max-width: 36em;
+  margin-bottom: 1.5rem;
+  color: $slate;
+}
+// meta 膠囊列（Notion 資訊標籤列 5 項）
+.course-facts {
+  gap: .5rem;
+
+  .chip {
+    gap: .4375rem;
+    padding: .375rem .875rem;
+    font-size: .875rem;
+  }
+  .bi { color: $slate; font-size: .875rem; }
+  .bi-star-fill { color: $amber; }
+  // 星等連到 #reviews：冰河藍深字＋底線（frost 上 6.67:1），hover 只換底色
+  a.chip {
+    color: $glacier-deep;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .3em;
+    transition: background-color .2s ease;
+
+    &:hover { background-color: $ice; }
+  }
+}
+
+// ---------- 購買卡的位置 ----------
+.course-aside {
+  margin-top: 2rem;
+
+  @include media-breakpoint-up(lg) { margin-top: 0; }
+}
+// sticky：視窗太矮（購買卡放不下）時不 sticky，避免下半部永遠看不到
+@include media-breakpoint-up(lg) {
+  @media (min-height: 700px) {
+    .course-aside .purchase-card {
+      position: sticky;
+      top: var(--sticky-top);
+    }
+  }
+}
+
+// ---------- 左欄各區塊：標題在雪白底上，內容在白卡裡；區塊之間只靠留白 ----------
+.course-section {
+  padding-top: 4.5rem;
+
+  @include media-breakpoint-up(lg) { padding-top: 6rem; }
+}
+.course-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .25rem 1.5rem;
+  margin-bottom: 1.5rem;
+
+  h2 { margin-bottom: 0; }
+}
+.course-section-sum {
+  margin: 0;
+  color: $slate;
+  font-size: .9375rem;
+}
+
+// 區塊二：這堂課你會做出什麼
+.outcome-photo {
+  aspect-ratio: 4 / 5;
+}
+.outcome-list {
+  margin: 0;
+
+  > div + div { margin-top: 1.5rem; }
+  dt {
+    margin-bottom: .375rem;
+    color: $glacier-deep;
+    font-size: .9375rem;
+    font-weight: $font-weight-bold;
+    letter-spacing: $letter-spacing-label;
+  }
+  dd { margin: 0; }
+}
+.outcome-learn {
+  display: grid;
+  gap: .375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    gap: .5rem;
+  }
+  .bi {
+    flex: 0 0 auto;
+    color: $glacier;
+    line-height: inherit;
+  }
+}
+@include media-breakpoint-up(md) {
+  .outcome-card .row { align-items: center; }
+}
+
+// 區塊四：講師（≥ 768px 工作室照拉滿左欄高度，不在照片下方留一塊空白）
+.instructor-studio {
+  aspect-ratio: 3 / 2;
+
+  @include media-breakpoint-up(md) {
+    height: 100%;
+    min-height: 16rem;
+    aspect-ratio: auto;
+
+    // 直長的欄位只看得到照片中間一段；林子謙坐在照片左側約 1/3 處，往左對齊才不會切到臉
+    > img { object-position: 30% 50%; }
+  }
+}
+.instructor-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.instructor-avatar {
+  flex: 0 0 auto;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 3px $white, 0 0 0 4px $line;
+}
+.instructor-name {
+  margin: 0;
+}
+.instructor-role {
+  margin: 0;
+  color: $slate;
+  font-size: .9375rem;
+}
+.instructor-bio {
+  margin-bottom: 1rem;
+}
+.instructor-cv {
+  display: grid;
+  gap: .375rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+  font-size: .9375rem;
+
+  li {
+    display: flex;
+    gap: .625rem;
+  }
+  .bi {
+    flex: 0 0 auto;
+    color: $glacier;
+    line-height: inherit;
+  }
+}
+.instructor-works {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  .img-frame { aspect-ratio: 1; }
+}
+
+// 區塊五：評價
+.rating-summary {
+  display: grid;
+  gap: 1.25rem 2rem;
+
+  // < 1200px：總覽數字在左、分佈長條在右
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.rating-score {
+  margin: 0;
+  color: $ink;
+  font-family: $font-family-latin;
+  font-size: 3.5rem;
+  font-weight: $font-weight-semibold;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.rating-count {
+  margin: .5rem 0 0;
+  color: $slate;
+  font-size: .9375rem;
+}
+.rating-summary .stars {
+  margin-top: .75rem;
+  font-size: 1rem;
+}
+.rating-bars {
+  display: grid;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr) 2.25rem;
+    align-items: center;
+    gap: .75rem;
+    font-size: .875rem;
+  }
+  .num { color: $slate; }
+  .rating-bars-value { text-align: right; }
+}
+.review-toolbar {
+  margin-bottom: 1rem;
+}
+.review-list {
+  display: grid;
+  gap: .75rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+.review-card {
+  blockquote {
+    margin: .75rem 0 1rem;
+  }
+}
+.review-author {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .75rem;
+  margin: 0;
+  color: $ink;
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+}
+
+// 區塊六：常見問題（每題一張卡）
+.faq .accordion-button {
+  font-size: 1rem;
+  font-weight: $font-weight-medium;
+
+  @include media-breakpoint-up(lg) { font-size: 1.0625rem; }
+}
+.faq .accordion-body {
+  padding: 0 1.25rem 1.25rem;
+  color: $ink;
+
+  @include media-breakpoint-up(lg) { padding: 0 1.5rem 1.5rem; }
+}
+
+// ---------- 設計稿狀態示意 ----------
+// 鎖定提示：對話框的靜態畫面（白卡，置中）
+.course-demo-locked {
+  max-width: 22rem;
+  margin-inline: auto;
+  text-align: center;
+}
+// 已購買：章節＋購買卡並排
+.course-demo-owned .purchase-card {
+  box-shadow: $shadow-card;
+}

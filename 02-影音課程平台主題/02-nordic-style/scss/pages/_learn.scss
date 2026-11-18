@@ -1,0 +1,369 @@
+// ============================================================
+// 學習頁 learn.html（手捏陶 3-2）
+// 構圖（≥ 992px）：8：4。
+//   左：白卡框裡的播放器（續看 Toast 疊在左上）→ 單元標題（「3-2」＋單元名＋片長）
+//       → 操作列（一張細長的白卡：上一單元｜標記完成並繼續｜下一單元）→ 底線式分頁 → 面板
+//       單元重點＝橫線筆記紙；課程問答＝橫線底的輸入框＋白卡空狀態；附件下載＝一張白卡裡的檔案列
+//   右：sticky 側欄，是一疊分開的輕卡片：進度卡 →「課程章節」＋全部收合 → 每章一張可收合的章節卡
+// < 992px：側欄改成底部抽屜（.offcanvas-lg .offcanvas-bottom），由貼在視窗底部的「課程章節 50%」按鈕開啟
+// ============================================================
+
+// ---------- 頂列：麵包屑＋回到課程介紹 ----------
+.learn-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 1.5rem;
+  margin-bottom: 1rem;
+
+  .breadcrumb { margin-bottom: 0; }
+}
+.learn-back {
+  white-space: nowrap;
+}
+
+// ---------- 單元標題 ----------
+.learn-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .5rem 1rem;
+  margin: 1.75rem 0 1.25rem;
+
+  @include media-breakpoint-up(lg) { margin: 2.25rem 0 1.5rem; }
+}
+.learn-title {
+  margin: 0;
+  font-size: 1.625rem;
+  line-height: 1.4;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+
+  @include media-breakpoint-up(lg) { font-size: 2rem; }
+}
+// 單元編號：冰底小方塊（Manrope）
+.learn-title-no {
+  display: inline-block;
+  margin-right: .375rem;
+  padding: .125rem .5rem;
+  border-radius: $border-radius-sm;
+  background-color: $ice;
+  color: $glacier-deep;
+  font-size: .75em;
+  font-weight: $font-weight-semibold;
+  line-height: 1.4;
+  vertical-align: .125em;
+}
+.learn-duration {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  color: $slate;
+  font-size: .9375rem;
+}
+
+// ---------- 操作列：上一單元｜標記完成並繼續｜下一單元（一張細長的白卡） ----------
+// < 576px 上一／下一只留圖示（aria-label 有完整文字）
+.learn-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: 2.5rem;
+
+  &.lite-card { padding: .5rem; }
+
+  @include media-breakpoint-up(lg) { margin-bottom: 3rem; }
+}
+.learn-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  justify-self: start;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: .375rem .75rem;
+  border-radius: $border-radius;
+  color: $ink;
+  text-decoration: none;
+  transition: background-color .2s ease, color .2s ease;
+
+  > .bi {
+    flex: 0 0 auto;
+    color: $glacier;
+    font-size: 1.125rem;
+  }
+  &:hover {
+    background-color: $frost;
+    color: $glacier-deep;
+  }
+  @include media-breakpoint-down(sm) {
+    justify-content: center;
+    padding: 0;
+  }
+}
+.learn-nav-next {
+  justify-self: end;
+  text-align: right;
+}
+// 「上一單元：」一行、「3-1 土球該多大」一行（文字照抄，只是換行）
+.learn-nav-text {
+  display: none;
+  flex-direction: column;
+  min-width: 0;
+
+  @include media-breakpoint-up(sm) { display: flex; }
+}
+.learn-nav-label {
+  color: $slate;
+  font-size: .8125rem;
+  line-height: 1.5;
+}
+.learn-nav-title {
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.5;
+}
+
+// ---------- 分頁：底線式（冰河藍 2px） ----------
+.learn-tabs {
+  --bs-nav-underline-gap: 2rem;
+  --bs-nav-link-font-size: 1rem;
+  margin-bottom: 1.5rem;
+
+  .nav-link {
+    min-height: 2.75rem;
+    padding-block: .5rem;
+    color: $slate;
+
+    &:hover { color: $ink; }
+    // 選中只換顏色與底線，不換字重（Bootstrap 預設會變粗，字重變了寬度會跟著變）
+    &.active {
+      color: $glacier;
+      font-weight: $font-weight-medium;
+    }
+  }
+}
+
+// 單元重點：橫線筆記紙（白卡），至少 6 行高（border-box：再加上下內距與 1px 邊框）
+.learn-paper {
+  min-height: calc(var(--paper-line-height) * 6em + #{$card-padding-mobile * 2} + 2px);
+
+  @include media-breakpoint-up(lg) {
+    min-height: calc(var(--paper-line-height) * 6em + #{$card-padding * 2} + 2px);
+    padding: $card-padding 2rem;
+  }
+}
+
+// 課程問答：橫線底的輸入框＋送出 → 白卡空狀態
+.learn-qa {
+  display: grid;
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+
+  .form-control {
+    min-height: calc(var(--paper-line-height) * 4em + 1.5rem + 2px);
+    padding: .75rem 1rem;
+    resize: vertical;
+  }
+  .btn { justify-self: end; }
+}
+.learn-qa-empty {
+  padding-block: 1rem;
+}
+
+// 附件下載：一張白卡裡的檔案列（列與列之間只靠留白與 hover 底色）
+.file-list {
+  display: grid;
+  gap: .25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .875rem;
+    padding: .625rem .75rem;
+    border-radius: $border-radius;
+    transition: background-color .2s ease;
+
+    &:hover { background-color: $snow; }
+  }
+}
+.file-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.file-name {
+  overflow-wrap: anywhere;
+  font-size: .9375rem;
+  font-weight: $font-weight-medium;
+}
+.file-size {
+  color: $slate;
+  font-size: .8125rem;
+}
+
+// ---------- 側欄：一疊分開的輕卡片 ----------
+.learn-side-title {
+  margin: 0;
+  color: $ink;
+  font-size: 1rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+}
+.learn-progress-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .875rem;
+}
+.learn-progress-value {
+  margin: 0;
+  color: $glacier-deep;
+  font-family: $font-family-latin;
+  font-size: 1.75rem;
+  font-weight: $font-weight-semibold;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.learn-progress-text {
+  display: flex;
+  flex-direction: column;
+  margin: .75rem 0 0;
+  font-size: .875rem;
+  line-height: 1.7;
+
+  .num:first-child { color: $ink; font-weight: $font-weight-medium; }
+  .num + .num { color: $slate; }
+}
+.learn-chapters-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: .75rem .25rem 0;
+
+  .btn-text { margin-left: auto; }
+}
+
+// < 992px：底部抽屜
+@include media-breakpoint-down(lg) {
+  .learn-sidebar {
+    border-top-left-radius: $border-radius-xl;
+    border-top-right-radius: $border-radius-xl;
+
+    .offcanvas-header { padding: 1.25rem 1.25rem .25rem; }
+    .offcanvas-body {
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      padding: .75rem 1.25rem 2rem;
+    }
+  }
+}
+// ≥ 992px：sticky 側欄；比視窗高時側欄內部捲動（留一點內距，卡片陰影不被裁掉）
+@include media-breakpoint-up(lg) {
+  .learn-sidebar {
+    position: sticky;
+    top: var(--sticky-top);
+    max-height: calc(100vh - var(--sticky-top) - 1rem);
+    margin: -.25rem -.5rem 0;
+    padding: .25rem .5rem 1.5rem;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: $line transparent;
+    // 底部 1.5rem 淡出：側欄比視窗高時看得出還能往下捲；捲到底時這段只剩空白內距，不會遮到內容
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
+  }
+  .learn-sidebar.offcanvas-lg .offcanvas-body {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    overflow: visible;
+  }
+}
+
+// < 992px：貼在視窗底部的「課程章節 50%」按鈕（sticky：捲到學習內容最後就停在原位，不蓋住狀態示意與頁尾）
+.learn-dock {
+  position: sticky;
+  bottom: .75rem;
+  z-index: $zindex-sticky - 1;
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  pointer-events: none;
+}
+.learn-dock-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 3rem;
+  padding: .5rem 1.25rem;
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $white;
+  color: $ink;
+  font-weight: $font-weight-medium;
+  box-shadow: $shadow-float;
+  pointer-events: auto;
+  transition: border-color .2s ease, background-color .2s ease;
+
+  > .bi { color: $glacier; font-size: 1.125rem; }
+  .num { color: $glacier-deep; font-weight: $font-weight-semibold; }
+  &:hover { border-color: mix($glacier-mid, $white, 45%); }
+  &:focus-visible { outline: none; box-shadow: $focus-ring-double, $shadow-float; }
+}
+// 按鈕裡的迷你進度條（裝飾，數字在旁邊）
+.learn-dock-bar {
+  position: relative;
+  width: 3rem;
+  height: .375rem;
+  overflow: hidden;
+  border-radius: $border-radius-pill;
+  background-color: $track;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--value, 0%);
+    border-radius: inherit;
+    background-color: $glacier;
+  }
+}
+
+// ---------- 設計稿狀態示意 ----------
+// 完成一章時：白卡＋松綠圓底勾
+.chapter-done-note {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  p { margin: 0; }
+}
+// 全課完成時：取代操作列
+.course-complete {
+  display: grid;
+  gap: 1.25rem;
+
+  .progress { margin-top: .25rem; }
+}
+.course-complete-text {
+  display: flex;
+  align-items: flex-start;
+  gap: .875rem;
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.7;
+}
+.course-complete-btn {
+  justify-self: start;
+}

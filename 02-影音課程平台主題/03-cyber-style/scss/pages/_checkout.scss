@@ -1,0 +1,307 @@
+// ============================================================
+// 購買課程 checkout.html
+// 992px 以上：左 5 欄是 sticky 的「主控台」（購買的課程、購買包含、永久觀看說明、應付金額、安心提示、確認付款），
+// 右 7 欄是購買帳號、付款方式（3 塊切角 radio 面板）、發票。摘要和按鈕在左，和其他風格左右相反。
+// 992px 以下的順序：課程摘要 → 表單 → 應付金額＋確認付款。
+// 做法：主控台 .co-console 在 992px 以下是 display: contents，兩個子區塊直接變成 .co-layout 的 flex 項目，用 order 分到頭尾
+// ============================================================
+
+// 標題區：回到課程介紹 → H1 → 說明（流程頁沒有麵包屑）
+.co-back {
+  margin-bottom: .5rem;
+  margin-left: -.125rem;
+}
+
+.co-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+    gap: 2.5rem;
+  }
+  @include media-breakpoint-up(xl) {
+    gap: 3.5rem;
+  }
+}
+
+// ---------- 主控台（992px 以上是一塊切角面板） ----------
+.co-console {
+  display: contents;
+
+  @include media-breakpoint-up(lg) {
+    @include cut-frame;
+    display: block;
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
+// 摘要比視窗高時不 sticky（視窗高度 760px 以上才 sticky）
+@media (min-width: 992px) and (min-height: 760px) {
+  .co-console {
+    position: sticky;
+    top: var(--sticky-top);
+  }
+}
+// 面板頂端一道短光束（992px 以上才有，因為 992px 以下主控台沒有外框）
+.co-console-beam {
+  display: none;
+
+  @include media-breakpoint-up(lg) {
+    display: block;
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: 6rem;
+    @include beam-line(2px);
+  }
+}
+.co-summary,
+.co-total {
+  padding: 1.25rem;
+
+  // 992px 以下各自是一塊切角面板
+  @include media-breakpoint-down(lg) {
+    @include cut-frame;
+  }
+  @include media-breakpoint-up(sm) {
+    padding: 1.5rem 1.75rem;
+  }
+}
+.co-summary {
+  order: 1;
+
+  @include media-breakpoint-up(lg) {
+    padding-bottom: 1.25rem;
+  }
+}
+.co-fields {
+  order: 2;
+
+  @include media-breakpoint-up(lg) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+.co-total {
+  order: 3;
+
+  @include media-breakpoint-up(lg) {
+    padding-top: 1.25rem;
+    border-top: 1px dashed $line;
+  }
+}
+
+// 992～1199px 主控台比較窄：封面縮小，留位置給課名
+.co-console .course-summary {
+  @include media-breakpoint-only(lg) {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: 1rem;
+  }
+}
+// 購買包含：576px 以上 2×2，壓低主控台的高度（992～1199px 主控台太窄，改回一欄）
+.co-includes {
+  margin-top: 1rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .625rem 1rem;
+  }
+  @include media-breakpoint-only(lg) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  li {
+    font-size: $font-size-sm;
+  }
+}
+.co-summary .purchase-card-title {
+  margin-top: 1.25rem;
+}
+// 永久觀看的說明：常見問題的一問一答
+.co-faq {
+  margin: 1rem 0 0;
+  padding: .875rem 1rem;
+  border-left: 2px solid $violet-text;
+  background-color: rgba($deck-2, .7);
+  font-size: $font-size-sm;
+
+  dt {
+    margin-bottom: .25rem;
+    color: $text;
+    font-weight: 700;
+  }
+  dd {
+    margin: 0;
+    color: $text-2;
+  }
+}
+
+// 應付金額：左邊等寬標籤、右邊 Oxanium 大字
+.co-amount {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 .75rem;
+
+  dt {
+    color: $text-3;
+    font-family: $font-family-monospace;
+    font-size: $mono-font-size-lg;
+    font-weight: 400;
+    letter-spacing: $letter-spacing-mono;
+  }
+  dd {
+    margin: 0;
+    font-size: 1.75rem;
+    line-height: 1.1;
+
+    @include media-breakpoint-up(lg) {
+      font-size: $stat-font-size;
+    }
+  }
+}
+.co-total .purchase-card-note {
+  margin-bottom: 1.25rem;
+  padding-top: .75rem;
+}
+
+// ---------- 右欄：購買帳號、付款方式、發票 ----------
+.co-section {
+  margin: 0;
+  padding: 0 0 2rem;
+  border: 0;
+
+  & + & {
+    padding-top: 2rem;
+    border-top: 1px solid $line;
+  }
+  &:last-child {
+    padding-bottom: 0;
+  }
+}
+.co-account {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0;
+
+  > .bi {
+    display: inline-grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid $control;
+    border-radius: 50%;
+    background-color: $deck-2;
+    color: $violet-text;
+    font-size: 1.25rem;
+  }
+}
+.co-account-email {
+  display: block;
+  color: $text;
+  font-family: $font-family-monospace;
+  font-size: .9375rem;
+  letter-spacing: .02em;
+  overflow-wrap: anywhere;
+}
+.co-account-note {
+  display: block;
+  color: $text-3;
+  font-size: $font-size-sm;
+}
+
+// 付款方式：3 塊切角面板，整塊上半部是 label（點哪裡都能選）
+// 選中＝電光粉 2px 框＋紫光（同 .hud.is-active），radio 本身也是實心圓點，不只靠顏色
+.co-pay-options {
+  display: grid;
+  gap: .75rem;
+}
+.co-pay {
+  @include cut-frame;
+  transition: filter .2s ease;
+
+  &:hover {
+    --cut-line: #{$violet-text};
+  }
+  &:has(.form-check-input:checked) {
+    --cut-line: #{$pink-text};
+    --cut-bw: 2px;
+    --cut-fill: #{$deck-2};
+    filter: $glow-filter;
+  }
+  .form-check {
+    align-items: flex-start;
+    padding: .75rem 1.25rem;
+
+    .form-check-input {
+      margin-top: calc(.5rem + .3375em);
+    }
+  }
+}
+.co-pay-name {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  color: $text;
+  font-weight: 700;
+
+  .bi {
+    color: $violet-text;
+  }
+}
+.co-pay-note {
+  display: block;
+  color: $text-3;
+  font-size: $font-size-sm;
+}
+// 信用卡欄位：在「信用卡」面板裡，虛線下方；卡號滿寬，有效期限與安全碼並排（390 寬也並排）
+.co-card-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0 1.25rem;
+  padding: 1.25rem 0 1.5rem;
+  border-top: 1px dashed $line;
+
+  @include media-breakpoint-up(sm) {
+    margin-left: calc(1.25rem + 1.125em + .625rem); // 對齊選項文字
+  }
+  .form-text {
+    margin-top: .375rem;
+  }
+}
+.co-card-number {
+  grid-column: 1 / -1;
+}
+// 選 LINE Pay、Apple Pay 時收起信用卡欄位（CSS :has()，不寫 JS；不支援 :has() 的瀏覽器維持顯示）
+.co-pay-options:has(#payLinePay:checked, #payApplePay:checked) .co-card-fields {
+  display: none;
+}
+
+// ---------- 狀態示意 ----------
+.co-demo-console {
+  max-width: 26rem;
+}
+// 付款處理中：按鈕停用，不用 Bootstrap 預設的半透明（白字在半透明漸層上看不清）
+.co-processing:disabled {
+  --cut-fill: #{$deck-2};
+  --cut-line: #{$control};
+  --bs-btn-disabled-color: #{$text};
+  opacity: 1;
+
+  .spinner-border {
+    margin-inline-end: .625rem;
+    color: $pink-text;
+  }
+}
+.co-alert-title {
+  margin-bottom: .25rem;
+  color: $text;
+  font-weight: 700;
+}

@@ -1,0 +1,193 @@
+// ============================================================
+// 流程頁共用（2026-11 補的 5 頁）：小標、小封面、講師列、鍵值清單、收據鋸齒邊、錯誤提示框
+// 用在：註冊、購買課程、付款結果、我的課程、購買紀錄
+// ============================================================
+
+// ---------- 小標：32px 圓形色塊徽章（裝飾 icon，墨框）＋粗字 ----------
+// <h2 class="flow-title"><span class="flow-title-badge is-sky" aria-hidden="true"><i class="bi bi-person"></i></span>購買帳號</h2>
+// 也可以用在 <legend>（Bootstrap 的 legend 會 float，這裡已經取消）
+.flow-title {
+  display: flex;
+  float: none;
+  align-items: center;
+  gap: .625rem;
+  width: auto;
+  margin: 0 0 1rem;
+  padding: 0;
+  font-size: 1.1875rem;
+  font-weight: 800;
+  line-height: 1.4;
+}
+.flow-title-badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  background: $sunflower;
+  color: $ink;
+  font-size: .9375rem;
+  line-height: 1;
+
+  &.is-sky   { background: $sky; }
+  &.is-coral { background: $coral; }
+  &.is-leaf  { background: $leaf; }
+}
+
+// ---------- 小封面：墨框＋圓角，固定比例（--w 控制寬度，.is-square 改成正方形裁切） ----------
+// <span class="mini-cover"><img src="images/course-pottery.jpg" alt="" width="1600" height="900"></span>
+.mini-cover {
+  display: block;
+  flex: none;
+  width: var(--w, 112px);
+  aspect-ratio: 16 / 9;
+  border: 2px solid $ink;
+  border-radius: .875rem;
+  overflow: hidden;
+  background: $sky-soft;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &.is-square { aspect-ratio: 1; }
+}
+
+// 講師列：文字頭像（姓）＋名字
+.flow-teacher {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: 700;
+
+  .avatar-text { width: 32px; height: 32px; font-size: .875rem; }
+}
+
+// ---------- 鍵值清單（訂單資訊、發票、訂單的金額與付款方式）：標籤在左（淡墨）、值在右（墨、粗），列與列之間墨色虛線 ----------
+// <dl class="kv-list"><div><dt>訂單編號</dt><dd class="num">CR-20261116-027</dd></div>…</dl>
+// 放不下時值換到下一行、仍然靠右
+.kv-list {
+  margin: 0;
+
+  > div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .125rem 1rem;
+    padding-block: .625rem;
+
+    + div { border-top: 2px dashed rgba($ink, .28); }
+  }
+  dt {
+    color: $ink-2;
+    font-size: $font-size-sm;
+    font-weight: 700;
+  }
+  dd {
+    min-width: 0;
+    margin: 0 0 0 auto;
+    font-weight: 800;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+  .price { font-size: 1.375rem; }
+}
+
+// ---------- 收據貼紙（付款結果、購買紀錄）：白底、墨框、底緣鋸齒；.is-both 上下緣都是鋸齒（不留圓角） ----------
+// 鋸齒是 ::before／::after 的三層背景：白色牙齒（上層）＋墨色牙齒往外偏 3px＋一條 3px 墨線，疊出墨色描邊
+// 硬陰影改用 filter: drop-shadow（box-shadow 跟不上鋸齒的形狀）；外距已經留了鋸齒的高度
+$zigzag-w: 16px;
+$zigzag-h: 8px;
+$zigzag-line: 3px;
+
+.receipt {
+  position: relative;
+  margin-bottom: $zigzag-h + $zigzag-line;
+  border: 2px solid $ink;
+  border-bottom: 0;
+  border-radius: $radius-card $radius-card 0 0;
+  background: $white;
+  filter: drop-shadow(4px 4px 0 $ink);
+
+  // 底緣：牙齒朝下
+  &::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: -2px;
+    right: -2px;
+    height: $zigzag-h + $zigzag-line;
+    background:
+      conic-gradient(from -45deg at 50% 100%, $white 90deg, transparent 0) 50% 0 / #{$zigzag-w} #{$zigzag-h} repeat-x,
+      conic-gradient(from -45deg at 50% 100%, $ink 90deg, transparent 0) 50% #{$zigzag-line} / #{$zigzag-w} #{$zigzag-h} repeat-x,
+      linear-gradient($ink, $ink) 0 0 / 100% #{$zigzag-line} no-repeat;
+    pointer-events: none;
+  }
+
+  // 上緣也是鋸齒：牙齒朝上
+  &.is-both {
+    margin-top: $zigzag-h + $zigzag-line;
+    border-top: 0;
+    border-radius: 0;
+
+    &::before {
+      content: "";
+      position: absolute;
+      bottom: 100%;
+      left: -2px;
+      right: -2px;
+      height: $zigzag-h + $zigzag-line;
+      background:
+        conic-gradient(from 135deg at 50% 0, $white 90deg, transparent 0) 50% 100% / #{$zigzag-w} #{$zigzag-h} repeat-x,
+        conic-gradient(from 135deg at 50% 0, $ink 90deg, transparent 0) 50% 0 / #{$zigzag-w} #{$zigzag-h} repeat-x,
+        linear-gradient($ink, $ink) 0 100% / 100% #{$zigzag-line} no-repeat;
+      pointer-events: none;
+    }
+  }
+}
+
+// ---------- 錯誤提示框（付款失敗）：淡番茄底＋番茄框＋左側圓形圖示＋粗標題（不只靠顏色） ----------
+// <div class="flow-alert" role="alert"><span class="flow-alert-icon" aria-hidden="true"><i class="bi bi-exclamation-circle"></i></span>
+//   <div><p class="flow-alert-title">…</p><p>…</p></div></div>
+.flow-alert {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  column-gap: 1rem;
+  align-items: start;
+  padding: 1.25rem 1.25rem 1.25rem 1rem;
+  border: 2px solid $tomato;
+  border-radius: $radius-image;
+  background: $tomato-soft;
+  box-shadow: 3px 3px 0 $tomato;
+
+  p { margin: 0; line-height: 1.7; }
+
+  @include media-breakpoint-up(md) { padding: 1.5rem 1.75rem 1.5rem 1.25rem; }
+}
+.flow-alert-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid $tomato;
+  border-radius: 50%;
+  background: $white;
+  color: $tomato;
+  font-size: 1.375rem;
+  line-height: 1;
+}
+.flow-alert .flow-alert-title { // 權重要高過上面的 .flow-alert p
+  margin-bottom: .25rem;
+  color: $tomato;
+  font-size: 1.125rem;
+  font-weight: 800;
+}

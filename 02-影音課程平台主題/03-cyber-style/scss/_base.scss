@@ -1,0 +1,811 @@
+// ============================================================
+// 全站基礎：版心與導覽軌位移、字體、標題、按鈕、表單、焦點、共用小工具
+// 本風格的共用類別：.hud（切角面板）、.mono／.num／.price／.stat（等寬與數字）、
+// .section-title（H2 前的粉色方塊）、.grid-bg（背景網格）、.demo-state（設計稿狀態示意）
+// ============================================================
+
+// 單一深色主題：讓瀏覽器原生的捲軸、日期選擇器、下拉選單清單也用深色
+:root {
+  color-scheme: dark;
+  accent-color: $pink-text;
+  // 頁首位移：< lg 是頂欄（64＋光束 2），≥ lg 沒有頂欄（導覽軌在左側）
+  --header-offset: #{$header-offset-sm};
+  --sticky-top: calc(var(--header-offset) + #{$sticky-gap-sm});
+
+  @include media-breakpoint-up(lg) {
+    --header-offset: 0px;
+    --sticky-top: #{$sticky-gap-lg};
+  }
+}
+
+// sticky 頁首不遮住焦點與錨點目標
+html {
+  scroll-padding-top: var(--sticky-top);
+}
+
+body {
+  letter-spacing: $letter-spacing-body;
+  -webkit-font-smoothing: antialiased; // 深色底上的淺色字，不加會顯得太粗
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+
+  // ≥ lg：左邊留給固定的導覽軌，版心在剩下的寬度裡置中
+  @include media-breakpoint-up(lg) {
+    padding-left: $rail-width;
+  }
+}
+
+// ---------- 標題 ----------
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  letter-spacing: $letter-spacing-heading;
+  text-wrap: balance;
+}
+h1, .h1 {
+  font-size: $h1-font-size-mobile;
+  line-height: 1.25;
+  @include media-breakpoint-up(lg) {
+    font-size: $h1-font-size;
+    line-height: 1.2;
+  }
+}
+h2, .h2 {
+  font-size: $h2-font-size-mobile;
+  @include media-breakpoint-up(lg) {
+    font-size: $h2-font-size;
+  }
+}
+h3, .h3 {
+  font-size: $h3-font-size-mobile;
+  line-height: 1.5;
+  @include media-breakpoint-up(lg) {
+    font-size: $h3-font-size;
+  }
+}
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty;
+}
+
+// 區塊標題（H2）：前面一個 8px 的電光粉方塊（CSS 產生的裝飾，不會被讀出）
+// <h2 class="section-title">本月最多人開始的課</h2>
+.section-title {
+  display: flex;
+  align-items: baseline;
+  gap: .75rem;
+
+  &::before {
+    content: "";
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    background-color: $pink;
+    transform: translateY(-.2em);
+  }
+}
+
+// 反白選取：紫光
+::selection {
+  background-color: $violet;
+  color: $text;
+}
+
+// ---------- 字體與數字 ----------
+// .mono：等寬小字（時間碼、單元編號、訂單編號、檔名、標籤）
+// .num：數字等寬對齊（人數、日期），沿用周圍字體
+// .price：價格（Oxanium 700）；.stat：統計大數字（Oxanium 700，32／28px）
+// .timecode：片長與播放時間（JetBrains Mono）
+.mono,
+.timecode {
+  font-family: $font-family-monospace;
+  font-size: $mono-font-size;
+  letter-spacing: $letter-spacing-mono;
+  font-variant-numeric: tabular-nums;
+}
+.timecode {
+  white-space: nowrap;
+}
+.num {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.font-display,
+.price,
+.stat {
+  font-family: $font-family-display;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: .02em;
+}
+.price {
+  font-weight: 700;
+  color: $text;
+  white-space: nowrap;
+}
+.stat {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: $text;
+  @include media-breakpoint-up(lg) {
+    font-size: $stat-font-size;
+  }
+}
+
+// 次要說明文字
+.text-note {
+  font-size: $font-size-sm;
+  color: $text-3;
+}
+
+// 漸層字：只用在 72px 以上的 Display 一行；不支援 background-clip: text 或強制色彩模式時退回 text 色
+.text-beam {
+  color: $text;
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    background-image: linear-gradient(90deg, $violet 0%, $pink-text 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  @media (forced-colors: active) {
+    background: none;
+    color: CanvasText;
+  }
+}
+
+// ---------- 區塊節奏 ----------
+// 區塊上下留白：手機 56px → 桌機 88px
+.section {
+  padding-block: map-get($spacers, 6);
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 7);
+  }
+}
+.section + .section {
+  border-top: 1px solid $line;
+}
+
+// 區塊標題列：標題＋一句說明在左，右側一個 violet-text 連結（.section-heading-link）
+// 576px 以上左右排、底部對齊；以下上下排，連結移到內容下方（各頁用 .d-sm-none 另放一份）
+.section-heading {
+  margin-bottom: map-get($spacers, 5);
+
+  @include media-breakpoint-up(sm) {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: map-get($spacers, 4);
+  }
+  h2,
+  .h2 {
+    margin-bottom: map-get($spacers, 2);
+  }
+  p {
+    margin-bottom: 0;
+    color: $text-3;
+    max-width: 36em;
+  }
+}
+.section-heading-link {
+  flex-shrink: 0;
+}
+
+// ---------- 背景網格（只鋪在首頁 Hero、內頁標題區、底部 CTA；不鋪在長文字下面） ----------
+.grid-bg {
+  @include grid-bg;
+}
+
+// ---------- 切角面板（HUD）：本風格所有面板與卡片的外框 ----------
+// <div class="hud">…</div>：deck 底、1px line 框、右上與左下切 12px
+// .hud-raised：deck-2 底（浮起的面板）；.hud-screen：screen 底（播放器、終端機）
+// 狀態：.is-active（pink-text 2px 框＋紫光，選中的付款方式、目前項目）
+.hud {
+  @include cut-frame;
+}
+.hud-raised {
+  --cut-fill: #{$deck-2};
+}
+.hud-screen {
+  --cut-fill: #{$screen};
+}
+.hud.is-active {
+  --cut-line: #{$pink-text};
+  --cut-bw: 2px;
+  filter: $glow-filter;
+}
+// 面板內距
+.hud-pad {
+  padding: 1.25rem;
+  @include media-breakpoint-up(md) {
+    padding: 1.75rem;
+  }
+}
+// 面板的標題列：一個等寬小標（只用既有文字，例如單元編號、訂單編號）＋標題
+.hud-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .5rem;
+  font-family: $font-family-monospace;
+  font-size: $mono-font-size;
+  letter-spacing: $letter-spacing-mono;
+  color: $text-3;
+}
+
+// ---------- 圖片框 ----------
+.img-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+// ---------- 按鈕 ----------
+// 主要：.btn-primary（紫到粉漸層＋白字，切角 8px），同一組動作只放一個
+// 次要：.btn-outline-primary（violet-text 細框切角，透明底）
+// 中性：.btn-outline-light（line 細框切角，text 字）
+// 文字連結：.btn-text
+// 切角用 cut-frame 的兩層偽元素畫，按鈕本身不切，焦點環（void 間隙＋電光粉外圈）完整可見
+.btn {
+  letter-spacing: .04em;
+  transition: color .2s ease, filter .2s ease;
+  --bs-btn-focus-box-shadow: #{$focus-ring-double};
+  align-items: center;
+  justify-content: center;
+
+  .bi {
+    margin-inline-end: .375rem;
+  }
+}
+.btn-primary,
+.btn-outline-primary,
+.btn-outline-light {
+  @include cut-frame($cut-button, transparent, transparent);
+  display: inline-flex;
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-bg: transparent;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-bg: transparent;
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+}
+.btn-primary {
+  --cut-fill: #{$btn-grad};
+  --bs-btn-color: #fff;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-color: #fff;
+  --bs-btn-disabled-color: #fff;
+
+  &:hover,
+  &:active {
+    --cut-fill: #{$btn-grad-hover};
+    filter: $glow-filter;
+  }
+}
+.btn-outline-primary {
+  --cut-line: #{$violet-text};
+  --bs-btn-color: #{$violet-text};
+  --bs-btn-hover-color: #{$text};
+  --bs-btn-active-color: #{$text};
+  --bs-btn-disabled-color: #{$text-3};
+
+  &:hover,
+  &:active {
+    --cut-fill: #{$deck-2};
+    --cut-line: #{$text};
+  }
+}
+.btn-outline-light {
+  --cut-line: #{$control};
+  --bs-btn-color: #{$text};
+  --bs-btn-hover-color: #{$text};
+  --bs-btn-active-color: #{$text};
+  --bs-btn-disabled-color: #{$text-3};
+
+  &:hover,
+  &:active {
+    --cut-fill: #{$deck-2};
+    --cut-line: #{$violet-text};
+  }
+}
+// 文字連結型按鈕：violet-text＋底線、無外框，內建 44px 觸控高度
+.btn-text {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: .25rem;
+  --bs-btn-font-weight: #{$font-weight-normal};
+  --bs-btn-color: #{$violet-text};
+  --bs-btn-hover-color: #{$text};
+  --bs-btn-active-color: #{$text};
+  --bs-btn-border-width: 0;
+  display: inline-flex;
+  min-height: 2.75rem;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .4em;
+  vertical-align: baseline;
+
+  &:focus-visible {
+    box-shadow: none;
+    outline: 2px solid $pink-text;
+    outline-offset: 3px;
+  }
+  // 沒有 href 的佔位連結（忘記密碼）：游標維持箭頭
+  &:not([href]):not(button) {
+    cursor: default;
+  }
+}
+
+// 內文裡沒有 class 的連結
+a:not([class]) {
+  text-underline-offset: .35em;
+}
+a:not([href]) {
+  cursor: default;
+}
+
+// ---------- 表單 ----------
+// 輸入框也切角（右上、左下 8px）；焦點是內側 2px 電光粉（clip-path 會切掉外側的光暈）
+.form-control,
+.form-select {
+  @include cut-input;
+  caret-color: $pink-text;
+
+  &:focus {
+    --input-line: #{$pink-text};
+    box-shadow: inset 0 0 0 1px $pink-text;
+  }
+  // 停用：斜邊的線也換成 $line，和 Bootstrap 的停用框線一致
+  &:disabled {
+    --input-line: #{$line};
+  }
+  &.is-invalid,
+  .was-validated &:invalid {
+    --input-line: #{$flare};
+    border-style: dashed; // 錯誤：虛線框＋圖示＋文字，和電光粉（焦點）分得開
+    &:focus {
+      --input-line: #{$flare};
+      box-shadow: inset 0 0 0 1px $flare;
+    }
+  }
+}
+// 下拉選單：箭頭圖示要和兩道斜邊漸層一起寫
+.form-select {
+  background-image:
+    var(--bs-form-select-bg-img),
+    linear-gradient(225deg, transparent 0 #{$cut-button * .7071}, var(--input-line) #{$cut-button * .7071} #{$cut-button * .7071 + 1.2px}, transparent #{$cut-button * .7071 + 1.2px}),
+    linear-gradient(45deg, transparent 0 #{$cut-button * .7071}, var(--input-line) #{$cut-button * .7071} #{$cut-button * .7071 + 1.2px}, transparent #{$cut-button * .7071 + 1.2px});
+  background-position: right .875rem center, 0 0, 0 0;
+  background-size: 16px 12px, 100% 100%, 100% 100%;
+  background-repeat: no-repeat;
+}
+textarea.form-control {
+  font-family: $font-family-monospace;
+  font-size: $font-size-sm;
+}
+// 瀏覽器自動填入時不要變成淺藍底
+.form-control:-webkit-autofill {
+  -webkit-text-fill-color: $text;
+  box-shadow: inset 0 0 0 100px $deck;
+}
+.form-control:-webkit-autofill:focus {
+  box-shadow: inset 0 0 0 100px $deck, inset 0 0 0 1px $pink-text;
+}
+// 錯誤文字：圖示＋文字（Bootstrap 的錯誤圖示已關掉，改寫在文字前）
+.invalid-feedback {
+  font-size: $font-size-sm;
+}
+
+// 核取方塊、radio：只有鍵盤操作時顯示焦點環
+.form-check-input:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+.form-check {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  padding-left: 0;
+  margin-bottom: 0;
+
+  .form-check-input {
+    float: none;
+    flex-shrink: 0;
+    margin: 0;
+  }
+  .form-check-label {
+    flex-grow: 1;
+    padding-block: .5rem;
+    cursor: pointer;
+  }
+}
+
+// ---------- 分頁籤（終端機視窗的分頁，學習頁與 Guideline 共用） ----------
+// 等寬字標籤；選中＝deck-2 底＋pink-text 底線
+.nav-tabs {
+  --bs-nav-tabs-border-width: 0;
+  --bs-nav-tabs-border-radius: 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid $line;
+
+  .nav-link {
+    position: relative;
+    min-height: 2.75rem;
+    margin-bottom: 0;
+    padding: .75rem 1.125rem;
+    border: 0;
+    color: $text-3;
+    font-family: $font-family-monospace;
+    font-size: $mono-font-size-lg;
+    letter-spacing: $letter-spacing-mono;
+    white-space: nowrap;
+    transition: color .2s ease, background-color .2s ease;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 2px;
+      background-color: transparent;
+    }
+    &:hover {
+      color: $text;
+      background-color: rgba($deck-2, .6);
+    }
+    // 捲動容器會裁掉外擴的焦點環，改畫在內側
+    &:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 2px $pink-text;
+    }
+  }
+  .nav-link.active {
+    color: $text;
+    background-color: $deck-2;
+
+    &::after {
+      background-color: $pink-text;
+    }
+  }
+}
+
+// ---------- 麵包屑：等寬小字，連結 text-3，目前頁 text ----------
+.breadcrumb {
+  align-items: center;
+  font-family: $font-family-monospace;
+  letter-spacing: $letter-spacing-mono;
+}
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+// 分隔符號畫在前一項的後面（Bootstrap 原本畫在後一項的前面）：
+// 手機換行時「／」留在上一行行尾，下一行不會由分隔符號開頭
+.breadcrumb-item + .breadcrumb-item {
+  padding-left: 0;
+
+  &::before {
+    content: none;
+  }
+}
+.breadcrumb-item:not(:last-child)::after {
+  content: var(--#{$prefix}breadcrumb-divider, $breadcrumb-divider);
+  padding-inline: var(--#{$prefix}breadcrumb-item-padding-x);
+  color: var(--#{$prefix}breadcrumb-divider-color);
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: $text-3;
+  text-decoration: none;
+
+  &:hover {
+    color: $violet-text;
+    text-decoration: underline;
+  }
+}
+
+// 浮層陰影：$enable-shadows 關閉時 Bootstrap 不會輸出，這裡手動套用
+.dropdown-menu {
+  box-shadow: var(--bs-dropdown-box-shadow);
+}
+
+// ---------- 鍵盤焦點 ----------
+// 一律是電光粉 2px 實線，外推 2px 露出底色當間隙（void 上 6.68:1）
+:focus-visible {
+  outline: 2px solid $pink-text;
+  outline-offset: 2px;
+}
+.offcanvas:focus-visible,
+.modal:focus-visible,
+.toast:focus-visible {
+  outline: 0;
+}
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+// 按鈕由 box-shadow 畫焦點；輸入框由內側 box-shadow 畫焦點
+.btn:focus-visible,
+.btn-close:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible {
+  outline: none;
+}
+
+// 跳至主要內容
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: $zindex-fixed + 10;
+  padding: .5rem 1rem;
+  background: $text;
+  color: $void;
+  font-weight: 700;
+  &:focus { top: 1rem; }
+}
+
+// ---------- 轉圈（付款處理中、影片載入中）：和光束一樣不無限動，轉 6 圈（約 4.5 秒）後停 ----------
+.spinner-border {
+  animation-iteration-count: 6;
+}
+
+// ---------- 減少動態：關掉所有動畫與轉場；光束顯示靜態漸層，游標直接實心 ----------
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation: none !important;
+  }
+}
+
+// ---------- 內頁的標題區（課程列表、我的課程、購買紀錄、Guideline） ----------
+// 鋪背景網格；麵包屑 → h1 → 一句說明。課程詳情與學習頁的標題在播放器下方，只放麵包屑（.is-compact）
+// <header class="page-header grid-bg"><div class="container">
+//   <nav aria-label="目前位置"><ol class="breadcrumb">…</ol></nav>
+//   <h1>頁面標題</h1>
+//   <p class="page-lead">一句說明</p>
+// </div></header>
+.page-header {
+  padding-top: map-get($spacers, 3);
+  padding-bottom: map-get($spacers, 5);
+  border-bottom: 1px solid $line;
+  margin-bottom: map-get($spacers, 5);
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 5);
+    padding-bottom: map-get($spacers, 6);
+    margin-bottom: map-get($spacers, 6);
+  }
+  .breadcrumb {
+    margin-bottom: map-get($spacers, 3);
+  }
+  h1,
+  .h1 {
+    margin-bottom: map-get($spacers, 2);
+  }
+  &.is-compact {
+    padding-bottom: 0;
+    border-bottom: 0;
+    margin-bottom: map-get($spacers, 3);
+    .breadcrumb { margin-bottom: 0; }
+  }
+}
+.page-lead {
+  max-width: 36em;
+  margin-bottom: 0;
+  color: $text-3;
+}
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、標點與 <wbr> 處換行；課程名稱、短標題用，長段落不要用
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+
+// ---------- 手機滿版橫向捲動列 ----------
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: $container-padding-x * -.5;
+    padding-inline: $container-padding-x * .5;
+  }
+}
+.bleed-x {
+  @include bleed-x;
+}
+
+// ---------- 文字頭像：講師的姓，圓形 ----------
+.avatar-text {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid $control;
+  border-radius: 50%;
+  background-color: $deck-2;
+  color: $text;
+  font-size: .875rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+// ---------- 星等 ----------
+.stars {
+  display: inline-flex;
+  gap: .125rem;
+  color: $amber;
+  font-size: .875rem;
+  line-height: 1;
+}
+.rating {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  white-space: nowrap;
+  color: $text;
+
+  .bi {
+    color: $amber;
+  }
+}
+
+// ---------- 資訊列：拆開排的多項資訊（課程資訊標籤列） ----------
+// <ul class="meta-list"><li>入門</li><li>6 章 28 單元</li></ul>：項目之間是一個 line 色的小方點
+.meta-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: $text-3;
+
+  > li {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    white-space: nowrap;
+  }
+}
+
+// ---------- 設計稿狀態示意 ----------
+// 頁面底部示範「另一種狀態」：虛線和正式內容分開，標籤寫明「設計稿狀態示意」（等寬字，像系統標籤）
+// <section class="demo-state" aria-labelledby="…">
+//   <div class="container">
+//     <p class="demo-state-tag">設計稿狀態示意</p>
+//     <h2 id="…" class="demo-state-heading">這一頁的其他狀態</h2>
+//     <div class="demo-state-item">
+//       <h3 class="demo-state-title">篩選沒有結果時</h3>
+//       <p class="text-note">什麼情況下出現、畫面哪裡會改變</p>
+//       <div class="demo-state-stage">…示意畫面…</div>
+//     </div>
+//   </div>
+// </section>
+.demo-state {
+  margin-top: map-get($spacers, 6);
+  padding-block: map-get($spacers, 5) map-get($spacers, 6);
+  border-top: 1px dashed $control;
+}
+.demo-state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: map-get($spacers, 3);
+  padding: .25rem .625rem;
+  border: 1px dashed $control;
+  color: $text-3;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  letter-spacing: $letter-spacing-mono;
+}
+.demo-state-heading {
+  margin-bottom: map-get($spacers, 4);
+  font-size: $h3-font-size;
+}
+.demo-state-item + .demo-state-item {
+  margin-top: map-get($spacers, 5);
+}
+.demo-state-title {
+  margin-bottom: map-get($spacers, 1);
+  font-size: $font-size-base;
+  font-weight: 700;
+  color: $text;
+}
+.demo-state-item > .text-note {
+  margin-bottom: map-get($spacers, 3);
+}
+.demo-state-stage {
+  padding: map-get($spacers, 4);
+  border: 1px dashed $line;
+
+  @include media-breakpoint-up(md) {
+    padding: map-get($spacers, 4) + .5rem;
+  }
+}
+
+// ---------- 空狀態 ----------
+// <div class="empty-state">
+//   <i class="bi bi-collection-play empty-state-icon" aria-hidden="true"></i>
+//   <p>你還沒有進行中的課程，先從一支免費試看開始。</p>
+//   <a class="btn btn-primary" href="courses.html">探索課程</a>
+// </div>
+.empty-state {
+  > p {
+    max-width: 30em;
+    margin-bottom: map-get($spacers, 4);
+    color: $text;
+  }
+}
+.empty-state-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: map-get($spacers, 3);
+  border: 1px solid $control;
+  border-radius: 50%;
+  color: $violet-text;
+  font-size: 1.5rem;
+}
+
+// ---------- 提示訊息（系統通知）：資訊 violet、成功 mint、警示 amber、錯誤 flare（虛線框＋圖示） ----------
+// <div class="notice is-info"><i class="bi bi-info-circle" aria-hidden="true"></i><div>…</div></div>
+.notice {
+  display: flex;
+  gap: .75rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid $line;
+  border-left-width: 3px;
+  background-color: $deck-2;
+  color: $text-2;
+
+  > .bi {
+    flex-shrink: 0;
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+  p:last-child { margin-bottom: 0; }
+
+  &.is-info {
+    border-left-color: $violet-text;
+    > .bi { color: $violet-text; }
+  }
+  &.is-success {
+    border-color: mix($mint, $deck, 45%);
+    border-left-color: $mint;
+    background-color: $mint-veil;
+    > .bi { color: $mint; }
+  }
+  &.is-warning {
+    border-color: mix($amber, $deck, 45%);
+    border-left-color: $amber;
+    background-color: $amber-veil;
+    > .bi { color: $amber; }
+  }
+  &.is-error {
+    border: 1px dashed $flare;
+    border-left: 3px solid $flare;
+    background-color: $flare-veil;
+    > .bi { color: $flare; }
+  }
+}
+
+// ---------- 992px 以上的 .offcanvas-lg（課程列表篩選、學習頁側欄）----------
+@include media-breakpoint-up(lg) {
+  .offcanvas-lg {
+    transition: none;
+  }
+}

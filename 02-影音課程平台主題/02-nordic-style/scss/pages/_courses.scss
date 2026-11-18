@@ -1,0 +1,189 @@
+// ============================================================
+// 課程列表 courses.html
+// 構圖：沒有側欄。頁首區靠左 → 一張全寬白色篩選卡 → 3 欄直式課程卡 → 置中的分頁
+// - 篩選卡第一列：工藝分類膠囊（含數量，單選）
+// - 篩選卡第二列（≥ 992px）：左邊難度、價格膠囊（多選），右邊「共 52 門課程」、排序
+//   「清除篩選」≥ 1200px 在卡片右上角；992–1199 和結果數、排序一起換到第三行
+// - < 992px：分類膠囊變成可橫向捲動的一列；下面一列是「篩選」按鈕＋結果數，
+//   難度、價格、排序、清除篩選收進從右邊滑出的 Offcanvas（.offcanvas-lg，同一份 HTML）
+// - 課程卡：< 576px 1 欄 → 576px 2 欄 → ≥ 992px 3 欄
+// ============================================================
+
+// ---------- 篩選卡 ----------
+.courses-filter {
+  margin-bottom: 2rem;
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: 3rem;
+    padding: 1.75rem 2rem 2rem;
+  }
+}
+// fieldset 與 legend 去掉瀏覽器預設樣式
+.filter-group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.filter-label {
+  float: none;
+  width: auto;
+  margin: 0 0 .625rem;
+  padding: 0;
+  color: $ink;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.6;
+  letter-spacing: $letter-spacing-label;
+}
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+// 工藝分類：< 992px 橫向捲動，捲動區延伸到卡片左右邊緣
+.filter-pills.is-scroll {
+  @include media-breakpoint-down(lg) {
+    flex-wrap: nowrap;
+    margin-inline: -$card-padding-mobile;
+    padding: .25rem $card-padding-mobile .5rem; // 上下留一點空間給焦點環
+    overflow-x: auto;
+    scroll-padding-inline: $card-padding-mobile;
+    scrollbar-width: thin;
+  }
+}
+
+// 第二列：< 992px 只有「篩選」按鈕＋結果數；其他控制項在 Offcanvas 裡
+.filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: .75rem;
+}
+.courses-count {
+  margin: 0;
+  color: $slate;
+  font-size: .9375rem;
+  white-space: nowrap;
+
+  .num { color: $ink; font-weight: $font-weight-semibold; }
+}
+.courses-sort {
+  .form-label {
+    margin-bottom: .625rem;
+    font-size: .875rem;
+    font-weight: $font-weight-bold;
+    line-height: 1.6;
+    letter-spacing: $letter-spacing-label;
+  }
+}
+
+// < 992px：Offcanvas 從右邊滑出，選項一組一組往下排
+@include media-breakpoint-down(lg) {
+  .filter-more {
+    --bs-offcanvas-width: min(22rem, 88vw);
+
+    .offcanvas-header { padding: 1.25rem 1.25rem .5rem; }
+    .offcanvas-body {
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+      padding: 1rem 1.25rem 2rem;
+    }
+    .filter-clear { align-self: flex-start; }
+  }
+}
+
+// ≥ 992px：Offcanvas 的外框不產生方塊（display: contents），裡面的控制項直接排進第二列，
+// 再用 order 排成「難度｜價格 ……… 共 52 門課程｜排序｜清除篩選」
+@include media-breakpoint-up(lg) {
+  .filter-bar {
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: 1.25rem 2rem;
+    margin-top: 1.75rem;
+  }
+  .courses-filter .filter-more,
+  .courses-filter .filter-more > .offcanvas-body {
+    display: contents;
+  }
+  .filter-level { order: 1; }
+  .filter-price { order: 2; }
+  // 不用 flex 置中：flex 會吃掉「共」「門課程」旁的空白
+  .courses-count {
+    order: 3;
+    margin-left: auto;
+    line-height: 2.75rem;
+  }
+  .courses-sort {
+    order: 4;
+    width: 10.5rem;
+
+    .form-select { height: 2.75rem; padding-block: 0; }
+  }
+  .filter-clear { order: 5; }
+}
+// 992–1199：第二列放不下全部控制項 → 難度、價格一行；結果數、排序、清除篩選換到下一行並靠右
+// （::before 是一個佔滿整行、高 0 的換行點；負的 margin 抵掉多出來的那一個列距）
+@include media-breakpoint-only(lg) {
+  .filter-bar::before {
+    content: "";
+    order: 3;
+    flex-basis: 100%;
+    height: 0;
+    margin-top: -1.25rem;
+  }
+  .courses-count { order: 4; }
+  .courses-sort { order: 5; }
+  .filter-clear { order: 6; }
+}
+// ≥ 1200px：「清除篩選」移到卡片右上角（和「工藝分類」同一行），第二列留給難度、價格、結果數、排序
+@include media-breakpoint-up(xl) {
+  .courses-filter { position: relative; }
+  .filter-clear {
+    position: absolute;
+    top: 1.125rem;
+    right: 2rem;
+  }
+  .filter-bar { column-gap: 2.5rem; }
+  .courses-count { margin-right: -1rem; } // 結果數與排序靠近一點，視覺上是同一組
+}
+
+// ---------- 課程網格與分頁 ----------
+.courses-grid {
+  margin-bottom: 0;
+}
+.courses-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 3rem;
+
+  @include media-breakpoint-up(lg) { margin-top: 4.5rem; }
+
+  .pagination { margin: 0; }
+  .page-link {
+    display: inline-grid;
+    place-items: center;
+    min-width: 2.75rem;
+    height: 2.75rem;
+    padding-block: 0;
+    font-family: $font-family-latin;
+    font-weight: $font-weight-semibold;
+    font-variant-numeric: tabular-nums;
+    box-shadow: $box-shadow-sm;
+    transition: color .2s ease, background-color .2s ease, border-color .2s ease;
+  }
+  .page-item.disabled .page-link { box-shadow: none; }
+}
+
+// ---------- 設計稿狀態示意：篩選沒有結果時 ----------
+.courses-empty-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  margin-bottom: .5rem;
+}

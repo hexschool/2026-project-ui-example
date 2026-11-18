@@ -1,0 +1,299 @@
+// ============================================================
+// 頁首：同一份 <header class="site-header">，只靠 CSS 在 992px 切換兩種形態
+// - ≥ lg：固定在左側的 App 導覽軌（寬 88、高 100vh、deck 底、右緣 1px line＋一道直向光束）
+//   每項是 64×64 的圖示＋12px 小字；目前頁＝deck-2 底＋左側 3px pink-text 條＋pink-text 字
+// - < lg：頂欄（高 64、deck 底、底緣 2px 光束），品牌、搜尋、登入／註冊、選單鈕；選單展開是直向清單
+// ============================================================
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: $zindex-sticky;
+  background-color: $deck;
+
+  // 頂欄底緣的光束
+  &::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    @include beam-line($topbar-beam);
+  }
+
+  @include media-breakpoint-up(lg) {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: $zindex-fixed;
+    width: $rail-width;
+    border-right: 1px solid $line;
+
+    // 導覽軌右緣：一道直向的光束細線（上段，從品牌往下漸隱）
+    &::after {
+      inset: 0 -1px auto auto;
+      width: 1px;
+      height: 45%;
+      background-image: linear-gradient(180deg, $violet 0%, $pink 55%, rgba($pink, 0) 100%);
+    }
+  }
+}
+
+// ---------- 外框：< lg 是一列（品牌＋按鈕），選單在下一列展開；≥ lg 是直向的軌 ----------
+.site-rail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: $header-offset-sm; // 64＋底緣光束 2＝66，和 --header-offset 一致
+  padding-inline: $container-padding-x * .5;
+  padding-bottom: $topbar-beam;
+
+  @include media-breakpoint-up(lg) {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    height: 100%;
+    padding: 1rem .75rem 1rem;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+}
+
+// ---------- 品牌 ----------
+.site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .625rem;
+  min-height: 2.75rem;
+  color: $text;
+  text-decoration: none;
+
+  &:hover {
+    color: $text;
+    .site-brand-frame { stroke: $pink-text; }
+  }
+}
+.site-brand-mark {
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+}
+.site-brand-frame {
+  fill: $screen;
+  stroke: $violet-text;
+  stroke-width: 1.5;
+  transition: stroke .2s ease;
+}
+.site-brand-play {
+  fill: $pink;
+}
+.site-brand-name {
+  font-family: $font-family-display;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: $letter-spacing-brand;
+  line-height: 1;
+}
+// 導覽軌裡的品牌：圖形在上、14px 小字在下
+.site-header .site-brand {
+  @include media-breakpoint-up(lg) {
+    flex-direction: column;
+    gap: .375rem;
+    padding-block: .5rem 1rem;
+    margin-bottom: .5rem;
+    border-bottom: 1px solid $line;
+
+    .site-brand-mark { width: 2.25rem; height: 2.25rem; }
+    .site-brand-name { font-size: .875rem; }
+  }
+}
+
+// ---------- < lg：頂欄右側的按鈕 ----------
+.site-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  margin-left: auto;
+
+  @include media-breakpoint-up(lg) {
+    display: none;
+  }
+}
+.site-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  color: $text;
+  font-size: 1.25rem;
+  transition: color .2s ease, background-color .2s ease, border-color .2s ease;
+
+  &:hover {
+    background-color: $deck-2;
+    border-color: $line;
+  }
+  &[aria-expanded="true"] {
+    background-color: $deck-2;
+    border-color: $pink-text;
+    color: $pink-text;
+  }
+}
+.site-login {
+  margin-inline: .25rem;
+}
+
+// ---------- 導覽本體 ----------
+// < lg：collapse 的直向清單（佔滿頂欄下方一整列）；≥ lg：一直顯示的導覽軌
+.site-rail-body {
+  flex-basis: 100%;
+
+  @include media-breakpoint-down(lg) {
+    padding-block: .5rem 1rem;
+    border-top: 1px solid $line;
+  }
+  @include media-breakpoint-up(lg) {
+    display: flex !important; // 導覽軌一直顯示，不受 collapse 影響
+    flex-direction: column;
+    flex: 1 1 auto;
+  }
+}
+.site-nav {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+// 導覽軌的工具區（我的課程、搜尋）與底部登入：只在 ≥ lg 出現
+.site-nav-tools,
+.site-rail-foot {
+  display: none;
+}
+@include media-breakpoint-up(lg) {
+  .site-nav-tools {
+    display: flex;
+    position: relative;
+    margin-top: 1rem;
+    padding-top: 1rem;
+
+    // 主導覽與工具區之間：一段短光束
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 1.5rem;
+      transform: translateX(-50%);
+      @include beam-line(2px);
+    }
+  }
+  .site-rail-foot {
+    display: flex;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid $line;
+  }
+}
+
+// 每一項：< lg 是一列（圖示＋文字）；≥ lg 是 64×64 的方塊（圖示在上、12px 小字在下）
+.site-nav .nav-link,
+.site-rail-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: .5rem .75rem;
+  border: 0;
+  background: transparent;
+  color: $text-2;
+  font-size: $nav-link-font-size;
+  text-decoration: none;
+  transition: color .2s ease, background-color .2s ease;
+
+  .bi {
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+  // 目前頁的左側條（平常透明）
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background-color: transparent;
+  }
+  &:hover {
+    color: $text;
+    background-color: rgba($deck-2, .7);
+  }
+  &:focus-visible {
+    outline-offset: -2px; // 導覽軌很窄，焦點環畫在內側才不會被捲動容器切掉
+  }
+
+  @include media-breakpoint-up(lg) {
+    flex-direction: column;
+    justify-content: center;
+    gap: .375rem;
+    width: $rail-item-size;
+    min-height: $rail-item-size;
+    margin-inline: auto;
+    padding: .5rem 0;
+    font-size: .75rem;
+    line-height: 1.2;
+    letter-spacing: 0;
+    text-align: center;
+  }
+}
+.site-nav .nav-link.active {
+  color: $pink-text;
+  background-color: $deck-2;
+
+  &::before {
+    background-color: $pink-text;
+  }
+}
+// 登入／註冊：導覽軌最下方，框線切角的小方塊
+.site-rail-login {
+  @include media-breakpoint-up(lg) {
+    color: $violet-text;
+    &:hover { color: $text; }
+  }
+}
+
+// ---------- 搜尋抽屜（Offcanvas，從左滑出） ----------
+.site-search-panel {
+  .offcanvas-header {
+    border-bottom: 1px solid $line;
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 -1px;
+      @include beam-line(2px);
+    }
+  }
+  .offcanvas-title {
+    margin: 0;
+    font-size: $h4-font-size;
+  }
+}
+.site-search {
+  position: relative;
+
+  > .bi {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1; // 輸入框有 clip-path（自成堆疊層），圖示要排在它上面才看得到
+    color: $text-3;
+    pointer-events: none;
+  }
+  .form-control {
+    padding-left: 2.75rem;
+  }
+}

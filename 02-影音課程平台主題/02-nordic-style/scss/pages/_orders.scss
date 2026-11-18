@@ -1,0 +1,238 @@
+// ============================================================
+// 購買紀錄 orders.html：直向時間軸，退費說明在最上方
+// 標題區 → 霜藍退費說明卡（#refund）→「共 5 筆訂單」→ 時間軸（#orders-list）：
+//   ≥ 768：左欄日期（Manrope，靠右）→ 2px $track 細線上的冰河藍圓點 → 右側白色訂單卡
+//   < 768：細線貼左 12px，日期在卡片上方，卡片佔滿其餘寬度
+// 訂單卡：上＝訂單編號＋狀態標籤；中＝縮圖＋課名；下＝金額、付款方式、備註；右下＝動作
+//   ≥ 992 卡片夠寬時，中、下、動作排成同一列（.order-card-body 三欄）
+// 01 票根、04 帳簿表、05 粗線表都把退費放旁邊或下面；02 是時間軸，退費說明在最上方
+// ============================================================
+
+// ---------- 退費說明（霜藍卡） ----------
+.orders-refund {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 3rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+  @include media-breakpoint-up(lg) { padding: 2rem; }
+
+  h2 { margin-bottom: .375rem; }
+  p { margin: 0; }
+  .orders-refund-rule { color: $ink; font-weight: $font-weight-medium; }
+  .orders-refund-more { margin-top: .25rem; color: $slate; font-size: .9375rem; }
+  .icon-circle { background-color: $white; }
+}
+
+// 結果數
+.orders-count {
+  margin: 0 0 1.5rem;
+  color: $slate;
+  font-size: .9375rem;
+}
+
+// ---------- 時間軸 ----------
+// <ol id="orders-list" class="order-timeline">
+//   <li class="order-entry">
+//     <p class="order-date"><span class="visually-hidden">日期 </span><time class="num" datetime="2026-11-16">2026/11/16</time></p>
+//     <article class="lite-card order-card" aria-labelledby="…">…</article>
+//   </li>
+// </ol>
+$order-rail: 1.5rem;     // 手機：細線所在的欄寬（線在 12px）
+$order-date-col: 7rem;   // ≥ 768：日期欄寬
+$order-node-col: 2.5rem; // ≥ 768：圓點欄寬
+
+.order-timeline {
+  position: relative;
+  display: grid;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  // 2px 細線：從第一個圓點延伸到最後一個圓點
+  &::before {
+    content: "";
+    position: absolute;
+    top: .75rem;
+    bottom: 1rem;
+    left: calc(#{$order-rail} * .5 - 1px);
+    width: 2px;
+    border-radius: 1px;
+    background-color: $track;
+
+    @include media-breakpoint-up(md) {
+      left: calc(#{$order-date-col} + #{$order-node-col} * .5 - 1px);
+    }
+  }
+}
+.order-entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: $order-rail minmax(0, 1fr);
+  gap: .5rem 0;
+
+  // 圓點節點：冰河藍實心＋雪白外圈（壓在細線上）
+  &::before {
+    content: "";
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    justify-self: center;
+    width: .75rem;
+    height: .75rem;
+    border-radius: 50%;
+    background-color: $glacier;
+    box-shadow: 0 0 0 4px $snow;
+  }
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: $order-date-col $order-node-col minmax(0, 1fr);
+    gap: 0;
+
+    &::before {
+      grid-column: 2;
+      align-self: start;
+      margin-top: 1.875rem; // 對齊卡片第一列（訂單編號）
+    }
+  }
+}
+.order-date {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+  color: $ink;
+  font-size: .9375rem;
+  line-height: 1.6;
+
+  .num { font-weight: $font-weight-semibold; }
+
+  @include media-breakpoint-up(md) {
+    grid-column: 1;
+    padding-top: 1.5rem;
+    text-align: right;
+  }
+}
+.order-card {
+  grid-column: 2;
+  grid-row: 2;
+
+  @include media-breakpoint-up(md) {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+
+// ---------- 訂單卡 ----------
+.order-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  margin-bottom: 1rem;
+}
+.order-no {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 .5rem;
+  margin: 0;
+  font-size: .9375rem;
+
+  .order-label { font-size: .8125rem; }
+  .num { color: $ink; font-weight: $font-weight-semibold; }
+}
+// 欄名當小標籤
+.order-label {
+  color: $slate;
+  font-size: .8125rem;
+  font-weight: $font-weight-normal;
+  line-height: 1.6;
+}
+.order-course {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+
+  @include media-breakpoint-up(sm) { grid-template-columns: 7.5rem minmax(0, 1fr); }
+}
+.order-thumb {
+  aspect-ratio: 16 / 9;
+}
+.order-course-title {
+  margin: 0;
+  font-size: .9375rem;
+
+  @include media-breakpoint-up(sm) { font-size: 1rem; }
+  line-height: 1.6;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+
+  @include media-breakpoint-up(lg) { font-size: 1.0625rem; }
+}
+// 金額、付款方式：兩欄；備註換到下一列
+.order-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem 1.5rem;
+  margin: 0;
+
+  @include media-breakpoint-up(sm) { grid-template-columns: auto auto minmax(0, 1fr); }
+
+  > div { display: grid; }
+  dd {
+    margin: 0;
+    color: $ink;
+    font-size: .9375rem;
+    line-height: 1.6;
+  }
+  .price { font-size: 1rem; }
+}
+.order-note {
+  grid-column: 1 / -1;
+
+  dd { color: $slate; }
+}
+// 動作：右下角
+.order-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: .5rem;
+  margin-top: 1.25rem;
+
+  @include media-breakpoint-down(sm) {
+    justify-content: stretch;
+    .btn { flex: 1 1 auto; }
+  }
+}
+
+// ≥ 992：卡片夠寬，課程、金額與付款方式、動作排成一列（卡片不會因為版心寬而空掉一大塊）
+@include media-breakpoint-up(lg) {
+  .order-card-body {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) 7.5rem; // 動作欄固定寬，沒有動作的卡片欄位也對齊
+    gap: 2rem;
+    align-items: center;
+  }
+  .order-course { margin-bottom: 0; }
+  .order-meta { grid-template-columns: auto minmax(0, 1fr); }
+  .order-actions {
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 0;
+  }
+}
+
+// ---------- 設計稿狀態示意 ----------
+// 退費處理中：只畫藤編那一筆（同一條時間軸的樣子）
+.orders-demo-timeline {
+  &::before { display: none; }
+  .order-entry::before { box-shadow: 0 0 0 4px $frost; }
+}

@@ -1,0 +1,307 @@
+// ============================================================
+// 購買紀錄 orders.html
+// 標題區 → 頂端一則「系統通知」樣式的退費說明（.notice.is-info：資訊不是警示，不用琥珀）→ 結果數 →
+// 一塊 HUD 面板當「系統日誌」：每筆訂單一列，左欄等寬的日期與訂單編號，中間縮圖＋課名、金額、付款方式，
+// 右邊狀態徽章與動作，備註在第二行。列與列之間 1px 線。
+// 1200px 以下每筆變成一張小切角面板（等寬的日期與編號在最上面）
+// 不做整排的欄名表頭（會像 04、05 的表格）：金額與付款方式每一筆都帶自己的等寬小標籤（<dt class="orders-label">），
+// 日期與訂單編號的格式本身就看得出是什麼（欄名寫在 visually-hidden 裡給螢幕閱讀器）
+// ============================================================
+
+// ---------- 退費說明（系統通知） ----------
+.orders-refund {
+  margin-bottom: 2rem;
+  padding: 1.25rem 1.25rem 1.25rem 1.125rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.375rem 1.75rem 1.375rem 1.5rem;
+  }
+}
+.orders-refund-title {
+  margin: 0 0 .375rem;
+  color: $text;
+  font-size: 1.0625rem;
+}
+.orders-refund-rule {
+  margin-bottom: .25rem;
+  color: $text;
+}
+.orders-refund-more {
+  color: $text-2;
+  font-size: $font-size-sm;
+}
+
+// ---------- 結果數 ----------
+.orders-count {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0 0 1rem;
+  color: $text-2;
+  font-family: $font-family-monospace;
+  font-size: $mono-font-size-lg;
+  letter-spacing: $letter-spacing-mono;
+
+  &::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background-color: $violet-text;
+  }
+  .num {
+    color: $text;
+    font-family: $font-family-display;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+}
+
+// ---------- 系統日誌 ----------
+// 欄寬（1200px 以上）：日期與編號｜課程｜金額｜付款方式｜狀態與動作
+$orders-cols: 10.5rem minmax(0, 1fr) 7rem 10.5rem 12.5rem;
+
+.orders-log {
+  @include media-breakpoint-up(xl) {
+    @include cut-frame;
+    padding: .5rem 1.5rem;
+  }
+}
+.orders-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(xl) {
+    gap: 0;
+  }
+}
+
+// 一筆訂單
+.orders-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "stamp   status"
+    "course  course"
+    "amount  pay"
+    "note    note"
+    "actions actions";
+  gap: 0 1rem; // 1200px 以下列距用各區塊的 margin-top：沒有備註的訂單，空的那一行不會多出間距
+  align-items: start;
+
+  @include media-breakpoint-down(xl) {
+    > .orders-course,
+    > .orders-amount,
+    > .orders-pay,
+    > .orders-state > .orders-actions {
+      margin-top: .875rem;
+    }
+    > .orders-note {
+      margin-top: .75rem;
+    }
+  }
+
+  // 1200px 以下：每筆一張切角小面板
+  @include media-breakpoint-down(xl) {
+    @include cut-frame;
+    padding: 1rem 1.125rem 1.125rem;
+  }
+  @include media-breakpoint-up(sm) {
+    padding: 1.125rem 1.5rem 1.25rem;
+  }
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    grid-template-areas:
+      "stamp  stamp  status"
+      "course course course"
+      "amount pay    pay"
+      "note   note   note"
+      "actions actions actions";
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: $orders-cols;
+    grid-template-areas:
+      "stamp course amount pay state"
+      "stamp note   note   note state";
+    gap: .5rem 1.5rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid $line;
+
+    li:last-child > &,
+    .is-single > & {
+      border-bottom: 0;
+    }
+  }
+
+  dl {
+    margin: 0;
+  }
+  dd {
+    margin: 0;
+  }
+}
+.orders-stamp     { grid-area: stamp; }
+.orders-course    { grid-area: course; }
+.orders-amount    { grid-area: amount; }
+.orders-pay       { grid-area: pay; }
+.orders-status    { grid-area: status; }
+.orders-note      { grid-area: note; }
+.orders-actions   { grid-area: actions; }
+
+// 左欄：等寬的日期（text）與訂單編號（text-3）；1200px 以下排成一行
+.orders-stamp {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .125rem .875rem;
+  font-family: $font-family-monospace;
+  letter-spacing: $letter-spacing-mono;
+  font-variant-numeric: tabular-nums;
+
+  @include media-breakpoint-up(xl) {
+    display: grid;
+    gap: .25rem;
+  }
+}
+.orders-date {
+  margin: 0;
+  color: $text;
+  font-size: $mono-font-size-lg;
+}
+.orders-no {
+  order: 2;
+  margin: 0;
+  color: $text-3;
+  font-family: $font-family-monospace;
+  font-size: $mono-font-size;
+  font-weight: 400;
+  letter-spacing: $letter-spacing-mono;
+}
+// 欄位小標籤：每一筆都顯示（日誌的欄位名，取代整排表頭）
+.orders-label {
+  display: block;
+  margin-bottom: .125rem;
+  color: $text-3;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  font-weight: 400;
+  letter-spacing: $letter-spacing-mono;
+}
+
+// 課程：小縮圖＋全名
+.orders-course {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  gap: .875rem;
+  align-items: center;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 5rem minmax(0, 1fr);
+  }
+}
+.orders-thumb {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: $screen;
+  clip-path: cut-outer(6px);
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+.orders-course-name {
+  color: $text;
+  font-weight: 700;
+  line-height: 1.5;
+}
+// 付款失敗、已退費的訂單：縮圖降一階（文字仍是 AA）
+.orders-row.is-void .orders-thumb img {
+  filter: saturate(.4) brightness(.7);
+}
+
+.orders-amount .price {
+  font-size: 1.125rem;
+}
+.orders-pay dd {
+  color: $text-2;
+  font-size: $font-size-sm;
+}
+.orders-status {
+  justify-self: end;
+
+  @include media-breakpoint-up(xl) {
+    justify-self: start;
+  }
+}
+
+// 備註：第二行，從課名的位置開始（1200px 以上對齊縮圖右側）
+.orders-note {
+  display: flex;
+  gap: .5rem;
+  margin: 0;
+  color: $text-2;
+  font-size: $font-size-sm;
+
+  .bi {
+    flex-shrink: 0;
+    color: $violet-text;
+    line-height: 1.8;
+  }
+  @include media-breakpoint-up(xl) {
+    padding-left: calc(5rem + .875rem);
+  }
+}
+.orders-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 1.25rem;
+
+  @include media-breakpoint-down(xl) {
+    padding-top: .5rem;
+    border-top: 1px solid $line;
+  }
+  @include media-breakpoint-up(xl) {
+    gap: 0 1rem;
+  }
+  .btn-text {
+    font-size: $font-size-sm;
+  }
+  .btn-sm {
+    margin-block: .375rem;
+  }
+}
+// 狀態與動作的外層：1200px 以下是 display: contents（狀態在右上、動作在最下面）；
+// 以上是最右欄（跨兩行），狀態徽章在上、動作緊接在下
+.orders-state {
+  display: contents;
+
+  @include media-breakpoint-up(xl) {
+    grid-area: state;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .25rem;
+  }
+}
+
+// ---------- 狀態示意 ----------
+// 退費處理中：只畫藤編那一筆（一列的日誌面板）
+.orders-log.is-single {
+  @include media-breakpoint-up(xl) {
+    padding-block: 0;
+  }
+}
+.orders-demo-empty {
+  display: grid;
+  gap: 1.5rem;
+
+  .orders-refund {
+    margin-bottom: 0;
+  }
+}

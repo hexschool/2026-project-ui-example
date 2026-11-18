@@ -1,0 +1,320 @@
+// ============================================================
+// 我的課程 my-courses.html
+// 標題區（背景網格）：左邊麵包屑、H1、說明，右邊 3 個 HUD 計數（Oxanium 大數字＋小字標籤）與「購買紀錄」
+// 篩選：等寬字的分頁籤（沿用終端機分頁 .nav-tabs 的外觀；這裡是 button＋aria-pressed，不是 role="tab"）
+// 課程：2 欄便當格。最近在學的那門（.is-featured）橫跨整列，左封面、右資訊；其他兩門各佔一欄（全像卡）
+// 橫跨整列的樣式掛在 .is-featured 上：篩掉它時，其他卡照常排
+// ============================================================
+
+// ---------- 標題區 ----------
+.mc-header-grid {
+  display: grid;
+  gap: 1.5rem;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 2rem;
+  }
+}
+.mc-header-side {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+
+  @include media-breakpoint-up(lg) {
+    justify-items: end;
+  }
+}
+// 3 個 HUD 計數：切角小面板，576px 以下也並排（字縮小）
+.mc-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .5rem;
+  width: 100%;
+  margin: 0;
+
+  @include media-breakpoint-up(sm) {
+    width: auto;
+    grid-template-columns: repeat(3, minmax(8.5rem, auto));
+    gap: .75rem;
+  }
+}
+.mc-stat {
+  @include cut-frame($cut-button, $line, rgba($deck, .92));
+  display: flex;
+  flex-direction: column-reverse; // 數字在上、標籤在下（HTML 仍是 dt → dd）
+  gap: .25rem;
+  padding: .75rem .875rem;
+
+  @include media-breakpoint-up(sm) {
+    padding: .875rem 1.125rem;
+  }
+  dt {
+    color: $text-3;
+    font-family: $font-family-monospace;
+    font-size: .75rem;
+    font-weight: 400;
+    letter-spacing: $letter-spacing-mono;
+
+    @include media-breakpoint-up(sm) {
+      font-size: $mono-font-size;
+    }
+  }
+  dd {
+    display: flex;
+    align-items: baseline;
+    gap: .25rem;
+    margin: 0;
+    color: $text-2;
+    font-size: $font-size-sm;
+  }
+  .stat {
+    font-size: 1.625rem;
+
+    @include media-breakpoint-up(sm) {
+      font-size: $stat-font-size;
+    }
+  }
+}
+
+// ---------- 篩選分頁籤 ----------
+.mc-filter {
+  margin-bottom: 1.75rem;
+
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+  }
+}
+.mc-filter-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5rem;
+  height: 1.375rem;
+  padding: 0 .375rem;
+  border: 1px solid $line;
+  color: $text-3;
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+
+  .nav-link.active & {
+    border-color: $pink-text;
+    color: $pink-text;
+  }
+}
+
+// ---------- 便當格 ----------
+.mc-grid {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+  > li[hidden] {
+    display: none;
+  }
+}
+.mc-item.is-featured {
+  @include media-breakpoint-up(md) {
+    grid-column: 1 / -1;
+  }
+}
+
+// ---------- 我的課程卡 ----------
+.mc-card {
+  @include cut-frame;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .is-featured & {
+    @include media-breakpoint-up(md) {
+      display: grid;
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+    @include media-breakpoint-up(xl) {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    }
+  }
+}
+.mc-card-media {
+  @include cut-media-top;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: $screen;
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  // 全像卡的暗角：四周壓暗、下緣帶一點靛紫（靜態，裝飾）
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, transparent 55%, rgba($void, .55) 100%),
+      radial-gradient(ellipse at center, transparent 55%, rgba($void, .45) 100%);
+    pointer-events: none;
+  }
+  // 底緣光束
+  &::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    @include beam-line(3px);
+  }
+  // 橫跨整列：封面在左、跟著卡片高度（圖片絕對定位，不讓圖片的比例撐高整列）；左下角跟著卡片切角
+  .is-featured & {
+    @include media-breakpoint-up(md) {
+      aspect-ratio: auto;
+      min-height: 17rem;
+      margin: 1px 0 1px 1px;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, calc(var(--cut) - .586px) 100%, 0 calc(100% - var(--cut) + .586px));
+
+      > img {
+        position: absolute;
+        inset: 0;
+      }
+
+      &::before {
+        background:
+          linear-gradient(90deg, transparent 60%, rgba($deck, .6) 100%),
+          radial-gradient(ellipse at center, transparent 55%, rgba($void, .4) 100%);
+      }
+    }
+  }
+  // 已完課：封面降一階，底緣光束改薄荷
+  .is-done & {
+    > img {
+      filter: saturate(.65) brightness(.8);
+    }
+    &::after {
+      background-image: none;
+      background-color: $mint;
+    }
+  }
+}
+.mc-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-grow: 1;
+  gap: .75rem;
+  padding: 1.125rem 1.25rem 1.25rem;
+
+  @include media-breakpoint-up(sm) {
+    padding: 1.25rem 1.5rem 1.5rem;
+  }
+  .is-featured & {
+    @include media-breakpoint-up(md) {
+      justify-content: center;
+      padding: 1.75rem 2rem;
+    }
+  }
+  .btn {
+    margin-top: auto;
+  }
+}
+.mc-card-title {
+  margin: 0;
+  color: $text;
+  font-size: 1.125rem;
+  line-height: 1.5;
+
+  .is-featured & {
+    @include media-breakpoint-up(md) {
+      font-size: 1.375rem;
+    }
+  }
+}
+.mc-progress {
+  width: 100%;
+  margin-top: .25rem;
+
+  .progress {
+    margin-bottom: .625rem;
+  }
+  p {
+    margin: 0;
+    color: $text;
+    font-size: $font-size-sm;
+    font-weight: 700;
+  }
+}
+// 上次看到：像一行紀錄（screen 底、左側 violet 細條、等寬時間）
+.mc-last {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .25rem 1rem;
+  align-items: baseline;
+  width: 100%;
+  margin: 0 0 .5rem;
+  padding: .625rem .875rem;
+  border-left: 2px solid $violet-text;
+  background-color: $screen;
+  font-size: $font-size-sm;
+}
+.mc-last-label {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  color: $text-3;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  letter-spacing: $letter-spacing-mono;
+}
+.mc-last-unit {
+  color: $text;
+
+  .mono {
+    color: $violet-text;
+  }
+}
+.mc-last .timecode {
+  color: $text-2;
+}
+// 完課日期
+.mc-finished {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  width: 100%;
+  margin: 0 0 .5rem;
+  padding: .625rem .875rem;
+  border-left: 2px solid $mint;
+  background-color: $screen;
+  color: $text;
+  font-size: $font-size-sm;
+
+  .bi {
+    color: $mint;
+  }
+}
+
+// ---------- 狀態示意：還沒有任何課程時 ----------
+.mc-demo-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid $line;
+}
+.mc-demo-title {
+  margin: 0;
+  font-size: 1.5rem;
+}

@@ -1,0 +1,228 @@
+// ============================================================
+// 分開的卡片 Accordion＋單元列：課程詳情的課程大綱與常見問題、學習頁側欄的章節卡、Guideline
+// 本風格的語彙：不是一整塊用分隔線切開的清單，而是一張張分開的輕卡片，卡與卡之間 12px
+//
+// .accordion.accordion-cards           每一項是一張白卡（髮絲線＋淡陰影＋16px 圓角）
+//   .accordion-button.chapter-btn      章節標題列：「第 N 章」小字 → 章名 → 右側「N 單元 ‧ M 分」
+//   .accordion-cards.is-compact        學習頁側欄：內距小一階，標題列前面多一個章節狀態圖示、右側是完成數「1／6」
+// .unit-list > li > .unit             單元列：狀態圖示、單元編號、名稱、（狀態標籤）、片長
+//   .unit-list.has-state               課程詳情：多一欄「試看」「播放中」標籤（< 576px 換到名稱下方）
+//   .unit.is-trial／.is-playing／.is-locked（未購買）
+//   .unit.is-done／.is-current／.is-todo（學習頁、已購買示意）
+// hover 只換底色，不改尺寸；目前單元＝冰底＋左側 3px 冰河藍條（inset 陰影，不推擠內容）
+// ============================================================
+
+.accordion-cards {
+  --bs-accordion-border-width: 0;
+  --bs-accordion-btn-padding-x: 1.25rem;
+  --bs-accordion-btn-padding-y: 1rem;
+  display: grid;
+  gap: .75rem;
+
+  .accordion-item {
+    overflow: hidden;
+    border: 1px solid $line;
+    border-radius: $border-radius-lg;
+    background-color: $white;
+    box-shadow: $shadow-card;
+  }
+  .accordion-button {
+    gap: 1rem;
+    font-weight: $font-weight-medium;
+    line-height: 1.6;
+    transition: background-color .2s ease, color .2s ease;
+
+    &:hover { background-color: $snow; }
+    &:not(.collapsed) { box-shadow: none; }
+    &:focus-visible { box-shadow: var(--bs-accordion-btn-focus-box-shadow); }
+  }
+  .accordion-body {
+    padding: 0 .5rem .5rem;
+  }
+
+  @include media-breakpoint-up(lg) {
+    --bs-accordion-btn-padding-x: 1.5rem;
+    --bs-accordion-btn-padding-y: 1.125rem;
+
+    .accordion-body { padding: 0 .75rem .75rem; }
+  }
+}
+
+// ---------- 章節標題列 ----------
+// <button class="accordion-button chapter-btn" …>
+//   <span class="chapter-title"><span class="chapter-no">第 1 章　</span><span class="chapter-name">開始之前：認識材料與工具</span></span>
+//   <span class="chapter-meta num">4 單元 ‧ 32 分</span>
+// </button>
+// 「第 N 章」與章名之間的全形空白寫在 .chapter-no 裡（文字照抄，畫面上換行）
+.chapter-btn {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "title chev"
+    "meta  chev";
+  column-gap: 1rem;
+  row-gap: .25rem;
+  text-align: left;
+
+  &::after {
+    grid-area: chev;
+    margin-left: 0;
+  }
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas: "title meta chev";
+  }
+}
+.chapter-title {
+  grid-area: title;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.chapter-no {
+  color: $slate;
+  font-size: .8125rem;
+  font-weight: $font-weight-medium;
+  letter-spacing: $letter-spacing-label;
+  line-height: 1.6;
+}
+.chapter-name {
+  color: $ink;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+
+  @include media-breakpoint-up(lg) { font-size: 1.125rem; }
+}
+.chapter-meta {
+  grid-area: meta;
+  color: $slate;
+  font-size: .875rem;
+  white-space: nowrap;
+}
+
+// 學習頁側欄：狀態圖示＋章名＋完成數，內距小一階
+.accordion-cards.is-compact {
+  --bs-accordion-btn-padding-x: 1rem;
+  --bs-accordion-btn-padding-y: .875rem;
+  gap: .625rem;
+
+  .chapter-btn {
+    grid-template-columns: 1.25rem minmax(0, 1fr) auto auto;
+    grid-template-areas: "state title meta chev";
+    column-gap: .75rem;
+  }
+  .chapter-name { font-size: .9375rem; }
+  .chapter-no { font-size: .75rem; }
+  .chapter-meta { font-size: .8125rem; }
+  .accordion-body { padding: 0 .375rem .375rem; }
+}
+.chapter-state {
+  grid-area: state;
+  align-self: center;
+  font-size: 1.125rem;
+  line-height: 1;
+}
+.chapter-state.is-done    { color: $pine; }
+.chapter-state.is-current { color: $glacier; }
+.chapter-state.is-partial { color: $glacier; }
+.chapter-state.is-todo    { color: $slate; }
+
+// ---------- 單元列 ----------
+.unit-list {
+  display: grid;
+  gap: .125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.unit {
+  display: grid;
+  grid-template-columns: 1.25rem 2.25rem minmax(0, 1fr) auto;
+  grid-template-areas: "icon no name time";
+  align-items: center;
+  column-gap: .625rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: .5rem .75rem;
+  border: 0;
+  border-radius: $border-radius;
+  background-color: transparent;
+  color: $ink;
+  font-size: .9375rem;
+  line-height: 1.6;
+  text-align: left;
+  text-decoration: none;
+  transition: background-color .2s ease, color .2s ease;
+
+  &:hover {
+    background-color: $frost;
+    color: $ink;
+  }
+  &:focus-visible {
+    outline: 2px solid $glacier;
+    outline-offset: -2px;
+  }
+}
+.unit-icon {
+  grid-area: icon;
+  display: inline-flex;
+  font-size: 1rem;
+  line-height: 1;
+}
+.unit-no {
+  grid-area: no;
+  color: $slate;
+  font-size: .8125rem;
+}
+.unit-name {
+  grid-area: name;
+  min-width: 0;
+}
+.unit-state {
+  grid-area: state;
+  display: inline-flex;
+}
+.unit-time {
+  grid-area: time;
+  color: $slate;
+  font-size: .8125rem;
+  white-space: nowrap;
+}
+
+// 課程詳情：多一欄狀態標籤
+.unit-list.has-state .unit {
+  grid-template-columns: 1.25rem 2.25rem minmax(0, 1fr) auto;
+  grid-template-areas:
+    "icon no name  time"
+    ".    .  state .";
+  row-gap: .25rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 1.25rem 2.25rem minmax(0, 1fr) auto auto;
+    grid-template-areas: "icon no name state time";
+  }
+}
+
+// 狀態
+.unit.is-trial .unit-icon   { color: $glacier; }
+.unit.is-locked             { color: $slate; }
+.unit.is-locked .unit-icon  { color: $slate; }
+.unit.is-done .unit-icon    { color: $pine; }
+.unit.is-todo .unit-icon    { color: $slate; }
+.unit.is-open .unit-icon    { color: $glacier; }
+.unit.is-playing,
+.unit.is-current {
+  background-color: $ice;
+  box-shadow: inset 3px 0 0 $glacier;
+
+  .unit-icon { color: $glacier; }
+  .unit-name { color: $glacier-deep; font-weight: $font-weight-bold; } // ice 上 6.29:1
+  .unit-no,
+  .unit-time { color: $glacier-deep; }
+
+  &:hover { background-color: $ice; }
+}

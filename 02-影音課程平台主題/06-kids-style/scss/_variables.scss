@@ -1,0 +1,429 @@
+// ============================================================
+// Craftory｜06 童心啟蒙樂園 — Bootstrap 5 變數覆寫（design token）
+// 規則：只在這裡改 Bootstrap 變數；元件與頁面樣式一律引用變數，不寫死色碼
+//
+// 概念：一本會動的闖關繪本。暖奶油底、墨色字與外框，向日葵黃、天空藍、珊瑚橘、葉綠是「貼紙」的填色。
+// 三條鐵則（改色時最容易犯）：
+//   1. 亮色（sunflower、sky、coral、leaf）只當填色，上面一律放 $ink 字；白字放在珊瑚上只有 2.31:1，禁止。
+//   2. 亮色本身對奶油底都不到 3:1，所以卡片、按鈕、輸入框、chip 一律有 2px $ink 外框，靠外框看出邊界。
+//   3. 陰影只有「位移硬陰影」（墨色、不模糊）；沒有任何模糊陰影。
+// 不輸出深色模式（$enable-dark-mode: false）。對比度皆以 WCAG 2.x 公式計算。
+// ============================================================
+
+// ---------- 1. 色彩 ----------
+
+// 底色：奶油頁面、白色貼紙、四種淡色區塊
+$cream:        #FFFBEF; // 頁面底（ink 14.12）
+$white:        #FFFFFF; // 卡片、輸入框（ink 14.60）
+$sun-soft:     #FFF3C4; // 淡向日葵：首頁色帶、選中底、便條（ink 13.12、ink-2 6.34、sky-deep 4.84、coral-deep 4.86、amber-deep 5.33）
+$sky-soft:     #D9EEFC; // 淡天空：頁尾、淡藍區塊、進度軌道（ink 12.23、ink-2 5.91、sky-deep 4.51）
+$coral-soft:   #FFE3D8; // 淡珊瑚：淡珊瑚區塊（ink 11.98、ink-2 5.79；coral-deep 只有 4.43，這個底上一律用 ink 字）
+$leaf-soft:    #E6F6E7; // 淡葉綠：成功底（ink 13.01、leaf-deep 5.42）
+$tomato-soft:  #FFF0EA; // 淡番茄：錯誤底（ink 13.15、tomato 4.90）
+
+// 墨：文字、所有外框、硬陰影
+$ink:          #2D2440; // 墨：主文字、外框、硬陰影、播放器外框（cream 14.12、white 14.60）
+$ink-2:        #5E5470; // 淡墨：meta、說明（cream 6.82、white 7.05）
+$placeholder:  #6E6580; // placeholder（white 5.47、cream 5.29）
+
+// 亮色：只當填色，上面放 ink 字，外面有 ink 外框
+$sunflower:    #FFC93C; // 向日葵：頁首色帶、勳章、播放鈕、色塊（ink 字 9.51；當圖形放在 cream 上只有 1.48）
+$sky:          #7CC6F2; // 天空：色塊、播放鈕外圈、選中的付款卡（ink 字 7.80；當圖形放在 cream 上只有 1.81）
+$coral:        #FF8A65; // 珊瑚：主要按鈕底（ink 字 6.31；白字只有 2.31，禁止）
+$leaf:         #8FD694; // 葉綠：已完成站牌、成功色塊（ink 字 8.49）
+$coral-hover:  #FFA285; // 珊瑚亮一階：主要按鈕 hover（ink 字 7.48）
+
+// 深色：可以直接當文字
+$sky-deep:     #1F6FA8; // 深天空：連結、進度填色、焦點環（white 5.39、cream 5.21、sun-soft 4.84、對軌道 sky-soft 4.51；對 sunflower 3.51，焦點環仍 ≥ 3）
+$coral-deep:   #B9431F; // 深珊瑚：價格、強調文字（white 5.40、cream 5.22、sun-soft 4.86）
+$leaf-deep:    #1E7041; // 深葉綠：成功文字（white 6.09、cream 5.88、leaf-soft 5.42）
+$tomato:       #C0392B; // 番茄：錯誤文字（white 5.44、cream 5.26、tomato-soft 4.90）
+$amber-deep:   #8A5A00; // 深琥珀：警示文字、退費處理中（white 5.93、sun-soft 5.33）
+
+$primary:   $sky-deep;   // Bootstrap 元件的「選中」：核取方塊、進度條、分頁、連結（主要按鈕另外做成珊瑚，見 _base.scss）
+$secondary: $ink-2;
+$success:   $leaf-deep;
+$info:      $sky-deep;
+$warning:   $amber-deep;
+$danger:    $tomato;
+$light:     $sun-soft;
+$dark:      $ink;
+
+$theme-colors: (
+  "primary":   $primary,
+  "secondary": $secondary,
+  "success":   $success,
+  "info":      $info,
+  "warning":   $warning,
+  "danger":    $danger,
+  "light":     $light,
+  "dark":      $dark,
+);
+
+// color-contrast() 依序試「淺色 → 深色」，取第一個達 4.5:1 的。
+// 深天空、番茄、深葉綠、深琥珀、墨上選白；向日葵、天空、珊瑚、葉綠上選墨
+$color-contrast-light: $white;
+$color-contrast-dark:  $ink;
+$min-contrast-ratio:   4.5;
+
+$enable-dark-mode: false;
+$enable-rfs:       false; // 字級照下方的表在斷點切換，不讓 RFS 自動縮
+
+// ---------- 全站底色與文字 ----------
+$body-bg:               $cream;
+$body-color:            $ink;
+$body-secondary-color:  $ink-2;
+$body-secondary-bg:     $sun-soft;
+$body-tertiary-color:   $placeholder;
+$body-tertiary-bg:      $white;
+$body-emphasis-color:   $ink;
+$border-color:          $ink;
+$border-color-translucent: rgba($ink, .16);
+$headings-color:        $ink;
+
+// 連結：深天空＋粗底線，hover 換墨
+$link-color:                    $sky-deep;
+$link-hover-color:              $ink;
+$link-decoration:               underline;
+$link-underline-offset:         .28em;
+
+$primary-text-emphasis:   $sky-deep;
+$secondary-text-emphasis: $ink;
+$success-text-emphasis:   $leaf-deep;
+$info-text-emphasis:      $sky-deep;
+$warning-text-emphasis:   $amber-deep;
+$danger-text-emphasis:    $tomato;
+$light-text-emphasis:     $ink;
+$dark-text-emphasis:      $ink;
+
+$primary-bg-subtle:       $sky-soft;
+$secondary-bg-subtle:     $sun-soft;
+$success-bg-subtle:       $leaf-soft;
+$info-bg-subtle:          $sky-soft;
+$warning-bg-subtle:       $sun-soft;
+$danger-bg-subtle:        $tomato-soft;
+$light-bg-subtle:         $white;
+$dark-bg-subtle:          $sky-soft;
+
+$primary-border-subtle:   $ink;
+$secondary-border-subtle: $ink;
+$success-border-subtle:   $leaf-deep;
+$info-border-subtle:      $sky-deep;
+$warning-border-subtle:   $amber-deep;
+$danger-border-subtle:    $tomato;
+$light-border-subtle:     $ink;
+$dark-border-subtle:      $ink;
+
+$component-active-bg:    $sky-deep;
+$component-active-color: $white;
+
+// 焦點環：3px 間隙（底色）＋3px 深天空外圈。一律用 outline（不和硬陰影搶 box-shadow），見 _base.scss
+$focus-ring-width:   3px;
+$focus-ring-opacity: 1;
+$focus-ring-blur:    0;
+$focus-ring-color:   $sky-deep;
+$focus-ring-box-shadow: none;
+$focus-outline:        3px solid $sky-deep; // 自訂
+$focus-outline-offset: 3px;                 // 自訂：間隙就是底色
+
+$mark-bg:    $sunflower;
+$mark-color: $ink;
+$mark-padding: .05em .25em;
+
+$hr-color:   $ink;
+$hr-opacity: 1;
+$hr-border-width: 2px;
+
+// ---------- 2. 字體與字級 ----------
+// 圓體 Chiron GoRound TC：所有中文（內文 500、H3 700、H1／H2 800、Display 900）；「真」「為」是台灣標準字形
+// Baloo 2：品牌字、價格、百分比、統計數字、時間碼（tabular-nums）
+$font-family-sans-serif: "Chiron GoRound TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+$font-family-num:        "Baloo 2", $font-family-sans-serif; // 自訂：.num、.price、品牌字
+$font-family-base:       $font-family-sans-serif;
+$headings-font-family:   $font-family-sans-serif;
+
+$font-size-root:  16px;
+$font-size-base:  1.0625rem; // 17px（< 576px 改 16px，見 _base.scss）
+$font-size-sm:    .9375rem;  // 15px：小字下限
+$font-size-lg:    1.1875rem; // 19px
+$font-weight-normal:   500;
+$font-weight-semibold: 700;
+$font-weight-bold:     800;
+$font-weight-bolder:   900;
+$line-height-base: 1.8;
+$line-height-sm:   1.7;
+$line-height-lg:   1.6;
+
+// 標題：Display 60／38、H1 44／32、H2 34／26、H3 21／19（桌機 ≥ 992px／手機），切換寫在 _base.scss
+$display-size:   3.75rem;   // 60（自訂）
+$display-size-sm: 2.375rem; // 38（自訂）
+$h1-font-size:   2.75rem;   // 44
+$h2-font-size:   2.125rem;  // 34
+$h3-font-size:   1.3125rem; // 21
+$h4-font-size:   1.1875rem; // 19
+$h5-font-size:   1.0625rem;
+$h6-font-size:   1rem;
+$h1-font-size-sm: 2rem;     // 32（自訂）
+$h2-font-size-sm: 1.625rem; // 26（自訂）
+$h3-font-size-sm: 1.1875rem; // 19（自訂）
+$headings-font-weight: 800;
+$headings-line-height: 1.35;
+$headings-margin-bottom: .5em;
+
+$small-font-size: $font-size-sm;
+$lead-font-size:  1.1875rem;
+$lead-font-weight: 500;
+
+// ---------- 3. 間距與版心 ----------
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: .25rem,  // 4
+  2: .5rem,   // 8
+  3: 1rem,    // 16
+  4: 1.5rem,  // 24
+  5: 2rem,    // 32
+  6: 3rem,    // 48
+  7: 4rem,    // 64
+  8: 6rem,    // 96
+);
+
+$grid-gutter-width:    2rem;
+$container-padding-x:  2.5rem; // ≥ $grid-gutter-width，row 的負邊距才不會溢出
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  xxl: 1240px,
+);
+
+$section-space-y:     6rem;   // 自訂：區塊上下留白（桌機 96）
+$section-space-y-sm:  4rem;   // 自訂：手機 64
+$page-top-space:      3rem;   // 自訂：內頁 <main> 上方 48（另外加上頁首波浪的 12）
+
+// 頁首：向日葵色帶高 76，底緣 12px 圓弧波浪（::after，不佔版面高度）
+$site-header-height: 76px;    // 自訂
+$site-header-wave:   12px;    // 自訂
+$header-offset:      $site-header-height + $site-header-wave; // 88：sticky 與錨點的位移基準
+$sticky-top-offset:  $header-offset + 16px;                   // 104：購買卡、學習頁側欄、Guideline 目錄的 sticky top
+
+// ---------- 4. 外框、圓角、陰影 ----------
+$border-width:    2px;
+$border-radius-sm:  .75rem;  // 12：小 chip 以外的小方塊
+$border-radius:     1.25rem; // 20：輸入框、圖片
+$border-radius-lg:  1.75rem; // 28：卡片
+$border-radius-xl:  1.75rem;
+$border-radius-xxl: 2.5rem;  // 40：大型色帶面板
+$border-radius-pill: 50rem;  // 按鈕、chip
+
+$radius-card:  1.75rem; // 自訂：28
+$radius-input: 1.25rem; // 自訂：20
+$radius-image: 1.25rem; // 自訂：20
+
+// 硬陰影：墨色、不模糊（卡片 4px、按鈕 3px）
+$shadow-hard:    4px 4px 0 $ink; // 自訂
+$shadow-hard-sm: 3px 3px 0 $ink; // 自訂
+$box-shadow:     $shadow-hard;
+$box-shadow-sm:  $shadow-hard-sm;
+$box-shadow-lg:  6px 6px 0 $ink;
+$box-shadow-inset: none;
+$enable-shadows: false;
+
+// ---------- 5. 元件 ----------
+// 按鈕：膠囊、2px 墨框；主要按鈕珊瑚底＋墨字（_base.scss 的 .btn-primary）
+$btn-font-weight:      800;
+$btn-padding-y:        .625rem;
+$btn-padding-x:        1.5rem;
+$btn-font-size:        1.0625rem;
+$btn-line-height:      1.5;
+$btn-padding-y-sm:     .4375rem;
+$btn-padding-x-sm:     1.125rem;
+$btn-font-size-sm:     .9375rem;
+$btn-padding-y-lg:     .875rem;
+$btn-padding-x-lg:     2rem;
+$btn-font-size-lg:     1.1875rem;
+$btn-border-width:     2px;
+$btn-border-radius:    $border-radius-pill;
+$btn-border-radius-sm: $border-radius-pill;
+$btn-border-radius-lg: $border-radius-pill;
+$btn-focus-box-shadow: none;
+$btn-disabled-opacity: 1; // 停用另外畫（虛線框＋淡墨字），不只靠透明度
+
+// 表單：白底、2px 墨框、20px 圓角
+$input-bg:                $white;
+$input-color:             $ink;
+$input-border-color:      $ink;
+$input-border-width:      2px;
+$input-border-radius:     $radius-input;
+$input-border-radius-sm:  $radius-input;
+$input-border-radius-lg:  $radius-input;
+$input-padding-y:         .6875rem;
+$input-padding-x:         1.125rem;
+$input-placeholder-color: $placeholder;
+$input-focus-bg:          $white;
+$input-focus-border-color: $ink;
+$input-focus-box-shadow:  none;
+$input-disabled-bg:       $cream;
+$input-disabled-border-color: $ink-2;
+$form-label-font-weight:  800;
+$form-label-margin-bottom: .375rem;
+$form-text-color:         $ink-2;
+$form-text-font-size:     $font-size-sm;
+$form-check-input-width:  1.375em;
+$form-check-input-border: 2px solid $ink;
+$form-check-input-border-radius: .4375rem;
+$form-check-input-checked-bg-color: $sky-deep;
+$form-check-input-checked-border-color: $ink;
+$form-check-input-focus-box-shadow: none;
+$form-check-input-focus-border: $ink;
+$form-select-border-radius: $radius-input;
+$form-select-focus-box-shadow: none;
+$form-select-indicator-color: $ink;
+$form-feedback-invalid-color: $tomato;
+$form-feedback-valid-color:   $leaf-deep;
+$form-feedback-font-size:     $font-size-sm;
+$form-invalid-color:          $tomato;
+$form-invalid-border-color:   $tomato;
+
+// 進度條：深天空填色在淡天空軌道上（4.51），外面一圈墨框
+$progress-height:        .875rem;
+$progress-bg:            $sky-soft;
+$progress-bar-bg:        $sky-deep;
+$progress-border-radius: $border-radius-pill;
+$progress-box-shadow:    none;
+
+// 卡片
+$card-border-width:  2px;
+$card-border-color:  $ink;
+$card-border-radius: $radius-card;
+$card-bg:            $white;
+$card-spacer-y:      1.5rem;
+$card-spacer-x:      1.5rem;
+
+// 對話框
+$modal-content-bg:            $white;
+$modal-content-border-color:  $ink;
+$modal-content-border-width:  2px;
+$modal-content-border-radius: $radius-card;
+$modal-content-box-shadow-xs: 6px 6px 0 $ink;
+$modal-content-box-shadow-sm-up: 6px 6px 0 $ink;
+$modal-backdrop-bg:           $ink;
+$modal-backdrop-opacity:      .55;
+$modal-header-border-width:   0;
+$modal-footer-border-width:   0;
+$modal-inner-padding:         1.75rem;
+$modal-header-padding:        1.5rem 1.75rem 0;
+
+// 下拉選單
+$dropdown-bg:            $white;
+$dropdown-border-color:  $ink;
+$dropdown-border-width:  2px;
+$dropdown-border-radius: $border-radius;
+$dropdown-box-shadow:    $shadow-hard;
+$dropdown-link-color:    $ink;
+$dropdown-link-hover-bg: $sun-soft;
+$dropdown-link-hover-color: $ink;
+$dropdown-link-active-bg: $sky-deep;
+$dropdown-link-active-color: $white;
+$dropdown-font-size:     $font-size-sm;
+
+// 麵包屑：小字、分隔是「／」
+$breadcrumb-font-size:       $font-size-sm;
+$breadcrumb-divider:         quote("／");
+$breadcrumb-divider-color:   $ink-2;
+$breadcrumb-active-color:    $ink;
+$breadcrumb-margin-bottom:   1rem;
+
+// 手風琴：章節（課程詳情）與常見問題
+$accordion-bg:                 $white;
+$accordion-color:              $ink;
+$accordion-border-color:       $ink;
+$accordion-border-width:       2px;
+$accordion-border-radius:      $radius-card;
+$accordion-inner-border-radius: calc(#{$radius-card} - 2px);
+$accordion-button-active-bg:   $sun-soft;
+$accordion-button-active-color: $ink;
+$accordion-button-focus-box-shadow: none;
+$accordion-button-padding-y:   1.125rem;
+$accordion-button-padding-x:   1.5rem;
+$accordion-icon-color:         $ink;
+$accordion-icon-active-color:  $ink;
+
+// 分頁籤：粗膠囊（_base.scss 的 .nav-pills-bold）
+$nav-link-font-weight:  800;
+$nav-link-color:        $ink;
+$nav-link-hover-color:  $ink;
+$nav-pills-border-radius: $border-radius-pill;
+$nav-pills-link-active-bg: $sky;
+$nav-pills-link-active-color: $ink;
+$nav-tabs-border-color: $ink;
+$nav-tabs-border-width: 2px;
+$nav-underline-border-width: .25rem;
+
+// 分頁：大圓鈕
+$pagination-padding-y:         .5rem;
+$pagination-padding-x:         .875rem;
+$pagination-color:             $ink;
+$pagination-bg:                $white;
+$pagination-border-width:      2px;
+$pagination-border-color:      $ink;
+$pagination-border-radius:     $border-radius-pill;
+$pagination-hover-color:       $ink;
+$pagination-hover-bg:          $sun-soft;
+$pagination-hover-border-color: $ink;
+$pagination-active-color:      $ink;
+$pagination-active-bg:         $sunflower;
+$pagination-active-border-color: $ink;
+$pagination-disabled-color:    $ink-2;
+$pagination-disabled-bg:       $cream;
+$pagination-disabled-border-color: $ink-2;
+$pagination-focus-box-shadow:  none;
+
+// Toast（續看提示）
+$toast-background-color: $white;
+$toast-border-color:     $ink;
+$toast-border-width:     2px;
+$toast-border-radius:    $border-radius;
+$toast-box-shadow:       $shadow-hard-sm;
+$toast-color:            $ink;
+$toast-font-size:        $font-size-sm;
+$toast-header-background-color: $sun-soft;
+$toast-header-color:     $ink;
+
+// Tooltip
+$tooltip-bg:            $ink;
+$tooltip-color:         $white;
+$tooltip-opacity:       1;
+$tooltip-border-radius: .625rem;
+$tooltip-font-size:     $font-size-sm;
+
+// Offcanvas（課程列表的更多篩選、學習頁的手機章節抽屜）
+$offcanvas-bg-color:      $cream;
+$offcanvas-color:         $ink;
+$offcanvas-border-color:  $ink;
+$offcanvas-border-width:  2px;
+$offcanvas-vertical-height: 82vh;
+
+// Alert
+$alert-border-width:  2px;
+$alert-border-radius: $border-radius;
+
+// Badge
+$badge-font-weight:  800;
+$badge-border-radius: $border-radius-pill;
+
+// Navbar
+$navbar-padding-y:         0;
+$navbar-brand-padding-y:   0;
+$navbar-brand-margin-end:  1.5rem;
+$navbar-nav-link-padding-x: 1rem;
+$navbar-toggler-focus-width: 0;
+$navbar-light-color:       $ink;
+$navbar-light-hover-color: $ink;
+$navbar-light-active-color: $white;
+
+// 動態
+$transition-base: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+$btn-transition:  color .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+$ease-pop: cubic-bezier(.34, 1.56, .64, 1); // 自訂：勳章彈出

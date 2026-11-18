@@ -1,0 +1,162 @@
+// ============================================================
+// 課程列（課程列表的單欄清單）：資料欄位和 .course-card 相同，排法不同
+// - 768px 以下：直式（封面在上 → 標籤、課名、講師、評分 → 價格＋免費試看）
+// - 768px 以上：封面在左（13rem），右邊資訊，價格列在資訊下方
+// - 1200px 以上：三欄一列：封面 15rem｜資訊｜價格與「免費試看」（左側一道直線隔開）
+// 切角面板；hover：框線換 violet-text＋克制的紫光；鍵盤焦點：框線 pink-text＋整列的焦點環。不位移、不放大
+// ============================================================
+.course-row {
+  @include cut-frame;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "media"
+    "body"
+    "foot";
+  gap: 1rem;
+  padding: .75rem .75rem 1rem;
+  transition: filter .2s ease;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 13rem minmax(0, 1fr);
+    grid-template-areas:
+      "media body"
+      "media foot";
+    column-gap: 1.5rem;
+    row-gap: .75rem;
+    padding: .875rem 1.25rem .875rem .875rem;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: 15rem minmax(0, 1fr) 10.5rem;
+    grid-template-areas: "media body foot";
+    align-items: center;
+    padding-right: .875rem;
+  }
+
+  &:hover {
+    --cut-line: #{$violet-text};
+    filter: $glow-filter;
+  }
+  &:has(.stretched-link:focus-visible) {
+    --cut-line: #{$pink-text};
+    outline: 2px solid $pink-text;
+    outline-offset: 3px;
+  }
+  .stretched-link:focus-visible {
+    outline: none;
+  }
+}
+
+// 封面：16:9，自己切小角（6px），底緣一道光束、右下等寬時長
+.course-row-media {
+  grid-area: media;
+  position: relative;
+  align-self: start;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: $screen;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    @include beam-line(2px);
+  }
+  .chip-duration {
+    position: absolute;
+    right: .5rem;
+    bottom: .625rem;
+  }
+}
+
+.course-row-body {
+  grid-area: body;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  min-width: 0;
+  padding-inline: .25rem;
+
+  @include media-breakpoint-up(md) {
+    padding-inline: 0;
+  }
+}
+.course-row-title {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  letter-spacing: .01em;
+
+  @include media-breakpoint-up(lg) {
+    font-size: 1.1875rem;
+  }
+  a {
+    color: $text;
+    text-decoration: none;
+  }
+  .course-row:hover & a {
+    text-decoration: underline;
+    text-decoration-color: $violet-text;
+    text-underline-offset: .3em;
+  }
+}
+// 講師與評分排在同一列（空間不夠時換行）
+.course-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem 1.25rem;
+  margin: 0;
+  color: $text-3;
+  font-size: $font-size-sm;
+
+  .course-card-teacher {
+    color: $text-2;
+  }
+}
+
+// 價格與「免費試看」：< xl 是資訊下方的一列（上方一道線）；≥ xl 是右側一欄（左側一道直線）
+.course-row-foot {
+  grid-area: foot;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .875rem .25rem 0;
+  border-top: 1px solid $line;
+
+  @include media-breakpoint-up(md) {
+    padding-inline: 0;
+    padding-top: .75rem;
+  }
+  @include media-breakpoint-up(xl) {
+    align-self: stretch;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: .875rem;
+    padding: .25rem 0 .25rem 1.25rem;
+    border-top: 0;
+    border-left: 1px solid $line;
+  }
+  .price {
+    margin: 0;
+    font-size: 1.25rem;
+
+    @include media-breakpoint-up(xl) {
+      font-size: 1.375rem;
+    }
+  }
+}
+// 整列可點（stretched-link），「免費試看」要浮在上面
+.course-row-trial {
+  position: relative;
+  z-index: 2;
+}

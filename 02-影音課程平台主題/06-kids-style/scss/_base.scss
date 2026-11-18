@@ -1,0 +1,728 @@
+// ============================================================
+// 全站基礎：字級、焦點、按鈕、chip、區塊節奏、貼紙卡、播放鈕、狀態示意、空狀態
+// 「貼紙」語言：白底（或亮色填色）＋2px 墨框＋位移硬陰影；小貼紙可以轉 ±2°，< 576px 一律不轉
+// hover 只換顏色、底色、外框色；:active 往右下沉 3px（transform，不改尺寸、不推擠）
+// ============================================================
+
+:root {
+  --header-offset: #{$header-offset};
+  --sticky-top: #{$sticky-top-offset};
+  --ink: #{$ink};
+  --shadow-hard: #{$shadow-hard};
+}
+
+html {
+  // 錨點捲動扣掉頁首（76＋波浪 12）再留 16
+  scroll-padding-top: $sticky-top-offset;
+  scroll-behavior: smooth;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  font-kerning: normal;
+  overflow-x: clip; // 波浪、色塊、旋轉貼紙都不能撐出水平捲軸
+
+  @include media-breakpoint-down(sm) {
+    font-size: 1rem; // 手機內文 16
+  }
+}
+
+// ---------- 標題階層（Display 60／38、H1 44／32、H2 34／26、H3 21／19） ----------
+h1, .h1 { font-size: $h1-font-size-sm; line-height: 1.3; font-weight: 800; }
+h2, .h2 { font-size: $h2-font-size-sm; line-height: 1.35; font-weight: 800; }
+h3, .h3 { font-size: $h3-font-size-sm; line-height: 1.5; font-weight: 700; }
+h4, .h4 { font-size: $h4-font-size; line-height: 1.5; font-weight: 700; }
+.display-title {
+  font-size: $display-size-sm;
+  line-height: 1.3;
+  font-weight: 900;
+  letter-spacing: .01em;
+}
+
+@include media-breakpoint-up(lg) {
+  h1, .h1 { font-size: $h1-font-size; }
+  h2, .h2 { font-size: $h2-font-size; }
+  h3, .h3 { font-size: $h3-font-size; }
+  .display-title { font-size: $display-size; line-height: 1.25; }
+}
+
+p { margin-bottom: 1rem; }
+small, .small { font-size: $font-size-sm; line-height: $line-height-sm; }
+strong, b { font-weight: 800; }
+
+// 課程名稱、短標題：只在空白與 <wbr> 處換行（不要用在長段落）
+.text-phrase { word-break: keep-all; overflow-wrap: anywhere; }
+
+// 數字：Baloo 2＋等寬數字（價格、時間碼、百分比、統計）
+.num {
+  font-family: $font-family-num;
+  font-variant-numeric: tabular-nums;
+}
+.price {
+  margin: 0;
+  font-family: $font-family-num;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: $coral-deep;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.price-lg {
+  font-size: 1.75rem;
+  @include media-breakpoint-up(lg) { font-size: 1.875rem; }
+}
+
+.text-ink-2 { color: $ink-2 !important; }
+
+// ---------- 焦點：3px 間隙（底色）＋3px 深天空 ----------
+:focus-visible {
+  outline: $focus-outline;
+  outline-offset: $focus-outline-offset;
+}
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus-visible {
+  outline: $focus-outline;
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.btn:focus-visible,
+.btn-check:focus-visible + .btn {
+  outline: $focus-outline;
+  outline-offset: $focus-outline-offset;
+  box-shadow: $shadow-hard-sm;
+}
+
+::selection { background: $sunflower; color: $ink; }
+
+// 跳到主要內容
+.skip-link {
+  position: absolute;
+  top: .75rem;
+  left: 1rem;
+  z-index: 1100;
+  padding: .5rem 1.25rem;
+  border: 2px solid $ink;
+  border-radius: $border-radius-pill;
+  background: $white;
+  color: $ink;
+  font-weight: 800;
+  transform: translateY(-200%);
+
+  &:focus { transform: none; }
+}
+
+main:focus { outline: none; }
+
+// ---------- 按鈕：膠囊＋2px 墨框＋3px 硬陰影；按下往右下沉 ----------
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 44px;
+  box-shadow: $shadow-hard-sm;
+  white-space: nowrap;
+
+  .bi { font-size: 1.1em; line-height: 1; }
+
+  &:active:not(:disabled):not(.disabled) {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 $ink;
+  }
+
+  &:disabled,
+  &.disabled {
+    border-style: dashed;
+    box-shadow: none;
+  }
+}
+
+// 主要：珊瑚底＋墨字（白字只有 2.31:1，禁止）
+.btn-primary {
+  @include button-variant(
+    $coral, $ink, $ink,
+    $hover-background: $coral-hover, $hover-border: $ink, $hover-color: $ink,
+    $active-background: $coral-hover, $active-border: $ink, $active-color: $ink,
+    $disabled-background: $cream, $disabled-border: $ink-2, $disabled-color: $ink-2
+  );
+}
+
+// 次要：白底＋墨框（願望清單、免費試看、探索全部課程）；.btn-outline-primary 是同一個樣子的別名
+.btn-secondary,
+.btn-outline-primary {
+  @include button-variant(
+    $white, $ink, $ink,
+    $hover-background: $sun-soft, $hover-border: $ink, $hover-color: $ink,
+    $active-background: $sun-soft, $active-border: $ink, $active-color: $ink,
+    $disabled-background: $cream, $disabled-border: $ink-2, $disabled-color: $ink-2
+  );
+}
+
+// 色塊按鈕：向日葵、天空（都是墨字）
+.btn-sun {
+  @include button-variant(
+    $sunflower, $ink, $ink,
+    $hover-background: tint-color($sunflower, 30%), $hover-border: $ink, $hover-color: $ink,
+    $active-background: tint-color($sunflower, 30%), $active-border: $ink, $active-color: $ink,
+    $disabled-background: $cream, $disabled-border: $ink-2, $disabled-color: $ink-2
+  );
+}
+.btn-sky {
+  @include button-variant(
+    $sky, $ink, $ink,
+    $hover-background: tint-color($sky, 35%), $hover-border: $ink, $hover-color: $ink,
+    $active-background: tint-color($sky, 35%), $active-border: $ink, $active-color: $ink,
+    $disabled-background: $cream, $disabled-border: $ink-2, $disabled-color: $ink-2
+  );
+}
+
+// 文字連結型按鈕（沒有外框與陰影，44px 觸控高度）
+.btn-text {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $sky-deep;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: .3em;
+  transition: $transition-base;
+
+  &:hover { color: $ink; text-decoration-color: $sunflower; }
+}
+
+// 標題列右側的「看更多」連結：深天空粗底線
+.link-more {
+  @extend .btn-text;
+  white-space: nowrap;
+}
+
+// 關閉鈕：白底墨框的小圓鈕
+.btn-close {
+  --bs-btn-close-opacity: 1;
+  --bs-btn-close-hover-opacity: 1;
+  --bs-btn-close-focus-shadow: none;
+  --bs-btn-close-focus-opacity: 1;
+  box-sizing: border-box; // Bootstrap 是 content-box，對話框與抽屜標題列又會加內距，圓鈕會被撐到 70px 以上
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  background-color: $white;
+  background-size: 14px;
+  box-shadow: $shadow-hard-sm;
+
+  &:hover { background-color: $sun-soft; }
+  &:focus-visible { outline: $focus-outline; outline-offset: $focus-outline-offset; }
+}
+
+// 圓形圖示按鈕：學習頁上一個／下一個（56px）、願望清單、選單（--size 可調）
+.round-btn {
+  --size: 56px;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--size);
+  height: var(--size);
+  padding: 0;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  background: $white;
+  color: $ink;
+  font-size: calc(var(--size) * .4);
+  line-height: 1;
+  box-shadow: $shadow-hard-sm;
+  text-decoration: none;
+  transition: $btn-transition;
+
+  &:hover { background: $sun-soft; color: $ink; }
+  &:active { transform: translate(3px, 3px); box-shadow: 0 0 0 $ink; }
+  &.is-sun { background: $sunflower; }
+  &.is-sky { background: $sky; }
+  &.is-coral { background: $coral; }
+}
+
+// ---------- 大圓播放鈕（招牌）：向日葵圓＋墨框＋天空外圈＋硬陰影 ----------
+// <span class="play-orb"><i class="bi bi-play-fill"></i></span>；--orb 控制直徑（首頁 120、播放器 112、手機 88）
+.play-orb {
+  --orb: 120px;
+  --ring: calc(var(--orb) * .1);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--orb);
+  height: var(--orb);
+  padding: 0 0 0 calc(var(--orb) * .06); // 播放三角形視覺置中
+  border: 3px solid $ink;
+  border-radius: 50%;
+  background: $sunflower;
+  color: $ink;
+  font-size: calc(var(--orb) * .46);
+  line-height: 1;
+  text-decoration: none;
+  // 由上到下：天空外圈、外圈墨框、外圈的硬陰影（box-shadow 不佔版面）
+  box-shadow:
+    0 0 0 var(--ring) $sky,
+    0 0 0 calc(var(--ring) + 2px) $ink,
+    4px 4px 0 calc(var(--ring) + 2px) $ink;
+  transition: background-color .15s ease;
+
+  &:hover { background: tint-color($sunflower, 30%); color: $ink; }
+  &:focus-visible { outline-offset: calc(var(--ring) + 8px); }
+}
+
+// ---------- chip（小標籤）：膠囊＋2px 墨框＋圖示＋文字（不只靠顏色） ----------
+.chip {
+  display: inline-block;
+  margin: 0;
+  padding: .0625rem .75rem;
+  border: 2px solid $ink;
+  border-radius: $border-radius-pill;
+  background: $white;
+  color: $ink;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  line-height: 1.6;
+  white-space: nowrap;
+  vertical-align: middle;
+
+  .bi { margin-right: .3em; font-size: .95em; }
+}
+.chip-sun   { background: $sunflower; }
+.chip-sky   { background: $sky; }
+.chip-coral { background: $coral; }
+.chip-leaf  { background: $leaf; }
+.chip-sun-soft   { background: $sun-soft; }
+.chip-sky-soft   { background: $sky-soft; }
+.chip-coral-soft { background: $coral-soft; }
+
+// 課程與學習狀態
+.chip-trial    { background: $sunflower; }            // 試看（bi-unlock）
+.chip-lock     { background: $white; color: $ink-2; border-style: dashed; } // 鎖定（bi-lock）
+.chip-playing  { background: $sky; }                  // 播放中（bi-play-fill）
+.chip-done     { background: $leaf; }                 // 已完成、已完課（bi-check-lg）
+.chip-progress { background: $sky-soft; }             // 學習進度 78%
+.chip-learning { background: $sky-soft; }             // 學習中
+// 講師課程狀態（只在 Guideline）
+.chip-draft { background: $sun-soft; border-style: dashed; } // 草稿
+.chip-live  { background: $leaf; }                           // 已上架
+.chip-off   { background: $white; color: $ink-2; }           // 已下架
+// 訂單狀態：已付款＝實線墨框＋勾；退費處理中＝虛線墨框＋沙漏；付款失敗＝番茄實線＋叉；已退費＝白底＋迴轉箭頭
+.chip-paid      { background: $leaf-soft; color: $leaf-deep; }
+.chip-refunding { background: $sun-soft; color: $amber-deep; border-style: dashed; }
+.chip-failed    { background: $tomato-soft; color: $tomato; border-color: $tomato; }
+.chip-refunded  { background: $white; color: $ink-2; }
+
+// ---------- 區塊節奏 ----------
+.section {
+  position: relative;
+  padding-block: $section-space-y-sm;
+
+  @include media-breakpoint-up(lg) { padding-block: $section-space-y; }
+}
+
+// 標題列：圓形色塊徽章（裝飾 icon，墨框）＋ H2（靠左）＋說明；右側「看更多」連結
+// <div class="section-head"><span class="section-badge is-sun" aria-hidden="true"><i class="bi bi-…"></i></span>
+//   <div class="section-head-text"><h2 class="section-title">…</h2><p class="section-lead">…</p></div>
+//   <a class="link-more" href="…">…</a></div>
+.section-head {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  column-gap: 1rem;
+  align-items: start;
+  margin-bottom: 2rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: 1.25rem;
+  }
+  @include media-breakpoint-up(lg) { margin-bottom: 2.5rem; }
+
+  > .link-more {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: .25rem;
+
+    @include media-breakpoint-up(sm) {
+      grid-column: 3;
+      grid-row: 1;
+      margin: 0;
+    }
+  }
+}
+.section-head-text { min-width: 0; }
+.section-title {
+  margin: 0;
+  word-break: keep-all; // 只在空白與 <wbr> 處換行，避免一個字掉到下一行
+  overflow-wrap: anywhere;
+}
+.section-lead {
+  max-width: 40em;
+  margin: .5rem 0 0;
+  color: $ink-2;
+}
+
+// 40px 圓形色塊徽章：輪流 sunflower／sky／coral（leaf 備用），墨框
+.section-badge {
+  display: inline-flex;
+  align-self: start;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-top: .2rem;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  background: $sunflower;
+  color: $ink;
+  font-size: 1.125rem;
+  line-height: 1;
+
+  @include media-breakpoint-up(lg) { margin-top: .375rem; }
+
+  &.is-sun   { background: $sunflower; }
+  &.is-sky   { background: $sky; }
+  &.is-coral { background: $coral; }
+  &.is-leaf  { background: $leaf; }
+}
+
+// 內頁頁首（課程列表、課程詳情、學習頁、我的課程、購買紀錄）：麵包屑 → H1 → 一句說明
+// 內頁的 <main> 加 .page-top：上方 48＋頁首波浪 12
+.page-top { padding-top: calc(#{$page-top-space} + #{$site-header-wave}); }
+.page-header {
+  margin-bottom: 2rem;
+
+  h1 { margin-bottom: .5rem; }
+}
+.page-lead {
+  max-width: 40em;
+  margin: 0;
+  color: $ink-2;
+}
+.breadcrumb {
+  --bs-breadcrumb-item-padding-x: .5rem;
+  font-weight: 700;
+
+  a { color: $sky-deep; text-decoration-thickness: 2px; }
+  a:hover { color: $ink; }
+}
+
+// ---------- 貼紙卡：白底＋2px 墨框＋28px 圓角＋4px 硬陰影 ----------
+.sticker {
+  position: relative;
+  border: 2px solid $ink;
+  border-radius: $radius-card;
+  background-color: $white;
+  box-shadow: $shadow-hard;
+}
+// 頂部色條（高 12、墨色下邊線）：同一區塊的卡片輪流用，正文仍在白底上
+.sticker-strip {
+  --strip: #{$sun-soft};
+  padding-top: 14px;
+  background-image: linear-gradient(to bottom, var(--strip) 12px, $ink 12px 14px, transparent 14px);
+
+  &.is-sun   { --strip: #{$sun-soft}; }
+  &.is-sky   { --strip: #{$sky-soft}; }
+  &.is-coral { --strip: #{$coral-soft}; }
+}
+
+// 小貼紙旋轉（正在播放、課程票、勳章、拍立得）；含表單或長文字的卡片不要加。< 576px 一律不轉
+.tilt-l  { rotate: -2deg; }
+.tilt-r  { rotate: 2deg; }
+.tilt-l-sm { rotate: -1.5deg; }
+.tilt-r-sm { rotate: 1.5deg; }
+@include media-breakpoint-down(sm) {
+  .tilt-l, .tilt-r, .tilt-l-sm, .tilt-r-sm { rotate: none; }
+}
+
+// 講師文字頭像（姓）
+.avatar-text {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  background: $sky-soft;
+  color: $ink;
+  font-size: .9375rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+// 星等：向日葵星星＋墨色描邊（圖示 ≥ 3:1 靠描邊）
+.rating {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  font-weight: 800;
+
+  .bi { color: $sunflower; -webkit-text-stroke: 1.25px $ink; }
+}
+.stars {
+  display: inline-flex;
+  gap: .125rem;
+  color: $sunflower;
+  -webkit-text-stroke: 1.25px $ink;
+
+  .bi-star { color: $white; }
+}
+
+// 進度條：深天空填色在淡天空軌道上，外面一圈墨框
+.progress {
+  --bs-progress-height: 1rem;
+  border: 2px solid $ink;
+}
+
+// ---------- 表單 ----------
+.form-label { color: $ink; }
+.form-control,
+.form-select {
+  min-height: 48px;
+  font-weight: 500;
+}
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: $tomato;
+  background-color: $tomato-soft;
+}
+.invalid-feedback { font-weight: 700; }
+// 錯誤文字前面加圖示（不只靠顏色）：<p class="invalid-feedback has-icon"><i class="bi bi-exclamation-circle" aria-hidden="true"></i><span>…</span></p>
+.is-invalid ~ .invalid-feedback.has-icon {
+  display: flex;
+  align-items: flex-start;
+  gap: .375rem;
+
+  .bi { flex: none; margin-top: .15em; }
+}
+// 句子裡的文字連結按鈕（錯誤訊息裡的「登入」）：不加高度，深天空＋底線
+.link-inline {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $sky-deep;
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .25em;
+  transition: $transition-base;
+
+  &:hover { color: $ink; }
+}
+.form-check-input {
+  margin-top: .2em;
+
+  &:checked { border-color: $ink; }
+}
+.form-check-label { cursor: pointer; }
+
+// 切換鈕組（btn-check＋btn-group）：例如「最有幫助／最新」；選中＝天空底＋墨字
+.segmented {
+  display: inline-flex;
+  gap: .5rem;
+
+  .btn {
+    @extend .btn-secondary;
+    box-shadow: none;
+  }
+  .btn-check:checked + .btn {
+    background: $sky;
+    border-color: $ink;
+    color: $ink;
+    box-shadow: $shadow-hard-sm;
+  }
+}
+
+// ---------- 裝飾：區塊角落的圓形色塊（aria-hidden，放在 overflow: hidden 的區塊裡） ----------
+.deco-dot {
+  position: absolute;
+  z-index: 0;
+  width: var(--d, 64px);
+  height: var(--d, 64px);
+  border: 2px solid $ink;
+  border-radius: 50%;
+  background: var(--c, #{$sky});
+  pointer-events: none;
+}
+
+// 色帶的圓弧波浪邊（頁首、首頁熱門課程與 CTA 色帶、Guideline 示範）：在色帶的 ::before／::after 寫 @include scallop(色, top|bottom, 半徑)
+// 波浪是 ::before／::after，畫在色帶外側 14px，不佔版面高度
+@mixin scallop($color, $side: bottom, $r: 12px) {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: $r + 1px;
+  pointer-events: none;
+  @if $side == bottom {
+    top: 100%;
+    background: radial-gradient(circle at $r 0, $color 0 ($r - 2px), $ink ($r - 1.5px) $r, transparent ($r + .5px)) 0 0 repeat-x;
+    background-size: ($r * 2) ($r + 1px);
+  } @else {
+    bottom: 100%;
+    background: radial-gradient(circle at $r ($r + 1px), $color 0 ($r - 2px), $ink ($r - 1.5px) $r, transparent ($r + .5px)) 0 0 repeat-x;
+    background-size: ($r * 2) ($r + 1px);
+  }
+}
+
+// ---------- 設計稿狀態示意（每頁 <main> 最後） ----------
+.demo-state {
+  position: relative;
+  margin-block: 4rem 0;
+  padding: 2.5rem 1.25rem 1.5rem;
+  border: 2px dashed $ink-2;
+  border-radius: $radius-card;
+
+  @include media-breakpoint-up(md) { padding: 3rem 2rem 2rem; }
+}
+.demo-state-tag {
+  position: absolute;
+  top: -1rem;
+  left: 1.5rem;
+  margin: 0;
+  padding: .125rem 1rem;
+  border: 2px solid $ink;
+  border-radius: $border-radius-pill;
+  background: $ink;
+  color: $white;
+  font-size: $font-size-sm;
+  font-weight: 800;
+}
+.demo-state-item + .demo-state-item {
+  margin-top: 2.5rem;
+  padding-top: 2.5rem;
+  border-top: 2px dashed rgba($ink, .3);
+}
+.demo-state-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: 1.25rem;
+  font-size: $h4-font-size;
+  font-weight: 800;
+
+  &::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    border: 2px solid $ink;
+    border-radius: 50%;
+    background: $sunflower;
+  }
+}
+.demo-state-stage { position: relative; }
+// 狀態的設計說明（標題下方一句）
+.demo-state-note {
+  max-width: 44em;
+  margin: -.5rem 0 1.25rem;
+  color: $ink-2;
+  font-size: $font-size-sm;
+}
+
+// ---------- 空狀態：大圓圖示 → 一句說明 → 一個動作 ----------
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 1rem;
+  text-align: center;
+
+  p { max-width: 26em; margin: 0; font-weight: 700; }
+}
+.empty-state-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  background: $sun-soft;
+  color: $ink;
+  font-size: 2.25rem;
+  box-shadow: $shadow-hard;
+}
+
+// 576px 以下讓橫向捲動列貼齊螢幕兩側
+@mixin bleed-x {
+  @include media-breakpoint-down(sm) {
+    margin-inline: calc(var(--bs-gutter-x, 2.5rem) * -.5);
+    padding-inline: calc(var(--bs-gutter-x, 2.5rem) * .5);
+  }
+}
+.bleed-x { @include bleed-x; }
+
+// ---------- 減少動態 ----------
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+  .btn:active:not(:disabled):not(.disabled),
+  .round-btn:active {
+    transform: none;
+  }
+}
+
+// ---------- 焦點環補強 ----------
+// Bootstrap 的 .nav-link、.accordion-button、.page-link 在 :focus 時寫了 outline: 0（而本風格的 focus box-shadow 是 none），
+// 會把全站的 :focus-visible 外框蓋掉，這裡補回來
+.nav-link:focus-visible,
+.accordion-button:focus-visible,
+.page-link:focus-visible {
+  outline: $focus-outline;
+  outline-offset: $focus-outline-offset;
+}
+.accordion-button:focus-visible { outline-offset: -3px; } // 手風琴按鈕貼齊卡片邊緣，焦點環畫在內側才不會被 overflow 切掉
+
+// ---------- 粗膠囊分頁（學習頁的單元重點／課程問答／附件下載）：白底墨框；選中＝天空底墨字＋硬陰影 ----------
+// <ul class="nav nav-pills nav-pills-bold" role="tablist">…<button class="nav-link active" data-bs-toggle="tab" …>
+.nav-pills-bold {
+  gap: .625rem;
+
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    min-height: 48px;
+    padding: .5rem 1.25rem;
+    border: 2px solid $ink;
+    background: $white;
+    color: $ink;
+    font-weight: 800;
+    line-height: 1.4;
+    transition: $transition-base;
+
+    &:hover { background: $sun-soft; color: $ink; }
+    &.active {
+      background: $sky;
+      color: $ink;
+      box-shadow: $shadow-hard-sm;
+    }
+  }
+
+  @include media-breakpoint-down(sm) {
+    gap: .5rem;
+
+    .nav-link { padding-inline: .875rem; }
+    .nav-link .bi { display: none; }
+  }
+}

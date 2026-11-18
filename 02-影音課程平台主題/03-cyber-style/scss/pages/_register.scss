@@ -1,0 +1,186 @@
+// ============================================================
+// 註冊 register.html
+// 背景網格的舞台上：992px 以上左邊一張「全像課程卡」（漸層細框、封面、課名、價格、安心提示，不放按鈕），
+// 右邊是表單面板（H1、說明、欄位、同意條款、漸層主要鈕、登入）。
+// HTML 依手機順序寫（表單 → 全像卡），992px 以上用 grid 把全像卡放到左欄；全像卡裡沒有可聚焦的元素，鍵盤順序不受影響
+// ============================================================
+
+// ---------- 舞台：背景網格＋全像卡後方一圈很淡的紫色環境光 ----------
+.reg-stage {
+  padding-block: map-get($spacers, 4) map-get($spacers, 6);
+  border-bottom: 1px solid $line;
+  background-color: $void;
+  background-image:
+    radial-gradient(ellipse 40% 55% at 22% 55%, rgba($violet, .14), transparent 70%),
+    linear-gradient(to right, $grid 1px, transparent 1px),
+    linear-gradient(to bottom, $grid 1px, transparent 1px);
+  background-size: 100% 100%, $grid-size $grid-size, $grid-size $grid-size;
+  background-position: center, center top, center top;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 5) map-get($spacers, 7);
+  }
+}
+
+.reg-layout {
+  display: grid;
+  gap: 2rem;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: center;
+    gap: 2rem;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 38rem);
+    gap: 3.5rem;
+  }
+}
+
+// ---------- 表單面板 ----------
+.reg-panel {
+  @include cut-frame;
+  padding: 1.75rem 1.25rem 1.5rem;
+
+  @include media-breakpoint-up(sm) {
+    padding: 2.25rem 2.5rem 2rem;
+  }
+  @include media-breakpoint-up(lg) {
+    grid-column: 2;
+    grid-row: 1;
+    padding: 2.75rem 3rem 2.25rem;
+  }
+
+  h1 {
+    margin-bottom: .75rem;
+  }
+}
+// 面板頂端一道短光束（裝飾；cut-frame 的偽元素已被佔用，所以是子元素）
+.reg-panel-beam {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 5rem;
+  @include beam-line(2px);
+}
+.reg-lead {
+  margin-bottom: 2rem;
+  color: $text-3;
+}
+.reg-form {
+  max-width: 32rem;
+
+  .field-check {
+    margin-top: 1.25rem;
+  }
+}
+.reg-submit {
+  margin-top: 1.5rem;
+}
+.reg-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .75rem;
+  max-width: 32rem;
+  margin: 1.25rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid $line;
+  color: $text-3;
+  font-size: $font-size-sm;
+}
+
+// ---------- 全像課程卡（接續購買提示）----------
+// 漸層細框（violet → pink）、封面上一層很淡的全像反光、封面底緣光束。層級低於表單：價格 24px、沒有按鈕
+.reg-holo {
+  @include cut-frame($cut-panel, linear-gradient(135deg, $violet 0%, $line 45%, $line 55%, $pink 100%), $deck);
+  padding: 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 1.5rem;
+    padding: 1.5rem;
+  }
+  @include media-breakpoint-up(lg) {
+    grid-column: 1;
+    grid-row: 1;
+    display: block;
+    padding: 1.5rem 1.5rem 1.25rem;
+  }
+
+  .hud-title {
+    grid-column: 1 / -1;
+  }
+}
+.reg-holo-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: $screen;
+  clip-path: cut-outer($cut-button);
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  // 全像反光：左上紫、右下粉的斜向薄光（靜態，裝飾）
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(125deg, rgba($violet, .28) 0%, transparent 38%, transparent 62%, rgba($pink, .22) 100%);
+    pointer-events: none;
+  }
+  // 底緣光束
+  &::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    @include beam-line(3px);
+  }
+}
+.reg-holo-body {
+  display: grid;
+  gap: .625rem;
+  margin-top: 1.125rem;
+
+  @include media-breakpoint-only(md) {
+    margin-top: 0;
+    align-content: start;
+  }
+}
+.reg-holo-name {
+  margin: 0;
+  color: $text;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.reg-holo-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+
+  .price {
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+}
+.reg-holo .purchase-card-note {
+  margin-top: .375rem;
+}
+
+// ---------- 狀態示意：欄位有錯誤時（重畫一份表單面板） ----------
+.reg-demo {
+  max-width: 38rem;
+
+  .reg-form {
+    max-width: none;
+  }
+}

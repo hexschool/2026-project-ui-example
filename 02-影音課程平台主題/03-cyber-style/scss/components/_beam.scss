@@ -1,0 +1,90 @@
+// ============================================================
+// ★ 招牌：能量光束（進度條）
+// 紫到粉的漸層，終點一顆 10px 的發光圓點（播放頭）。用在播放器進度、學習進度、
+// 我的課程、付款結果 100%、首頁「正在播放」小卡。
+// 寫法：Bootstrap .progress 加 .beam（role、aria-valuenow 等屬性照 Bootstrap）
+// <div class="progress beam" role="progressbar" aria-label="試看進度" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+//   <div class="progress-bar" style="width: 25%"></div>
+// </div>
+// 變化：
+//   .beam-lg    6px 高（播放器）
+//   .beam-deck  放在 deck 面板上時的軌道色（#22265A）
+//   .beam-flow  流光：亮點從左掃到右，只跑 2 次就停（WCAG 2.2.2）；同一畫面最多一道
+//   .beam-done  已完課：mint 單色光束
+//   .beam-nohead 不畫終點圓點（很短或 0% 的光束）
+// 軌道不要用 $line（#2A2F6E，對比只有 2.93）
+// ============================================================
+.beam {
+  --bs-progress-height: 4px;
+  --bs-progress-bg: #{$beam-track};
+  --bs-progress-border-radius: 0;
+  position: relative;
+  overflow: visible;
+
+  .progress-bar {
+    position: relative;
+    overflow: visible;
+    background-color: $violet;
+    background-image: $beam;
+    transition: none;
+
+    // 終點的播放頭：發光圓點，呼吸 3 次後停（只改 opacity，尺寸固定）
+    &::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -5px;
+      width: 10px;
+      height: 10px;
+      margin-top: -5px;
+      border-radius: 50%;
+      background-color: $pink;
+      box-shadow: $glow-pink-dot;
+      animation: beam-head 1.6s ease-in-out 3;
+    }
+  }
+}
+.beam-lg {
+  --bs-progress-height: 6px;
+}
+.beam-deck {
+  --bs-progress-bg: #{$beam-track-deck};
+}
+.beam-done .progress-bar {
+  background-image: none;
+  background-color: $mint;
+
+  &::after {
+    background-color: $mint;
+    box-shadow: 0 0 .625rem rgba($mint, .7);
+  }
+}
+.beam-nohead .progress-bar::after {
+  content: none;
+}
+// 流光：在漸層上疊一道亮帶，從左掃到右 2 次後停在畫面外
+.beam-flow .progress-bar {
+  background-image:
+    linear-gradient(90deg, transparent 0 42%, rgba($text, .7) 50%, transparent 58% 100%),
+    $beam;
+  background-size: 250% 100%, 100% 100%;
+  background-repeat: no-repeat;
+  background-position: 0% 0, 0 0;
+  animation: beam-flow 2.4s ease-in-out .4s 2 backwards;
+}
+
+@keyframes beam-flow {
+  from { background-position: 100% 0, 0 0; }
+  to   { background-position: 0% 0, 0 0; }
+}
+@keyframes beam-head {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .45; }
+}
+
+// 細線光束（裝飾，aria-hidden）：區塊分隔、卡片封面底緣
+// <span class="beam-line" aria-hidden="true"></span>
+.beam-line {
+  display: block;
+  @include beam-line(2px);
+}

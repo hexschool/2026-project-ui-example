@@ -1,0 +1,972 @@
+// ============================================================
+// 設計 Guideline guideline.html（class 前綴 gl-）
+// 構圖：標題區（左 H1 與說明、右邊斜貼的風格貼紙）→ 左 3 欄 sticky「小徑目錄」＋右 9 欄每節一張貼紙卡
+//   小徑目錄：.trail 一般清單版，每站是錨點連結；Bootstrap ScrollSpy（data-bs-spy）把目前章節的站牌換成天空色
+//   < 992px：目錄改成頂端一列可橫向捲動的站牌列（不 sticky）
+// 示範用的固定狀態：.gl-hover、.gl-focus、.gl-press、.gl-focus-within（只在本頁，讓 hover、鍵盤焦點、按下的樣子不用操作也看得到）
+// 色票色塊由 $gl-colors 產生（.gl-c-名稱），改色時只要改 _variables.scss，文字裡的 hex 與對比度要手動同步
+// ============================================================
+
+// ---------- 標題區 ----------
+.gl-header {
+  display: grid;
+  gap: 1.5rem 3rem;
+  margin-bottom: 2.5rem;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    margin-bottom: 3.5rem;
+  }
+
+  .page-lead { max-width: 36em; }
+}
+.gl-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+// 斜貼的風格貼紙：勳章＋風格名（裝飾，576px 以下不轉）
+.gl-hero-sticker {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-self: start;
+  max-width: 22rem;
+  padding: .875rem 1.5rem .875rem .875rem;
+  background: $sun-soft;
+
+  p { margin: 0; font-weight: 800; line-height: 1.5; }
+  p span { display: block; color: $ink-2; font-size: $font-size-sm; font-weight: 700; }
+
+  @include media-breakpoint-up(lg) { margin: 0 1rem 1rem 0; }
+}
+
+// ---------- 小徑目錄（≥ 992px） ----------
+.gl-map {
+  position: sticky;
+  top: var(--sticky-top);
+  max-height: calc(100vh - var(--sticky-top) - 1rem);
+  overflow-y: auto;
+  padding: 1.25rem 1rem 1.25rem 1.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: $ink-2 transparent;
+}
+.gl-map-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0 0 .75rem;
+  font-weight: 800;
+
+  .bi { color: $coral-deep; }
+}
+.gl-map-list {
+  --trail-x: 18px; // 36px 小站牌的圓心
+  margin: 0;
+
+  li + li { margin-top: .25rem; }
+}
+.gl-map-link {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  column-gap: .625rem;
+  align-items: center;
+  min-height: 44px;
+  color: $ink;
+  font-weight: 700;
+  line-height: 1.4;
+  text-decoration: none;
+
+  .trail-sign { transition: $transition-base; }
+
+  &:hover { color: $ink; }
+  &:hover .trail-sign { background: $sun-soft; }
+  &:hover .gl-map-label {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .25em;
+  }
+  &:focus-visible { outline-offset: 2px; border-radius: .75rem; }
+
+  // 目前章節（ScrollSpy 加上 .active）：站牌換天空色、站名淡天空底（只換顏色，不改尺寸）
+  &.active .trail-sign { background: $sky; }
+  &.active .gl-map-label { background: $sky-soft; }
+}
+.gl-map-label {
+  justify-self: start;
+  padding: .125rem .625rem;
+  border-radius: $border-radius-pill;
+  transition: $transition-base;
+}
+
+// ---------- 站牌列（< 992px） ----------
+// 一列可橫向捲動的站牌；虛線小徑畫在清單的背景上（background-attachment: local，跟著內容一起捲），站名用奶油底蓋住虛線
+.gl-map-mobile { margin-bottom: 2.5rem; }
+.gl-map-row {
+  display: flex;
+  gap: .75rem;
+  margin: 0;
+  padding: .25rem .25rem .75rem;
+  list-style: none;
+  overflow-x: auto;
+  background: repeating-linear-gradient(90deg, $ink 0 6px, transparent 6px 12px) 0 calc(.25rem + 20.5px) / 100% 3px no-repeat local;
+  scrollbar-width: thin;
+
+  @include media-breakpoint-down(sm) {
+    margin-inline: -1.25rem;
+    padding-inline: 1.25rem;
+  }
+
+  li { flex: none; }
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    min-height: 44px;
+    color: $ink;
+    font-weight: 700;
+    white-space: nowrap;
+    text-decoration: none;
+
+    &:hover { color: $ink; }
+    &:hover .trail-sign { background: $sun-soft; }
+    &:hover .gl-map-label {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: .25em;
+    }
+  }
+  .gl-map-label { background: $cream; }
+}
+
+// ---------- 章節與卡片 ----------
+// 錨點位移用 html 的 scroll-padding-top（104px），這裡不再加 scroll-margin
+.gl-section {
+  + .gl-section { margin-top: 4rem; }
+
+  @include media-breakpoint-up(lg) { + .gl-section { margin-top: 5rem; } }
+
+  .section-badge .num { padding-top: .12em; font-weight: 800; }
+}
+.gl-card {
+  padding: 1.5rem 1.25rem;
+
+  @include media-breakpoint-up(md) { padding: 2rem; }
+  @include media-breakpoint-up(xl) { padding: 2.5rem; }
+}
+.gl-block + .gl-block {
+  margin-top: 2.5rem;
+  padding-top: 2.5rem;
+  border-top: 2px dashed rgba($ink, .3);
+}
+.gl-block .flow-title code { margin-left: .25rem; font-size: .875em; }
+.gl-note {
+  max-width: 48em;
+  margin: -.25rem 0 1.25rem;
+  color: $ink-2;
+}
+.gl-caption {
+  margin: .75rem 0 0;
+  color: $ink-2;
+  font-size: $font-size-sm;
+}
+.gl-sub {
+  margin: 1.75rem 0 .75rem;
+  font-weight: 800;
+
+  &:first-child { margin-top: 0; }
+  code { margin-left: .25rem; }
+}
+.gl-main code {
+  padding: .05em .35em;
+  border-radius: .375rem;
+  background: $sun-soft;
+  color: $ink;
+  font-size: .875em;
+  overflow-wrap: anywhere;
+}
+
+// 示範舞台：奶油底的圓角區，白色貼紙放在上面才看得出墨框與硬陰影
+.gl-stage {
+  position: relative;
+  padding: 1.5rem 1.25rem;
+  border-radius: $radius-image;
+  background: $cream;
+
+  @include media-breakpoint-up(md) { padding: 1.75rem; }
+
+  + .gl-stage { margin-top: 1rem; }
+}
+.gl-states {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1.25rem 1.5rem;
+}
+.gl-state-label {
+  display: block;
+  margin-bottom: .5rem;
+  color: $ink-2;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+// 清單：圓點換成小圓章
+.gl-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    padding-left: 1.5rem;
+
+    + li { margin-top: .625rem; }
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: .6em;
+      left: 0;
+      width: 12px;
+      height: 12px;
+      border: 2px solid $ink;
+      border-radius: 50%;
+      background: $sunflower;
+    }
+  }
+}
+
+// 表格：外框 2px 墨、20px 圓角；儲存格之間淡墨線
+.gl-table-wrap {
+  border: 2px solid $ink;
+  border-radius: $radius-image;
+  background: $white;
+
+  .table { margin: 0; }
+}
+.gl-table {
+  --bs-table-bg: transparent;
+  --bs-table-border-color: #{rgba($ink, .2)};
+  font-size: $font-size-sm;
+
+  // 手機上不硬擠：表格至少 34rem，外層 .table-responsive 自己橫向捲動（頁面本身不會有水平捲軸）
+  min-width: 34rem;
+
+  th, td { padding: .75rem 1rem; vertical-align: top; }
+  thead th { background: $sun-soft; font-weight: 800; white-space: nowrap; }
+  code { white-space: nowrap; }
+  tbody tr:last-child > * { border-bottom: 0; }
+  tbody th { font-weight: 800; }
+}
+
+// ---------- 概覽 ----------
+.gl-spec {
+  margin: 0;
+
+  > div {
+    display: grid;
+    gap: .25rem 1.5rem;
+    padding-block: .875rem;
+
+    + div { border-top: 2px dashed rgba($ink, .25); }
+
+    @include media-breakpoint-up(md) { grid-template-columns: 8rem minmax(0, 1fr); }
+  }
+  dt { color: $ink-2; font-weight: 800; }
+  dd { margin: 0; }
+}
+.gl-quote {
+  margin: 0;
+  padding: .75rem 1rem;
+  border: 2px solid $ink;
+  border-radius: $border-radius-sm;
+  background: $sun-soft;
+  font-weight: 700;
+}
+.gl-principles {
+  display: grid;
+  gap: 1.25rem 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  li {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+  }
+  p { margin: 0; }
+  strong { display: block; margin-bottom: .125rem; }
+}
+.gl-principle-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  background: $sunflower;
+  font-size: 1.25rem;
+  box-shadow: $shadow-hard-sm;
+
+  &.is-sky   { background: $sky; }
+  &.is-coral { background: $coral; }
+  &.is-leaf  { background: $leaf; }
+}
+// 10 頁清單：每頁一張小貼紙，左上角是站牌編號
+.gl-pages {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.gl-page {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: .25rem .875rem;
+  height: 100%;
+  padding: 1rem 1.125rem 1.125rem;
+  border: 2px solid $ink;
+  border-radius: $radius-image;
+  background: $white;
+  box-shadow: $shadow-hard-sm;
+  transition: $transition-base;
+
+  .trail-sign { grid-row: span 2; }
+  &:has(.stretched-link):hover,
+  &:focus-within { background: $sun-soft; }
+  &:has(.stretched-link):hover .gl-page-name a,
+  &:focus-within .gl-page-name a { text-decoration: underline; }
+
+  &.is-current {
+    border-style: dashed;
+    background: $cream;
+    box-shadow: none;
+  }
+}
+.gl-page-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .25rem .625rem;
+  margin: 0;
+  font-weight: 800;
+
+  a {
+    color: $ink;
+    text-decoration: none;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .25em;
+  }
+}
+.gl-page-desc {
+  grid-column: 2;
+  margin: 0;
+  color: $ink-2;
+  font-size: $font-size-sm;
+}
+
+// ---------- 色彩 ----------
+$gl-colors: (
+  "cream": $cream,
+  "white": $white,
+  "sun-soft": $sun-soft,
+  "sky-soft": $sky-soft,
+  "coral-soft": $coral-soft,
+  "leaf-soft": $leaf-soft,
+  "tomato-soft": $tomato-soft,
+  "ink": $ink,
+  "ink-2": $ink-2,
+  "placeholder": $placeholder,
+  "sunflower": $sunflower,
+  "sky": $sky,
+  "coral": $coral,
+  "leaf": $leaf,
+  "coral-hover": $coral-hover,
+  "sky-deep": $sky-deep,
+  "coral-deep": $coral-deep,
+  "leaf-deep": $leaf-deep,
+  "tomato": $tomato,
+  "amber-deep": $amber-deep,
+);
+@each $name, $value in $gl-colors {
+  .gl-c-#{$name} { background-color: $value; }
+}
+
+.gl-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+  gap: 1.5rem 1.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+// 色票：64px 顏料圓罐（墨框＋硬陰影）＋名稱、變數、hex、用途、對比度
+.gl-swatch {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+
+  p { margin: 0; }
+}
+.gl-swatch-chip {
+  width: 64px;
+  height: 64px;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  box-shadow: $shadow-hard-sm;
+}
+.gl-swatch-name { font-weight: 800; }
+.gl-swatch-code {
+  font-size: $font-size-sm;
+
+  .num { font-weight: 800; }
+}
+.gl-swatch-use {
+  margin-top: .25rem !important;
+  color: $ink-2;
+  font-size: $font-size-sm;
+  line-height: 1.6;
+}
+.gl-swatch-ratio {
+  margin-top: .375rem !important;
+  font-size: $font-size-sm;
+  font-weight: 800;
+}
+// 鐵則提示：淡珊瑚底、墨字（coral-deep 在這個底上只有 4.43，所以字一律用墨）
+.gl-rule {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  padding: 1.25rem;
+  border: 2px solid $ink;
+  border-radius: $radius-image;
+  background: $coral-soft;
+
+  p { margin: 0; }
+  ol { margin: .25rem 0 0; padding-left: 1.25rem; }
+  li + li { margin-top: .25rem; }
+}
+.gl-rule-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  background: $coral;
+  font-size: 1.25rem;
+}
+
+// ---------- 字級階層 ----------
+.gl-fonts {
+  display: grid;
+  gap: 1.25rem;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.gl-font {
+  padding: 1.25rem 1.5rem;
+
+  p { margin: 0; }
+}
+.gl-font-sample {
+  margin-bottom: .75rem !important;
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1.3;
+}
+.gl-font-weights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem 1rem;
+  margin: .5rem 0 0 !important;
+  font-size: 1.1875rem;
+
+  .w-500 { font-weight: 500; }
+  .w-700 { font-weight: 700; }
+  .w-800 { font-weight: 800; }
+  .w-900 { font-weight: 900; }
+}
+.gl-font-num {
+  font-family: $font-family-num;
+  font-variant-numeric: tabular-nums;
+}
+.gl-type-row {
+  display: grid;
+  gap: .5rem 2rem;
+  padding-block: 1.25rem;
+
+  + .gl-type-row { border-top: 2px dashed rgba($ink, .25); }
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 12rem minmax(0, 1fr);
+    align-items: center;
+  }
+  > :last-child { min-width: 0; margin-bottom: 0; }
+}
+.gl-type-meta {
+  margin: 0;
+  color: $ink-2;
+  font-size: $font-size-sm;
+  line-height: 1.6;
+
+  strong { color: $ink; }
+}
+
+// ---------- 間距 ----------
+.gl-space-row {
+  display: grid;
+  grid-template-columns: 2.5rem 4rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  min-height: 36px;
+
+  + .gl-space-row { margin-top: .5rem; }
+  .num { font-weight: 800; }
+}
+.gl-space-bar {
+  display: block;
+  width: var(--w);
+  height: 20px;
+  border: 2px solid $ink;
+  border-radius: $border-radius-pill;
+  background: $sunflower;
+}
+
+// ---------- 圓角與陰影 ----------
+.gl-shapes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 1.75rem 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li { display: flex; flex-direction: column; align-items: flex-start; }
+  p { margin: .875rem 0 0; font-size: $font-size-sm; line-height: 1.6; }
+  strong { display: block; color: $ink; }
+}
+.gl-shape {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border: 2px solid $ink;
+  background: $white;
+  box-shadow: $shadow-hard;
+  font-family: $font-family-num;
+  font-weight: 800;
+
+  &.r-20     { border-radius: $radius-input; }
+  &.r-28     { border-radius: $radius-card; }
+  &.r-pill   { width: 136px; height: 52px; border-radius: $border-radius-pill; }
+  &.r-circle { border-radius: 50%; }
+  &.r-arch   { width: 84px; height: 108px; border-radius: 42px 42px $radius-card $radius-card; background: $sun-soft; }
+
+  &.sh-3 { box-shadow: $shadow-hard-sm; }
+  &.sh-4 { box-shadow: $shadow-hard; }
+  &.sh-6 { box-shadow: 6px 6px 0 $ink; }
+  &.sh-drop { box-shadow: none; filter: drop-shadow(4px 4px 0 $ink); border-radius: $radius-image; }
+  &.is-focus { border-radius: $border-radius-pill; width: 136px; height: 52px; outline: $focus-outline; outline-offset: $focus-outline-offset; box-shadow: $shadow-hard-sm; }
+  &.is-focus-dark { border-radius: 50%; width: 56px; height: 56px; background: $ink; color: $sunflower; outline: 3px solid $sunflower; outline-offset: 3px; box-shadow: none; }
+}
+.gl-focus-dark-stage {
+  padding: 1.25rem;
+  border-radius: $radius-image;
+  background: $ink;
+}
+
+// ---------- 招牌元素 ----------
+.gl-orbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 2.5rem 3.5rem;
+  padding: 1rem .5rem 1.5rem 1rem; // 天空外圈與硬陰影在 box-shadow 裡，留出空間
+
+  > div { display: flex; flex-direction: column; align-items: center; gap: 1.75rem; }
+  .gl-state-label { margin: 0; text-align: center; }
+}
+.gl-trail-demo {
+  display: grid;
+  gap: 2rem 3rem;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.gl-stop-title {
+  margin: 0;
+  font-weight: 800;
+  line-height: 1.5;
+
+  + p { margin: .125rem 0 0; color: $ink-2; font-size: $font-size-sm; }
+}
+.gl-stones {
+  max-width: 26rem;
+
+  .trail-stone > span:last-child { color: $ink-2; font-size: $font-size-sm; }
+}
+.gl-medals {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1.5rem 2.5rem;
+
+  > div { display: flex; flex-direction: column; align-items: center; gap: .5rem; }
+  .gl-state-label { margin: 0; }
+}
+// 勳章動畫示範區：淡向日葵舞台，勳章盒子固定 120×120；旁邊是三個靜止影格（不會動）
+.gl-medal-stage {
+  display: grid;
+  gap: 1.5rem 2.5rem;
+  align-items: center;
+  padding: 1.75rem 1.5rem;
+  border: 2px solid $ink;
+  border-radius: $radius-card;
+  background: $sun-soft;
+
+  @include media-breakpoint-up(md) { grid-template-columns: auto minmax(0, 1fr); }
+  p { margin: 0; }
+}
+.gl-medal-frames {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+
+  li { display: flex; flex-direction: column; align-items: center; gap: .375rem; font-size: $font-size-sm; color: $ink-2; font-weight: 700; }
+}
+.gl-medal-frame {
+  .medal-art { transform-origin: 50% 45%; }
+  &.is-1 .medal-art { opacity: .35; transform: scale(.6) rotate(-8deg); }
+  &.is-2 .medal-art { transform: scale(1.08) rotate(2deg); }
+}
+.gl-stickers {
+  display: grid;
+  gap: 1.75rem 1.5rem;
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  .sticker { padding: 1.25rem; }
+  p { margin: 0; }
+}
+// 波浪邊示意：一小段向日葵色帶，下緣是頁首同款的圓弧波浪
+.gl-wave {
+  position: relative;
+  height: 56px;
+  margin-bottom: 14px;
+  border-top: 2px solid $ink;
+  background: $sunflower;
+
+  &::after { @include scallop($sunflower, bottom, $site-header-wave); }
+}
+.gl-dots {
+  position: relative;
+  height: 96px;
+  overflow: hidden;
+  border-radius: $radius-image;
+  background: $white;
+  border: 2px solid $ink;
+
+  .deco-dot:nth-child(1) { --d: 80px; --c: #{$sky}; top: -24px; right: -16px; }
+  .deco-dot:nth-child(2) { --d: 40px; --c: #{$coral}; right: 30%; bottom: -14px; }
+  .deco-dot:nth-child(3) { --d: 28px; --c: #{$leaf}; left: 12%; top: 18px; }
+}
+.gl-receipt { max-width: 22rem; padding: 1rem 1.25rem .75rem; }
+
+// ---------- 元件狀態：固定 hover／focus／按下（只在本頁） ----------
+.btn.gl-hover {
+  background-color: var(--bs-btn-hover-bg);
+  border-color: var(--bs-btn-hover-border-color);
+  color: var(--bs-btn-hover-color);
+}
+.btn.gl-press {
+  background-color: var(--bs-btn-active-bg);
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 $ink;
+}
+.gl-focus { outline: $focus-outline !important; outline-offset: $focus-outline-offset; }
+.form-control.gl-focus,
+.form-select.gl-focus,
+.form-check-input.gl-focus { outline-offset: 2px; }
+.player .gl-focus,
+.gl-player-strip .gl-focus { outline-color: $sunflower !important; }
+.btn-text.gl-hover { color: $ink; text-decoration-color: $sunflower; }
+.round-btn.gl-hover { background: $sun-soft; }
+.round-btn.gl-press { transform: translate(3px, 3px); box-shadow: 0 0 0 $ink; }
+.play-orb.gl-hover { background: tint-color($sunflower, 30%); }
+.play-orb.gl-focus { outline-offset: calc(var(--ring) + 8px); }
+.player-btn.gl-hover { background: $tv-soft; border-color: $sunflower; }
+.nav-pills-bold .nav-link.gl-hover { background: $sun-soft; }
+.segmented .btn.gl-hover { background: $sun-soft; }
+.courses-tile.gl-hover,
+.courses-pill.gl-hover { background: $sky-soft; }
+.courses-pagination .page-link.gl-hover { background: $sun-soft; }
+.trail-unit.gl-hover { background: $sun-soft; }
+.course-card.gl-hover,
+.course-card.gl-focus-within { background: $sun-soft; }
+.course-card.gl-hover .course-card-title a,
+.course-card.gl-focus-within .course-card-title a {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .25em;
+}
+.course-card.gl-focus-within .course-card-title a { outline: $focus-outline; outline-offset: 2px; }
+.craft-porthole.gl-hover {
+  .craft-porthole-window { --ring-color: #{$sun-soft}; }
+  .craft-porthole-title {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: .3em;
+    text-decoration-color: $sky-deep;
+  }
+}
+
+// 示範用的元件容器
+.gl-buttons-row { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem; }
+.gl-player-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem 1.25rem;
+  padding: 1rem 1.25rem;
+  border: 2px solid $ink;
+  border-radius: $radius-image;
+  background: $ink;
+  color: $white;
+
+  .gl-state-label { color: $white; }
+}
+.gl-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  gap: 1rem;
+  max-width: 40rem;
+}
+.gl-pills { display: flex; flex-wrap: wrap; gap: .75rem 1rem; align-items: flex-end; }
+.gl-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .625rem .5rem;
+
+  .course-card-duration { position: static; }
+}
+.gl-chip-group + .gl-chip-group { margin-top: 1.25rem; }
+.gl-sidebar-demo { max-width: 26rem; }
+.gl-learn-player { max-width: 46rem; }
+
+// 講師課程狀態卡（InstructorStatusCard，只在 Guideline）：貼紙卡，三種狀態用 chip 的文字、圖示與外框（虛線／實線）區分
+.gl-instructor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .5rem;
+  height: 100%;
+  padding: 1.25rem 1.25rem 1.5rem;
+
+  p { margin: 0; }
+  &.is-draft { border-style: dashed; box-shadow: none; }
+  &.is-off { background: $cream; }
+}
+.gl-instructor-name { font-weight: 800; line-height: 1.5; word-break: keep-all; overflow-wrap: anywhere; }
+.gl-instructor-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem 1rem;
+  color: $ink-2;
+  font-size: $font-size-sm;
+}
+.gl-instructor-msg { padding-top: .5rem; border-top: 2px dashed rgba($ink, .25); font-weight: 700; }
+
+// ---------- 狀態與空畫面文案（Notion 7 則） ----------
+.gl-notion {
+  display: grid;
+  gap: 1rem 2rem;
+  padding-block: 1.75rem;
+
+  + .gl-notion { border-top: 2px dashed rgba($ink, .3); }
+  &:first-child { padding-top: 0; }
+  &:last-child { padding-bottom: 0; }
+
+  @include media-breakpoint-up(xl) { grid-template-columns: 15rem minmax(0, 1fr); }
+  // 講師課程狀態卡要排 3 張：說明在上、示範在下
+  &.is-wide { grid-template-columns: minmax(0, 1fr); }
+}
+.gl-notion-head {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: .25rem .75rem;
+  align-content: start;
+
+  .trail-sign { grid-row: span 3; }
+  p { margin: 0; }
+}
+.gl-notion-title { font-weight: 800; line-height: 1.5; }
+.gl-notion-copy { font-size: $font-size-sm; }
+.gl-notion-where { color: $ink-2; font-size: $font-size-sm; }
+.gl-notion-sample { min-width: 0; }
+.gl-notion-sample .player-error { position: static; padding: 1.5rem 1rem; border-radius: $radius-image; }
+
+// ---------- RWD ----------
+.gl-rwd-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: grid;
+    gap: .5rem 1.5rem;
+    padding-block: 1rem;
+
+    + li { border-top: 2px dashed rgba($ink, .25); }
+
+    @include media-breakpoint-up(md) { grid-template-columns: 9rem repeat(2, minmax(0, 1fr)); }
+  }
+  p { margin: 0; font-size: $font-size-sm; line-height: 1.7; }
+}
+.gl-rwd-name {
+  font-weight: 800;
+  font-size: 1rem !important;
+
+  code { display: inline-block; margin-top: .125rem; }
+}
+.gl-rwd-tag {
+  display: inline-block;
+  margin-right: .375rem;
+  padding: 0 .5rem;
+  border: 2px solid $ink;
+  border-radius: $border-radius-pill;
+  background: $sky-soft;
+  font-weight: 800;
+  line-height: 1.5;
+
+  &.is-lg { background: $sun-soft; }
+}
+
+// ---------- Do／Don't ----------
+.gl-dodont {
+  display: grid;
+  gap: 1rem 1.5rem;
+
+  + .gl-dodont,
+  + .gl-dodont-title { margin-top: 2rem; }
+
+  @include media-breakpoint-up(md) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.gl-dodont-title {
+  margin: 0 0 .875rem;
+  font-size: 1.1875rem;
+  font-weight: 800;
+
+  &:not(:first-child) { margin-top: 2.5rem; }
+}
+.gl-do,
+.gl-dont {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: .625rem 1.25rem 1.25rem;
+  border: 2px solid $ink;
+  border-radius: $radius-image;
+  background: $white;
+
+  > p:last-child { margin: auto 0 0; color: $ink-2; font-size: $font-size-sm; }
+}
+.gl-do   { background-image: linear-gradient(to bottom, $leaf-soft 3.25rem, $ink 3.25rem 3.25rem + .125rem, transparent 0); }
+.gl-dont { background-image: linear-gradient(to bottom, $tomato-soft 3.25rem, $ink 3.25rem 3.25rem + .125rem, transparent 0); }
+.gl-verdict {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  height: 2rem;
+  margin: 0;
+  font-weight: 800;
+
+  .gl-do & { color: $leaf-deep; }
+  .gl-dont & { color: $tomato; }
+  .bi { font-size: 1.25rem; }
+}
+// Don't 的錯誤示範（故意做錯，aria-hidden，意思寫在下面的說明）
+// <span class="btn btn-primary gl-bad-white">：珊瑚底白字（2.31:1）
+.gl-bad-white { color: $white !important; pointer-events: none; }
+// <span class="chip chip-trial gl-bad-noborder">：拿掉墨框的向日葵 chip（對白底 1.54:1、奶油 1.48:1，看不出邊界）
+.gl-bad-noborder { border-color: transparent !important; box-shadow: none !important; pointer-events: none; }
+.gl-bad-soft {
+  padding: 1.25rem;
+  border-radius: $radius-card;
+  background: $white;
+  box-shadow: 0 6px 18px rgba($ink, .18);
+}
+.gl-bad-units {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .5rem .75rem;
+    border-radius: .75rem;
+    font-size: $font-size-sm;
+
+    + li { margin-top: .25rem; }
+  }
+  .is-a { background: $leaf-soft; }
+  .is-b { background: $sky-soft; }
+}
+.gl-bad-title {
+  width: 11.5em;
+  margin: 0;
+  font-size: 1.1875rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+.gl-good-title { margin: 0; font-size: 1.1875rem; font-weight: 800; line-height: 1.5; }
+.gl-bad-strip {
+  margin: 0;
+  color: $ink-2;
+  font-size: $font-size-sm;
+}
+.gl-eyebrow-bad {
+  margin: 0 0 .25rem;
+  color: $ink-2;
+  font-size: .8125rem;
+  font-weight: 800;
+  letter-spacing: .2em;
+}
+.gl-bad-player {
+  height: 72px;
+  border: 2px solid $ink;
+  border-radius: $radius-image;
+  background: $ink;
+}
+.gl-tilt-form {
+  max-width: 18rem;
+  margin-inline: .5rem;
+  padding: 1rem;
+  // 錯誤示範：手機也保持傾斜，才看得出問題（外框內距留了轉動的空間，不會造成水平捲動）
+  rotate: -3deg;
+}
+.gl-tilt-form-ok { max-width: 18rem; padding: 1rem; }

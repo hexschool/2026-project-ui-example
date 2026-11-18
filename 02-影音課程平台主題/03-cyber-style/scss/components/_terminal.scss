@@ -1,0 +1,137 @@
+// ============================================================
+// ★ 招牌：終端機筆記（學習頁「單元重點」、Guideline 示範）
+// screen 底、JetBrains Mono（中文落到思源黑體）、左側 CSS counter 行號（裝飾，不會被讀出）。
+// 第一行前一個粉色提示符號 >（aria-hidden），最後一行末端一個方塊游標，閃 5 次後停在實心。
+// 重點字用 <mark>：mint 底＋void 字（11.89:1）。內容只放 CONTENT.md 的原文，在句號處分行、一字不改；
+// 兩行之間不留空白，讀屏軟體讀到的就是原本那一段話。
+// <p class="terminal">
+//   <span class="terminal-line"><span class="terminal-prompt" aria-hidden="true">&gt;</span>…<mark>45 度</mark>…</span><span class="terminal-line">…<span class="terminal-cursor" aria-hidden="true"></span></span>
+// </p>
+// ============================================================
+.terminal {
+  counter-reset: terminal-line;
+  margin: 0;
+  padding: 1rem 0;
+  background-color: $screen;
+  color: $text-2;
+  font-family: $font-family-monospace;
+  font-size: .875rem;
+  line-height: 1.9;
+  letter-spacing: .01em;
+
+  @include media-breakpoint-up(md) {
+    font-size: $terminal-font-size;
+  }
+
+  mark {
+    padding: .05em .3em;
+    white-space: nowrap; // 「45 度」不在數字與單位之間斷行
+    background-color: $mint;
+    color: $void;
+    font-weight: 600;
+  }
+}
+.terminal-line {
+  counter-increment: terminal-line;
+  position: relative;
+  display: block;
+  padding: .125rem 1.25rem .125rem 4rem;
+
+  // 行號：等寬、text-3（screen 上 7.30:1）；內容寫成「替代文字為空」，讀屏軟體不會念出來
+  &::before {
+    content: counter(terminal-line, decimal-leading-zero);
+    content: counter(terminal-line, decimal-leading-zero) / "";
+    position: absolute;
+    top: .125rem;
+    left: 0;
+    width: 2.75rem;
+    padding-right: .75rem;
+    border-right: 1px solid $line;
+    color: $text-3;
+    text-align: right;
+    font-size: .75rem;
+    line-height: 1.6625rem; // 和內文同一行高（14px × 1.9），行號才會對齊第一行
+    font-variant-numeric: tabular-nums;
+    user-select: none;
+  }
+  @include media-breakpoint-up(md) {
+    padding-left: 4.5rem;
+    &::before {
+      width: 3.25rem;
+      line-height: 1.78125rem; // 15px × 1.9
+    }
+  }
+}
+// 第一行的提示符號：pink-text
+.terminal-prompt {
+  margin-right: .625rem;
+  color: $pink-text;
+  font-weight: 600;
+}
+// 方塊游標：閃 5 次（每次 1s）後停在實心
+.terminal-cursor {
+  display: inline-block;
+  width: .6em;
+  height: 1.1em;
+  margin-left: .25rem;
+  vertical-align: -.15em;
+  background-color: $pink-text;
+  animation: terminal-cursor 1s steps(1, end) 5;
+}
+@keyframes terminal-cursor {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+
+// 終端機視窗（分頁的外框）：頂列三個圓點（裝飾）＋等寬分頁籤
+// <div class="terminal-window">
+//   <div class="terminal-window-bar"><span class="terminal-dots" aria-hidden="true"><i></i><i></i><i></i></span><ul class="nav nav-tabs">…</ul></div>
+//   <div class="tab-content">…</div>
+// </div>
+.terminal-window {
+  @include cut-frame($cut-panel, $line, $deck);
+  padding: 1px;
+}
+.terminal-window-bar {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid $line;
+  background-color: rgba($deck-2, .55);
+
+  .nav-tabs {
+    flex: 1 1 auto;
+    min-width: 0;
+    border-bottom: 0;
+  }
+}
+.terminal-dots {
+  display: none;
+  align-items: center;
+  gap: .375rem;
+  padding: 0 1rem 0 1.125rem;
+  border-right: 1px solid $line;
+
+  i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background-color: $pink;
+  }
+  i:nth-child(2) { background-color: $violet; }
+  i:nth-child(3) { background-color: $mint; }
+
+  @include media-breakpoint-up(sm) {
+    display: inline-flex;
+  }
+}
+// 終端機視窗裡的面板：右下角留給切角
+.terminal-window .tab-pane {
+  padding: 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.5rem;
+  }
+  &:focus-visible {
+    outline-offset: -2px;
+  }
+}

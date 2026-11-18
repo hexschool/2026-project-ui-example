@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description（description 結尾一律是「設計稿 06｜童心啟蒙樂園。」） -->
+  <title>我的課程｜Craftory 手感工藝線上學院</title>
+  <meta name="description" content="你買過的課都在這裡：看到每門課學到第幾單元，從上次停下的地方繼續上課。設計稿 06｜童心啟蒙樂園。">
+  <meta name="theme-color" content="#FFC93C">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Chiron GoRound TC（圓體，所有中文；「真」「為」是台灣標準字形）、Baloo 2（品牌字、價格、百分比、時間碼） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Chiron+GoRound+TC:wght@500;700;800;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾與登入對話框在每一頁都完整寫一份；改的時候 10 個 .html 要一起改，
+      改完執行 npm run check 確認都與這份範本一致。
+    - 頁首：向日葵色帶（底緣圓弧波浪）→ 品牌（太陽貼紙＋Craftory）→ 導覽膠囊（首頁、探索課程）→ 搜尋 → 我的課程 → 登入／註冊。
+      992px 以下：品牌靠左，右側「登入／註冊」與選單按鈕；選單內是導覽、搜尋、我的課程。
+      「我的課程」只有 1 個連結（桌機與選單共用）。
+    - 每頁只需要調整一處「目前頁面」標示：目前頁的 nav-link 加 active 與 aria-current="page"
+      index.html → 首頁；courses.html → 探索課程；
+      course.html → 探索課程（只加 active，不加 aria-current）；my-courses.html → 我的課程；
+      learn.html、orders.html → 我的課程（只加 active，不加 aria-current）；
+      guideline.html、register.html、checkout.html、order-result.html 不標示
+      （class 寫成 class="nav-link active" 或 class="nav-link site-mycourses active"，scripts/check-layout.mjs 會檢查）
+    - 內頁的 <main> 另外加 .page-top（上方 48＋頁首波浪 12）；首頁不加。
+    - 登入對話框 #authModal：頁首「登入／註冊」、課程詳情「立即購買，開始上課」與註冊頁「登入」共用。
+      觸發按鈕加 data-auth-context="purchase" 時，js/main.js 會顯示未登入提示、把主要按鈕換成「登入並開始上課」，
+      並把表單送出目的地換成 checkout.html（一般情境維持 learn.html）。「立即註冊」連到 register.html。
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="navbar navbar-expand-lg" aria-label="主要導覽">
+        <div class="container">
+          <a class="navbar-brand site-brand" href="index.html" aria-label="Craftory 手感工藝線上學院 首頁">
+            <!-- 品牌標誌：墨框圓形貼紙裡的太陽，太陽中間是播放鍵 -->
+            <svg class="brand-sun" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29.5" fill="#FFFFFF" stroke="#2D2440" stroke-width="3"/><path d="M32 9.5v5M32 49.5v5M9.5 32h5M49.5 32h5M16.1 16.1l3.5 3.5M44.4 44.4l3.5 3.5M16.1 47.9l3.5-3.5M44.4 19.6l3.5-3.5" stroke="#2D2440" stroke-width="3.5" stroke-linecap="round"/><circle cx="32" cy="32" r="13" fill="#FFC93C" stroke="#2D2440" stroke-width="3"/><path d="M28.5 25.8 38.5 32l-10 6.2z" fill="#2D2440"/></svg>
+            <span class="site-brand-name">Craftory</span>
+          </a>
+
+          <!-- 992px 以下：登入／註冊＋選單按鈕（桌機的登入按鈕在選單最後，Tab 順序與畫面一致） -->
+          <div class="site-header-compact d-flex d-lg-none">
+            <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#authModal">登入／註冊</button>
+            <button class="navbar-toggler site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="courses.html">探索課程</a></li>
+            </ul>
+            <div class="site-header-actions">
+              <form class="site-search" role="search" action="courses.html">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control" type="search" name="q" placeholder="搜尋課程、工藝或講師" aria-label="搜尋課程">
+              </form>
+              <a class="nav-link site-mycourses active" href="my-courses.html" aria-current="page"><i class="bi bi-backpack2" aria-hidden="true"></i>我的課程</a>
+              <button class="btn btn-primary btn-sm d-none d-lg-inline-flex" type="button" data-bs-toggle="modal" data-bs-target="#authModal">登入／註冊</button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main" class="flex-grow-1 page-top" tabindex="-1">
+      <!--
+        我的課程（2026-11 補頁，WIREFRAME_SPEC §3.08、CONTENT.md §9.13、課程資料 §9.9）
+        標題區：左 H1 與說明；右邊 3 個色塊泡泡統計（向日葵、天空、珊瑚，Baloo 2 大數字）＋「購買紀錄」連結
+        粗膠囊篩選（js/main.js 第 6 項：data-filter-list／data-filter，真的會篩選，aria-pressed 跟著變）
+        3 張貼紙卡（≥ 992px 一列 3 張，第 2 張往下錯開 24px）：圓角封面下緣疊一個 96px 甜甜圈進度（招牌，12px 粗環），
+        旁邊仍有「已完成 N／M 單元 ‧ P%」文字；已完課那張的甜甜圈換成通關勳章（捲進畫面才播）＋完課日期
+        依最近觀看排序：手捏陶 → 藤編 → 蠟燭。手捏陶的數字和 learn.html 一致（14／28、3-2、07:18）
+        所有「繼續上課」「再看一次」都連到 learn.html（設計稿只有手捏陶一個學習頁）
+      -->
+      <div class="container">
+        <header class="page-header mycourses-header">
+          <nav aria-label="目前位置">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+              <li class="breadcrumb-item active" aria-current="page">我的課程</li>
+            </ol>
+          </nav>
+          <div class="mycourses-header-row">
+            <div class="mycourses-header-text">
+              <h1>我的課程</h1>
+              <p class="page-lead">買過的課都在這裡，從上次停下的地方繼續。</p>
+            </div>
+            <div class="mycourses-header-side">
+              <!-- 統計：色塊泡泡（小貼紙，可以輕轉；576px 以下不轉） -->
+              <dl class="mycourses-stats">
+                <div class="mycourses-stat is-sun tilt-l"><dt>已購課程</dt><dd><span class="num">3</span>門</dd></div>
+                <div class="mycourses-stat is-sky tilt-r"><dt>已完成單元</dt><dd><span class="num">33</span>個</dd></div>
+                <div class="mycourses-stat is-coral tilt-l"><dt>已完課</dt><dd><span class="num">1</span>門</dd></div>
+              </dl>
+              <a class="link-more mycourses-orders" href="orders.html"><i class="bi bi-receipt" aria-hidden="true"></i>購買紀錄</a>
+            </div>
+          </div>
+        </header>
+
+        <!-- 篩選：數字是該分頁的課程數；「全部」預設選中 -->
+        <div class="nav nav-pills nav-pills-bold mycourses-filter" role="group" aria-label="依學習狀態篩選" data-filter-list="#my-courses-list">
+          <button class="nav-link active" type="button" data-filter="all" aria-pressed="true" aria-controls="my-courses-list">全部<span class="mycourses-filter-count num">3</span></button>
+          <button class="nav-link" type="button" data-filter="學習中" aria-pressed="false" aria-controls="my-courses-list">學習中<span class="mycourses-filter-count num">2</span></button>
+          <button class="nav-link" type="button" data-filter="已完成" aria-pressed="false" aria-controls="my-courses-list">已完成<span class="mycourses-filter-count num">1</span></button>
+        </div>
+
+        <ol id="my-courses-list" class="mycourses-list list-unstyled">
+          <!-- ========== 1. 手捏陶：學習中 14／28 ========== -->
+          <li data-status="學習中">
+            <article class="sticker sticker-strip is-sun mycourse" aria-labelledby="mcPottery">
+              <div class="mycourse-media">
+                <div class="mycourse-cover"><img src="images/course-pottery.jpg" alt="" width="1600" height="900"></div>
+                <!-- 甜甜圈進度：深天空弧在淡天空軌道上（4.51），內外各一圈墨框；--p 是百分比 -->
+                <div class="mycourse-donut" role="progressbar" aria-label="學習進度：從零開始的手捏陶" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-valuetext="已完成 14／28 單元，50%" style="--p: 50">
+                  <svg viewBox="0 0 96 96" aria-hidden="true"><circle class="mycourse-donut-face" cx="48" cy="48" r="44"/><circle class="mycourse-donut-track" cx="48" cy="48" r="37"/><circle class="mycourse-donut-bar" cx="48" cy="48" r="37" pathLength="100"/><circle class="mycourse-donut-hole" cx="48" cy="48" r="30"/></svg>
+                  <span class="mycourse-donut-value"><span class="num">50</span>%</span>
+                </div>
+              </div>
+              <div class="mycourse-body">
+                <div class="mycourse-meta">
+                  <span class="chip chip-learning"><i class="bi bi-play-circle" aria-hidden="true"></i>學習中</span>
+                  <p class="mycourse-progress-text">已完成 14／28 單元 ‧ 50%</p>
+                </div>
+                <h2 id="mcPottery" class="mycourse-title text-phrase"><span class="text-nowrap">從零開始的手捏陶｜</span><wbr>做出第一只日用食器</h2>
+                <p class="flow-teacher"><span class="avatar-text" aria-hidden="true">林</span><span class="visually-hidden">講師</span>林子謙</p>
+                <p class="mycourse-last">
+                  <span class="mycourse-last-label">上次看到</span>
+                  <span class="mycourse-last-unit"><span class="num">3-2</span> 從土球到碗：拇指下壓的角度</span>
+                  <span class="mycourse-last-time num"><i class="bi bi-clock-history" aria-hidden="true"></i>07:18</span>
+                </p>
+                <a class="btn btn-primary mycourse-action" href="learn.html"><i class="bi bi-play-fill" aria-hidden="true"></i>繼續上課</a>
+              </div>
+            </article>
+          </li>
+
+          <!-- ========== 2. 藤編：學習中 1／16 ========== -->
+          <li data-status="學習中">
+            <article class="sticker sticker-strip is-sky mycourse" aria-labelledby="mcRattan">
+              <div class="mycourse-media">
+                <div class="mycourse-cover"><img src="images/course-rattan.jpg" alt="" width="1600" height="900"></div>
+                <div class="mycourse-donut" role="progressbar" aria-label="學習進度：藤編收納" aria-valuenow="6" aria-valuemin="0" aria-valuemax="100" aria-valuetext="已完成 1／16 單元，6%" style="--p: 6">
+                  <svg viewBox="0 0 96 96" aria-hidden="true"><circle class="mycourse-donut-face" cx="48" cy="48" r="44"/><circle class="mycourse-donut-track" cx="48" cy="48" r="37"/><circle class="mycourse-donut-bar" cx="48" cy="48" r="37" pathLength="100"/><circle class="mycourse-donut-hole" cx="48" cy="48" r="30"/></svg>
+                  <span class="mycourse-donut-value"><span class="num">6</span>%</span>
+                </div>
+              </div>
+              <div class="mycourse-body">
+                <div class="mycourse-meta">
+                  <span class="chip chip-learning"><i class="bi bi-play-circle" aria-hidden="true"></i>學習中</span>
+                  <p class="mycourse-progress-text">已完成 1／16 單元 ‧ 6%</p>
+                </div>
+                <h2 id="mcRattan" class="mycourse-title text-phrase"><span class="text-nowrap">藤編收納｜</span><wbr>一個下午的療癒練習</h2>
+                <p class="flow-teacher"><span class="avatar-text" aria-hidden="true">李</span><span class="visually-hidden">講師</span>李映蓉</p>
+                <p class="mycourse-last">
+                  <span class="mycourse-last-label">上次看到</span>
+                  <span class="mycourse-last-unit"><span class="num">1-2</span> 泡藤：藤條要泡多久才好編</span>
+                  <span class="mycourse-last-time num"><i class="bi bi-clock-history" aria-hidden="true"></i>02:35</span>
+                </p>
+                <a class="btn btn-primary mycourse-action" href="learn.html"><i class="bi bi-play-fill" aria-hidden="true"></i>繼續上課</a>
+              </div>
+            </article>
+          </li>
+
+          <!-- ========== 3. 蠟燭：已完課 18／18（甜甜圈換成通關勳章，捲進畫面才播；按鈕改次要） ========== -->
+          <li data-status="已完成">
+            <article class="sticker sticker-strip is-coral mycourse is-finished" aria-labelledby="mcCandle">
+              <div class="mycourse-media">
+                <div class="mycourse-cover"><img src="images/course-candle.jpg" alt="" width="1600" height="900"></div>
+                <div class="mycourse-medal" role="progressbar" aria-label="學習進度：香氛蠟燭調香" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-valuetext="已完成 18／18 單元，100%">
+                  <span class="medal medal-md medal-animate-view" aria-hidden="true">
+                    <svg class="medal-art" viewBox="0 0 120 120"><path class="medal-ribbon-a" d="M44 76 30 114l14-8 8 12 10-36z"/><path class="medal-ribbon-b" d="M76 76l14 38-14-8-8 12-10-36z"/><circle class="medal-disc" cx="60" cy="50" r="40"/><circle class="medal-ring" cx="60" cy="50" r="31"/><path class="medal-star" d="M60 33l4.41 10.93 11.76.82-9.04 7.57 2.86 11.43L60 57.5l-9.99 6.25 2.86-11.43-9.04-7.57 11.76-.82z"/></svg>
+                    <span class="medal-shine"></span>
+                    <span class="medal-spark is-1"></span><span class="medal-spark is-2"></span><span class="medal-spark is-3"></span><span class="medal-spark is-4"></span>
+                  </span>
+                </div>
+              </div>
+              <div class="mycourse-body">
+                <div class="mycourse-meta">
+                  <span class="chip chip-done"><i class="bi bi-check-lg" aria-hidden="true"></i>已完課</span>
+                  <p class="mycourse-progress-text">已完成 18／18 單元 ‧ 100%</p>
+                </div>
+                <h2 id="mcCandle" class="mycourse-title text-phrase"><span class="text-nowrap">香氛蠟燭調香｜</span><wbr>做出屬於家的味道</h2>
+                <p class="flow-teacher"><span class="avatar-text" aria-hidden="true">鄭</span><span class="visually-hidden">講師</span>鄭亦寧</p>
+                <p class="mycourse-last is-done"><i class="bi bi-calendar2-check" aria-hidden="true"></i><span class="num">2026/10/04 完課</span></p>
+                <a class="btn btn-secondary mycourse-action" href="learn.html"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>再看一次</a>
+              </div>
+            </article>
+          </li>
+        </ol>
+
+        <!-- ============ 設計稿狀態示意 ============ -->
+        <section class="demo-state" aria-label="設計稿狀態示意">
+          <p class="demo-state-tag">設計稿狀態示意</p>
+
+          <div class="demo-state-item">
+            <h2 class="demo-state-title">還沒有任何課程時</h2>
+            <p class="demo-state-note">還沒買過課時，統計與分頁籤都不顯示，課程區只留這個空狀態；標題與「購買紀錄」連結保留。</p>
+            <div class="demo-state-stage">
+              <div class="mycourses-demo-head">
+                <p class="mycourses-demo-title">我的課程</p>
+                <p class="page-lead">買過的課都在這裡，從上次停下的地方繼續。</p>
+                <a class="link-more" href="orders.html"><i class="bi bi-receipt" aria-hidden="true"></i>購買紀錄</a>
+              </div>
+              <!-- Notion 狀態文案第 3 則（與學習頁的狀態示意相同） -->
+              <div class="sticker empty-state mycourses-empty">
+                <span class="empty-state-icon" aria-hidden="true"><i class="bi bi-backpack2"></i></span>
+                <p>你還沒有進行中的課程，先從一支免費試看開始。</p>
+                <a class="btn btn-primary" href="courses.html">探索課程</a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="row gy-5">
+          <div class="col-lg-4">
+            <a class="site-brand" href="index.html">
+              <svg class="brand-sun" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29.5" fill="#FFFFFF" stroke="#2D2440" stroke-width="3"/><path d="M32 9.5v5M32 49.5v5M9.5 32h5M49.5 32h5M16.1 16.1l3.5 3.5M44.4 44.4l3.5 3.5M16.1 47.9l3.5-3.5M44.4 19.6l3.5-3.5" stroke="#2D2440" stroke-width="3.5" stroke-linecap="round"/><circle cx="32" cy="32" r="13" fill="#FFC93C" stroke="#2D2440" stroke-width="3"/><path d="M28.5 25.8 38.5 32l-10 6.2z" fill="#2D2440"/></svg>
+              <span class="site-brand-name">Craftory 手感工藝線上學院</span>
+            </a>
+            <p class="site-footer-lead">專為「想養成第二專長、<wbr>但一直沒開始」的<wbr>上班族打造的<wbr>工藝影音學院</p>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2 offset-lg-1 site-footer-col-1">
+            <h2 class="site-footer-title">探索課程</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="courses.html">陶藝</a></li>
+              <li><a href="courses.html">皮革</a></li>
+              <li><a href="courses.html">木工</a></li>
+              <li><a href="courses.html">織品染繡</a></li>
+              <li><a href="courses.html">金工銀飾</a></li>
+              <li><a href="courses.html">蠟燭香氛</a></li>
+              <li><a href="courses.html">紙藝絹印</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2 site-footer-col-2">
+            <h2 class="site-footer-title">學習保障</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="index.html#guarantee">7 天不滿意退費</a></li>
+              <li><a href="index.html#guarantee">一次購買永久觀看</a></li>
+              <li><a href="index.html#guarantee">卡關有人回答</a></li>
+            </ul>
+          </div>
+          <!-- 關於我們、成為講師、聯絡我們尚未設計頁面：不帶 href 的佔位連結 -->
+          <div class="col-md-4 col-lg-3 site-footer-col-3">
+            <h2 class="site-footer-title">關於 Craftory</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a>關於我們</a></li>
+              <li><a>成為講師</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 Craftory 手感工藝線上學院｜<wbr>本站為課程設計稿範例，課程、講師與評價皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!--
+    登入對話框（每頁共用）
+    - 設計稿沒有後端：表單送出後前往 learn.html（視為登入成功）。串接後端時把 action 換成登入 API，並移除 GET。
+    - 電子郵件、密碼欄位不加 name，送出時網址不會帶上帳號密碼；串接後端改用 method="post" 時再補上 name。
+    - 從「立即購買，開始上課」開啟時（data-auth-context="purchase"），顯示 .auth-notice 並切換主要按鈕文字（js/main.js）
+  -->
+  <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content auth-modal">
+        <div class="modal-header">
+          <h2 class="modal-title h3" id="authModalTitle">登入 Craftory</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body">
+          <p class="auth-notice" data-auth-notice hidden>
+            <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
+            <span>登入後就能開始上課，馬上註冊只要 30 秒。</span>
+          </p>
+          <form action="learn.html">
+            <div class="mb-3">
+              <label class="form-label" for="authEmail">電子郵件</label>
+              <input id="authEmail" class="form-control" type="email" placeholder="mail@example.com" autocomplete="email">
+            </div>
+            <div class="mb-2">
+              <label class="form-label" for="authPassword">密碼</label>
+              <input id="authPassword" class="form-control" type="password" placeholder="至少 8 碼" autocomplete="current-password">
+            </div>
+            <p class="mb-4"><a class="auth-link">忘記密碼？</a></p>
+            <button class="btn btn-primary btn-lg w-100" type="submit">
+              <span data-auth-label="default">登入</span>
+              <span data-auth-label="purchase" hidden>登入並開始上課</span>
+            </button>
+          </form>
+          <p class="auth-footer">還沒有帳號？<a class="auth-link" href="register.html">立即註冊</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

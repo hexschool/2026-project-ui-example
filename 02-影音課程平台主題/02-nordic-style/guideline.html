@@ -1,0 +1,2039 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description（description 結尾一律是「設計稿 02｜北歐明亮課室。」） -->
+  <title>設計 Guideline｜Craftory 手感工藝線上學院</title>
+  <meta name="description" content="Craftory 手感工藝線上學院的設計規範：色彩、字級階層、間距、圓角陰影、元件狀態、RWD 斷點與 Do／Don't 對照。設計稿 02｜北歐明亮課室。">
+  <meta name="theme-color" content="#F6F8FA">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Noto Sans TC（中文：標題 500、內文 400、強調 700）、Manrope（英數：品牌字、價格、片長、時間碼、人數、訂單編號） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾與登入對話框在每一頁都完整寫一份；改的時候 10 個 .html 要一起改，
+      改完執行 npm run check 確認都與這份範本一致。
+    - 頁首是「浮起的白色圓角卡片列」：內縮在版心裡，sticky 距視窗頂 12px、高 64px。
+      內容：品牌（冰河藍圓角方塊＋Craftory）→ 主導覽（首頁、探索課程）→ 搜尋 → 我的課程 → 登入／註冊。
+      992px 以下：品牌靠左，右側「登入／註冊」與選單按鈕；選單在卡片裡展開，內含主導覽、搜尋、我的課程。
+      「我的課程」只有一個連結（桌機與選單共用）。
+    - 每頁只需要調整一處「目前頁面」標示：目前頁的 nav-link 加 active 與 aria-current="page"
+      index.html → 首頁；courses.html → 探索課程；
+      course.html → 探索課程（只加 active，不加 aria-current）；my-courses.html → 我的課程；
+      learn.html、orders.html → 我的課程（只加 active，不加 aria-current）；
+      guideline.html、register.html、checkout.html、order-result.html 不標示
+      scripts/check-layout.mjs 會依這份對照檢查。
+    - 登入對話框 #authModal：頁首「登入／註冊」、課程詳情「立即購買，開始上課」與註冊頁「登入」共用。
+      觸發按鈕加 data-auth-context="purchase" 時，js/main.js 會顯示未登入提示、把主要按鈕換成「登入並開始上課」，
+      並把表單送出目的地換成 checkout.html（一般情境維持 learn.html）。「立即註冊」連到 register.html。
+    - sticky 位移：頁首佔 88px（12＋64＋12），CSS 變數 --header-offset；購買卡、學習頁側欄的 sticky top 用 --sticky-top（96px）。
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <div class="container">
+        <nav class="navbar navbar-expand-lg site-header-card" aria-label="主要導覽">
+          <a class="navbar-brand site-brand" href="index.html" aria-label="Craftory 手感工藝線上學院 首頁">
+            <!-- 品牌標誌：冰河藍圓角方塊裡，一只碗與窗外的太陽 -->
+            <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9"/><path d="M7.5 15.5h17a8.5 8.5 0 0 1-17 0z"/><circle cx="21.5" cy="9.5" r="2.5"/></svg>
+            <span class="site-brand-name">Craftory</span>
+          </a>
+
+          <!-- 992px 以下：登入／註冊＋選單按鈕（桌機的登入按鈕在選單最後，Tab 順序與畫面一致） -->
+          <div class="site-header-compact d-flex d-lg-none">
+            <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#authModal">登入／註冊</button>
+            <button class="navbar-toggler site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="courses.html">探索課程</a></li>
+            </ul>
+            <div class="site-header-actions">
+              <form class="site-search" role="search" action="courses.html">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control" type="search" name="q" placeholder="搜尋課程、工藝或講師" aria-label="搜尋課程">
+              </form>
+              <a class="nav-link site-mycourses" href="my-courses.html"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>我的課程</a>
+              <button class="btn btn-primary btn-sm d-none d-lg-inline-flex" type="button" data-bs-toggle="modal" data-bs-target="#authModal">登入／註冊</button>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!-- 設計 Guideline：數值對應 scss/_variables.scss 與 scss/_base.scss，改 token 時本頁的文字要一起改 -->
+      <!-- 構圖：左 3 欄 sticky 目錄白卡（ScrollSpy 標出目前章節）＋右 9 欄每章一組白卡；< 992px 目錄改成內容上方的橫向捲動膠囊列 -->
+      <div class="container page-top page-bottom">
+        <header class="page-header">
+          <nav aria-label="目前位置">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+              <li class="breadcrumb-item active" aria-current="page">設計 Guideline</li>
+            </ol>
+          </nav>
+          <h1>設計 Guideline</h1>
+          <p class="page-lead">Craftory 北歐明亮課室的色彩、字級、間距、圓角陰影與元件規範。頁面上的數值都對應 <code>_variables.scss</code> 與 <code>_base.scss</code>，改 token 時這一頁的文字要一起改。</p>
+          <ul class="chip-list gl-meta" aria-label="這份 Guideline 的資訊">
+            <li class="chip">Craftory 手感工藝線上學院</li>
+            <li class="chip">設計稿 02｜北歐明亮課室</li>
+            <li class="chip">Bootstrap 5.3＋Sass，無打包工具</li>
+            <li class="chip">更新 <span class="num">2026/11/18</span></li>
+          </ul>
+        </header>
+
+        <div class="row gx-lg-4 gx-xl-5">
+          <!-- 桌機目錄：左 3 欄 sticky 白卡；目前章節由 Bootstrap ScrollSpy 加上 .active（章節很長，所以只觀察視窗頂端扣掉頁首後的一條帶狀區：root-margin 上 -96px、下 -70%，threshold 0） -->
+          <div class="col-lg-3 d-none d-lg-block">
+            <nav id="glToc" class="lite-card gl-toc" aria-label="Guideline 目錄">
+              <p class="gl-toc-title">目錄</p>
+              <div class="nav flex-column gl-toc-nav">
+                <a class="nav-link" href="#gl-overview">概覽</a>
+                <a class="nav-link" href="#gl-color">色彩</a>
+                <a class="nav-link" href="#gl-type">字級階層</a>
+                <a class="nav-link" href="#gl-space">間距</a>
+                <a class="nav-link" href="#gl-shape">圓角與陰影</a>
+                <a class="nav-link" href="#gl-signature">招牌元素</a>
+                <a class="nav-link" href="#gl-component">元件狀態規範</a>
+                <a class="nav-link" href="#gl-notion">狀態與空畫面文案</a>
+                <a class="nav-link" href="#gl-motion">動態與 hover</a>
+                <a class="nav-link" href="#gl-rwd">RWD 斷點</a>
+                <a class="nav-link" href="#gl-dodont">Do／Don't 對照</a>
+              </div>
+            </nav>
+          </div>
+
+          <div class="col-lg-9" data-bs-spy="scroll" data-bs-target="#glToc" data-bs-root-margin="-96px 0px -70% 0px" data-bs-threshold="0,1">
+            <!-- 手機目錄：可橫向捲動的膠囊列（不 sticky） -->
+            <nav class="gl-toc-mobile d-lg-none" aria-label="Guideline 目錄">
+              <ul class="gl-toc-chips bleed-x">
+                <li><a href="#gl-overview">概覽</a></li>
+                <li><a href="#gl-color">色彩</a></li>
+                <li><a href="#gl-type">字級階層</a></li>
+                <li><a href="#gl-space">間距</a></li>
+                <li><a href="#gl-shape">圓角與陰影</a></li>
+                <li><a href="#gl-signature">招牌元素</a></li>
+                <li><a href="#gl-component">元件狀態規範</a></li>
+                <li><a href="#gl-notion">狀態文案</a></li>
+                <li><a href="#gl-motion">動態與 hover</a></li>
+                <li><a href="#gl-rwd">RWD 斷點</a></li>
+                <li><a href="#gl-dodont">Do／Don't</a></li>
+              </ul>
+            </nav>
+
+            <!-- ==================== 概覽 ==================== -->
+            <section id="gl-overview" class="gl-section" aria-labelledby="gl-overview-title">
+              <div class="gl-section-head">
+                <h2 id="gl-overview-title">概覽</h2>
+                <p class="section-lead">像在北歐大窗邊的白色書桌上課：雪白底、冰河藍點綴，所有側欄都是一張張輕卡片，白天看一整個下午也不累。</p>
+              </div>
+              <div class="lite-card gl-card">
+                <div class="gl-block">
+                  <dl class="gl-spec">
+                    <div><dt>風格</dt><dd>設計稿 02｜北歐明亮課室</dd></div>
+                    <div><dt>色系搭配</dt><dd>淺色系＋冷色系（雪白、冰河藍、低飽和灰）</dd></div>
+                    <div><dt>UI 視覺特點</dt><dd><blockquote class="gl-quote">章節目錄與隨堂筆記側欄採用輕量卡片，留白寬裕，適合長時間白天學習</blockquote></dd></div>
+                    <div><dt>招牌語彙</dt><dd>窗（圓角主圖與播放器卡框）、輕卡片（髮絲線＋很淡的雙層陰影）、一疊分開的輕卡片側欄、橫線筆記紙、頁面上方的窗光</dd></div>
+                  </dl>
+                </div>
+
+                <div class="gl-block">
+                  <h3 class="gl-block-title">設計原則</h3>
+                  <ul class="gl-principles">
+                    <li><span class="icon-circle" aria-hidden="true"><i class="bi bi-window"></i></span><p><strong>文字不壓在圖上</strong>照片放在圓角的「窗」或白卡裡，標題與說明永遠在雪白底上，對比穩定。</p></li>
+                    <li><span class="icon-circle" aria-hidden="true"><i class="bi bi-layers"></i></span><p><strong>層級靠留白與高度</strong>不用分隔線、色帶與裝飾線；白卡浮在雪白底上，髮絲線與淡陰影兩個都要有。</p></li>
+                    <li><span class="icon-circle" aria-hidden="true"><i class="bi bi-cursor"></i></span><p><strong>冰河藍只給動作</strong>主要按鈕、連結、焦點環、進度、選中狀態才用冰河藍；一組動作只有一顆實心按鈕。</p></li>
+                    <li><span class="icon-circle" aria-hidden="true"><i class="bi bi-sun"></i></span><p><strong>寬裕的白天節奏</strong>區塊之間 120px、卡片之間 24px、內文 17／1.9；資訊常駐顯示，hover 不撐開、不展開。</p></li>
+                  </ul>
+                </div>
+
+                <div class="gl-block">
+                  <h3 class="gl-block-title">設計稿頁面（10 頁）</h3>
+                  <p class="gl-note">頁尾不放全頁導覽，從首頁依學生流程點進各頁；這裡列出每一頁的構圖。</p>
+                  <ul class="gl-pages">
+                    <li>
+                      <div class="lite-card is-link gl-page">
+                        <p class="gl-page-head"><a class="stretched-link" href="index.html">首頁</a><code>index.html</code></p>
+                        <p class="gl-page-desc">左 5 欄文字、右 7 欄高大的圓角窗，正在播放卡跨在窗的右下緣；熱門課程在霜藍色帶裡 2×2。</p>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="lite-card is-link gl-page">
+                        <p class="gl-page-head"><a class="stretched-link" href="courses.html">課程列表</a><code>courses.html</code></p>
+                        <p class="gl-page-desc">沒有側欄：頂端一張篩選卡（分類膠囊含數量；難度、價格、排序一列），下面 3 欄課程卡。</p>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="lite-card is-link gl-page">
+                        <p class="gl-page-head"><a class="stretched-link" href="course.html">課程詳情（從零開始的手捏陶）</a><code>course.html</code></p>
+                        <p class="gl-page-desc">8：4，白卡框裡的試看播放器，課程章節每一章是一張分開的卡，右側 sticky 購買卡。</p>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="lite-card is-link gl-page">
+                        <p class="gl-page-head"><a class="stretched-link" href="learn.html">課程播放／學習頁（3-2）</a><code>learn.html</code></p>
+                        <p class="gl-page-desc">8：4，播放中的播放器與續看提示、橫線筆記紙的單元重點；右側是一疊分開的輕卡片。</p>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="lite-card is-link gl-page">
+                        <p class="gl-page-head"><a class="stretched-link" href="register.html">註冊</a><code>register.html</code></p>
+                        <p class="gl-page-desc">560 寬的單欄卡片疊：霜藍的接續購買摘要在上，表單白卡在下。</p>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="lite-card is-link gl-page">
+                        <p class="gl-page-head"><a class="stretched-link" href="checkout.html">購買課程</a><code>checkout.html</code></p>
+                        <p class="gl-page-desc">720 寬的單欄卡片疊：購買的課程 → 帳號 → 付款方式 → 發票 → 總金額卡緊貼確認付款。</p>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="lite-card is-link gl-page">
+                        <p class="gl-page-head"><a class="stretched-link" href="order-result.html">付款結果（付款成功）</a><code>order-result.html</code></p>
+                        <p class="gl-page-desc">成功卡 → 並排 3 張小卡（訂單資訊、購買內容、發票）→ 接下來 → 按鈕列。</p>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="lite-card is-link gl-page">
+                        <p class="gl-page-head"><a class="stretched-link" href="my-courses.html">我的課程</a><code>my-courses.html</code></p>
+                        <p class="gl-page-desc">標題旁 3 張統計卡，分段控制篩選學習狀態，3 欄直式課程卡。</p>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="lite-card is-link gl-page">
+                        <p class="gl-page-head"><a class="stretched-link" href="orders.html">購買紀錄</a><code>orders.html</code></p>
+                        <p class="gl-page-desc">退費說明卡在最上方，直向時間軸用日期節點串起 5 筆訂單卡。</p>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="lite-card gl-page is-current">
+                        <p class="gl-page-head"><span class="gl-page-name">設計 Guideline（本頁）</span><code>guideline.html</code></p>
+                        <p class="gl-page-desc">左側 sticky 目錄卡，右側每章一組白卡。</p>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <!-- ==================== 色彩 ==================== -->
+            <section id="gl-color" class="gl-section" aria-labelledby="gl-color-title">
+              <div class="gl-section-head">
+                <h2 id="gl-color-title">色彩</h2>
+                <p class="section-lead">雪白是頁面底、白是卡片，冰河藍是唯一的動作色，播放器維持深色。對比度依 WCAG 2.x 公式計算；文字至少 4.5:1，圖示與框線至少 3:1。</p>
+              </div>
+              <div class="lite-card gl-card">
+                <div class="gl-block">
+                  <div class="gl-proportion" role="img" aria-label="用色比例示意：雪白約 48%、白 26%、霜藍 12%、冰 4%、墨 6%、冰河藍 3%、夜色 1%">
+                    <span class="gl-c-snow" style="flex: 48"></span>
+                    <span class="gl-c-white" style="flex: 26"></span>
+                    <span class="gl-c-frost" style="flex: 12"></span>
+                    <span class="gl-c-ice" style="flex: 4"></span>
+                    <span class="gl-c-ink" style="flex: 6"></span>
+                    <span class="gl-c-glacier" style="flex: 3"></span>
+                    <span class="gl-c-night" style="flex: 1"></span>
+                  </div>
+                  <p class="gl-caption">用色比例示意：雪白 48%（頁面底）、白 26%（卡片）、霜藍 12%、冰 4%、墨 6%（文字）、冰河藍 3%（動作）、夜色 1%（播放器）。</p>
+                </div>
+
+                <div class="gl-block">
+                  <h3 class="gl-block-title">底與面</h3>
+                  <p class="gl-note">頁面底不用純白：雪白底＋白卡片，才看得出卡片浮起來。</p>
+                  <ul class="gl-swatches">
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-snow"></span><p class="gl-swatch-name">雪白</p><p class="gl-swatch-code"><code>$snow</code><span class="num">#F6F8FA</span></p><p class="gl-swatch-use">頁面底（<code>$body-bg</code>）、theme-color、示範台</p><p class="gl-swatch-ratio">墨字 13.72:1</p></li>
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-white"></span><p class="gl-swatch-name">白</p><p class="gl-swatch-code"><code>$white</code><span class="num">#FFFFFF</span></p><p class="gl-swatch-use">卡片、輸入框、頁首卡片列、對話框</p><p class="gl-swatch-ratio">墨字 14.61:1</p></li>
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-frost"></span><p class="gl-swatch-name">霜藍</p><p class="gl-swatch-code"><code>$frost</code><span class="num">#EAF0F5</span></p><p class="gl-swatch-use">頁尾面板、chip、CTA、分段控制軌道、熱門課程色帶</p><p class="gl-swatch-ratio">墨 12.72、石板灰 4.97</p></li>
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-ice"></span><p class="gl-swatch-name">冰</p><p class="gl-swatch-code"><code>$ice</code><span class="num">#DCEBF5</span></p><p class="gl-swatch-use">選中的底：目前單元、選中分類、目前導覽</p><p class="gl-swatch-ratio">墨 12.00、冰河藍 4.80</p></li>
+                  </ul>
+                </div>
+
+                <div class="gl-block">
+                  <h3 class="gl-block-title">文字</h3>
+                  <ul class="gl-swatches">
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-ink"></span><p class="gl-swatch-name">墨</p><p class="gl-swatch-code"><code>$ink</code><span class="num">#1F2A33</span></p><p class="gl-swatch-use">標題、內文（<code>$body-color</code>）</p><p class="gl-swatch-ratio">白 14.61、雪白 13.72</p></li>
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-slate"></span><p class="gl-swatch-name">石板灰</p><p class="gl-swatch-code"><code>$slate</code><span class="num">#5B6874</span></p><p class="gl-swatch-use">說明、meta、講師名（secondary）</p><p class="gl-swatch-ratio">白 5.71、雪白 5.36、冰 4.69</p></li>
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-placeholder"></span><p class="gl-swatch-name">提示字</p><p class="gl-swatch-code"><code>$placeholder</code><span class="num">#66727D</span></p><p class="gl-swatch-use">輸入框 placeholder、停用的字；只放在白與雪白上</p><p class="gl-swatch-ratio">白 4.92、雪白 4.62</p></li>
+                  </ul>
+                </div>
+
+                <div class="gl-block">
+                  <h3 class="gl-block-title">冰河藍</h3>
+                  <ul class="gl-swatches">
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-glacier"></span><p class="gl-swatch-name">冰河藍</p><p class="gl-swatch-code"><code>$glacier</code><span class="num">#2E6A92</span></p><p class="gl-swatch-use">主要按鈕底、連結、焦點環、進度填色、選中文字（primary）</p><p class="gl-swatch-ratio">白字在上 5.84；雪白上 5.49；對軌道 4.81</p></li>
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-glacier-deep"></span><p class="gl-swatch-name">深冰河藍</p><p class="gl-swatch-code"><code>$glacier-deep</code><span class="num">#245878</span></p><p class="gl-swatch-use">主要按鈕 hover、連結 hover、冰底上的選中字</p><p class="gl-swatch-ratio">白字在上 7.66；冰上 6.29</p></li>
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-glacier-mid"></span><p class="gl-swatch-name">淡冰河藍</p><p class="gl-swatch-code"><code>$glacier-mid</code><span class="num">#6FA3C7</span></p><p class="gl-swatch-use">窗框內緣細線、筆記紙橫線、可點卡片 hover 的框色</p><p class="gl-swatch-ratio">對白 2.71</p><p class="gl-swatch-flag"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>只做裝飾，不能當文字或唯一辨識</p></li>
+                  </ul>
+                </div>
+
+                <div class="gl-block">
+                  <h3 class="gl-block-title">線與控制項</h3>
+                  <p class="gl-note">髮絲線與軌道是裝飾，不承擔辨識；輸入框、checkbox、radio 要看得清邊界，才用控制項框線（≥ 3:1）。</p>
+                  <ul class="gl-swatches">
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-line"></span><p class="gl-swatch-name">髮絲線</p><p class="gl-swatch-code"><code>$line</code><span class="num">#E1E7ED</span></p><p class="gl-swatch-use">卡片外框（<code>$border-color</code>）、頁尾版權上方</p><p class="gl-swatch-ratio">對白 1.25（裝飾）</p></li>
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-control"></span><p class="gl-swatch-name">控制項框線</p><p class="gl-swatch-code"><code>$control</code><span class="num">#7F8C98</span></p><p class="gl-swatch-use">輸入框、select、checkbox、radio、鎖定標籤虛線</p><p class="gl-swatch-ratio">白 3.44、雪白 3.23</p></li>
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-track"></span><p class="gl-swatch-name">軌道</p><p class="gl-swatch-code"><code>$track</code><span class="num">#E3EAF0</span></p><p class="gl-swatch-use">進度條軌道、時間軸細線</p><p class="gl-swatch-ratio">冰河藍填色對軌道 4.81</p></li>
+                  </ul>
+                </div>
+
+                <div class="gl-block">
+                  <h3 class="gl-block-title">語意色</h3>
+                  <p class="gl-note">文字色都能直接當字用，淡底配同色字；狀態另外配圖示與框線樣式（實線、虛線），不只靠顏色。資訊提示用冰底＋冰河藍。</p>
+                  <ul class="gl-swatches">
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-pine"></span><p class="gl-swatch-name">松綠（成功）</p><p class="gl-swatch-code"><code>$pine</code><span class="num">#2F7559</span></p><p class="gl-swatch-use">已完成、已完課、已付款、已上架</p><p class="gl-swatch-ratio">白 5.51；淡底 4.74</p></li>
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-pine-soft"></span><p class="gl-swatch-name">松綠淡底</p><p class="gl-swatch-code"><code>$pine-soft</code><span class="num">#E4F1EA</span></p><p class="gl-swatch-use">已完課標籤、成功提示框、付款成功圖示圈</p><p class="gl-swatch-ratio">墨字 12.57</p></li>
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-amber"></span><p class="gl-swatch-name">琥珀（警示）</p><p class="gl-swatch-code"><code>$amber</code><span class="num">#8A6116</span></p><p class="gl-swatch-use">草稿、退費處理中、星星</p><p class="gl-swatch-ratio">白 5.52；淡底 4.92</p></li>
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-amber-soft"></span><p class="gl-swatch-name">琥珀淡底</p><p class="gl-swatch-code"><code>$amber-soft</code><span class="num">#FBF1DC</span></p><p class="gl-swatch-use">草稿、退費處理中標籤，警示提示框</p><p class="gl-swatch-ratio">墨字 13.02</p></li>
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-rust"></span><p class="gl-swatch-name">鐵鏽紅（錯誤）</p><p class="gl-swatch-code"><code>$rust</code><span class="num">#B4382F</span></p><p class="gl-swatch-use">表單錯誤、付款失敗、付款沒有完成</p><p class="gl-swatch-ratio">白 5.92；淡底 5.05</p></li>
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-rust-soft"></span><p class="gl-swatch-name">鐵鏽紅淡底</p><p class="gl-swatch-code"><code>$rust-soft</code><span class="num">#FBE9E7</span></p><p class="gl-swatch-use">付款失敗標籤、錯誤提示框</p><p class="gl-swatch-ratio">墨字 12.46</p></li>
+                    <li class="gl-swatch"><span class="gl-swatch-chip gl-c-ice is-info"><i class="bi bi-info-circle" aria-hidden="true"></i></span><p class="gl-swatch-name">資訊＝冰＋冰河藍</p><p class="gl-swatch-code"><code>$info</code><span class="num">#2E6A92</span></p><p class="gl-swatch-use">資訊提示框、登入對話框的未登入提示</p><p class="gl-swatch-ratio">冰河藍在冰上 4.80</p></li>
+                  </ul>
+                </div>
+
+                <div class="gl-block">
+                  <h3 class="gl-block-title">影音專用</h3>
+                  <p class="gl-note">頁面是淺色，只有播放器是深色。播放器上的文字、圖示與焦點環換成下面這組顏色。</p>
+                  <ul class="gl-rows">
+                    <li><span class="gl-dot gl-c-night"></span><p><strong>播放器底 <code>$night</code> <span class="num">#16202A</span></strong>底部一段夜色漸層，控制列的字永遠落在深色上</p></li>
+                    <li><span class="gl-dot gl-c-night-soft"></span><p><strong>播放器浮起一階 <code>$night-soft</code> <span class="num">#222E39</span></strong>影片載入失敗畫面的底，也是上面白色按鈕焦點環的間隙色；播放器文字在上 10.57:1</p></li>
+                    <li><span class="gl-dot gl-c-player-text"></span><p><strong>播放器文字 <code>$player-text</code> <span class="num">#D5E3EE</span></strong>時間碼、覆蓋文字；對夜色 12.60:1</p></li>
+                    <li><span class="gl-dot gl-c-player-icon"></span><p><strong>控制圖示、已播放 <code>$player-icon</code> <span class="num">#9DC4E2</span></strong>對夜色 8.97:1；也是深色底上的焦點環</p></li>
+                    <li><span class="gl-dot gl-dot-buffer"></span><p><strong>緩衝</strong>控制圖示色 35% 透明，疊在進度軌道上</p></li>
+                    <li><span class="gl-dot gl-c-player-track"></span><p><strong>進度軌道 <code>$player-track</code> <span class="num">#3A444D</span></strong>已播放對軌道 5.41:1</p></li>
+                    <li><span class="gl-dot gl-c-ice"></span><p><strong>已觀看位置標記</strong>冰色 3px 刻度，比播放頭高；tooltip「上次看到 07:18」</p></li>
+                    <li><span class="gl-dot gl-c-player-warn"></span><p><strong>載入失敗圖示 <code>$player-warn</code> <span class="num">#F0B7AE</span></strong>對 <code>$night-soft</code> 7.96:1</p></li>
+                    <li><span class="gl-dot gl-c-ice"></span><p><strong>試看徽章</strong>冰底＋深冰河藍字（6.29:1）＋解鎖圖示</p></li>
+                    <li><span class="gl-dot gl-c-white is-dashed"></span><p><strong>鎖定</strong>控制項灰虛線框＋石板灰字＋鎖頭圖示；單元列只放鎖頭＋隱藏文字「鎖定」</p></li>
+                  </ul>
+                </div>
+
+                <div class="gl-block">
+                  <h3 class="gl-block-title">Bootstrap 主題色對應</h3>
+                  <div class="table-responsive">
+                    <table class="table gl-table">
+                      <thead><tr><th scope="col">Bootstrap 變數</th><th scope="col">本風格</th></tr></thead>
+                      <tbody>
+                        <tr><td><code>$primary</code>／<code>$info</code></td><td>冰河藍</td></tr>
+                        <tr><td><code>$secondary</code></td><td>石板灰</td></tr>
+                        <tr><td><code>$success</code>／<code>$warning</code>／<code>$danger</code></td><td>松綠／琥珀／鐵鏽紅</td></tr>
+                        <tr><td><code>$light</code>／<code>$dark</code></td><td>霜藍／墨</td></tr>
+                        <tr><td><code>$body-bg</code>／<code>$body-color</code></td><td>雪白／墨</td></tr>
+                        <tr><td><code>$border-color</code></td><td>髮絲線</td></tr>
+                        <tr><td><code>$focus-ring-color</code></td><td>冰河藍（2px 白色間隙＋2px 冰河藍）</td></tr>
+                        <tr><td><code>$enable-dark-mode</code></td><td><code>false</code>：單一淺色主題</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ==================== 字級階層 ==================== -->
+            <section id="gl-type" class="gl-section" aria-labelledby="gl-type-title">
+              <div class="gl-section-head">
+                <h2 id="gl-type-title">字級階層</h2>
+                <p class="section-lead">圓潤、乾淨、不搶戲。中文標題用 500（大字顯得輕、透氣），卡片標題與章節名用 700；英數字一律 Manrope 的等寬數字。</p>
+              </div>
+              <div class="lite-card gl-card">
+                <div class="gl-fonts">
+                  <div class="gl-font">
+                    <p class="gl-font-sample">雪白的書桌</p>
+                    <p><strong>Noto Sans TC</strong>　400／500／700<br>標題 500、卡片標題與章節名 700、內文 400、按鈕與標籤 500</p>
+                  </div>
+                  <div class="gl-font">
+                    <p class="gl-font-sample is-latin">Craftory 2,480</p>
+                    <p><strong>Manrope</strong>　500／600／700<br>品牌字 700、價格 600、片長、時間碼、人數、訂單編號 500，<code>tabular-nums</code></p>
+                  </div>
+                </div>
+
+                <div class="gl-type-row">
+                  <p class="gl-type-meta">首頁主標 Display<br><code>.display-home</code> 500<br><span class="num">56／1.25</span>（≥ 1400；1200–1399 為 52、992–1199 為 44）<br>手機 <span class="num">36／1.3</span></p>
+                  <p class="display-home text-phrase">把想學很久的<wbr>那件事，<wbr>變成手上的作品。</p>
+                </div>
+                <div class="gl-type-row">
+                  <p class="gl-type-meta">H1 500<br><span class="num">40／1.3</span>，手機 <span class="num">30／1.35</span></p>
+                  <p class="h1 text-phrase"><span class="text-nowrap">從零開始的手捏陶｜</span><wbr>做出第一只日用食器</p>
+                </div>
+                <div class="gl-type-row">
+                  <p class="gl-type-meta">H2 500<br><span class="num">30／1.4</span>，手機 <span class="num">24</span>；一律靠左</p>
+                  <p class="h2">本月最多人開始的課</p>
+                </div>
+                <div class="gl-type-row">
+                  <p class="gl-type-meta">H3 700（卡片標題、區塊小標）<br><span class="num">20／1.5</span>，手機 <span class="num">18</span></p>
+                  <p class="h3">你的學習進度</p>
+                </div>
+                <div class="gl-type-row">
+                  <p class="gl-type-meta">H4 700<br><span class="num">18／1.5</span></p>
+                  <p class="h4">購買包含</p>
+                </div>
+                <div class="gl-type-row">
+                  <p class="gl-type-meta">章節名稱 700 <code>.chapter-name</code><br><span class="num">18</span>（手機 <span class="num">17</span>），「第 N 章」<span class="num">13</span> 石板灰</p>
+                  <div><span class="chapter-title"><span class="chapter-no">第 3 章　</span><span class="chapter-name">手捏成形：從土球到碗</span></span></div>
+                </div>
+                <div class="gl-type-row">
+                  <p class="gl-type-meta">課程卡標題 700 <code>.course-card-title</code><br><span class="num">18</span>（手機 <span class="num">17</span>）／1.55</p>
+                  <p class="course-card-title text-phrase"><span class="text-nowrap">植鞣皮革入門｜</span><wbr>縫一只用十年的卡夾</p>
+                </div>
+                <div class="gl-type-row">
+                  <p class="gl-type-meta">內文 400<br><span class="num">17／1.9</span>，手機 <span class="num">16／1.85</span><br>段落最長約 36em（<code>.measure</code>）</p>
+                  <p class="measure">本段重點是拇指下壓時維持約 45 度，底部厚度保留 0.8cm。壓太快會讓底部變薄，入窯容易裂。</p>
+                </div>
+                <div class="gl-type-row">
+                  <p class="gl-type-meta">小字 400 <code>.text-note</code><br><span class="num">14／1.7</span>，石板灰</p>
+                  <p class="text-note">7 天內觀看未逾 20%，可全額退費。</p>
+                </div>
+                <div class="gl-type-row">
+                  <p class="gl-type-meta">價格 Manrope 600 <code>.price-lg</code><br><span class="num">28</span>，手機 <span class="num">26</span></p>
+                  <p class="price price-lg">NT$&nbsp;2,480</p>
+                </div>
+                <div class="gl-type-row">
+                  <p class="gl-type-meta">品牌字 Manrope 700<br><span class="num">22</span>，手機 <span class="num">20</span></p>
+                  <p><span class="site-brand-name">Craftory</span></p>
+                </div>
+                <div class="gl-type-row">
+                  <p class="gl-type-meta">數字 Manrope 500 <code>.num</code><br><code>tabular-nums</code>，跟隨所在層級</p>
+                  <p class="d-flex flex-wrap gap-3"><span class="num">4&nbsp;小時&nbsp;20&nbsp;分</span><span class="num">08:42</span><span class="num">3-2</span><span class="num">14／28</span><span class="num">1,845 人正在學</span><span class="num">CR-20261116-027</span></p>
+                </div>
+              </div>
+            </section>
+
+            <!-- ==================== 間距 ==================== -->
+            <section id="gl-space" class="gl-section" aria-labelledby="gl-space-title">
+              <div class="gl-section-head">
+                <h2 id="gl-space-title">間距</h2>
+                <p class="section-lead">「留白寬裕」是這套風格的來源：區塊之間 120px，比同主題其他風格都大。<code>$spacers</code> 的 0～5 維持 Bootstrap 預設，另外加 6～8 給區塊留白。</p>
+              </div>
+              <div class="lite-card gl-card">
+                <div class="gl-block">
+                  <h3 class="gl-block-title">間距尺度 <code>$spacers</code></h3>
+                  <ul class="gl-space">
+                    <li><code>1</code><span class="num">4px</span><span class="gl-space-bar" style="width: 4px"></span></li>
+                    <li><code>2</code><span class="num">8px</span><span class="gl-space-bar" style="width: 8px"></span></li>
+                    <li><code>3</code><span class="num">16px</span><span class="gl-space-bar" style="width: 16px"></span></li>
+                    <li><code>4</code><span class="num">24px</span><span class="gl-space-bar" style="width: 24px"></span></li>
+                    <li><code>5</code><span class="num">48px</span><span class="gl-space-bar" style="width: 48px"></span></li>
+                    <li><code>6</code><span class="num">72px</span><span class="gl-space-bar" style="width: 72px"></span></li>
+                    <li><code>7</code><span class="num">96px</span><span class="gl-space-bar" style="width: 96px"></span></li>
+                    <li><code>8</code><span class="num">120px</span><span class="gl-space-bar" style="width: 120px"></span></li>
+                  </ul>
+                </div>
+                <div class="gl-block">
+                  <h3 class="gl-block-title">固定用法</h3>
+                  <div class="table-responsive">
+                    <table class="table gl-table is-stack">
+                      <thead><tr><th scope="col">位置</th><th scope="col">數值</th><th scope="col">變數／類別</th></tr></thead>
+                      <tbody>
+                        <tr><td>區塊上下留白</td><td class="num">72px → ≥ 992px 120px</td><td><code>.section</code></td></tr>
+                        <tr><td>內頁 <code>&lt;main&gt;</code> 上方</td><td class="num">48px</td><td><code>.page-top</code></td></tr>
+                        <tr><td>區塊標題到內容</td><td class="num">48px（課程詳情 24px）</td><td><code>.section-head</code>、<code>.course-section-head</code></td></tr>
+                        <tr><td>課程詳情左欄各區塊之間</td><td class="num">72px → 96px</td><td><code>.course-section</code></td></tr>
+                        <tr><td>卡片之間</td><td class="num">24px</td><td><code>.g-4</code>、<code>.flow-stack</code></td></tr>
+                        <tr><td>章節卡之間</td><td class="num">12px（學習頁側欄 10px）</td><td><code>.accordion-cards</code></td></tr>
+                        <tr><td>卡片內距</td><td class="num">20px → 24px（裱圖 12px）</td><td><code>.lite-card</code>、<code>.is-snug</code></td></tr>
+                        <tr><td>版心</td><td class="num">最寬 1200px，左右各 20px</td><td><code>$container-max-widths</code>、<code>$container-padding-x</code></td></tr>
+                        <tr><td>欄距</td><td class="num">32px</td><td><code>$grid-gutter-width</code></td></tr>
+                        <tr><td>頁首卡片列</td><td class="num">高 64px，距視窗頂 12px</td><td><code>$site-header-height</code>、<code>$site-header-gap</code></td></tr>
+                        <tr><td>頁首佔的高度</td><td class="num">88px（12＋64＋12）</td><td><code>--header-offset</code></td></tr>
+                        <tr><td>sticky 位移（購買卡、學習頁側欄、本頁目錄、錨點）</td><td class="num">96px</td><td><code>--sticky-top</code>、<code>scroll-padding-top</code></td></tr>
+                        <tr><td>觸控目標</td><td class="num">≥ 44 × 44px</td><td>按鈕、連結、單元列、篩選膠囊</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ==================== 圓角與陰影 ==================== -->
+            <section id="gl-shape" class="gl-section" aria-labelledby="gl-shape-title">
+              <div class="gl-section-head">
+                <h2 id="gl-shape-title">圓角與陰影</h2>
+                <p class="section-lead">圓角柔和但不是膠囊按鈕；陰影只有兩層、非常淡。白卡在雪白底上一定同時有髮絲線與陰影，少一個就看不出卡片。</p>
+              </div>
+              <div class="lite-card gl-card">
+                <div class="gl-block">
+                  <h3 class="gl-block-title">圓角</h3>
+                  <div class="gl-stage">
+                    <ul class="gl-shapes">
+                      <li><span class="gl-shape gl-r-sm">6</span><p class="gl-caption">時長標籤、tooltip <code>$border-radius-sm</code></p></li>
+                      <li><span class="gl-shape gl-r">10</span><p class="gl-caption">按鈕、輸入框、播放器、頁碼 <code>$border-radius</code></p></li>
+                      <li><span class="gl-shape gl-r-img">12</span><p class="gl-caption">卡片裡的圖片、示範台 <code>$radius-image</code></p></li>
+                      <li><span class="gl-shape gl-r-lg">16</span><p class="gl-caption">卡片、頁首、對話框 <code>$border-radius-lg</code></p></li>
+                      <li><span class="gl-shape gl-r-xl">24</span><p class="gl-caption">窗、頁尾面板、CTA、狀態示意 <code>$border-radius-xl</code></p></li>
+                      <li><span class="gl-shape gl-r-pill">膠囊</span><p class="gl-caption">chip、分段控制、狀態標籤、導覽</p></li>
+                      <li><span class="gl-shape gl-r-circle">圓</span><p class="gl-caption">頭像、播放鈕、圖示圈</p></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="gl-block">
+                  <h3 class="gl-block-title">陰影</h3>
+                  <div class="gl-stage">
+                    <ul class="gl-shapes">
+                      <li><span class="gl-shape gl-r-lg gl-sh-card">card</span><p class="gl-caption">一般白卡 <code>$shadow-card</code></p></li>
+                      <li><span class="gl-shape gl-r-lg gl-sh-hover">hover</span><p class="gl-caption">可點卡片 hover <code>$shadow-card-hover</code></p></li>
+                      <li><span class="gl-shape gl-r-lg gl-sh-float">float</span><p class="gl-caption">正在播放卡、購買卡、Toast、下拉選單 <code>$shadow-float</code></p></li>
+                      <li><span class="gl-shape gl-r-lg gl-sh-lg">lg</span><p class="gl-caption">對話框 <code>$box-shadow-lg</code></p></li>
+                      <li><span class="gl-shape gl-r-lg is-frost">frost</span><p class="gl-caption">次要面板不浮起：霜藍底、無陰影 <code>.is-frost</code></p></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="gl-block">
+                  <h3 class="gl-block-title">焦點</h3>
+                  <p class="gl-note">鍵盤焦點是 2px 白色間隙＋2px 冰河藍外圈（<code>$focus-ring-double</code>，雪白上 5.49:1）；播放器上外圈換成 <code>$player-icon</code>（8.97:1）。</p>
+                  <div class="gl-stage gl-states">
+                    <div><span class="gl-state">按鈕 focus</span><button class="btn btn-primary gl-focus" type="button">立即購買，開始上課</button></div>
+                    <div><span class="gl-state">輸入框 focus</span><label class="visually-hidden" for="glFocusInput">電子郵件</label><input id="glFocusInput" class="form-control gl-focus" type="email" placeholder="mail@example.com" autocomplete="off"></div>
+                    <div class="player gl-player-strip"><div><span class="gl-state is-dark">播放器 focus</span><button class="player-btn gl-focus" type="button" aria-label="暫停"><i class="bi bi-pause-fill" aria-hidden="true"></i></button></div></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ==================== 招牌元素 ==================== -->
+            <section id="gl-signature" class="gl-section" aria-labelledby="gl-signature-title">
+              <div class="gl-section-head">
+                <h2 id="gl-signature-title">招牌元素</h2>
+                <p class="section-lead">大膽只花在兩處：主圖像一扇窗，以及學習頁一疊分開的輕卡片側欄。其他地方極度克制。</p>
+              </div>
+              <div class="lite-card gl-card">
+                <div class="gl-block">
+                  <h3 class="gl-block-title">窗 <code>.window</code></h3>
+                  <div class="row g-4 align-items-center">
+                    <div class="col-md-7">
+                      <div class="window gl-window">
+                        <img src="images/hero.jpg" alt="一雙沾著濕陶土的手在淺色木桌上捏一只小陶碗，拇指壓著碗壁內側；桌上放著一小塊陶土、海綿與修坯刀，背後是灑著窗光的白牆" loading="lazy" width="1920" height="1080">
+                      </div>
+                    </div>
+                    <div class="col-md-5">
+                      <ul class="gl-list">
+                        <li>24px 圓角、<code>overflow: hidden</code>，內縮 8px 一條淡冰河藍 1px 細線，像窗框。</li>
+                        <li>首頁首屏的主圖就是一扇窗（≥ 992px 高度扣掉上 24、下 48px，正在播放卡跨出窗緣 24px）。</li>
+                        <li>課程詳情、學習頁的播放器卡框 <code>.player-frame</code> 沿用同一個語彙：白卡裡放 10px 圓角的深色播放器，卡框內緣一條細線。</li>
+                        <li>細線只是裝飾（2.71:1），不承擔辨識；文字不壓在窗上。</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="gl-block">
+                  <h3 class="gl-block-title">輕卡片 <code>.lite-card</code></h3>
+                  <p class="gl-note">白底＋1px 髮絲線＋很淡的雙層陰影，內距 24px（手機 20px）、16px 圓角。四種變體：</p>
+                  <div class="gl-stage">
+                    <div class="gl-lite-demo">
+                      <div class="lite-card"><p><strong>基本</strong>內距 24，一般內容卡、表單卡、講師卡</p></div>
+                      <div class="lite-card is-snug"><div class="img-frame ratio ratio-16x9"><img src="images/course-leather.jpg" alt="" loading="lazy" width="1600" height="900"></div><p class="mt-2 px-1"><strong><code>.is-snug</code></strong>內距 12，圖片「裱」在卡片裡</p></div>
+                      <div class="lite-card is-frost"><p><strong><code>.is-frost</code></strong>霜藍底、無陰影：總金額、退費說明這類次要面板</p></div>
+                      <div class="lite-card is-link gl-hover"><p><strong><code>.is-link</code>（hover）</strong>陰影加深一階、框線換淡冰河藍，不位移、不放大</p></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="gl-block">
+                  <h3 class="gl-block-title">輕卡片側欄（學習頁）</h3>
+                  <p class="gl-note">側欄不是一塊面板，而是一疊分開的 <code>.lite-card</code>：進度卡在上，每一章一張可收合的章節卡，卡與卡之間 10～12px；目前單元＝冰底＋左側 3px 冰河藍條。實際元件見下方「元件狀態規範」的<a href="#gl-units">單元列</a>。</p>
+                </div>
+
+                <div class="gl-block">
+                  <h3 class="gl-block-title">橫線筆記紙 <code>.paper-lines</code></h3>
+                  <p class="gl-note">學習頁的單元重點與課程問答輸入框。很淡的冰河藍橫線，線距等於行高（手機 16px × 1.85、≥ 992px 17px × 1.9，字級與線距在同一個斷點一起換），所以字一定落在線上。只放 <code>CONTENT.md</code> 的原文，不另加「隨堂筆記」字樣。</p>
+                  <div class="gl-stage">
+                    <div class="row g-4">
+                      <div class="col-md-6">
+                        <span class="gl-state">單元重點（白卡）</span>
+                        <div class="lite-card paper-lines gl-paper">
+                          <p>本段重點是拇指下壓時維持約 45 度，底部厚度保留 0.8cm。壓太快會讓底部變薄，入窯容易裂。</p>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="gl-state" for="glPaperQa">課程問答（多行文字）</label>
+                        <textarea id="glPaperQa" class="form-control paper-lines" rows="4" placeholder="對這個單元有問題嗎？講師會在 72 小時內回覆" autocomplete="off"></textarea>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="gl-block">
+                  <h3 class="gl-block-title">窗光</h3>
+                  <div class="row g-4 align-items-center">
+                    <div class="col-md-5"><div class="gl-window-light" role="img" aria-label="窗光：由左上的白漸漸變成雪白"></div></div>
+                    <div class="col-md-7"><p class="gl-note mb-0">頁面最上方 960px 是一層很淡的 <code>linear-gradient(160deg, #FFFFFF, $snow 45%)</code>，在頁首與首屏後面，1920 寬時滿版。內容仍留在 1200px 版心裡。</p></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ==================== 元件狀態規範 ==================== -->
+            <section id="gl-component" class="gl-section" aria-labelledby="gl-component-title">
+              <div class="gl-section-head">
+                <h2 id="gl-component-title">元件狀態規範</h2>
+                <p class="section-lead">下面都是頁面實際在用的元件與類別；hover、focus 用只在本頁出現的 <code>.gl-hover</code>、<code>.gl-focus</code> 固定顯示。所有 hover 只換顏色、底色、框色與陰影，不改尺寸、不推擠版面。</p>
+              </div>
+
+              <!-- 按鈕 -->
+              <div class="lite-card gl-card">
+                <h3 class="gl-block-title">按鈕</h3>
+                <p class="gl-note">10px 圓角（不是膠囊），高 48px（小按鈕 44px）。主要＝冰河藍實心，一組動作只放一顆；次要＝白底冰河藍框（免費試看、加入願望清單）；低強調＝白底灰框（清除篩選、下載、查看全部評價）；文字連結＝冰河藍底線。停用不疊透明度，改成冰底＋石板灰字，看得出「存在但現在不能按」。</p>
+                <div class="gl-stage">
+                  <p class="gl-sub">主要 <code>.btn-primary</code></p>
+                  <div class="gl-states">
+                    <div><span class="gl-state">預設</span><button class="btn btn-primary" type="button">立即購買</button></div>
+                    <div><span class="gl-state">hover</span><button class="btn btn-primary gl-hover" type="button">立即購買</button></div>
+                    <div><span class="gl-state">focus</span><button class="btn btn-primary gl-focus" type="button">立即購買</button></div>
+                    <div><span class="gl-state">active</span><button class="btn btn-primary active" type="button">立即購買</button></div>
+                    <div><span class="gl-state">停用</span><button class="btn btn-primary" type="button" disabled>立即購買</button></div>
+                    <div><span class="gl-state">處理中</span><button class="btn btn-primary" type="button" disabled><span class="spinner-border" aria-hidden="true"></span>付款處理中</button></div>
+                  </div>
+                  <p class="gl-sub">次要 <code>.btn-outline-primary</code></p>
+                  <div class="gl-states">
+                    <div><span class="gl-state">預設</span><button class="btn btn-outline-primary" type="button"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</button></div>
+                    <div><span class="gl-state">hover</span><button class="btn btn-outline-primary gl-hover" type="button"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</button></div>
+                    <div><span class="gl-state">focus</span><button class="btn btn-outline-primary gl-focus" type="button"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</button></div>
+                    <div><span class="gl-state">active</span><button class="btn btn-outline-primary active" type="button"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</button></div>
+                    <div><span class="gl-state">停用</span><button class="btn btn-outline-primary" type="button" disabled><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</button></div>
+                  </div>
+                  <p class="gl-sub">低強調 <code>.btn-outline-secondary</code>、文字連結 <code>.btn-text</code></p>
+                  <div class="gl-states">
+                    <div><span class="gl-state">預設</span><button class="btn btn-outline-secondary" type="button">清除篩選</button></div>
+                    <div><span class="gl-state">hover</span><button class="btn btn-outline-secondary gl-hover" type="button">清除篩選</button></div>
+                    <div><span class="gl-state">focus</span><button class="btn btn-outline-secondary gl-focus" type="button">清除篩選</button></div>
+                    <div><span class="gl-state">停用</span><button class="btn btn-outline-secondary" type="button" disabled>清除篩選</button></div>
+                    <div><span class="gl-state">文字連結</span><a class="btn btn-text" href="courses.html">看更多課程</a></div>
+                    <div><span class="gl-state">文字連結 hover</span><a class="btn btn-text gl-hover" href="courses.html">看更多課程</a></div>
+                    <div><span class="gl-state">文字連結 focus</span><a class="btn btn-text gl-focus" href="courses.html">看更多課程</a></div>
+                  </div>
+                  <p class="gl-sub">願望清單（<code>data-bs-toggle="button"</code> 切換）</p>
+                  <div class="gl-states">
+                    <div><span class="gl-state">未加入</span><button class="btn btn-outline-primary wishlist-btn" type="button" data-bs-toggle="button" aria-pressed="false"><span class="is-off"><i class="bi bi-heart" aria-hidden="true"></i>加入願望清單</span><span class="is-on"><i class="bi bi-heart-fill" aria-hidden="true"></i>已加入願望清單</span></button></div>
+                    <div><span class="gl-state">已加入</span><button class="btn btn-outline-primary wishlist-btn active" type="button" data-bs-toggle="button" aria-pressed="true"><span class="is-off"><i class="bi bi-heart" aria-hidden="true"></i>加入願望清單</span><span class="is-on"><i class="bi bi-heart-fill" aria-hidden="true"></i>已加入願望清單</span></button></div>
+                  </div>
+                </div>
+                <p class="gl-sub">播放器的圖示按鈕 <code>.player-btn</code>、深色底上的按鈕 <code>.btn-on-dark</code></p>
+                <div class="player gl-player-strip">
+                  <div><span class="gl-state is-dark">預設</span><button class="player-btn" type="button" aria-label="播放"><i class="bi bi-play-fill" aria-hidden="true"></i></button></div>
+                  <div><span class="gl-state is-dark">hover</span><button class="player-btn gl-hover" type="button" aria-label="播放"><i class="bi bi-play-fill" aria-hidden="true"></i></button></div>
+                  <div><span class="gl-state is-dark">focus</span><button class="player-btn gl-focus" type="button" aria-label="播放"><i class="bi bi-play-fill" aria-hidden="true"></i></button></div>
+                  <div><span class="gl-state is-dark">播放速度</span><button class="player-btn player-speed" type="button" aria-label="播放速度">1x</button></div>
+                  <div><span class="gl-state is-dark">重新載入</span><button class="btn btn-on-dark btn-sm" type="button"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i>重新載入</button></div>
+                </div>
+                <p class="gl-sub">「免費試看」與「立即購買」的層級</p>
+                <p class="gl-note">Notion：「免費試看」的門檻要低於「立即購買」。課程卡上只有免費試看（次要框線，在價格旁）；立即購買只出現在課程詳情的購買卡（主要實心，點了開啟登入對話框）。</p>
+                <div class="gl-stage">
+                  <div class="row g-4 align-items-end">
+                    <div class="col-md-6">
+                      <span class="gl-state">課程卡</span>
+                      <div class="course-card-foot">
+                        <p class="price">NT$&nbsp;2,480</p>
+                        <a class="btn btn-outline-primary btn-sm" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <span class="gl-state">購買卡</span>
+                      <div class="d-grid">
+                        <button class="btn btn-primary btn-lg" type="button" data-bs-toggle="modal" data-bs-target="#authModal" data-auth-context="purchase">立即購買，開始上課</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 表單 -->
+              <div class="lite-card gl-card">
+                <h3 class="gl-block-title">表單</h3>
+                <p class="gl-note">白底＋控制項框線（3.44:1）、10px 圓角、高 48px；標籤在欄位上方。focus 時框線換冰河藍並合成 2px；錯誤時框線與訊息換鐵鏽紅，訊息前面有圖示、寫「怎麼改」，用 <code>aria-describedby</code> 連到欄位；停用時底色換霜藍。篩選的 checkbox、radio 做成膠囊（<code>.btn-check</code>＋<code>.filter-pill</code>），選中＝冰底＋冰河藍框＋勾。</p>
+                <div class="gl-stage">
+                  <div class="row g-4">
+                    <div class="col-md-6">
+                      <label class="form-label" for="glEmail1">電子郵件（預設）</label>
+                      <input id="glEmail1" class="form-control" type="email" placeholder="mail@example.com" autocomplete="off">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label" for="glEmail2">電子郵件（focus）</label>
+                      <input id="glEmail2" class="form-control gl-focus" type="email" value="koen.hsu@example.com" autocomplete="off">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label" for="glPw1">密碼（錯誤）</label>
+                      <input id="glPw1" class="form-control is-invalid" type="password" value="craft6" autocomplete="off" aria-invalid="true" aria-describedby="glPw1Error">
+                      <p id="glPw1Error" class="invalid-feedback field-error"><i class="bi bi-exclamation-circle" aria-hidden="true"></i><span>密碼至少需要 8&nbsp;碼。</span></p>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label" for="glName1">顯示名稱（停用）</label>
+                      <input id="glName1" class="form-control" type="text" value="可恩" autocomplete="off" disabled>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label" for="glQa">課程問答（多行文字）</label>
+                      <textarea id="glQa" class="form-control" rows="3" placeholder="對這個單元有問題嗎？講師會在 72 小時內回覆" autocomplete="off"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label" for="glSort1">排序（select）</label>
+                      <select id="glSort1" class="form-select" autocomplete="off">
+                        <option selected>最新上架</option>
+                        <option>最多人學</option>
+                        <option>評價最高</option>
+                        <option>價格由低到高</option>
+                      </select>
+                      <label class="form-label mt-3" for="glSort2">排序（focus）</label>
+                      <select id="glSort2" class="form-select gl-focus" autocomplete="off">
+                        <option>評價最高</option>
+                      </select>
+                    </div>
+                    <div class="col-12">
+                      <p class="gl-sub">勾選框（同意條款）<code>.form-check-aligned</code></p>
+                      <div class="row g-3">
+                        <div class="col-md-6">
+                          <div class="form-check form-check-aligned">
+                            <input id="glAgree1" class="form-check-input" type="checkbox" autocomplete="off">
+                            <label class="form-check-label" for="glAgree1">未勾選：我已閱讀並同意<a>服務條款</a>與<a>隱私權政策</a></label>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-check form-check-aligned">
+                            <input id="glAgree2" class="form-check-input" type="checkbox" checked autocomplete="off">
+                            <label class="form-check-label" for="glAgree2">勾選：我已閱讀並同意<a>服務條款</a>與<a>隱私權政策</a></label>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-check form-check-aligned">
+                            <input id="glAgree3" class="form-check-input gl-focus" type="checkbox" autocomplete="off">
+                            <label class="form-check-label" for="glAgree3">focus：我已閱讀並同意<a>服務條款</a>與<a>隱私權政策</a></label>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-check form-check-aligned">
+                            <input id="glAgree4" class="form-check-input is-invalid" type="checkbox" aria-invalid="true" aria-describedby="glAgree4Error" autocomplete="off">
+                            <label class="form-check-label" for="glAgree4">錯誤：我已閱讀並同意<a>服務條款</a>與<a>隱私權政策</a></label>
+                            <p id="glAgree4Error" class="invalid-feedback field-error"><i class="bi bi-exclamation-circle" aria-hidden="true"></i><span>勾選同意服務條款與隱私權政策後，才能完成註冊。</span></p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <fieldset>
+                        <legend class="gl-sub">難度（checkbox 膠囊）</legend>
+                        <div class="d-flex flex-wrap gap-2">
+                          <input class="btn-check" type="checkbox" id="glLv1" autocomplete="off">
+                          <label class="filter-pill" for="glLv1"><i class="bi bi-check-lg filter-pill-check" aria-hidden="true"></i>入門</label>
+                          <input class="btn-check" type="checkbox" id="glLv2" checked autocomplete="off">
+                          <label class="filter-pill" for="glLv2"><i class="bi bi-check-lg filter-pill-check" aria-hidden="true"></i>進階（選中）</label>
+                          <input class="btn-check" type="checkbox" id="glLv3" autocomplete="off">
+                          <label class="filter-pill gl-hover" for="glLv3"><i class="bi bi-check-lg filter-pill-check" aria-hidden="true"></i>hover</label>
+                          <input class="btn-check" type="checkbox" id="glLv4" autocomplete="off">
+                          <label class="filter-pill gl-focus" for="glLv4"><i class="bi bi-check-lg filter-pill-check" aria-hidden="true"></i>focus</label>
+                          <input class="btn-check" type="checkbox" id="glLv5" disabled autocomplete="off">
+                          <label class="filter-pill num" for="glLv5"><i class="bi bi-check-lg filter-pill-check" aria-hidden="true"></i>停用</label>
+                        </div>
+                      </fieldset>
+                    </div>
+                    <div class="col-md-6">
+                      <fieldset>
+                        <legend class="gl-sub">工藝分類（radio 膠囊，含數量）</legend>
+                        <div class="d-flex flex-wrap gap-2">
+                          <input class="btn-check" type="radio" name="glCraft" id="glCr1" checked autocomplete="off">
+                          <label class="filter-pill" for="glCr1"><i class="bi bi-check-lg filter-pill-check" aria-hidden="true"></i>全部<span class="filter-pill-count num">52</span></label>
+                          <input class="btn-check" type="radio" name="glCraft" id="glCr2" autocomplete="off">
+                          <label class="filter-pill" for="glCr2"><i class="bi bi-check-lg filter-pill-check" aria-hidden="true"></i>陶藝<span class="filter-pill-count num">12</span></label>
+                          <input class="btn-check" type="radio" name="glCraft" id="glCr3" autocomplete="off">
+                          <label class="filter-pill gl-focus" for="glCr3"><i class="bi bi-check-lg filter-pill-check" aria-hidden="true"></i>皮革（focus）<span class="filter-pill-count num">8</span></label>
+                          <input class="btn-check" type="radio" name="glCraft" id="glCr4" disabled autocomplete="off">
+                          <label class="filter-pill" for="glCr4"><i class="bi bi-check-lg filter-pill-check" aria-hidden="true"></i>停用<span class="filter-pill-count num">0</span></label>
+                        </div>
+                      </fieldset>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 分頁籤、切換、Accordion、頁碼 -->
+              <div class="lite-card gl-card">
+                <h3 class="gl-block-title">分頁籤、切換、Accordion、頁碼</h3>
+                <div class="gl-stage">
+                  <p class="gl-sub">分頁籤（學習頁，底線式 <code>.nav-underline</code>）</p>
+                  <ul class="nav nav-underline learn-tabs mb-0">
+                    <li class="nav-item"><span class="nav-link active">單元重點</span></li>
+                    <li class="nav-item"><span class="nav-link gl-hover">課程問答</span></li>
+                    <li class="nav-item"><span class="nav-link gl-focus">附件下載</span></li>
+                  </ul>
+                  <p class="gl-caption">「單元重點」是選中、「課程問答」是 hover、「附件下載」是 focus。選中只換顏色與 2px 冰河藍底線，不換字重（字重變了寬度會跟著變）。</p>
+
+                  <p class="gl-sub">分段控制 <code>.segmented</code>（評價排序：<code>.btn-check</code>；我的課程篩選：<code>&lt;button aria-pressed&gt;</code>）</p>
+                  <div class="d-flex flex-wrap gap-4">
+                    <div class="segmented" role="group" aria-label="示範：評價排序">
+                      <input type="radio" class="btn-check" name="glReviewSort" id="glSort3" autocomplete="off" checked>
+                      <label class="btn" for="glSort3">最有幫助</label>
+                      <input type="radio" class="btn-check" name="glReviewSort" id="glSort4" autocomplete="off">
+                      <label class="btn" for="glSort4">最新</label>
+                    </div>
+                    <div class="segmented" role="group" aria-label="示範：依學習狀態篩選">
+                      <button class="btn active" type="button" aria-pressed="true">全部<span class="num">3</span></button>
+                      <button class="btn gl-hover" type="button" aria-pressed="false">學習中<span class="num">2</span></button>
+                      <button class="btn gl-focus" type="button" aria-pressed="false">已完成<span class="num">1</span></button>
+                    </div>
+                  </div>
+                  <p class="gl-caption">選中＝白色膠囊浮在霜藍軌道上＋深冰河藍字；第二組的「學習中」是 hover、「已完成」是 focus。</p>
+
+                  <p class="gl-sub">Accordion：每一題是一張分開的白卡（展開、收合、hover）</p>
+                  <div class="accordion accordion-cards faq" id="glFaq">
+                    <div class="accordion-item">
+                      <h4 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#glFaq1" aria-expanded="true" aria-controls="glFaq1">完全沒有基礎可以學嗎？</button></h4>
+                      <div id="glFaq1" class="accordion-collapse collapse show"><div class="accordion-body">可以，這堂課就是為第一次碰土的人設計的。</div></div>
+                    </div>
+                    <div class="accordion-item">
+                      <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#glFaq2" aria-expanded="false" aria-controls="glFaq2">購買後可以看多久？</button></h4>
+                      <div id="glFaq2" class="accordion-collapse collapse"><div class="accordion-body">永久觀看，課程日後更新的單元也會一併開放。</div></div>
+                    </div>
+                    <div class="accordion-item">
+                      <h4 class="accordion-header"><button class="accordion-button collapsed gl-hover" type="button" data-bs-toggle="collapse" data-bs-target="#glFaq3" aria-expanded="false" aria-controls="glFaq3">家裡沒有窯怎麼辦？（hover）</button></h4>
+                      <div id="glFaq3" class="accordion-collapse collapse"><div class="accordion-body">第 6 章會教你如何尋找並聯繫可代燒的窯場。</div></div>
+                    </div>
+                  </div>
+
+                  <p class="gl-sub">頁碼（10px 圓角方塊，彼此分開）</p>
+                  <nav aria-label="示範：課程分頁">
+                    <ul class="pagination mb-0">
+                      <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left" aria-hidden="true"></i><span class="visually-hidden">上一頁（停用）</span></span></li>
+                      <li class="page-item active"><span class="page-link" aria-current="page">1</span></li>
+                      <li class="page-item"><span class="page-link gl-hover">2</span></li>
+                      <li class="page-item"><span class="page-link">3</span></li>
+                      <li class="page-item"><span class="page-link"><i class="bi bi-chevron-right" aria-hidden="true"></i><span class="visually-hidden">下一頁</span></span></li>
+                    </ul>
+                  </nav>
+                  <p class="gl-caption">目前頁＝冰河藍實心；第 2 頁是 hover（霜藍底＋深冰河藍字）；上一頁是停用。</p>
+                </div>
+              </div>
+
+              <!-- 課程卡、工藝情境卡 -->
+              <div class="lite-card gl-card">
+                <h3 class="gl-block-title">課程卡 <code>.course-card</code></h3>
+                <p class="gl-note">封面 16:9 裱在卡片裡＋右下時長 → 分類與難度 → 課程名稱（在「｜」後換行）→ 講師文字頭像 → 星等與學習人數 → 價格＋免費試看（貼齊底部）。整張可點（<code>.stretched-link</code>），免費試看按鈕拉高 z-index 另外可點。hover 與 focus 只把陰影加深一階、框線換淡冰河藍、課名換深冰河藍。</p>
+                <div class="gl-stage">
+                  <div class="row g-4">
+                    <div class="col-md-6 col-xl-4">
+                      <span class="gl-state">預設</span>
+                      <article class="course-card lite-card is-snug is-link">
+                        <div class="course-card-media">
+                          <img src="images/course-pottery.jpg" alt="鋪著淺色亞麻布的餐桌上，一雙手正捏著一只小陶碗，旁邊排著幾只陰乾中的小碗、海綿與修坯刀" loading="lazy" width="1600" height="900">
+                          <span class="course-card-duration num"><i class="bi bi-clock" aria-hidden="true"></i><span class="visually-hidden">總長</span>4&nbsp;小時&nbsp;20&nbsp;分</span>
+                        </div>
+                        <div class="course-card-body">
+                          <ul class="chip-list course-card-tags" aria-label="分類與難度"><li class="chip">陶藝</li><li class="chip">入門</li></ul>
+                          <h4 class="course-card-title"><a class="stretched-link" href="course.html"><span class="text-nowrap">從零開始的手捏陶｜</span><wbr>做出第一只日用食器</a></h4>
+                          <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">林</span><span class="visually-hidden">講師</span>林子謙</p>
+                          <p class="course-card-meta"><span class="rating"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">評分</span><span class="num">4.9</span></span><span class="num">1,845 人正在學</span></p>
+                          <div class="course-card-foot">
+                            <p class="price">NT$&nbsp;2,480</p>
+                            <a class="btn btn-outline-primary btn-sm course-card-trial" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                          </div>
+                        </div>
+                      </article>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                      <span class="gl-state">hover</span>
+                      <article class="course-card lite-card is-snug is-link gl-hover">
+                        <div class="course-card-media">
+                          <img src="images/course-pottery.jpg" alt="鋪著淺色亞麻布的餐桌上，一雙手正捏著一只小陶碗，旁邊排著幾只陰乾中的小碗、海綿與修坯刀" loading="lazy" width="1600" height="900">
+                          <span class="course-card-duration num"><i class="bi bi-clock" aria-hidden="true"></i><span class="visually-hidden">總長</span>4&nbsp;小時&nbsp;20&nbsp;分</span>
+                        </div>
+                        <div class="course-card-body">
+                          <ul class="chip-list course-card-tags" aria-label="分類與難度"><li class="chip">陶藝</li><li class="chip">入門</li></ul>
+                          <h4 class="course-card-title"><a class="stretched-link" href="course.html"><span class="text-nowrap">從零開始的手捏陶｜</span><wbr>做出第一只日用食器</a></h4>
+                          <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">林</span><span class="visually-hidden">講師</span>林子謙</p>
+                          <p class="course-card-meta"><span class="rating"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">評分</span><span class="num">4.9</span></span><span class="num">1,845 人正在學</span></p>
+                          <div class="course-card-foot">
+                            <p class="price">NT$&nbsp;2,480</p>
+                            <a class="btn btn-outline-primary btn-sm course-card-trial" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                          </div>
+                        </div>
+                      </article>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                      <span class="gl-state">focus（鍵盤）</span>
+                      <article class="course-card lite-card is-snug is-link gl-focus-within">
+                        <div class="course-card-media">
+                          <img src="images/course-pottery.jpg" alt="鋪著淺色亞麻布的餐桌上，一雙手正捏著一只小陶碗，旁邊排著幾只陰乾中的小碗、海綿與修坯刀" loading="lazy" width="1600" height="900">
+                          <span class="course-card-duration num"><i class="bi bi-clock" aria-hidden="true"></i><span class="visually-hidden">總長</span>4&nbsp;小時&nbsp;20&nbsp;分</span>
+                        </div>
+                        <div class="course-card-body">
+                          <ul class="chip-list course-card-tags" aria-label="分類與難度"><li class="chip">陶藝</li><li class="chip">入門</li></ul>
+                          <h4 class="course-card-title"><a class="stretched-link gl-focus" href="course.html"><span class="text-nowrap">從零開始的手捏陶｜</span><wbr>做出第一只日用食器</a></h4>
+                          <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">林</span><span class="visually-hidden">講師</span>林子謙</p>
+                          <p class="course-card-meta"><span class="rating"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">評分</span><span class="num">4.9</span></span><span class="num">1,845 人正在學</span></p>
+                          <div class="course-card-foot">
+                            <p class="price">NT$&nbsp;2,480</p>
+                            <a class="btn btn-outline-primary btn-sm course-card-trial" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                          </div>
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+                </div>
+
+                <h3 class="gl-block-title mt-5">工藝情境卡 <code>.craft-card</code></h3>
+                <p class="gl-note">4:5 圖片裱在卡片裡，作品名稱、工藝、課程數與最短完課時間都在圖片下方、所有寬度常駐顯示。hover 只換陰影、框色與作品名稱的顏色，不展開、不放大。</p>
+                <div class="gl-stage">
+                  <div class="row g-4">
+                    <div class="col-6 col-md-4">
+                      <span class="gl-state">預設</span>
+                      <a class="craft-card lite-card is-snug is-link" href="courses.html?craft=pottery">
+                        <span class="craft-card-media img-frame"><img src="images/craft-bowl.jpg" alt="淺色木餐桌上一只盛著白飯的手捏陶碗，筷子架在淺藍色的筷架上，旁邊是灰色亞麻餐巾" loading="lazy" width="1200" height="1500"></span>
+                        <span class="craft-card-body">
+                          <span class="craft-card-title">【一只每天<wbr>在用的碗】</span>
+                          <span class="craft-card-craft">陶藝手捏入門</span>
+                          <span class="craft-card-meta">
+                            <span><i class="bi bi-collection-play" aria-hidden="true"></i><span class="num">12 門課</span></span>
+                            <span><i class="bi bi-clock" aria-hidden="true"></i><span class="num">最短 4&nbsp;小時&nbsp;20&nbsp;分完課</span></span>
+                          </span>
+                        </span>
+                      </a>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <span class="gl-state">hover</span>
+                      <a class="craft-card lite-card is-snug is-link gl-hover" href="courses.html?craft=pottery">
+                        <span class="craft-card-media img-frame"><img src="images/craft-bowl.jpg" alt="淺色木餐桌上一只盛著白飯的手捏陶碗，筷子架在淺藍色的筷架上，旁邊是灰色亞麻餐巾" loading="lazy" width="1200" height="1500"></span>
+                        <span class="craft-card-body">
+                          <span class="craft-card-title">【一只每天<wbr>在用的碗】</span>
+                          <span class="craft-card-craft">陶藝手捏入門</span>
+                          <span class="craft-card-meta">
+                            <span><i class="bi bi-collection-play" aria-hidden="true"></i><span class="num">12 門課</span></span>
+                            <span><i class="bi bi-clock" aria-hidden="true"></i><span class="num">最短 4&nbsp;小時&nbsp;20&nbsp;分完課</span></span>
+                          </span>
+                        </span>
+                      </a>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <span class="gl-state">focus（鍵盤）</span>
+                      <a class="craft-card lite-card is-snug is-link gl-focus-within gl-focus" href="courses.html?craft=pottery">
+                        <span class="craft-card-media img-frame"><img src="images/craft-bowl.jpg" alt="淺色木餐桌上一只盛著白飯的手捏陶碗，筷子架在淺藍色的筷架上，旁邊是灰色亞麻餐巾" loading="lazy" width="1200" height="1500"></span>
+                        <span class="craft-card-body">
+                          <span class="craft-card-title">【一只每天<wbr>在用的碗】</span>
+                          <span class="craft-card-craft">陶藝手捏入門</span>
+                          <span class="craft-card-meta">
+                            <span><i class="bi bi-collection-play" aria-hidden="true"></i><span class="num">12 門課</span></span>
+                            <span><i class="bi bi-clock" aria-hidden="true"></i><span class="num">最短 4&nbsp;小時&nbsp;20&nbsp;分完課</span></span>
+                          </span>
+                        </span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 單元列：課程詳情（未購買、已購買）與學習頁側欄 -->
+              <div id="gl-units" class="lite-card gl-card">
+                <h3 class="gl-block-title">單元列與章節卡</h3>
+                <p class="gl-note">每一章是一張分開的白卡，章與章之間 12px（學習頁側欄 10px）。單元狀態一律是圖示＋文字（可視覺隱藏），不只靠顏色；播放中／目前單元＝冰底＋左側 3px 冰河藍條＋粗體。</p>
+                <div class="row g-4">
+                  <div class="col-12">
+                    <div class="gl-stage">
+                      <p class="gl-sub">課程詳情：未購買（試看、播放中、hover、鎖定）</p>
+                      <div class="accordion accordion-cards curriculum" id="glCurriculum">
+                        <div class="accordion-item">
+                          <h4 class="accordion-header">
+                            <button class="accordion-button chapter-btn" type="button" data-bs-toggle="collapse" data-bs-target="#glCh1" aria-expanded="true" aria-controls="glCh1">
+                              <span class="chapter-title"><span class="chapter-no">第 1 章　</span><span class="chapter-name">開始之前：認識材料與工具</span></span>
+                              <span class="chapter-meta num">4 單元 ‧ 32 分</span>
+                            </button>
+                          </h4>
+                          <div id="glCh1" class="accordion-collapse collapse show">
+                            <div class="accordion-body">
+                              <ol class="unit-list has-state">
+                                <li>
+                                  <a class="unit is-trial" href="course.html#trial">
+                                    <span class="unit-icon" aria-hidden="true"><i class="bi bi-play-circle"></i></span>
+                                    <span class="unit-no num">1-1</span>
+                                    <span class="unit-name">課程介紹：這堂課的四小時怎麼安排</span>
+                                    <span class="unit-state"><span class="tag tag-trial"><i class="bi bi-unlock" aria-hidden="true"></i>試看</span></span>
+                                    <span class="unit-time num">05:10</span>
+                                  </a>
+                                </li>
+                                <li>
+                                  <a class="unit is-playing" href="course.html#trial" aria-current="true">
+                                    <span class="unit-icon" aria-hidden="true"><i class="bi bi-play-circle-fill"></i></span>
+                                    <span class="unit-no num">1-2</span>
+                                    <span class="unit-name">認識陶土：你該買哪一種土</span>
+                                    <span class="unit-state"><span class="tag tag-playing"><i class="bi bi-play-fill" aria-hidden="true"></i>播放中</span></span>
+                                    <span class="unit-time num">08:42</span>
+                                  </a>
+                                </li>
+                                <li>
+                                  <a class="unit is-trial gl-hover" href="course.html#trial">
+                                    <span class="unit-icon" aria-hidden="true"><i class="bi bi-play-circle"></i></span>
+                                    <span class="unit-no num">1-3</span>
+                                    <span class="unit-name">新手工具清單與替代方案</span>
+                                    <span class="unit-state"><span class="tag tag-trial"><i class="bi bi-unlock" aria-hidden="true"></i>試看</span></span>
+                                    <span class="unit-time num">09:30</span>
+                                  </a>
+                                </li>
+                                <li>
+                                  <button class="unit is-locked" type="button" data-bs-toggle="modal" data-bs-target="#glLockedModal">
+                                    <span class="unit-icon"><i class="bi bi-lock" aria-hidden="true"></i><span class="visually-hidden">鎖定</span></span>
+                                    <span class="unit-no num">1-4</span>
+                                    <span class="unit-name">把餐桌變成工作檯：場地與清潔準備</span>
+                                    <span class="unit-time num">08:18</span>
+                                  </button>
+                                </li>
+                              </ol>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <p class="gl-caption">1-3 是 hover（霜藍底）；點 1-4 會開啟鎖定提示，和課程詳情一樣。</p>
+
+                      <p class="gl-sub">課程詳情：已購買（全部解鎖、已完成打勾）</p>
+                      <div class="accordion accordion-cards curriculum" id="glOwned">
+                        <div class="accordion-item">
+                          <h4 class="accordion-header">
+                            <button class="accordion-button chapter-btn" type="button" data-bs-toggle="collapse" data-bs-target="#glOwned1" aria-expanded="true" aria-controls="glOwned1">
+                              <span class="chapter-title"><span class="chapter-no">第 2 章　</span><span class="chapter-name">揉土與排氣</span></span>
+                              <span class="chapter-meta num">5 單元 ‧ 41 分</span>
+                            </button>
+                          </h4>
+                          <div id="glOwned1" class="accordion-collapse collapse show">
+                            <div class="accordion-body">
+                              <ol class="unit-list">
+                                <li>
+                                  <a class="unit is-done" href="learn.html">
+                                    <span class="unit-icon"><i class="bi bi-check-circle-fill" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                                    <span class="unit-no num">2-1</span>
+                                    <span class="unit-name">開土與分量：一只碗要多少土</span>
+                                    <span class="unit-time num">07:12</span>
+                                  </a>
+                                </li>
+                                <li>
+                                  <a class="unit is-done gl-focus" href="learn.html">
+                                    <span class="unit-icon"><i class="bi bi-check-circle-fill" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                                    <span class="unit-no num">2-2</span>
+                                    <span class="unit-name">菊花揉：把空氣推出來（focus）</span>
+                                    <span class="unit-time num">09:48</span>
+                                  </a>
+                                </li>
+                              </ol>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="gl-stage">
+                      <p class="gl-sub">學習頁側欄：一疊分開的輕卡片</p>
+                      <div class="row g-4 align-items-start">
+                        <div class="col-md-7 col-xl-6">
+                          <div class="d-flex flex-column gap-3">
+                            <section class="lite-card learn-progress" aria-labelledby="glProgressTitle">
+                              <div class="learn-progress-head">
+                                <h4 id="glProgressTitle" class="learn-side-title">你的學習進度</h4>
+                                <p class="learn-progress-value" aria-hidden="true">50%</p>
+                              </div>
+                              <div class="progress" role="progressbar" aria-labelledby="glProgressTitle" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-valuetext="已完成 14／28 單元，50%">
+                                <div class="progress-bar" style="width: 50%"></div>
+                              </div>
+                              <p class="learn-progress-text">
+                                <span class="num">已完成 14／28 單元 ‧ 50%</span>
+                                <span class="num">預估還需 2 小時 10 分</span>
+                              </p>
+                            </section>
+                            <div class="accordion accordion-cards is-compact" id="glChapters">
+                              <div class="accordion-item">
+                                <h4 class="accordion-header">
+                                  <button class="accordion-button chapter-btn collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#glLch1" aria-expanded="false" aria-controls="glLch1">
+                                    <span class="chapter-state is-done"><i class="bi bi-check-circle-fill" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                                    <span class="chapter-title"><span class="chapter-no">第 1 章　</span><span class="chapter-name">開始之前：認識材料與工具</span></span>
+                                    <span class="chapter-meta num">4／4</span>
+                                  </button>
+                                </h4>
+                                <div id="glLch1" class="accordion-collapse collapse"><div class="accordion-body"><p class="text-note mb-0 px-3 pb-2">展開後是 1-1～1-4，全部已完成。</p></div></div>
+                              </div>
+                              <div class="accordion-item">
+                                <h4 class="accordion-header">
+                                  <button class="accordion-button chapter-btn" type="button" data-bs-toggle="collapse" data-bs-target="#glLch3" aria-expanded="true" aria-controls="glLch3">
+                                    <span class="chapter-state is-current"><i class="bi bi-play-circle-fill" aria-hidden="true"></i><span class="visually-hidden">目前章節</span></span>
+                                    <span class="chapter-title"><span class="chapter-no">第 3 章　</span><span class="chapter-name">手捏成形：從土球到碗</span></span>
+                                    <span class="chapter-meta num">1／6</span>
+                                  </button>
+                                </h4>
+                                <div id="glLch3" class="accordion-collapse collapse show">
+                                  <div class="accordion-body">
+                                    <ol class="unit-list">
+                                      <li>
+                                        <a class="unit is-done" href="learn.html">
+                                          <span class="unit-icon"><i class="bi bi-check-circle-fill" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+                                          <span class="unit-no num">3-1</span>
+                                          <span class="unit-name">土球該多大</span>
+                                          <span class="unit-time num">08:06</span>
+                                        </a>
+                                      </li>
+                                      <li>
+                                        <a class="unit is-current" href="learn.html" aria-current="true">
+                                          <span class="unit-icon"><i class="bi bi-play-circle-fill" aria-hidden="true"></i><span class="visually-hidden">播放中</span></span>
+                                          <span class="unit-no num">3-2</span>
+                                          <span class="unit-name">從土球到碗：拇指下壓的角度</span>
+                                          <span class="unit-time num">11:24</span>
+                                        </a>
+                                      </li>
+                                      <li>
+                                        <a class="unit is-todo" href="learn.html">
+                                          <span class="unit-icon"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span>
+                                          <span class="unit-no num">3-3</span>
+                                          <span class="unit-name">修整碗口的三種手勢</span>
+                                          <span class="unit-time num">09:52</span>
+                                        </a>
+                                      </li>
+                                    </ol>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="accordion-item">
+                                <h4 class="accordion-header">
+                                  <button class="accordion-button chapter-btn collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#glLch4" aria-expanded="false" aria-controls="glLch4">
+                                    <span class="chapter-state is-todo"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span>
+                                    <span class="chapter-title"><span class="chapter-no">第 4 章　</span><span class="chapter-name">修坯：讓厚薄一致</span></span>
+                                    <span class="chapter-meta num">0／5</span>
+                                  </button>
+                                </h4>
+                                <div id="glLch4" class="accordion-collapse collapse"><div class="accordion-body"><p class="text-note mb-0 px-3 pb-2">展開後是 4-1～4-5，都還沒開始。</p></div></div>
+                              </div>
+                              <div class="accordion-item">
+                                <h4 class="accordion-header">
+                                  <button class="accordion-button chapter-btn collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#glLch5" aria-expanded="false" aria-controls="glLch5">
+                                    <span class="chapter-state is-partial"><i class="bi bi-circle-half" aria-hidden="true"></i><span class="visually-hidden">進行中</span></span>
+                                    <span class="chapter-title"><span class="chapter-no">第 5 章　</span><span class="chapter-name">上釉與色彩選擇</span></span>
+                                    <span class="chapter-meta num">2／4</span>
+                                  </button>
+                                </h4>
+                                <div id="glLch5" class="accordion-collapse collapse"><div class="accordion-body"><p class="text-note mb-0 px-3 pb-2">展開後是 5-1～5-4，完成 2 個。</p></div></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-5 col-xl-6">
+                          <ul class="gl-list">
+                            <li>進度卡：標題、Manrope 百分比、進度條、完成單元數與預估時間。</li>
+                            <li>章節列：已完成＝松綠實心勾、目前章節＝冰河藍播放圖示（預設展開）、部分完成＝半圓＋「2／4」、未開始＝空心圓。</li>
+                            <li>單元列：已完成＝勾、播放中＝冰底＋左側 3px 冰河藍條＋粗體（<code>aria-current</code>）、未開始＝空心圓。</li>
+                            <li>卡與卡之間 10～12px；≥ 992px sticky 在右欄，&lt; 992px 變成底部抽屜。</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 徽章 -->
+              <div class="lite-card gl-card">
+                <h3 class="gl-block-title">狀態標籤 <code>.tag</code></h3>
+                <p class="gl-note">膠囊＋圖示＋文字；淡底配同色字，再用實線、虛線框區分，不只靠顏色。</p>
+                <div class="gl-stage">
+                  <p class="gl-sub">課程與學習</p>
+                  <div class="d-flex flex-wrap gap-2">
+                    <span class="tag tag-trial"><i class="bi bi-unlock" aria-hidden="true"></i>試看</span>
+                    <span class="tag tag-lock"><i class="bi bi-lock" aria-hidden="true"></i>鎖定</span>
+                    <span class="tag tag-playing"><i class="bi bi-play-fill" aria-hidden="true"></i>播放中</span>
+                    <span class="tag tag-learning"><i class="bi bi-play-circle" aria-hidden="true"></i>學習中</span>
+                    <span class="tag tag-done"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>已完課</span>
+                    <span class="tag tag-progress"><i class="bi bi-hourglass-split" aria-hidden="true"></i>學習進度 78%</span>
+                  </div>
+                  <p class="gl-sub">訂單</p>
+                  <div class="d-flex flex-wrap gap-2">
+                    <span class="tag tag-paid"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>已付款</span>
+                    <span class="tag tag-refunding"><i class="bi bi-hourglass-split" aria-hidden="true"></i>退費處理中</span>
+                    <span class="tag tag-failed"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>付款失敗</span>
+                    <span class="tag tag-refunded"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>已退費</span>
+                  </div>
+                  <p class="gl-sub">講師課程（只在本頁）</p>
+                  <div class="d-flex flex-wrap gap-2">
+                    <span class="tag tag-draft"><i class="bi bi-pencil" aria-hidden="true"></i>草稿</span>
+                    <span class="tag tag-live"><i class="bi bi-broadcast" aria-hidden="true"></i>已上架</span>
+                    <span class="tag tag-off"><i class="bi bi-slash-circle" aria-hidden="true"></i>已下架</span>
+                  </div>
+                  <p class="gl-sub">分類與難度 <code>.chip</code>、時長標籤</p>
+                  <div class="d-flex flex-wrap align-items-center gap-3">
+                    <ul class="chip-list mb-0" aria-label="分類與難度"><li class="chip">陶藝</li><li class="chip">入門</li></ul>
+                    <span class="course-card-duration num gl-static"><i class="bi bi-clock" aria-hidden="true"></i><span class="visually-hidden">總長</span>4&nbsp;小時&nbsp;20&nbsp;分</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 進度、評價、星等 -->
+              <div class="lite-card gl-card">
+                <h3 class="gl-block-title">進度、評價、星等</h3>
+                <p class="gl-note">6px 膠囊進度條：軌道 <code>$track</code>、填色冰河藍（4.81:1），旁邊一定有文字。載入時從 0 長到目前值一次（.6s），<code>prefers-reduced-motion</code> 時直接到位。已完課的進度條改松綠（對軌道 4.54:1）。</p>
+                <div class="gl-stage">
+                  <div class="row g-4">
+                    <div class="col-md-6">
+                      <span class="gl-state">學習中（我的課程的精簡版）</span>
+                      <div class="mc-card-progress">
+                        <div class="progress" role="progressbar" aria-label="示範：學習進度" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-valuetext="已完成 14／28 單元，50%">
+                          <div class="progress-bar" style="width: 50%"></div>
+                        </div>
+                        <p class="progress-text num">已完成 14／28 單元 ‧ 50%</p>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <span class="gl-state">已完課</span>
+                      <div class="mc-card is-done">
+                        <div class="mc-card-progress">
+                          <div class="progress" role="progressbar" aria-label="示範：已完課" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-valuetext="已完成 24／24 單元，100%">
+                            <div class="progress-bar" style="width: 100%"></div>
+                          </div>
+                          <p class="progress-text num">已完成 24／24 單元 ‧ 100%</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <span class="gl-state">評價總覽（課程詳情）</span>
+                      <div class="lite-card rating-summary">
+                        <div>
+                          <p class="rating-score"><span class="visually-hidden">平均</span>4.9</p>
+                          <span class="stars" role="img" aria-label="平均 4.9 顆星"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+                          <p class="rating-count num">312 則評價</p>
+                        </div>
+                        <ul class="rating-bars" aria-label="星等分佈">
+                          <li><span class="rating-bars-label num">5 星</span><span class="progress" role="progressbar" aria-label="5 星" aria-valuenow="91" aria-valuemin="0" aria-valuemax="100" aria-valuetext="284 則，91%"><span class="progress-bar" style="width: 91%"></span></span><span class="rating-bars-value num">284</span></li>
+                          <li><span class="rating-bars-label num">4 星</span><span class="progress" role="progressbar" aria-label="4 星" aria-valuenow="7" aria-valuemin="0" aria-valuemax="100" aria-valuetext="22 則，7%"><span class="progress-bar" style="width: 7%"></span></span><span class="rating-bars-value num">22</span></li>
+                          <li><span class="rating-bars-label num">3 星</span><span class="progress" role="progressbar" aria-label="3 星" aria-valuenow="2" aria-valuemin="0" aria-valuemax="100" aria-valuetext="6 則，2%"><span class="progress-bar" style="width: 2%"></span></span><span class="rating-bars-value num">6</span></li>
+                          <li><span class="rating-bars-label num">2 星</span><span class="progress" role="progressbar" aria-label="2 星" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-valuetext="0 則，0%"><span class="progress-bar" style="width: 0%"></span></span><span class="rating-bars-value num">0</span></li>
+                          <li><span class="rating-bars-label num">1 星</span><span class="progress" role="progressbar" aria-label="1 星" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-valuetext="0 則，0%"><span class="progress-bar" style="width: 0%"></span></span><span class="rating-bars-value num">0</span></li>
+                        </ul>
+                      </div>
+                      <p class="gl-caption">星星用琥珀色（白底 5.52:1），旁邊一定有數字；單則評價的星等加 <code>role="img"</code> 與 <code>aria-label</code>。</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 購買卡 -->
+              <div class="lite-card gl-card">
+                <h3 class="gl-block-title">購買卡 <code>.purchase-card</code></h3>
+                <p class="gl-note">價格 → 主要按鈕「立即購買，開始上課」→ 次要按鈕「加入願望清單」→ 購買包含 → 霜藍安心提示。課程詳情 ≥ 992px 時 sticky（<code>top: var(--sticky-top)</code>），陰影用 <code>$shadow-float</code>。已購買時只留「繼續上課」。</p>
+                <div class="gl-stage">
+                  <div class="row g-4 align-items-start">
+                    <div class="col-md-6">
+                      <span class="gl-state">未購買</span>
+                      <div class="purchase-card lite-card">
+                        <p class="purchase-price price">NT$&nbsp;2,480</p>
+                        <div class="purchase-actions">
+                          <button class="btn btn-primary btn-lg" type="button" data-bs-toggle="modal" data-bs-target="#authModal" data-auth-context="purchase">立即購買，開始上課</button>
+                          <button class="btn btn-outline-primary wishlist-btn" type="button" data-bs-toggle="button" aria-pressed="false">
+                            <span class="is-off"><i class="bi bi-heart" aria-hidden="true"></i>加入願望清單</span>
+                            <span class="is-on"><i class="bi bi-heart-fill" aria-hidden="true"></i>已加入願望清單</span>
+                          </button>
+                        </div>
+                        <h4 class="purchase-includes-title">購買包含</h4>
+                        <ul class="purchase-includes">
+                          <li><span class="icon-circle is-sm" aria-hidden="true"><i class="bi bi-collection-play"></i></span>28 支教學影片</li>
+                          <li><span class="icon-circle is-sm" aria-hidden="true"><i class="bi bi-infinity"></i></span>永久觀看</li>
+                          <li><span class="icon-circle is-sm" aria-hidden="true"><i class="bi bi-chat-dots"></i></span>課程問答區</li>
+                          <li><span class="icon-circle is-sm" aria-hidden="true"><i class="bi bi-file-earmark-arrow-down"></i></span>可下載材料清單 PDF</li>
+                        </ul>
+                        <p class="purchase-note"><i class="bi bi-shield-check" aria-hidden="true"></i><span>7 天內觀看未逾 20%，可全額退費。</span></p>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <span class="gl-state">已購買</span>
+                      <div class="purchase-card lite-card">
+                        <div class="purchase-actions">
+                          <a class="btn btn-primary btn-lg" href="learn.html"><i class="bi bi-play-fill" aria-hidden="true"></i>繼續上課</a>
+                        </div>
+                        <h4 class="purchase-includes-title">購買包含</h4>
+                        <ul class="purchase-includes">
+                          <li><span class="icon-circle is-sm" aria-hidden="true"><i class="bi bi-collection-play"></i></span>28 支教學影片</li>
+                          <li><span class="icon-circle is-sm" aria-hidden="true"><i class="bi bi-infinity"></i></span>永久觀看</li>
+                          <li><span class="icon-circle is-sm" aria-hidden="true"><i class="bi bi-chat-dots"></i></span>課程問答區</li>
+                          <li><span class="icon-circle is-sm" aria-hidden="true"><i class="bi bi-file-earmark-arrow-down"></i></span>可下載材料清單 PDF</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 播放器 -->
+              <div class="lite-card gl-card">
+                <h3 class="gl-block-title">播放器 <code>.player</code></h3>
+                <p class="gl-note">白卡框（窗框）裡的深色 16:9 播放器。控制列常駐顯示，不靠 hover 才出現：播放／暫停、時間、進度條（已播放、緩衝、已觀看位置標記、播放頭）、音量、播放速度、字幕、全螢幕。&lt; 576px 收起音量與播放速度。</p>
+                <div class="row g-4">
+                  <div class="col-12">
+                    <span class="gl-state">播放中＋續看提示（學習頁預設）</span>
+                    <div class="player-frame">
+                      <div class="player is-playing ratio ratio-16x9">
+                        <img class="player-media" src="images/player-learn.jpg" alt="影片畫面：淺色木桌上一團陶土，職人的雙手拇指正往下壓、開出碗的雛形，手指扶著碗的外側" loading="lazy" width="1920" height="1080">
+                        <div class="player-ui">
+                          <div class="player-controls">
+                            <div class="player-progress-row">
+                              <div class="player-progress" role="slider" tabindex="0" aria-label="影片進度" aria-valuemin="0" aria-valuemax="684" aria-valuenow="438" aria-valuetext="07:18 / 11:24" style="--played: 64%; --buffered: 78%; --mark: 64%">
+                                <span class="player-progress-buffer"></span>
+                                <span class="player-progress-played"></span>
+                                <button class="player-progress-mark" type="button" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="上次看到 07:18" aria-label="上次看到 07:18"></button>
+                                <span class="player-progress-head"></span>
+                              </div>
+                            </div>
+                            <button class="player-btn" type="button" aria-label="暫停"><i class="bi bi-pause-fill" aria-hidden="true"></i></button>
+                            <span class="player-time num">07:18 / 11:24</span>
+                            <div class="player-volume">
+                              <button class="player-btn" type="button" aria-label="靜音"><i class="bi bi-volume-up" aria-hidden="true"></i></button>
+                              <span class="player-volume-bar" role="slider" tabindex="0" aria-label="音量" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70"></span>
+                            </div>
+                            <div class="dropdown dropup player-speed-wrap player-right">
+                              <button class="player-btn player-speed" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="播放速度">1x</button>
+                              <ul class="dropdown-menu dropdown-menu-end">
+                                <li><button class="dropdown-item" type="button">0.75x</button></li>
+                                <li><button class="dropdown-item active" type="button" aria-current="true">1x<i class="bi bi-check-lg" aria-hidden="true"></i></button></li>
+                                <li><button class="dropdown-item" type="button">1.25x</button></li>
+                                <li><button class="dropdown-item" type="button">1.5x</button></li>
+                                <li><button class="dropdown-item" type="button">2x</button></li>
+                              </ul>
+                            </div>
+                            <div class="dropdown dropup">
+                              <button class="player-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="字幕"><i class="bi bi-badge-cc-fill" aria-hidden="true"></i></button>
+                              <ul class="dropdown-menu dropdown-menu-end">
+                                <li><button class="dropdown-item active" type="button" aria-current="true">中文（繁體）<i class="bi bi-check-lg" aria-hidden="true"></i></button></li>
+                                <li><button class="dropdown-item" type="button">關閉</button></li>
+                              </ul>
+                            </div>
+                            <button class="player-btn" type="button" aria-label="全螢幕"><i class="bi bi-fullscreen" aria-hidden="true"></i></button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="toast show player-toast" role="status" aria-live="polite" aria-atomic="true">
+                        <div class="toast-body">
+                          <i class="bi bi-clock-history toast-icon" aria-hidden="true"></i>
+                          <span class="toast-msg">
+                            <span>已為你跳到上次觀看的 07:18，</span>
+                            <button class="btn btn-text btn-sm" type="button">從頭播放</button>
+                          </span>
+                          <button class="btn-close" type="button" data-bs-dismiss="toast" aria-label="關閉"></button>
+                        </div>
+                      </div>
+                    </div>
+                    <p class="gl-caption">進度條上比播放頭高的冰色刻度是已觀看位置（tooltip「上次看到 07:18」）；續看提示 ≥ 768px 疊在播放器左上，以下接在播放器下方，可以關掉。</p>
+                  </div>
+                  <div class="col-md-6">
+                    <span class="gl-state">未播放（課程詳情預設）</span>
+                    <div class="player-frame">
+                      <div class="player is-paused ratio ratio-16x9">
+                        <img class="player-media" src="images/player-trial.jpg" alt="試看影片畫面：淺色木桌上並排著紅土、白土與灰色粗陶土，職人的手正捏開一塊粗陶土查看斷面" loading="lazy" width="1920" height="1080">
+                        <div class="player-ui">
+                          <p class="player-caption"><i class="bi bi-play-fill" aria-hidden="true"></i><span>免費試看｜第 1 章 ‧ 認識陶土：你該買哪一種土（08:42）</span></p>
+                          <button class="player-bigplay" type="button" aria-label="播放"><i class="bi bi-play-fill" aria-hidden="true"></i></button>
+                          <div class="player-controls">
+                            <div class="player-progress-row">
+                              <div class="player-progress" role="slider" tabindex="0" aria-label="影片進度" aria-valuemin="0" aria-valuemax="522" aria-valuenow="0" aria-valuetext="00:00 / 08:42" style="--played: 0%; --buffered: 6%">
+                                <span class="player-progress-buffer"></span>
+                                <span class="player-progress-played"></span>
+                                <span class="player-progress-head"></span>
+                              </div>
+                            </div>
+                            <button class="player-btn" type="button" aria-label="播放"><i class="bi bi-play-fill" aria-hidden="true"></i></button>
+                            <span class="player-time num">00:00 / 08:42</span>
+                            <button class="player-btn player-right" type="button" aria-label="全螢幕"><i class="bi bi-fullscreen" aria-hidden="true"></i></button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <span class="gl-state">載入中（只在本頁）</span>
+                    <div class="player-frame">
+                      <div class="player ratio ratio-16x9">
+                        <img class="player-media" src="images/player-trial.jpg" alt="" loading="lazy" width="1920" height="1080">
+                        <div class="gl-player-loading" role="status">
+                          <span class="spinner-border" aria-hidden="true"></span>
+                          <span class="visually-hidden">影片載入中</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <span class="gl-state">載入失敗（學習頁狀態示意）</span>
+                    <div class="player-frame">
+                      <div class="player player-error-box">
+                        <div class="player-error" role="alert">
+                          <span class="player-error-icon" aria-hidden="true"><i class="bi bi-exclamation-lg"></i></span>
+                          <p>影片暫時無法播放，請檢查網路後重新整理。</p>
+                          <button class="btn btn-on-dark" type="button"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i>重新載入</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <span class="gl-state">播放速度選單（打開時）</span>
+                    <div class="player gl-player-strip">
+                      <button class="player-btn player-speed" type="button" aria-label="播放速度">1x</button>
+                      <ul class="dropdown-menu gl-dropdown-open" aria-label="示範：播放速度選單">
+                        <li><button class="dropdown-item" type="button">0.75x</button></li>
+                        <li><button class="dropdown-item active" type="button" aria-current="true">1x<i class="bi bi-check-lg" aria-hidden="true"></i></button></li>
+                        <li><button class="dropdown-item" type="button">1.25x</button></li>
+                        <li><button class="dropdown-item" type="button">1.5x</button></li>
+                        <li><button class="dropdown-item" type="button">2x</button></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 對話框、空狀態、提示框 -->
+              <div class="lite-card gl-card">
+                <h3 class="gl-block-title">對話框、空狀態、提示框</h3>
+                <p class="gl-note">對話框是 16px 圓角白卡，標題列沒有分隔線，層級只靠留白。下面兩個是靜態畫出來的樣子；按鈕會開啟真的對話框。</p>
+                <div class="gl-stage">
+                  <div class="row g-4 align-items-start">
+                    <div class="col-lg-7">
+                      <span class="gl-state">登入對話框：從「立即購買，開始上課」開啟</span>
+                      <div class="modal gl-modal-static">
+                        <div class="modal-dialog">
+                          <div class="modal-content auth-modal">
+                            <div class="modal-header">
+                              <p class="modal-title h4">登入 Craftory</p>
+                              <button type="button" class="btn-close" aria-label="關閉（示意）"></button>
+                            </div>
+                            <div class="modal-body">
+                              <p class="auth-notice"><i class="bi bi-info-circle" aria-hidden="true"></i><span>登入後就能開始上課，馬上註冊只要 30 秒。</span></p>
+                              <div class="mb-3">
+                                <label class="form-label" for="glAuthEmail">電子郵件</label>
+                                <input id="glAuthEmail" class="form-control" type="email" placeholder="mail@example.com" autocomplete="off">
+                              </div>
+                              <div class="mb-2">
+                                <label class="form-label" for="glAuthPassword">密碼</label>
+                                <input id="glAuthPassword" class="form-control" type="password" placeholder="至少 8 碼" autocomplete="off">
+                              </div>
+                              <p class="mb-4"><a class="auth-link">忘記密碼？</a></p>
+                              <button class="btn btn-primary w-100" type="button">登入並開始上課</button>
+                              <p class="auth-footer">還沒有帳號？<a class="auth-link" href="register.html">立即註冊</a></p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-5">
+                      <span class="gl-state">鎖定單元提示</span>
+                      <div class="modal gl-modal-static">
+                        <div class="modal-dialog modal-sm">
+                          <div class="modal-content locked-dialog">
+                            <div class="modal-header">
+                              <button type="button" class="btn-close ms-auto" aria-label="關閉（示意）"></button>
+                            </div>
+                            <div class="modal-body">
+                              <span class="locked-icon" aria-hidden="true"><i class="bi bi-lock"></i></span>
+                              <p class="locked-text">這個單元需要購買課程後觀看。</p>
+                              <a class="btn btn-primary w-100" href="course.html#purchase">看看課程包含什麼</a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <p class="gl-sub mt-4">開啟真的對話框</p>
+                      <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#authModal" data-auth-context="purchase">登入（購買情境）</button>
+                        <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#glLockedModal">鎖定提示</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p class="gl-sub">空狀態 <code>.empty-state</code>：冰圓底圖示 → 一句說明 → 一個動作</p>
+                  <div class="row g-4">
+                    <div class="col-md-6">
+                      <div class="lite-card h-100">
+                        <div class="empty-state">
+                          <span class="icon-circle" aria-hidden="true"><i class="bi bi-journal-bookmark"></i></span>
+                          <p class="empty-state-text">你還沒有進行中的課程，先從一支免費試看開始。</p>
+                          <a class="btn btn-primary" href="courses.html">探索課程</a>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="lite-card h-100">
+                        <div class="empty-state">
+                          <span class="icon-circle" aria-hidden="true"><i class="bi bi-chat-dots"></i></span>
+                          <p class="empty-state-text">這個單元還沒有人提問，當第一個吧。</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p class="gl-sub">提示框 <code>.note-box</code>：圖示＋文字（錯誤多 1px 鐵鏽紅框）；文字取自付款結果、購買紀錄、購買課程</p>
+                  <div class="row g-3">
+                    <div class="col-md-6"><div class="note-box note-info"><i class="bi bi-info-circle" aria-hidden="true"></i><p>收據與發票已寄到 koen.hsu@<wbr>example.com，這門課也已經加進「我的課程」。</p></div></div>
+                    <div class="col-md-6"><div class="note-box note-success"><i class="bi bi-check-circle" aria-hidden="true"></i><p><span class="num">2026/10/21</span> 已全額退回，發票已作廢。</p></div></div>
+                    <div class="col-md-6"><div class="note-box note-warning"><i class="bi bi-hourglass-split" aria-hidden="true"></i><p>退費申請已送出，款項會在 3 到 5 個工作天內退回 LINE Pay。退費完成後，這門課會從「我的課程」移除。</p></div></div>
+                    <div class="col-md-6"><div class="note-box note-danger checkout-demo-error"><i class="bi bi-exclamation-circle" aria-hidden="true"></i><div><p><strong>剛才的付款沒有完成</strong>發卡銀行沒有核准這筆交易，這次沒有扣款。可以確認額度後再試一次，或改用 LINE Pay、Apple Pay 付款。</p></div></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 講師課程狀態卡 -->
+              <div class="lite-card gl-card">
+                <h3 class="gl-block-title">講師課程狀態卡（InstructorStatusCard）</h3>
+                <p class="gl-note">只在本頁出現的元件示意，與前台課程的上架狀態無關。三種狀態靠標籤文字、圖示與卡片外框區分：草稿＝虛線框、已上架＝一般白卡、已下架＝霜藍底不浮起。</p>
+                <div class="gl-stage">
+                  <div class="row g-4">
+                    <div class="col-lg-4">
+                      <article class="lite-card instructor-status is-draft" aria-labelledby="glIs1">
+                        <span class="tag tag-draft"><i class="bi bi-pencil" aria-hidden="true"></i>草稿</span>
+                        <h4 id="glIs1" class="instructor-status-name"><span class="text-nowrap">植鞣皮革入門｜</span><wbr>縫一只用十年的卡夾</h4>
+                        <p class="instructor-status-meta"><span class="num">12 個單元</span><span>學生 —</span></p>
+                        <p class="instructor-status-msg">這門課還缺少課程封面與售價，補齊後就能上架。</p>
+                      </article>
+                    </div>
+                    <div class="col-lg-4">
+                      <article class="lite-card instructor-status" aria-labelledby="glIs2">
+                        <span class="tag tag-live"><i class="bi bi-broadcast" aria-hidden="true"></i>已上架</span>
+                        <h4 id="glIs2" class="instructor-status-name"><span class="text-nowrap">從零開始的手捏陶｜</span><wbr>做出第一只日用食器</h4>
+                        <p class="instructor-status-meta"><span class="num">28 個單元</span><span class="num">1,845 位學生</span></p>
+                      </article>
+                    </div>
+                    <div class="col-lg-4">
+                      <article class="lite-card instructor-status is-off" aria-labelledby="glIs3">
+                        <span class="tag tag-off"><i class="bi bi-slash-circle" aria-hidden="true"></i>已下架</span>
+                        <h4 id="glIs3" class="instructor-status-name"><span class="text-nowrap">銀飾鍛敲入門｜</span><wbr>從一條銀線到一只戒指</h4>
+                        <p class="instructor-status-meta"><span class="num">18 個單元</span><span class="num">428 位學生</span></p>
+                        <p class="instructor-status-msg">這門課目前已下架，已購買的學生仍可繼續觀看。</p>
+                        <button class="btn btn-outline-primary btn-sm" type="button">重新上架</button>
+                      </article>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ==================== 狀態與空畫面文案 ==================== -->
+            <section id="gl-notion" class="gl-section" aria-labelledby="gl-notion-title">
+              <div class="gl-section-head">
+                <h2 id="gl-notion-title">狀態與空畫面文案</h2>
+                <p class="section-lead">Notion 規定的 7 則狀態文案、對應的元件，以及它出現在哪些頁面。元件的樣子見上方「元件狀態規範」。</p>
+              </div>
+              <div class="lite-card gl-card">
+                <div class="gl-notion">
+                  <div>
+                    <p class="gl-notion-title"><span class="gl-notion-no">1</span>未登入點擊購買</p>
+                    <p class="gl-caption mt-0">元件：登入對話框的 <code>.auth-notice</code>（冰底＋資訊圖示），由觸發按鈕的 <code>data-auth-context="purchase"</code> 打開；按鈕文字換成「登入並開始上課」，送出到購買課程。</p>
+                  </div>
+                  <div>
+                    <p class="gl-notion-copy">登入後就能開始上課，馬上註冊只要 30 秒。</p>
+                    <p class="text-note mb-0">出現在：課程詳情（購買卡「立即購買，開始上課」，實際可點）、註冊（「已經有帳號？登入」與欄位錯誤示意裡的「登入」，同樣帶購買情境）、本頁</p>
+                  </div>
+                </div>
+                <div class="gl-notion">
+                  <div>
+                    <p class="gl-notion-title"><span class="gl-notion-no">2</span>未購買點擊鎖定單元</p>
+                    <p class="gl-caption mt-0">元件：<code>.locked-dialog</code>（冰圓底鎖頭 → 文案 → 主要按鈕，關閉後捲到購買卡）。按鈕：看看課程包含什麼。</p>
+                  </div>
+                  <div>
+                    <p class="gl-notion-copy">這個單元需要購買課程後觀看。</p>
+                    <p class="text-note mb-0">出現在：課程詳情（1-4 之後的鎖定單元實際可點，另有狀態示意）、本頁</p>
+                  </div>
+                </div>
+                <div class="gl-notion">
+                  <div>
+                    <p class="gl-notion-title"><span class="gl-notion-no">3</span>我的課程為空</p>
+                    <p class="gl-caption mt-0">元件：白卡裡的 <code>.empty-state</code>（書籤圖示）。按鈕：探索課程 → 課程列表。</p>
+                  </div>
+                  <div>
+                    <p class="gl-notion-copy">你還沒有進行中的課程，先從一支免費試看開始。</p>
+                    <p class="text-note mb-0">出現在：我的課程（狀態示意：還沒有任何課程時，統計與分頁籤都不顯示）、學習頁（狀態示意）、本頁</p>
+                  </div>
+                </div>
+                <div class="gl-notion">
+                  <div>
+                    <p class="gl-notion-title"><span class="gl-notion-no">4</span>課程列表篩選無結果</p>
+                    <p class="gl-caption mt-0">元件：可移除的條件標籤 <code>.filter-chip</code>＋「共 0 門課程」＋ <code>.empty-state</code>（搜尋圖示）＋低強調按鈕「清除篩選」。</p>
+                  </div>
+                  <div>
+                    <div class="lite-card mb-2">
+                      <div class="courses-empty-head">
+                        <ul class="filter-chips" aria-label="已選條件（示意）">
+                          <li><button class="filter-chip" type="button" aria-label="移除條件：蠟燭香氛">蠟燭香氛<i class="bi bi-x" aria-hidden="true"></i></button></li>
+                          <li><button class="filter-chip" type="button" aria-label="移除條件：進階">進階<i class="bi bi-x" aria-hidden="true"></i></button></li>
+                          <li><button class="filter-chip num" type="button" aria-label="移除條件：NT$ 3,000 以上">NT$&nbsp;3,000 以上<i class="bi bi-x" aria-hidden="true"></i></button></li>
+                        </ul>
+                        <p class="courses-count">共 <span class="num">0</span> 門課程</p>
+                      </div>
+                      <div class="empty-state">
+                        <span class="icon-circle" aria-hidden="true"><i class="bi bi-search"></i></span>
+                        <p class="empty-state-text">這個條件下目前沒有課程，試著放寬難度或價格範圍。</p>
+                        <button class="btn btn-outline-secondary" type="button">清除篩選</button>
+                      </div>
+                    </div>
+                    <p class="text-note mb-0">出現在：課程列表（狀態示意：篩選沒有結果時）、本頁</p>
+                  </div>
+                </div>
+                <div class="gl-notion">
+                  <div>
+                    <p class="gl-notion-title"><span class="gl-notion-no">5</span>影片載入失敗</p>
+                    <p class="gl-caption mt-0">元件：播放器大小的 <code>.player-error</code>（<code>$player-warn</code> 驚嘆號圓圈 → 文案 → <code>.btn-on-dark</code>），取代影片與控制列。按鈕：重新載入。</p>
+                  </div>
+                  <div>
+                    <p class="gl-notion-copy">影片暫時無法播放，請檢查網路後重新整理。</p>
+                    <p class="text-note mb-0">出現在：學習頁（狀態示意：影片載入失敗時）、本頁</p>
+                  </div>
+                </div>
+                <div class="gl-notion">
+                  <div>
+                    <p class="gl-notion-title"><span class="gl-notion-no">6</span>講師課程草稿未完成</p>
+                    <p class="gl-caption mt-0">元件：講師課程狀態卡 <code>.instructor-status.is-draft</code>（虛線框＋琥珀草稿標籤），沒有按鈕。</p>
+                  </div>
+                  <div>
+                    <p class="gl-notion-copy">這門課還缺少課程封面與售價，補齊後就能上架。</p>
+                    <p class="text-note mb-0">出現在：只在本頁（設計稿不做講師頁）</p>
+                  </div>
+                </div>
+                <div class="gl-notion">
+                  <div>
+                    <p class="gl-notion-title"><span class="gl-notion-no">7</span>講師課程已下架</p>
+                    <p class="gl-caption mt-0">元件：講師課程狀態卡 <code>.instructor-status.is-off</code>（霜藍底、不浮起＋已下架標籤）。按鈕：重新上架（次要）。</p>
+                  </div>
+                  <div>
+                    <p class="gl-notion-copy">這門課目前已下架，已購買的學生仍可繼續觀看。</p>
+                    <p class="text-note mb-0">出現在：只在本頁（設計稿不做講師頁）</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="lite-card gl-card">
+                <h3 class="gl-block-title">其他動態文案</h3>
+                <p class="gl-note">不在 Notion 的 7 則裡，但同樣是「狀態出現時才看到」的文字，一併列出位置。</p>
+                <div class="row g-4">
+                  <div class="col-md-6">
+                    <span class="gl-state">完成一章（學習頁狀態示意）</span>
+                    <div class="lite-card chapter-done-note" role="status">
+                      <span class="icon-circle is-success" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+                      <p>第 2 章完成了，土已經揉好，接下來進入最有趣的成形。</p>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <span class="gl-state">全課完成（學習頁狀態示意）</span>
+                    <div class="lite-card course-complete">
+                      <p class="course-complete-text"><span class="icon-circle" aria-hidden="true"><i class="bi bi-stars"></i></span><span>你完成了整門課，把你的第一只碗拍下來吧</span></p>
+                      <div>
+                        <div class="progress" role="progressbar" aria-label="示範：整門課完成度" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-valuetext="已完成 28／28 單元，100%">
+                          <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                        <p class="progress-text num">已完成 28／28 單元 ‧ 100%</p>
+                      </div>
+                      <a class="btn btn-primary course-complete-btn" href="learn.html"><i class="bi bi-camera" aria-hidden="true"></i>上傳我的作品</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="table-responsive mt-4">
+                  <table class="table gl-table is-stack">
+                    <thead><tr><th scope="col">文案</th><th scope="col">元件</th><th scope="col">出現在</th></tr></thead>
+                    <tbody>
+                      <tr><td>已為你跳到上次觀看的 07:18，從頭播放</td><td><code>.player-toast</code></td><td>學習頁（預設顯示）</td></tr>
+                      <tr><td>這個單元還沒有人提問，當第一個吧。</td><td><code>.empty-state</code></td><td>學習頁「課程問答」分頁</td></tr>
+                      <tr><td>7 天內觀看未逾 20%，可全額退費。</td><td><code>.purchase-note</code></td><td>課程詳情、註冊、購買課程、付款結果</td></tr>
+                      <tr><td>7 天不滿意退費（規則與補充）</td><td><code>.orders-refund</code></td><td>購買紀錄</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <!-- ==================== 動態與 hover ==================== -->
+            <section id="gl-motion" class="gl-section" aria-labelledby="gl-motion-title">
+              <div class="gl-section-head">
+                <h2 id="gl-motion-title">動態與 hover</h2>
+                <p class="section-lead">白天的書桌是安靜的：只有三種動態，<code>prefers-reduced-motion: reduce</code> 時全部關閉（<code>_base.scss</code>）。</p>
+              </div>
+              <div class="lite-card gl-card">
+                <div class="gl-block">
+                  <ul class="gl-motion">
+                    <li>
+                      <span class="icon-circle" aria-hidden="true"><i class="bi bi-palette"></i></span>
+                      <strong>顏色、框線、陰影的轉場</strong>
+                      <p><span class="num">.2s ease</span>。按鈕、連結、膠囊、單元列、可點卡片的 hover 與 focus。</p>
+                    </li>
+                    <li>
+                      <span class="icon-circle" aria-hidden="true"><i class="bi bi-bar-chart-steps"></i></span>
+                      <strong>進度條長出來一次</strong>
+                      <p><span class="num">.6s</span>，載入時內層用 <code>scaleX</code> 從 0 長到目前值，外框尺寸不變；只發生一次。</p>
+                    </li>
+                    <li>
+                      <span class="icon-circle" aria-hidden="true"><i class="bi bi-window-stack"></i></span>
+                      <strong>Bootstrap 原本的轉場</strong>
+                      <p>Offcanvas（課程列表篩選、學習頁章節抽屜）、Modal、Collapse、Toast、Tab 的淡入與展開，以及錨點連結的平滑捲動（Bootstrap reboot 的 <code>scroll-behavior: smooth</code>）。</p>
+                    </li>
+                  </ul>
+                </div>
+                <div class="gl-block">
+                  <h3 class="gl-block-title">hover 與 focus 的規則</h3>
+                  <ul class="gl-list">
+                    <li>只換顏色、底線、框色、底色或加深一階陰影；<strong>不改尺寸、不位移、不放大、不推擠版面</strong>。</li>
+                    <li>資訊常駐顯示：工藝情境卡的課程數與完課時間、課程卡的價格與免費試看、播放器控制列，都不靠 hover 才出現。</li>
+                    <li>每個可互動元件都有看得見的 <code>:focus-visible</code>（2px 白色間隙＋2px 冰河藍，播放器上換成 <code>$player-icon</code>），focus 的樣子和 hover 不同。</li>
+                    <li>選中狀態不換字重（分頁籤、分段控制），避免寬度變動。</li>
+                    <li>同一頁內的錨點連結（本頁目錄、課程詳情的星等）平滑捲動到位，<code>scroll-padding-top</code> 讓開頁首；<code>prefers-reduced-motion</code> 時直接跳到位。</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <!-- ==================== RWD 斷點 ==================== -->
+            <section id="gl-rwd" class="gl-section" aria-labelledby="gl-rwd-title">
+              <div class="gl-section-head">
+                <h2 id="gl-rwd-title">RWD 斷點</h2>
+                <p class="section-lead">Bootstrap 預設斷點。版心最寬 1200px；1920 寬時窗光漸層與首頁霜藍色帶滿版，內容留在版心。390、768、992、1200、1440、1920 都沒有橫向捲軸。</p>
+              </div>
+              <div class="lite-card gl-card">
+                <ul class="gl-bp">
+                  <li><strong>&lt; 576</strong><span>手機：滿寬減左右 20px</span></li>
+                  <li><strong>sm 576</strong><span>版心 540</span></li>
+                  <li><strong>md 768</strong><span>版心 720</span></li>
+                  <li><strong>lg 992</strong><span>版心 960，主要斷點：兩欄、側欄、選單展開</span></li>
+                  <li><strong>xl 1200</strong><span>版心 1140</span></li>
+                  <li><strong>xxl 1400</strong><span>版心 1200</span></li>
+                </ul>
+
+                <h3 class="gl-block-title">各頁與共用元件怎麼收合</h3>
+                <ul class="gl-rwd">
+                  <li class="gl-rwd-row">
+                    <p class="gl-rwd-name">頁首</p>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">≥ 992</span><p>浮起的白卡片列：品牌 → 主導覽膠囊 → 搜尋（992–1199 寬 224，以上 240）→ 我的課程 → 登入／註冊。</p></div>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">&lt; 992</span><p>品牌靠左，右側「登入／註冊」小按鈕與選單按鈕；選單在白卡裡往下展開：主導覽、搜尋、我的課程。</p></div>
+                  </li>
+                  <li class="gl-rwd-row">
+                    <p class="gl-rwd-name">頁尾</p>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">≥ 992</span><p>霜藍面板：左 5 欄品牌與一句說明、右 7 欄 3 欄連結，底下版權。</p></div>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">&lt; 992</span><p>品牌在上；連結 2 欄，768 起 3 欄。</p></div>
+                  </li>
+                  <li class="gl-rwd-row">
+                    <p class="gl-rwd-name">首頁</p>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">≥ 992</span><p>左 5 欄文字、右 7 欄窗（高 max(600px, 100svh − 88px)），正在播放卡跨在窗的右下緣；熱門課程 2×2 橫式卡；工藝情境卡 4 欄。</p></div>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">&lt; 992</span><p>文字在上、窗在下（4:3），正在播放卡疊住窗的下緣 24px；熱門課程變成橫向捲動的直式卡；工藝情境卡 2 欄；為什麼 &lt; 576 單欄。</p></div>
+                  </li>
+                  <li class="gl-rwd-row">
+                    <p class="gl-rwd-name">課程列表</p>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">≥ 992</span><p>全寬篩選卡（≥ 1200 第二列一行排完；992–1199 結果數、排序、清除篩選換到下一行），3 欄課程卡。</p></div>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">&lt; 992</span><p>分類膠囊橫向捲動＋「篩選」按鈕與結果數，其餘條件在 Offcanvas（從右邊）；課程卡 2 欄（576 起），以下單欄。</p></div>
+                  </li>
+                  <li class="gl-rwd-row">
+                    <p class="gl-rwd-name">課程詳情</p>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">≥ 992</span><p>8：4，右側 sticky 購買卡（視窗高 700 以下不 sticky）；評價 ≥ 1200 左總覽卡、右評價卡。</p></div>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">&lt; 992</span><p>單欄：播放器 → 課程資訊 → 購買卡 → 其餘區塊；講師 &lt; 768 工作室照在上；單元列 &lt; 576 的試看／播放中標籤換到第二行。</p></div>
+                  </li>
+                  <li class="gl-rwd-row">
+                    <p class="gl-rwd-name">學習頁</p>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">≥ 992</span><p>8：4，右側 sticky 的一疊輕卡片，比視窗高時側欄內部捲動、底部淡出。</p></div>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">&lt; 992</span><p>側欄變成底部抽屜，「課程章節 50%」按鈕貼在視窗底部；續看提示 &lt; 768 移到播放器下方；操作列 &lt; 576 上一／下一只留箭頭。</p></div>
+                  </li>
+                  <li class="gl-rwd-row">
+                    <p class="gl-rwd-name">播放器</p>
+                    <div class="gl-rwd-cell is-wide"><span class="gl-rwd-label">&lt; 576</span><p>收起音量與播放速度，只留播放、時間、進度條、字幕、全螢幕；白卡框內距 12 → 8px。載入失敗畫面不鎖 16:9，內容放不下時往下長。</p></div>
+                  </li>
+                  <li class="gl-rwd-row">
+                    <p class="gl-rwd-name">註冊</p>
+                    <div class="gl-rwd-cell is-wide"><span class="gl-rwd-label">所有寬度</span><p>560 寬置中的同一疊卡片：H1 → 霜藍接續購買摘要卡 → 表單白卡。摘要的方形縮圖 96px，手機 72px。</p></div>
+                  </li>
+                  <li class="gl-rwd-row">
+                    <p class="gl-rwd-name">購買課程</p>
+                    <div class="gl-rwd-cell is-wide"><span class="gl-rwd-label">所有寬度</span><p>720 寬置中的同一疊卡片：購買的課程 → 帳號 → 付款方式 → 發票 → 總金額卡緊貼「確認付款」。手機只有卡片內的排列變窄。</p></div>
+                  </li>
+                  <li class="gl-rwd-row">
+                    <p class="gl-rwd-name">付款結果</p>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">≥ 992</span><p>成功卡 → 3 張小卡並排（訂單資訊、購買內容、發票）→ 接下來 → 按鈕列。</p></div>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">&lt; 992</span><p>768–991 兩欄、發票橫跨一列；以下單欄。成功卡 &lt; 576 圖示與標題上下排；按鈕列 ≥ 576 各半並排。</p></div>
+                  </li>
+                  <li class="gl-rwd-row">
+                    <p class="gl-rwd-name">我的課程</p>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">≥ 992</span><p>標題區右側 3 張統計卡；課程卡 3 欄。</p></div>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">&lt; 992</span><p>統計卡移到標題下方，390 寬也是 3 張一列；課程卡 768 起 2 欄，以下單欄。</p></div>
+                  </li>
+                  <li class="gl-rwd-row">
+                    <p class="gl-rwd-name">購買紀錄</p>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">≥ 768</span><p>時間軸左欄日期、細線上的冰河藍圓點、右側訂單卡；≥ 992 訂單卡內一列排完，動作欄固定 120px。</p></div>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">&lt; 768</span><p>細線貼左 12px，日期在卡片上方；訂單卡內的欄位上下排。</p></div>
+                  </li>
+                  <li class="gl-rwd-row">
+                    <p class="gl-rwd-name">設計 Guideline</p>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">≥ 992</span><p>左 3 欄 sticky 目錄卡（目前章節＝冰底膠囊），右 9 欄章節卡。</p></div>
+                    <div class="gl-rwd-cell"><span class="gl-rwd-label">&lt; 992</span><p>目錄改成內容上方可橫向捲動的膠囊列；示範元件依各自的規則收合。</p></div>
+                  </li>
+                </ul>
+              </div>
+            </section>
+
+            <!-- ==================== Do／Don't ==================== -->
+            <section id="gl-dodont" class="gl-section" aria-labelledby="gl-dodont-title">
+              <div class="gl-section-head">
+                <h2 id="gl-dodont-title">Do／Don't 對照</h2>
+                <p class="section-lead">左邊照做、右邊避免。右邊是為了說明而畫的錯誤示範，不會出現在任何頁面。</p>
+              </div>
+              <div class="lite-card gl-card">
+                <div class="gl-dodont">
+                  <div class="gl-do">
+                    <p class="gl-verdict"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p>
+                    <div class="course-card-foot">
+                      <p class="price">NT$&nbsp;2,480</p>
+                      <a class="btn btn-outline-primary btn-sm" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                    </div>
+                    <p>課程卡上放「免費試看」，第一次來的人先看一支影片，門檻最低。</p>
+                  </div>
+                  <div class="gl-dont">
+                    <p class="gl-verdict"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p>
+                    <div class="course-card-foot">
+                      <p class="price">NT$&nbsp;2,480</p>
+                      <span class="btn btn-primary btn-sm">立即購買</span>
+                    </div>
+                    <p>課程卡只放「立即購買」。購買只出現在課程詳情的購買卡。</p>
+                  </div>
+                </div>
+
+                <div class="gl-dodont">
+                  <div class="gl-do">
+                    <p class="gl-verdict"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p>
+                    <ol class="unit-list">
+                      <li><span class="unit is-done"><span class="unit-icon"><i class="bi bi-check-circle-fill" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span><span class="unit-no num">3-1</span><span class="unit-name">土球該多大</span><span class="unit-time num">08:06</span></span></li>
+                      <li><span class="unit is-todo"><span class="unit-icon"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">未開始</span></span><span class="unit-no num">3-3</span><span class="unit-name">修整碗口的三種手勢</span><span class="unit-time num">09:52</span></span></li>
+                    </ol>
+                    <p>單元狀態用圖示＋文字（可視覺隱藏），色弱與螢幕閱讀器都分得出來。</p>
+                  </div>
+                  <div class="gl-dont">
+                    <p class="gl-verdict"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p>
+                    <ul class="gl-bad-units">
+                      <li class="is-done"><span>3-1 土球該多大</span><span class="num">08:06</span></li>
+                      <li class="is-todo"><span>3-3 修整碗口的三種手勢</span><span class="num">09:52</span></li>
+                    </ul>
+                    <p>只把已完成的列塗成綠色，沒有圖示也沒有文字。</p>
+                  </div>
+                </div>
+
+                <div class="gl-dodont">
+                  <div class="gl-do">
+                    <p class="gl-verdict"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p>
+                    <div class="player gl-player-strip">
+                      <button class="player-btn" type="button" aria-label="暫停"><i class="bi bi-pause-fill" aria-hidden="true"></i></button>
+                      <span class="player-time num">07:18 / 11:24</span>
+                      <button class="player-btn" type="button" aria-label="全螢幕"><i class="bi bi-fullscreen" aria-hidden="true"></i></button>
+                    </div>
+                    <p>播放器控制列常駐顯示，手機與鍵盤使用者不必先 hover 才找得到。</p>
+                  </div>
+                  <div class="gl-dont">
+                    <p class="gl-verdict"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p>
+                    <div class="gl-bad-player" role="img" aria-label="錯誤示範：沒有控制列的播放器"></div>
+                    <p>控制列平常藏起來，滑鼠移上去才出現。</p>
+                  </div>
+                </div>
+
+                <div class="gl-dodont">
+                  <div class="gl-do">
+                    <p class="gl-verdict"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p>
+                    <p class="gl-good-title text-phrase"><span class="text-nowrap">從零開始的手捏陶｜</span><wbr>做出第一只日用食器</p>
+                    <p>課名在「｜」後換行：前半段包 <code>.text-nowrap</code>，後面接 <code>&lt;wbr&gt;</code>。</p>
+                  </div>
+                  <div class="gl-dont">
+                    <p class="gl-verdict"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p>
+                    <p class="gl-bad-title">從零開始的手捏<br>陶｜做出第一只日用食器</p>
+                    <p>讓瀏覽器在詞的中間斷行，「手捏陶」被拆成兩行。</p>
+                  </div>
+                </div>
+
+                <div class="gl-dodont">
+                  <div class="gl-do">
+                    <p class="gl-verdict"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p>
+                    <div class="d-grid gap-2">
+                      <span class="btn btn-primary">立即購買，開始上課</span>
+                      <span class="btn btn-outline-primary"><i class="bi bi-heart" aria-hidden="true"></i>加入願望清單</span>
+                    </div>
+                    <p>一組動作只有一顆冰河藍實心按鈕，其他用框線或文字連結。</p>
+                  </div>
+                  <div class="gl-dont">
+                    <p class="gl-verdict"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p>
+                    <div class="d-grid gap-2">
+                      <span class="btn btn-primary">立即購買，開始上課</span>
+                      <span class="btn btn-primary"><i class="bi bi-heart" aria-hidden="true"></i>加入願望清單</span>
+                    </div>
+                    <p>兩顆一樣強的實心按鈕，看不出哪一個才是下一步。</p>
+                  </div>
+                </div>
+
+                <div class="gl-dodont">
+                  <div class="gl-do">
+                    <p class="gl-verdict"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p>
+                    <ul class="chip-list mb-0" aria-label="課程資訊（示意）"><li class="chip">陶藝</li><li class="chip">入門</li><li class="chip num">4&nbsp;小時&nbsp;20&nbsp;分</li><li class="chip num">28 單元</li></ul>
+                    <p>課程資訊拆成一顆顆膠囊，換行時不會把一項切成兩半。</p>
+                  </div>
+                  <div class="gl-dont">
+                    <p class="gl-verdict"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p>
+                    <p class="gl-bad-strip">陶藝 · 入門 · 4 小時 20 分 · 28 單元</p>
+                    <p>用「·」串成一長串，窄螢幕斷在奇怪的地方，也難掃讀。</p>
+                  </div>
+                </div>
+
+                <div class="gl-dodont">
+                  <div class="gl-do">
+                    <p class="gl-verdict"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p>
+                    <p class="h3 mb-0">本月最多人開始的課</p>
+                    <p>標題直接用 Notion 的中文文案，不加眉標或編號。</p>
+                  </div>
+                  <div class="gl-dont">
+                    <p class="gl-verdict"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p>
+                    <div>
+                      <p class="gl-bad-eyebrow">MOST LOVED THIS MONTH</p>
+                      <p class="h3 mb-0">本月最多人開始的課</p>
+                    </div>
+                    <p>在標題上面加英文眉標，Notion 沒有這行字，也多一層要讀的東西。</p>
+                  </div>
+                </div>
+
+                <div class="gl-dodont">
+                  <div class="gl-do">
+                    <p class="gl-verdict"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p>
+                    <div class="lite-card"><p class="mb-0">你的學習進度</p></div>
+                    <p>雪白底上的白卡同時有髮絲線與淡陰影，卡片的邊界清楚。</p>
+                  </div>
+                  <div class="gl-dont">
+                    <p class="gl-verdict"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p>
+                    <div class="gl-bad-card"><p>你的學習進度</p></div>
+                    <p>拿掉線或陰影，白卡在雪白底上幾乎看不見。也不要改用黑框或硬陰影。</p>
+                  </div>
+                </div>
+
+                <div class="gl-dodont">
+                  <div class="gl-do">
+                    <p class="gl-verdict"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Do</p>
+                    <div class="lite-card is-link gl-hover">
+                      <p class="fw-bold mb-1">【一只每天在用的碗】</p>
+                      <p class="text-note mb-0"><span class="num">12 門課</span>　<span class="num">最短 4&nbsp;小時&nbsp;20&nbsp;分完課</span></p>
+                    </div>
+                    <p>hover 只加深陰影、換框色，課程數與完課時間一直都在。</p>
+                  </div>
+                  <div class="gl-dont">
+                    <p class="gl-verdict"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>Don't</p>
+                    <div class="d-grid gap-2">
+                      <div class="lite-card"><p class="fw-bold mb-0">【一只每天在用的碗】</p></div>
+                      <p class="gl-bad-expand">（滑鼠移上去才展開）12 門課、最短 4 小時 20 分完課</p>
+                    </div>
+                    <p>hover 才展開資訊、卡片跟著變高，把下面的內容往下推。</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <!-- 鎖定單元提示（本頁「單元列」與「開啟真的對話框」用）：與課程詳情的 #lockedModal 相同，看看課程包含什麼連到課程詳情的購買卡 -->
+      <div class="modal fade" id="glLockedModal" tabindex="-1" aria-labelledby="glLockedModalTitle" aria-describedby="glLockedModalText" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+          <div class="modal-content locked-dialog">
+            <div class="modal-header">
+              <h2 class="visually-hidden" id="glLockedModalTitle">單元尚未解鎖</h2>
+              <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body">
+              <span class="locked-icon" aria-hidden="true"><i class="bi bi-lock"></i></span>
+              <p class="locked-text" id="glLockedModalText">這個單元需要購買課程後觀看。</p>
+              <a class="btn btn-primary w-100" href="course.html#purchase">看看課程包含什麼</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <!-- 頁尾是一塊霜藍色圓角面板，內縮在版心裡、下方留 24px，和頁首的卡片列成對 -->
+        <div class="site-footer-panel">
+          <div class="row gy-5">
+            <div class="col-lg-5">
+              <a class="site-brand" href="index.html">
+                <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9"/><path d="M7.5 15.5h17a8.5 8.5 0 0 1-17 0z"/><circle cx="21.5" cy="9.5" r="2.5"/></svg>
+                <span class="site-brand-name">Craftory 手感工藝線上學院</span>
+              </a>
+              <p class="site-footer-lead">專為「想養成第二專長、<wbr>但一直沒開始」的<wbr>上班族打造的<wbr>工藝影音學院</p>
+            </div>
+            <div class="col-lg-7">
+              <div class="row gy-4">
+                <div class="col-6 col-md-4">
+                  <h2 class="site-footer-title">探索課程</h2>
+                  <ul class="list-unstyled site-footer-links mb-0">
+                    <li><a href="courses.html">陶藝</a></li>
+                    <li><a href="courses.html">皮革</a></li>
+                    <li><a href="courses.html">木工</a></li>
+                    <li><a href="courses.html">織品染繡</a></li>
+                    <li><a href="courses.html">金工銀飾</a></li>
+                    <li><a href="courses.html">蠟燭香氛</a></li>
+                    <li><a href="courses.html">紙藝絹印</a></li>
+                  </ul>
+                </div>
+                <div class="col-6 col-md-4">
+                  <h2 class="site-footer-title">學習保障</h2>
+                  <ul class="list-unstyled site-footer-links mb-0">
+                    <li><a href="index.html#guarantee">7 天不滿意退費</a></li>
+                    <li><a href="index.html#guarantee">一次購買永久觀看</a></li>
+                    <li><a href="index.html#guarantee">卡關有人回答</a></li>
+                  </ul>
+                </div>
+                <!-- 關於我們、成為講師、聯絡我們尚未設計頁面：不帶 href 的佔位連結 -->
+                <div class="col-6 col-md-4">
+                  <h2 class="site-footer-title">關於 Craftory</h2>
+                  <ul class="list-unstyled site-footer-links mb-0">
+                    <li><a>關於我們</a></li>
+                    <li><a>成為講師</a></li>
+                    <li><a>聯絡我們</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p class="site-footer-copy">
+            © 2026 Craftory 手感工藝線上學院｜<wbr>本站為課程設計稿範例，課程、講師與評價皆為示意資料。
+          </p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!--
+    登入對話框（每頁共用）
+    - 設計稿沒有後端：表單送出後前往 learn.html（視為登入成功）。串接後端時把 action 換成登入 API，並移除 GET。
+    - 電子郵件、密碼欄位不加 name，送出時網址不會帶上帳號密碼；串接後端改用 method="post" 時再補上 name。
+    - 從「立即購買，開始上課」開啟時（data-auth-context="purchase"），顯示 .auth-notice 並切換主要按鈕文字（js/main.js）
+  -->
+  <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content auth-modal">
+        <div class="modal-header">
+          <h2 class="modal-title h4" id="authModalTitle">登入 Craftory</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body">
+          <p class="auth-notice" data-auth-notice hidden>
+            <i class="bi bi-info-circle" aria-hidden="true"></i>
+            <span>登入後就能開始上課，馬上註冊只要 30 秒。</span>
+          </p>
+          <form action="learn.html">
+            <div class="mb-3">
+              <label class="form-label" for="authEmail">電子郵件</label>
+              <input id="authEmail" class="form-control" type="email" placeholder="mail@example.com" autocomplete="email">
+            </div>
+            <div class="mb-2">
+              <label class="form-label" for="authPassword">密碼</label>
+              <input id="authPassword" class="form-control" type="password" placeholder="至少 8 碼" autocomplete="current-password">
+            </div>
+            <p class="mb-4"><a class="auth-link">忘記密碼？</a></p>
+            <button class="btn btn-primary w-100" type="submit">
+              <span data-auth-label="default">登入</span>
+              <span data-auth-label="purchase" hidden>登入並開始上課</span>
+            </button>
+          </form>
+          <p class="auth-footer">還沒有帳號？<a class="auth-link" href="register.html">立即註冊</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

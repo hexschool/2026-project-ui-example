@@ -1,0 +1,443 @@
+// ============================================================
+// 首頁 index.html
+// 首屏：6 套裡唯一「置中、上字下圖」的構圖。H1、副標、按鈕置中在上，
+// 下面一面 21:9 寬銀幕（切角、掃描線、底緣光束），HUD「正在播放」小卡在銀幕左下
+// ============================================================
+
+// ---------- 區塊一：Hero ----------
+// 高度約一個視窗扣掉頁首（最少 560px）；網格背景滿版，內容留在版心
+.home-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: max(560px, calc(100svh - var(--header-offset)));
+  padding-block: map-get($spacers, 5) map-get($spacers, 6);
+  border-bottom: 1px solid $line;
+  overflow: hidden; // 銀幕底下的紫光不要撐出水平捲軸
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 5) map-get($spacers, 5);
+  }
+}
+.home-hero-copy {
+  max-width: 54rem;
+  margin-inline: auto;
+  margin-bottom: map-get($spacers, 5);
+  text-align: center;
+}
+.home-hero-title {
+  margin-bottom: 1rem;
+  font-size: map-get($display-font-sizes, 5); // 40px
+  font-weight: $font-weight-black;
+  line-height: 1.2;
+  letter-spacing: .01em;
+
+  @include media-breakpoint-up(md) {
+    font-size: 3.5rem;
+    line-height: 1.15;
+  }
+  @include media-breakpoint-up(xl) {
+    font-size: map-get($display-font-sizes, 1); // 72px
+    line-height: $display-line-height;
+  }
+}
+// 兩行：第一行 text，第二行「變成手上的作品。」是紫到粉的漸層字
+.home-hero-line {
+  display: block;
+}
+.home-hero-lead {
+  max-width: 34em;
+  margin: 0 auto 1.75rem;
+  color: $text-2;
+  font-size: 1.0625rem;
+
+  @include media-breakpoint-up(lg) {
+    font-size: $lead-font-size;
+  }
+}
+.home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .75rem 1rem;
+}
+
+// 銀幕：≥ lg 是 21:9，寬度由版心決定；視窗矮的時候按比例縮窄，讓銀幕和小卡留在第一屏
+// （只用 aspect-ratio，不設 max-height：兩個一起用會讓比例失效、圖片被拉寬）
+.home-screen {
+  position: relative;
+  width: 100%;
+  margin-inline: auto;
+
+  @include media-breakpoint-up(lg) {
+    width: clamp(min(100%, 44rem), calc((100svh - var(--header-offset) - 26rem) * 21 / 9), 100%);
+  }
+}
+.home-screen-frame {
+  --cut: 16px;
+  padding: 1px;
+  filter: drop-shadow(0 0 3rem rgba($violet, .22));
+}
+.home-screen-media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: $screen;
+  clip-path: polygon(0 0, calc(100% - 15.4px) 0, 100% 15.4px, 100% 100%, 15.4px 100%, 0 calc(100% - 15.4px));
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 72% 30%;
+    display: block;
+  }
+  // 掃描線（6%）
+  &::after {
+    @include scanlines;
+  }
+  @include media-breakpoint-up(md) {
+    aspect-ratio: 16 / 9;
+    > img { object-position: 60% 30%; }
+  }
+  @include media-breakpoint-up(lg) {
+    aspect-ratio: 21 / 9;
+  }
+}
+// 銀幕底緣的光束：整頁唯一一道流動的光（流光 2 次後停）
+// 銀幕切的是右上與左下兩角，底邊從左下斜邊的盡頭（16px）一路到右下直角
+.home-screen-beam {
+  position: absolute;
+  left: 16px;
+  right: 1px;
+  bottom: 1px;
+  z-index: 2;
+  height: 3px;
+  background-image:
+    linear-gradient(90deg, transparent 0 42%, rgba($text, .75) 50%, transparent 58% 100%),
+    $beam;
+  background-size: 250% 100%, 100% 100%;
+  background-repeat: no-repeat;
+  background-position: 0% 0, 0 0;
+  box-shadow: 0 0 1rem rgba($pink, .45);
+  animation: beam-flow 2.4s ease-in-out .6s 2 backwards;
+}
+// 「正在播放」：≥ lg 壓在銀幕左下內側 24px；768～991px 移到銀幕下方、跨在左下緣；< 576px 置中跨在下緣
+// 放左下而不是右下：主圖照 IMAGES.md 把手與碗放在右側、左半部留白，小卡 22rem 在 992px 時佔銀幕寬約 41%、高約 65%，
+// 壓在右下會蓋住碗；左半部的留白放得下整張小卡
+.home-screen .now-playing {
+  position: relative;
+  z-index: 3;
+  margin: -2.5rem auto 0 1rem;
+
+  @include media-breakpoint-down(sm) {
+    margin-inline: auto;
+    max-width: calc(100% - 1.5rem);
+  }
+  @include media-breakpoint-up(lg) {
+    position: absolute;
+    left: 1.5rem;
+    bottom: 1.5rem;
+    margin: 0;
+  }
+}
+
+// ---------- 區塊二：學得完的理由（#why） ----------
+// 4 個步驟用一條光束管線串起來：每個節點是圓形圖示框，下面 H3＋說明，像資料流
+// 桌機水平；< lg 直向（節點在左、文字在右）
+.home-why-head {
+  margin-bottom: map-get($spacers, 5);
+}
+.home-pipeline {
+  display: grid;
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2.5rem;
+  }
+}
+.home-pipeline-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  column-gap: 1.25rem;
+  align-items: start;
+  align-content: start; // 4 欄等高時，多出來的高度不要分給節點與文字之間
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: 1fr;
+    row-gap: 1.25rem;
+  }
+
+  h3 {
+    margin: .25rem 0 .5rem;
+    color: $text;
+    @include media-breakpoint-up(lg) {
+      margin-top: 0;
+    }
+  }
+  p {
+    margin: 0;
+    color: $text-2;
+  }
+  // 節點之間的光束管線（最後一個不畫）：< lg 直向，≥ lg 水平
+  &:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: calc(2rem - 1px);
+    top: 4.5rem;
+    bottom: -1.5rem;
+    width: 2px;
+    background-image: linear-gradient(180deg, $violet, $pink);
+    opacity: .85;
+
+    @include media-breakpoint-up(lg) {
+      left: 4.5rem;
+      right: -2rem;
+      top: calc(2rem - 1px);
+      bottom: auto;
+      width: auto;
+      height: 2px;
+      background-image: $beam;
+    }
+  }
+}
+.home-pipeline-node {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border: 1px solid $violet-text;
+  border-radius: 50%;
+  background-color: $deck;
+  color: $text;
+  font-size: 1.5rem;
+
+  // 內圈：一圈很淡的紫（裝飾）
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border: 1px solid rgba($violet, .35);
+    border-radius: 50%;
+  }
+}
+// 節點旁的等寬序號（裝飾，aria-hidden）
+.home-pipeline-index {
+  position: absolute;
+  top: -.375rem;
+  right: -.375rem;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: $pink;
+  color: $void;
+  font-family: $font-family-monospace;
+  font-size: .6875rem;
+  font-weight: 600;
+  clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px));
+}
+
+// ---------- 區塊三：工藝作品入口（#crafts） ----------
+// 便當格：左邊 1 大（佔 2 列）、右邊上排 2 小、下排 1 寬；< lg 是 2×2
+.home-crafts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  .craft-card-media {
+    flex: none;
+    aspect-ratio: 4 / 5;
+    min-height: 0;
+  }
+  @include media-breakpoint-up(md) {
+    .craft-card-media { aspect-ratio: 1 / 1; }
+  }
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: 1.3fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 1.5rem;
+
+    .craft-card-media {
+      flex: 1 1 auto;
+      aspect-ratio: auto;
+      min-height: 13rem;
+    }
+    > li:first-child {
+      grid-row: span 2;
+
+      .craft-card-title { font-size: 1.375rem; }
+    }
+    > li:last-child {
+      grid-column: span 2;
+
+      .craft-card-media img { object-position: 50% 12%; } // 銀戒在原圖上方 1/4，寬卡要往上取景
+    }
+  }
+  @include media-breakpoint-up(xl) {
+    .craft-card-media { min-height: 15rem; }
+  }
+}
+
+// ---------- 區塊四：熱門課程（#featured） ----------
+// 課程卡與橫向捲動列在 components/_course-card.scss
+
+// ---------- 區塊五：學員作品牆＋學習保障（#guarantee） ----------
+.home-ugc {
+  @include cut-frame;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+}
+.home-ugc-media {
+  @include cut-media-top;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background-color: $screen;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+.home-ugc figcaption {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 1.125rem 1.25rem 1.25rem;
+}
+.home-ugc-quote {
+  flex-grow: 1;
+  margin-bottom: .875rem;
+
+  p {
+    margin: 0;
+    color: $text;
+    line-height: 1.75;
+  }
+}
+.home-ugc-handle {
+  margin: 0;
+  color: $violet-text;
+  font-family: $font-family-monospace;
+  font-size: $mono-font-size;
+  letter-spacing: .02em;
+}
+// 3 項保障：一塊 HUD 面板裡的狀態列（圖示＋標題＋說明，左側 mint 細條）
+// ≥ lg 和左邊作品牆等高，3 列平均分配
+.home-guarantee {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: .5rem 1.25rem;
+  list-style: none;
+
+  @include media-breakpoint-up(lg) {
+    height: 100%;
+    > li { flex: 1 1 0; align-content: center; }
+  }
+
+  @include media-breakpoint-up(md) {
+    padding-inline: 1.75rem;
+  }
+  > li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    column-gap: 1rem;
+    padding: 1.375rem 0 1.375rem 1rem;
+
+    // 左側 mint 細條
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 1.375rem;
+      bottom: 1.375rem;
+      width: 2px;
+      background-color: $mint;
+    }
+    + li {
+      border-top: 1px solid $line;
+    }
+  }
+  h3 {
+    margin: .125rem 0 .25rem;
+    color: $text;
+  }
+  p {
+    margin: 0;
+    color: $text-2;
+  }
+}
+.home-guarantee-icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid rgba($mint, .55);
+  border-radius: 50%;
+  color: $mint;
+  font-size: 1.125rem;
+}
+
+// ---------- 底部 CTA ----------
+// 置中；背景是放大的網格＋一道橫向光束
+.home-cta {
+  @include grid-bg(96px);
+  position: relative;
+  padding-block: map-get($spacers, 7);
+  border-top: 1px solid $line;
+  text-align: center;
+  overflow: hidden;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: map-get($spacers, 8);
+  }
+  // 橫向光束：貫穿整個區塊的中線（裝飾），中間被標題遮住的地方淡出
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 2px;
+    background-image: linear-gradient(90deg, rgba($violet, 0) 0%, $violet 20%, $pink 80%, rgba($pink, 0) 100%);
+    opacity: .7;
+  }
+  .container {
+    position: relative;
+  }
+}
+.home-cta-panel {
+  @include cut-frame($cut-panel, $line, $void); // void 底的切角面板蓋住中線光束，框線讓它像一個 HUD 視窗
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2.25rem 2rem 2.5rem;
+
+  @include media-breakpoint-up(md) {
+    padding-inline: 3.5rem;
+  }
+}
+// CTA 是首頁最後一塊：頁尾直接接在網格下面，不再留一段空白
+main:has(> .home-cta:last-child) + .site-footer {
+  margin-top: 0;
+}
+.home-cta-title {
+  margin: 0;
+  font-weight: $font-weight-black;
+}

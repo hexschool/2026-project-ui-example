@@ -1,0 +1,323 @@
+// ============================================================
+// 付款結果 order-result.html（2026-11 補頁，class 前綴 result-）
+// 「通關畫面」：滿版淡向日葵色帶（下緣小山丘，沿用首頁的 $hills-svg）＋120px 勳章（.medal-animate，載入時 pop 一次）＋放射線
+// ≥ 992px："receipt next" / "receipt actions"：左 7 欄收據貼紙（.receipt.is-both，轉 -1°，往上壓在小山丘上）、右 5 欄迷你地圖＋按鈕
+// < 992px："next" "receipt" "actions"：迷你地圖改成直線小徑，收據不旋轉
+// 這頁的 <main> 不加 .page-top：色帶直接接在頁首波浪下面
+// ============================================================
+
+// 迷你地圖的幾何（和 HTML 裡 SVG 的路徑一起改）：每站高 144，第 2 站往右 72
+$result-stop-h: 144px;
+$result-stop-shift: 72px;
+
+// ---------- 通關色帶 ----------
+.result-hero {
+  position: relative;
+  overflow: hidden; // 角落的圓形色塊
+  padding: calc(#{$site-header-wave} + 2rem) 0 7.5rem; // 下方留給小山丘
+  background: $hills-svg 0 100% / 640px 120px repeat-x, $sun-soft;
+  text-align: center;
+
+  @include media-breakpoint-up(lg) { padding: calc(#{$site-header-wave} + 2.5rem) 0 8.5rem; }
+}
+.result-dot-a { --d: 140px; --c: #{$sky};   top: -56px; left: -48px; }
+.result-dot-b { --d: 64px;  --c: #{$coral}; top: 22%; right: 6%; }
+.result-dot-c { --d: 28px;  --c: #{$sunflower}; top: 52%; right: 13%; }
+@include media-breakpoint-down(md) {
+  .result-dot-a { --d: 96px; }
+  .result-dot-b { top: 10%; right: -20px; }
+  .result-dot-c { display: none; }
+}
+
+.result-hero-inner {
+  position: relative; // 畫在色塊上面
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+// 勳章＋放射線：盒子尺寸固定，動畫不推擠下方的標題
+.result-medal-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 200px;
+  height: 172px;
+  margin-bottom: 1rem;
+}
+.result-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  translate: -50% calc(-50% - 10px); // 對準勳章的圓牌（圓牌在盒子上方 10px）
+  fill: none;
+  stroke: $ink;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+.result-medal { position: relative; }
+
+.result-title {
+  max-width: 16em;
+  margin-bottom: .75rem;
+}
+.result-lead {
+  max-width: 34em;
+  margin: 0;
+  color: $ink-2;
+  font-weight: 700;
+}
+.result-email { overflow-wrap: anywhere; }
+
+// ---------- 版面 ----------
+.result-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "next"
+    "receipt"
+    "actions";
+  gap: 2.5rem;
+  margin-top: 3rem;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "receipt next"
+      "receipt actions";
+    column-gap: 3.5rem;
+    row-gap: 2rem;
+    margin-top: 0;
+  }
+  @include media-breakpoint-up(xl) { column-gap: 4.5rem; }
+}
+
+// ---------- 收據貼紙 ----------
+.result-receipt-wrap {
+  grid-area: receipt;
+  min-width: 0;
+
+  @include media-breakpoint-up(lg) { margin-top: -4.5rem; } // 收據上緣壓在小山丘上
+}
+.result-receipt {
+  @include media-breakpoint-up(lg) { rotate: -1deg; }
+}
+.result-receipt-part {
+  padding: 1.5rem 1.25rem;
+
+  + .result-receipt-part { border-top: 2px dashed rgba($ink, .35); }
+
+  @include media-breakpoint-up(md) { padding: 1.75rem 2rem; }
+  .flow-title { margin-bottom: .5rem; }
+}
+.result-paid {
+  dt { color: $ink; font-weight: 800; }
+  .price { font-size: 1.625rem; }
+}
+.result-course {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: .5rem;
+}
+.result-course-cover {
+  --w: 96px;
+
+  @include media-breakpoint-up(sm) { --w: 136px; }
+}
+.result-course-info { min-width: 0; }
+.result-course-name {
+  margin: 0 0 .375rem;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  line-height: 1.5;
+
+  @include media-breakpoint-up(md) { font-size: 1.1875rem; }
+}
+.result-course-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------- 接下來：3 站迷你地圖 ----------
+.result-next {
+  grid-area: next;
+  min-width: 0;
+
+  @include media-breakpoint-up(lg) { padding-top: 2.5rem; }
+}
+.result-next-head { margin-bottom: 1.5rem; }
+.result-next-title {
+  font-size: $h2-font-size-sm; // 26：比頁面 H1 小一階，和收據的小標拉開
+
+  @include media-breakpoint-up(lg) { font-size: 1.875rem; }
+}
+.result-map-wrap { position: relative; }
+.result-stop-title {
+  margin: .5rem 0 .25rem;
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+.result-stop-text p {
+  margin: 0;
+  color: $ink-2;
+  line-height: 1.7;
+}
+.result-sign-coral { background: $coral; }
+
+// 蜿蜒路：淡天空的路面＋墨色虛線（只在 ≥ 992px 顯示，高度固定）
+.result-map-path {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+  overflow: visible;
+  fill: none;
+}
+.result-map-road {
+  stroke: $sky-soft;
+  stroke-width: 22;
+  stroke-linecap: round;
+}
+.result-map-dash {
+  stroke: $ink;
+  stroke-width: 4;
+  stroke-dasharray: 8 8;
+}
+
+@include media-breakpoint-up(lg) {
+  .result-map-path { display: block; }
+  .result-map {
+    &::before { display: none; } // 直線小徑換成上面的 SVG
+
+    .trail-stop {
+      min-height: $result-stop-h;
+
+      + .trail-stop { margin-top: 0; }
+      &:nth-child(2) { margin-left: $result-stop-shift; }
+      &:last-child { min-height: 0; } // 最後一站不用留到下一站的距離
+    }
+  }
+}
+
+// ---------- 按鈕列＋退費提醒 ----------
+.result-actions {
+  grid-area: actions;
+  align-self: start;
+  min-width: 0;
+}
+.result-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  @include media-breakpoint-down(sm) {
+    flex-direction: column;
+
+    .btn { width: 100%; }
+  }
+}
+.result-refund {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  margin: 1.25rem 0 0;
+  color: $ink-2;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  line-height: 1.7;
+
+  .bi { flex: none; color: $leaf-deep; font-size: 1.125rem; line-height: 1.5; }
+  a { margin-left: .5rem; font-weight: 800; white-space: nowrap; }
+}
+
+// ---------- 設計稿狀態示意：付款沒有完成時 ----------
+.result-failed {
+  max-width: 44rem;
+  padding: 1.5rem 1.25rem;
+
+  @include media-breakpoint-up(md) { padding: 2rem 2.25rem; }
+}
+.result-failed-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr); // < 576px 圖示在標題上方
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1rem;
+
+  @include media-breakpoint-up(sm) { grid-template-columns: 64px minmax(0, 1fr); }
+
+  @include media-breakpoint-up(md) { grid-template-columns: 80px minmax(0, 1fr); gap: 1.25rem; }
+}
+.result-failed-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border: 2px solid $tomato;
+  border-radius: 50%;
+  background: $tomato-soft;
+  color: $tomato;
+  font-size: 2rem;
+  box-shadow: 3px 3px 0 $tomato;
+
+  @include media-breakpoint-up(md) { width: 80px; height: 80px; font-size: 2.5rem; }
+}
+.result-failed-title {
+  margin: .25rem 0 .5rem;
+  color: $tomato;
+}
+.result-failed-lead {
+  margin: 0;
+  color: $ink-2;
+}
+.result-failed-total {
+  margin-bottom: 1.25rem;
+  border-block: 2px dashed rgba($ink, .35);
+
+  dt { color: $ink; font-weight: 800; }
+}
+.result-failed-unpaid {
+  margin-left: .375rem;
+  color: $ink-2;
+  font-size: $font-size-sm;
+  font-weight: 700;
+}
+.result-failed-subtitle {
+  margin-bottom: .75rem;
+  font-size: 1.0625rem;
+  font-weight: 800;
+}
+.result-failed-list {
+  display: grid;
+  gap: .5rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    font-weight: 700;
+  }
+  .bi {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 2px solid $ink;
+    border-radius: 50%;
+    background: $sun-soft;
+    font-size: .9375rem;
+  }
+}

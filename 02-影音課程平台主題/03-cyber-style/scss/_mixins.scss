@@ -1,0 +1,104 @@
+// ============================================================
+// 本風格的 mixin：切角外框、輸入框切角、背景網格、掃描線、能量光束
+// ============================================================
+
+// ---------- 切角外框 ----------
+// 面板、卡片、按鈕的右上與左下各切一刀。元素本身不做 clip-path（否則焦點環、光暈會被一起切掉），
+// 改用兩層偽元素畫在內容下面：
+//   ::before：填色（var(--cut-fill)），切成外框形狀
+//   ::after：框線（var(--cut-line)），用 evenodd 挖空成一圈，粗細 var(--cut-bw)
+// 狀態只要改 CSS 變數：--cut-line（框線色，可以是漸層）、--cut-fill（底色）、--cut-bw（框線粗細）
+// 光暈用元素本身的 filter: drop-shadow()（box-shadow 是方的）
+//
+// 注意：用了這個 mixin 的元素，::before 與 ::after 都已經被佔用；其他裝飾請放在子元素上
+@function cut-outer($c: var(--cut)) {
+  @return polygon(0 0, calc(100% - #{$c}) 0, 100% #{$c}, 100% 100%, #{$c} 100%, 0 calc(100% - #{$c}));
+}
+@function cut-ring($c: var(--cut), $b: var(--cut-bw)) {
+  // 外圈 6 點 → 回到起點 → 內圈 6 點（內縮 b；斜邊的內縮量是 b × (√2 − 1)）→ 回到內圈起點
+  $d: calc(#{$b} * .4142);
+  @return polygon(evenodd,
+    0 0, calc(100% - #{$c}) 0, 100% #{$c}, 100% 100%, #{$c} 100%, 0 calc(100% - #{$c}), 0 0,
+    #{$b} #{$b},
+    calc(100% - #{$c} - #{$d}) #{$b},
+    calc(100% - #{$b}) calc(#{$c} + #{$d}),
+    calc(100% - #{$b}) calc(100% - #{$b}),
+    calc(#{$c} + #{$d}) calc(100% - #{$b}),
+    #{$b} calc(100% - #{$c} - #{$d}),
+    #{$b} #{$b}
+  );
+}
+
+@mixin cut-frame($cut: $cut-panel, $line: $line, $fill: $deck) {
+  --cut: #{$cut};
+  --cut-bw: 1px;
+  --cut-line: #{$line};
+  --cut-fill: #{$fill};
+  position: relative;
+  isolation: isolate; // 偽元素的 z-index: -1 只沉到元素自己的底下，不會跑到頁面後面
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    transition: background-color .2s ease;
+  }
+  &::before {
+    background: var(--cut-fill);
+    clip-path: cut-outer();
+  }
+  &::after {
+    background: var(--cut-line);
+    clip-path: cut-ring();
+  }
+}
+
+// 切角容器裡、貼齊上緣的圖片（卡片封面）：內縮 1px 讓框線露出，右上角跟著切
+@mixin cut-media-top {
+  margin: 1px 1px 0;
+  clip-path: polygon(0 0, calc(100% - var(--cut) + .586px) 0, 100% calc(var(--cut) - .586px), 100% 100%, 0 100%);
+}
+
+// ---------- 輸入框切角 ----------
+// <input> 不能有偽元素：直接 clip-path 切掉兩角，斜邊的框線用兩道 45° 的線性漸層補上。
+// 焦點環改畫在內側（inset box-shadow），才不會被 clip-path 切掉
+@mixin cut-input($c: $cut-button) {
+  --input-cut: #{$c};
+  --input-line: #{$control};
+  $d: $c * .7071; // 斜邊到角落的距離（c ÷ √2）
+  clip-path: cut-outer(var(--input-cut));
+  background-origin: border-box; // 斜邊的線從框線外緣量起，才會和上、右框線接上
+  background-clip: border-box;
+  background-image:
+    linear-gradient(225deg, transparent 0 #{$d}, var(--input-line) #{$d} #{$d + 1.2px}, transparent #{$d + 1.2px}),
+    linear-gradient(45deg, transparent 0 #{$d}, var(--input-line) #{$d} #{$d + 1.2px}, transparent #{$d + 1.2px});
+}
+
+// ---------- 背景網格（只在首頁 Hero、內頁標題區、底部 CTA） ----------
+@mixin grid-bg($size: $grid-size, $color: $grid) {
+  background-color: $void;
+  background-image:
+    linear-gradient(to right, $color 1px, transparent 1px),
+    linear-gradient(to bottom, $color 1px, transparent 1px);
+  background-size: $size $size;
+  background-position: center top;
+}
+
+// ---------- 掃描線（只在播放器與首頁銀幕，透明度上限 6%） ----------
+@mixin scanlines {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image: $scanline;
+}
+
+// ---------- 能量光束（橫線）：紫到粉，可加流光動畫 ----------
+@mixin beam-line($height: 2px) {
+  height: $height;
+  background-image: $beam;
+}

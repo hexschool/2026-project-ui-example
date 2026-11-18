@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description（description 結尾一律是「設計稿 02｜北歐明亮課室。」） -->
+  <title>Craftory 手感工藝線上學院</title>
+  <meta name="description" content="Craftory 手感工藝線上學院：把想學很久的那件事，變成手上的作品。跟著台灣職人，從第一刀、第一針開始。設計稿 02｜北歐明亮課室。">
+  <meta name="theme-color" content="#F6F8FA">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Noto Sans TC（中文：標題 500、內文 400、強調 700）、Manrope（英數：品牌字、價格、片長、時間碼、人數、訂單編號） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾與登入對話框在每一頁都完整寫一份；改的時候 10 個 .html 要一起改，
+      改完執行 npm run check 確認都與這份範本一致。
+    - 頁首是「浮起的白色圓角卡片列」：內縮在版心裡，sticky 距視窗頂 12px、高 64px。
+      內容：品牌（冰河藍圓角方塊＋Craftory）→ 主導覽（首頁、探索課程）→ 搜尋 → 我的課程 → 登入／註冊。
+      992px 以下：品牌靠左，右側「登入／註冊」與選單按鈕；選單在卡片裡展開，內含主導覽、搜尋、我的課程。
+      「我的課程」只有一個連結（桌機與選單共用）。
+    - 每頁只需要調整一處「目前頁面」標示：目前頁的 nav-link 加 active 與 aria-current="page"
+      index.html → 首頁；courses.html → 探索課程；
+      course.html → 探索課程（只加 active，不加 aria-current）；my-courses.html → 我的課程；
+      learn.html、orders.html → 我的課程（只加 active，不加 aria-current）；
+      guideline.html、register.html、checkout.html、order-result.html 不標示
+      scripts/check-layout.mjs 會依這份對照檢查。
+    - 登入對話框 #authModal：頁首「登入／註冊」、課程詳情「立即購買，開始上課」與註冊頁「登入」共用。
+      觸發按鈕加 data-auth-context="purchase" 時，js/main.js 會顯示未登入提示、把主要按鈕換成「登入並開始上課」，
+      並把表單送出目的地換成 checkout.html（一般情境維持 learn.html）。「立即註冊」連到 register.html。
+    - sticky 位移：頁首佔 88px（12＋64＋12），CSS 變數 --header-offset；購買卡、學習頁側欄的 sticky top 用 --sticky-top（96px）。
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <div class="container">
+        <nav class="navbar navbar-expand-lg site-header-card" aria-label="主要導覽">
+          <a class="navbar-brand site-brand" href="index.html" aria-label="Craftory 手感工藝線上學院 首頁">
+            <!-- 品牌標誌：冰河藍圓角方塊裡，一只碗與窗外的太陽 -->
+            <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9"/><path d="M7.5 15.5h17a8.5 8.5 0 0 1-17 0z"/><circle cx="21.5" cy="9.5" r="2.5"/></svg>
+            <span class="site-brand-name">Craftory</span>
+          </a>
+
+          <!-- 992px 以下：登入／註冊＋選單按鈕（桌機的登入按鈕在選單最後，Tab 順序與畫面一致） -->
+          <div class="site-header-compact d-flex d-lg-none">
+            <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#authModal">登入／註冊</button>
+            <button class="navbar-toggler site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+              <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="siteNav" class="collapse navbar-collapse">
+            <ul class="navbar-nav site-nav">
+              <li class="nav-item"><a class="nav-link active" href="index.html" aria-current="page">首頁</a></li>
+              <li class="nav-item"><a class="nav-link" href="courses.html">探索課程</a></li>
+            </ul>
+            <div class="site-header-actions">
+              <form class="site-search" role="search" action="courses.html">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control" type="search" name="q" placeholder="搜尋課程、工藝或講師" aria-label="搜尋課程">
+              </form>
+              <a class="nav-link site-mycourses" href="my-courses.html"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>我的課程</a>
+              <button class="btn btn-primary btn-sm d-none d-lg-inline-flex" type="button" data-bs-toggle="modal" data-bs-target="#authModal">登入／註冊</button>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!-- ============ 區塊一：首屏視覺與品牌宣言（Notion：全螢幕影音式主視覺＋右下「正在播放」小卡） ============ -->
+      <!-- ≥ 992px：左 5 欄文字放在雪白底上（不壓在圖上），右 7 欄是一扇高大的圓角「窗」，正在播放的淺色卡跨在窗的右下緣
+           < 992px：文字在上、窗在下（4:3），正在播放卡接在窗的下緣 -->
+      <section class="home-hero" aria-labelledby="heroTitle">
+        <div class="container">
+          <div class="row gx-lg-4 home-hero-row">
+            <div class="col-lg-5 home-hero-copy">
+              <h1 id="heroTitle" class="display-home home-hero-title">把想學很久的<wbr>那件事，<wbr>變成手上的作品。</h1>
+              <p class="home-hero-lead">跟著台灣職人，從第一刀、第一針開始。<br>一堂課，帶走一件自己做的東西。</p>
+              <div class="home-hero-actions">
+                <a class="btn btn-primary btn-lg" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看第一章</a>
+                <a class="btn btn-outline-primary btn-lg" href="courses.html">探索全部課程</a>
+              </div>
+            </div>
+            <div class="col-lg-7 home-hero-media">
+              <div class="window home-window">
+                <img src="images/hero.jpg" alt="一雙沾著濕陶土的手在淺色木桌上捏一只小陶碗，拇指壓著碗壁內側；桌上放著一小塊陶土、海綿與修坯刀，背後是灑著窗光的白牆" width="1920" height="1080">
+              </div>
+
+              <!-- 「正在播放」小卡：≥ 992px 跨在窗的右下緣（往下跨出 24px）；< 992px 接在窗的下緣 -->
+              <aside class="now-playing lite-card" aria-labelledby="nowPlayingLabel">
+                <p class="now-playing-label" id="nowPlayingLabel"><span class="now-playing-dot" aria-hidden="true"></span>正在播放</p>
+                <div class="now-playing-body">
+                  <div class="now-playing-thumb">
+                    <img src="images/player-trial.jpg" alt="" width="1920" height="1080">
+                    <i class="bi bi-play-fill" aria-hidden="true"></i>
+                  </div>
+                  <div class="now-playing-info">
+                    <p class="now-playing-course text-phrase"><span class="text-nowrap">從零開始的手捏陶｜</span><wbr>做出第一只日用食器</p>
+                    <p class="now-playing-unit text-phrase">第 1 章 ‧ <wbr>認識陶土：你該買哪一種土</p>
+                  </div>
+                </div>
+                <div class="progress" role="progressbar" aria-label="試看進度" aria-valuenow="130" aria-valuemin="0" aria-valuemax="522" aria-valuetext="02:10 / 08:42">
+                  <div class="progress-bar" style="width: 25%"></div>
+                </div>
+                <div class="now-playing-foot">
+                  <span class="num">02:10 / 08:42</span>
+                  <a class="btn btn-primary btn-sm" href="course.html#trial">繼續試看</a>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 區塊二：品牌核心痛點解決（左 4 欄只放 H2，右 8 欄 2×2 白卡；手機單欄） ============ -->
+      <section id="why" class="section home-why" aria-labelledby="whyTitle">
+        <div class="container">
+          <div class="row gy-5">
+            <div class="col-lg-4">
+              <h2 id="whyTitle" class="home-why-title">為什麼在 Craftory <wbr>學得完？</h2>
+            </div>
+            <div class="col-lg-8">
+              <ul class="row g-4 list-unstyled mb-0">
+                <li class="col-sm-6">
+                  <div class="lite-card home-why-card">
+                    <span class="icon-circle" aria-hidden="true"><i class="bi bi-film"></i></span>
+                    <h3>買前先試看</h3>
+                    <p>每門課前三支影片免費，手感對不對，看了再決定。</p>
+                  </div>
+                </li>
+                <li class="col-sm-6">
+                  <div class="lite-card home-why-card">
+                    <span class="icon-circle" aria-hidden="true"><i class="bi bi-box2-heart"></i></span>
+                    <h3>以「完成一件作品」為終點</h3>
+                    <p>課程依實際製作順序分章，跟著做就有成品。</p>
+                  </div>
+                </li>
+                <li class="col-sm-6">
+                  <div class="lite-card home-why-card">
+                    <span class="icon-circle" aria-hidden="true"><i class="bi bi-clock-history"></i></span>
+                    <h3>進度自動記住</h3>
+                    <p>關掉再回來，從上次停的那一秒繼續，不用重找。</p>
+                  </div>
+                </li>
+                <li class="col-sm-6">
+                  <div class="lite-card home-why-card">
+                    <span class="icon-circle" aria-hidden="true"><i class="bi bi-person-workspace"></i></span>
+                    <h3>職人親自授課</h3>
+                    <p>每一門課都由有實際作品與教學經驗的在地職人親自錄製。</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 區塊三：工藝分類與作品情境（4 欄白卡，4:5 圖片裱在卡片裡，課程數與完課時間常駐） ============ -->
+      <!-- 點擊帶入已篩選的課程列表：courses.html?craft=代號（js/main.js 會預先選中該分類） -->
+      <section id="crafts" class="section home-crafts" aria-labelledby="craftsTitle">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <h2 id="craftsTitle">想從哪一雙手開始？</h2>
+              <p class="section-lead">先挑一件你最想帶回家的作品，我們幫你配好對應的課程。</p>
+            </div>
+            <a class="btn btn-text d-none d-sm-inline-flex" href="courses.html">瀏覽全部工藝分類</a>
+          </div>
+          <ul class="row g-3 g-lg-4 list-unstyled mb-0">
+            <li class="col-6 col-lg-3">
+              <a class="craft-card lite-card is-snug is-link" href="courses.html?craft=pottery">
+                <span class="craft-card-media img-frame">
+                  <img src="images/craft-bowl.jpg" alt="淺色木餐桌上一只盛著白飯的手捏陶碗，筷子架在淺藍色的筷架上，旁邊是灰色亞麻餐巾" loading="lazy" width="1200" height="1500">
+                </span>
+                <span class="craft-card-body">
+                  <span class="craft-card-title">【一只每天<wbr>在用的碗】</span>
+                  <span class="craft-card-craft">陶藝手捏入門</span>
+                  <span class="craft-card-meta">
+                    <span><i class="bi bi-collection-play" aria-hidden="true"></i><span class="num">12 門課</span></span>
+                    <span><i class="bi bi-clock" aria-hidden="true"></i><span class="num">最短 4&nbsp;小時&nbsp;20&nbsp;分完課</span></span>
+                  </span>
+                </span>
+              </a>
+            </li>
+            <li class="col-6 col-lg-3">
+              <a class="craft-card lite-card is-snug is-link" href="courses.html?craft=leather">
+                <span class="craft-card-media img-frame">
+                  <img src="images/craft-cardholder.jpg" alt="淺色木桌上一只手縫的植鞣皮革卡夾，縫線整齊、插著兩張空白卡片，靠在一本淺灰布面筆記本旁" loading="lazy" width="1200" height="1500">
+                </span>
+                <span class="craft-card-body">
+                  <span class="craft-card-title">【一個縫十年<wbr>也不壞的卡夾】</span>
+                  <span class="craft-card-craft">植鞣皮革</span>
+                  <span class="craft-card-meta">
+                    <span><i class="bi bi-collection-play" aria-hidden="true"></i><span class="num">8 門課</span></span>
+                    <span><i class="bi bi-clock" aria-hidden="true"></i><span class="num">最短 3&nbsp;小時&nbsp;05&nbsp;分完課</span></span>
+                  </span>
+                </span>
+              </a>
+            </li>
+            <li class="col-6 col-lg-3">
+              <a class="craft-card lite-card is-snug is-link" href="courses.html?craft=woodwork">
+                <span class="craft-card-media img-frame">
+                  <img src="images/craft-lamp.jpg" alt="窗邊一盞亮著的原木小桌燈，燈座看得到手工具刨面與榫接，配紙燈罩，旁邊疊著幾本書" loading="lazy" width="1200" height="1500">
+                </span>
+                <span class="craft-card-body">
+                  <span class="craft-card-title">【一盞自己<wbr>做的小燈】</span>
+                  <span class="craft-card-craft">原木手工具</span>
+                  <span class="craft-card-meta">
+                    <span><i class="bi bi-collection-play" aria-hidden="true"></i><span class="num">9 門課</span></span>
+                    <span><i class="bi bi-clock" aria-hidden="true"></i><span class="num">最短 5&nbsp;小時&nbsp;40&nbsp;分完課</span></span>
+                  </span>
+                </span>
+              </a>
+            </li>
+            <li class="col-6 col-lg-3">
+              <a class="craft-card lite-card is-snug is-link" href="courses.html?craft=metal">
+                <span class="craft-card-media img-frame">
+                  <img src="images/craft-ring.jpg" alt="攤開的手掌上放著一只鍛敲的素面銀戒，下方是一個鋪著灰色亞麻的白色紙盒" loading="lazy" width="1200" height="1500">
+                </span>
+                <span class="craft-card-body">
+                  <span class="craft-card-title">【一條想送人<wbr>的銀戒】</span>
+                  <span class="craft-card-craft">金工鍛敲</span>
+                  <span class="craft-card-meta">
+                    <span><i class="bi bi-collection-play" aria-hidden="true"></i><span class="num">6 門課</span></span>
+                    <span><i class="bi bi-clock" aria-hidden="true"></i><span class="num">最短 2&nbsp;小時&nbsp;50&nbsp;分完課</span></span>
+                  </span>
+                </span>
+              </a>
+            </li>
+          </ul>
+          <a class="btn btn-text d-sm-none mt-3" href="courses.html">瀏覽全部工藝分類</a>
+        </div>
+      </section>
+
+      <!-- ============ 區塊四：熱門課程推薦（霜藍色帶滿版；≥ 992px 2×2 橫式卡，以下橫向滑動的直式卡） ============ -->
+      <section id="featured" class="section section-frost home-featured" aria-labelledby="featuredTitle">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <h2 id="featuredTitle">本月最多人開始的課</h2>
+              <p class="section-lead">都含免費試看章節，先看前三支，再決定要不要動手。</p>
+            </div>
+            <a class="btn btn-text" href="courses.html">看更多課程</a>
+          </div>
+          <ul class="course-scroller bleed-x" aria-label="本月最多人開始的課">
+            <li>
+              <article class="course-card course-card-h lite-card is-snug is-link">
+                <div class="course-card-media">
+                  <img src="images/course-pottery.jpg" alt="鋪著淺色亞麻布的餐桌上，一雙手正捏著一只小陶碗，旁邊排著幾只陰乾中的小碗、海綿與修坯刀" loading="lazy" width="1600" height="900">
+                  <span class="course-card-duration num"><i class="bi bi-clock" aria-hidden="true"></i><span class="visually-hidden">總長</span>4&nbsp;小時&nbsp;20&nbsp;分</span>
+                </div>
+                <div class="course-card-body">
+                  <ul class="chip-list course-card-tags" aria-label="分類與難度">
+                    <li class="chip">陶藝</li>
+                    <li class="chip">入門</li>
+                  </ul>
+                  <h3 class="course-card-title"><a class="stretched-link" href="course.html"><span class="text-nowrap">從零開始的手捏陶｜</span><wbr>做出第一只日用食器</a></h3>
+                  <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">林</span><span class="visually-hidden">講師</span>林子謙</p>
+                  <p class="course-card-meta">
+                    <span class="rating"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">評分</span><span class="num">4.9</span></span>
+                    <span class="num">1,845 人正在學</span>
+                  </p>
+                  <div class="course-card-foot">
+                    <p class="price">NT$&nbsp;2,480</p>
+                    <a class="btn btn-outline-primary btn-sm course-card-trial" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="course-card course-card-h lite-card is-snug is-link">
+                <div class="course-card-media">
+                  <img src="images/course-leather.jpg" alt="皮料夾在木製縫皮夾上，雙手拉著兩根針做馬鞍縫，淺色木桌上放著菱斬、皮革刀與裁好的植鞣革片" loading="lazy" width="1600" height="900">
+                  <span class="course-card-duration num"><i class="bi bi-clock" aria-hidden="true"></i><span class="visually-hidden">總長</span>3&nbsp;小時&nbsp;05&nbsp;分</span>
+                </div>
+                <div class="course-card-body">
+                  <ul class="chip-list course-card-tags" aria-label="分類與難度">
+                    <li class="chip">皮革</li>
+                    <li class="chip">入門</li>
+                  </ul>
+                  <h3 class="course-card-title"><a class="stretched-link" href="course.html"><span class="text-nowrap">植鞣皮革入門｜</span><wbr>縫一只用十年的卡夾</a></h3>
+                  <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">吳</span><span class="visually-hidden">講師</span>吳沛慈</p>
+                  <p class="course-card-meta">
+                    <span class="rating"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">評分</span><span class="num">4.8</span></span>
+                    <span class="num">1,326 人正在學</span>
+                  </p>
+                  <div class="course-card-foot">
+                    <p class="price">NT$&nbsp;1,980</p>
+                    <a class="btn btn-outline-primary btn-sm course-card-trial" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="course-card course-card-h lite-card is-snug is-link">
+                <div class="course-card-media">
+                  <img src="images/course-woodwork.jpg" alt="雙手推著木刨刨一塊實木板，刨花捲起，工作檯上排著鑿刀，旁邊立著做到一半的小几桌腳" loading="lazy" width="1600" height="900">
+                  <span class="course-card-duration num"><i class="bi bi-clock" aria-hidden="true"></i><span class="visually-hidden">總長</span>5&nbsp;小時&nbsp;40&nbsp;分</span>
+                </div>
+                <div class="course-card-body">
+                  <ul class="chip-list course-card-tags" aria-label="分類與難度">
+                    <li class="chip">木工</li>
+                    <li class="chip">進階</li>
+                  </ul>
+                  <h3 class="course-card-title"><a class="stretched-link" href="course.html"><span class="text-nowrap">原木手工具小傢俱｜</span><wbr>打造床邊小几</a></h3>
+                  <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">陳</span><span class="visually-hidden">講師</span>陳敬堯</p>
+                  <p class="course-card-meta">
+                    <span class="rating"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">評分</span><span class="num">4.9</span></span>
+                    <span class="num">862 人正在學</span>
+                  </p>
+                  <div class="course-card-foot">
+                    <p class="price">NT$&nbsp;3,280</p>
+                    <a class="btn btn-outline-primary btn-sm course-card-trial" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article class="course-card course-card-h lite-card is-snug is-link">
+                <div class="course-card-media">
+                  <img src="images/course-silver.jpg" alt="一隻手拿小鐵鎚敲擊套在戒圍棒上的銀戒，桌上放著一段銀線、銼刀與小噴槍" loading="lazy" width="1600" height="900">
+                  <span class="course-card-duration num"><i class="bi bi-clock" aria-hidden="true"></i><span class="visually-hidden">總長</span>2&nbsp;小時&nbsp;50&nbsp;分</span>
+                </div>
+                <div class="course-card-body">
+                  <ul class="chip-list course-card-tags" aria-label="分類與難度">
+                    <li class="chip">金工銀飾</li>
+                    <li class="chip">入門</li>
+                  </ul>
+                  <h3 class="course-card-title"><a class="stretched-link" href="course.html"><span class="text-nowrap">銀飾鍛敲入門｜</span><wbr>從一條銀線到一只戒指</a></h3>
+                  <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">蘇</span><span class="visually-hidden">講師</span>蘇語彤</p>
+                  <p class="course-card-meta">
+                    <span class="rating"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">評分</span><span class="num">4.8</span></span>
+                    <span class="num">1,107 人正在學</span>
+                  </p>
+                  <div class="course-card-foot">
+                    <p class="price">NT$&nbsp;2,180</p>
+                    <a class="btn btn-outline-primary btn-sm course-card-trial" href="course.html#trial"><i class="bi bi-play-fill" aria-hidden="true"></i>免費試看</a>
+                  </div>
+                </div>
+              </article>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ============ 區塊五：學員作品牆與學習保障（左 7 欄兩張作品照白卡，右 5 欄一張保障卡） ============ -->
+      <section id="guarantee" class="section home-guarantee" aria-labelledby="guaranteeTitle">
+        <div class="container">
+          <div class="section-head">
+            <h2 id="guaranteeTitle">學員作品牆 ＆ 學習保障</h2>
+          </div>
+          <div class="row g-4">
+            <!-- 左：學員的第一件作品 -->
+            <div class="col-lg-7">
+              <div class="row g-4">
+                <div class="col-sm-6">
+                  <figure class="ugc-card lite-card is-snug">
+                    <div class="img-frame">
+                      <img src="images/ugc-weekend-potter.jpg" alt="學員捏的第一只碗，造型有點歪，盛著白飯與炒青菜，放在家裡窗邊的木餐桌上" loading="lazy" width="1080" height="1080">
+                    </div>
+                    <figcaption>
+                      <blockquote>下班後一天看一支，兩週後家裡真的多了一個自己捏的碗，很有成就感。</blockquote>
+                      <p class="ugc-handle">@weekend_potter</p>
+                    </figcaption>
+                  </figure>
+                </div>
+                <div class="col-sm-6">
+                  <figure class="ugc-card lite-card is-snug">
+                    <div class="img-frame">
+                      <img src="images/ugc-leather-lin.jpg" alt="學員手縫的第一個皮革卡夾放在書桌上，旁邊有菱斬、縫針、蠟線與皮料邊角" loading="lazy" width="1080" height="1080">
+                    </div>
+                    <figcaption>
+                      <blockquote>試看的時候就發現老師會把失敗的那次也拍進去，這點對新手超重要。</blockquote>
+                      <p class="ugc-handle">@leather_lin</p>
+                    </figcaption>
+                  </figure>
+                </div>
+              </div>
+            </div>
+            <!-- 右：三項學習保障 -->
+            <div class="col-lg-5">
+              <div class="lite-card guarantee-card">
+                <ul class="guarantee-list">
+                  <li>
+                    <span class="icon-circle" aria-hidden="true"><i class="bi bi-arrow-counterclockwise"></i></span>
+                    <div>
+                      <h3>7 天不滿意退費</h3>
+                      <p>觀看未超過 20%，七天內可全額退費。</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span class="icon-circle" aria-hidden="true"><i class="bi bi-infinity"></i></span>
+                    <div>
+                      <h3>一次購買永久觀看</h3>
+                      <p>課程上架後更新的單元，也一併免費看。</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span class="icon-circle" aria-hidden="true"><i class="bi bi-chat-dots"></i></span>
+                    <div>
+                      <h3>卡關有人回答</h3>
+                      <p>每個單元都有問答區，講師 72 小時內回覆。</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 底部 Call to Action（版心內一塊霜藍圓角面板，文字靠左、按鈕靠右） ============ -->
+      <section class="section home-cta-section" aria-labelledby="ctaTitle">
+        <div class="container">
+          <div class="home-cta">
+            <h2 id="ctaTitle">這次真的要開始了嗎？</h2>
+            <a class="btn btn-primary btn-lg" href="courses.html">挑一門課，今天就動手</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <!-- 頁尾是一塊霜藍色圓角面板，內縮在版心裡、下方留 24px，和頁首的卡片列成對 -->
+        <div class="site-footer-panel">
+          <div class="row gy-5">
+            <div class="col-lg-5">
+              <a class="site-brand" href="index.html">
+                <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9"/><path d="M7.5 15.5h17a8.5 8.5 0 0 1-17 0z"/><circle cx="21.5" cy="9.5" r="2.5"/></svg>
+                <span class="site-brand-name">Craftory 手感工藝線上學院</span>
+              </a>
+              <p class="site-footer-lead">專為「想養成第二專長、<wbr>但一直沒開始」的<wbr>上班族打造的<wbr>工藝影音學院</p>
+            </div>
+            <div class="col-lg-7">
+              <div class="row gy-4">
+                <div class="col-6 col-md-4">
+                  <h2 class="site-footer-title">探索課程</h2>
+                  <ul class="list-unstyled site-footer-links mb-0">
+                    <li><a href="courses.html">陶藝</a></li>
+                    <li><a href="courses.html">皮革</a></li>
+                    <li><a href="courses.html">木工</a></li>
+                    <li><a href="courses.html">織品染繡</a></li>
+                    <li><a href="courses.html">金工銀飾</a></li>
+                    <li><a href="courses.html">蠟燭香氛</a></li>
+                    <li><a href="courses.html">紙藝絹印</a></li>
+                  </ul>
+                </div>
+                <div class="col-6 col-md-4">
+                  <h2 class="site-footer-title">學習保障</h2>
+                  <ul class="list-unstyled site-footer-links mb-0">
+                    <li><a href="index.html#guarantee">7 天不滿意退費</a></li>
+                    <li><a href="index.html#guarantee">一次購買永久觀看</a></li>
+                    <li><a href="index.html#guarantee">卡關有人回答</a></li>
+                  </ul>
+                </div>
+                <!-- 關於我們、成為講師、聯絡我們尚未設計頁面：不帶 href 的佔位連結 -->
+                <div class="col-6 col-md-4">
+                  <h2 class="site-footer-title">關於 Craftory</h2>
+                  <ul class="list-unstyled site-footer-links mb-0">
+                    <li><a>關於我們</a></li>
+                    <li><a>成為講師</a></li>
+                    <li><a>聯絡我們</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p class="site-footer-copy">
+            © 2026 Craftory 手感工藝線上學院｜<wbr>本站為課程設計稿範例，課程、講師與評價皆為示意資料。
+          </p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!--
+    登入對話框（每頁共用）
+    - 設計稿沒有後端：表單送出後前往 learn.html（視為登入成功）。串接後端時把 action 換成登入 API，並移除 GET。
+    - 電子郵件、密碼欄位不加 name，送出時網址不會帶上帳號密碼；串接後端改用 method="post" 時再補上 name。
+    - 從「立即購買，開始上課」開啟時（data-auth-context="purchase"），顯示 .auth-notice 並切換主要按鈕文字（js/main.js）
+  -->
+  <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content auth-modal">
+        <div class="modal-header">
+          <h2 class="modal-title h4" id="authModalTitle">登入 Craftory</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body">
+          <p class="auth-notice" data-auth-notice hidden>
+            <i class="bi bi-info-circle" aria-hidden="true"></i>
+            <span>登入後就能開始上課，馬上註冊只要 30 秒。</span>
+          </p>
+          <form action="learn.html">
+            <div class="mb-3">
+              <label class="form-label" for="authEmail">電子郵件</label>
+              <input id="authEmail" class="form-control" type="email" placeholder="mail@example.com" autocomplete="email">
+            </div>
+            <div class="mb-2">
+              <label class="form-label" for="authPassword">密碼</label>
+              <input id="authPassword" class="form-control" type="password" placeholder="至少 8 碼" autocomplete="current-password">
+            </div>
+            <p class="mb-4"><a class="auth-link">忘記密碼？</a></p>
+            <button class="btn btn-primary w-100" type="submit">
+              <span data-auth-label="default">登入</span>
+              <span data-auth-label="purchase" hidden>登入並開始上課</span>
+            </button>
+          </form>
+          <p class="auth-footer">還沒有帳號？<a class="auth-link" href="register.html">立即註冊</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

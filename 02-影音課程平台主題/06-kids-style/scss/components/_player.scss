@@ -1,0 +1,355 @@
+// ============================================================
+// 播放器（招牌）：電視機外框
+// 墨色機身（28px 圓角、內距 16）→ 16:9 畫面（20px 圓角、墨框）→ 墨底控制列（向日葵圖示 9.51、白字時間碼 14.60）
+// → 底部一排喇叭孔與兩顆圓形旋鈕；頂上兩根天線（喇叭孔、旋鈕、天線都是 aria-hidden 的裝飾，畫在 CSS 裡）
+// 畫面中央是 112px 向日葵大圓播放鈕（.play-orb，手機 72px）
+// 用在：課程詳情（未播放 .is-paused）、學習頁（播放中 .is-playing；狀態示意的載入失敗）、Guideline（四種狀態都有）
+// 載入中與載入失敗沒有 modifier：在 .player-screen 裡放 .player-spinner 或 .player-error
+//
+// <div class="player is-paused">
+//   <div class="player-screen ratio ratio-16x9">
+//     <img class="player-media" src="images/player-trial.jpg" alt="…">
+//     <p class="player-caption"><i class="bi bi-play-fill" aria-hidden="true"></i><span>免費試看｜…</span></p>   ← 選用
+//     <button class="play-orb player-bigplay" type="button" aria-label="播放"><i class="bi bi-play-fill" aria-hidden="true"></i></button>
+//     （載入中）<span class="player-spinner" role="status"><span class="visually-hidden">載入中</span></span>
+//     （載入失敗）<div class="player-error" role="alert">…</div>
+//   </div>
+//   <div class="player-controls">
+//     <div class="player-progress" role="slider" tabindex="0" aria-label="影片進度" … style="--played: 64%; --buffered: 78%; --mark: 64%">
+//       <span class="player-progress-buffer"></span><span class="player-progress-played"></span>
+//       <button class="player-progress-mark" type="button" data-bs-toggle="tooltip" data-bs-title="上次看到 07:18" aria-label="上次看到 07:18"></button>  ← 選用
+//       <span class="player-progress-head"></span>
+//     </div>
+//     <div class="player-bar">
+//       <button class="player-btn" …>播放／暫停</button><span class="player-time num">07:18 / 11:24</span>
+//       <span class="player-spacer"></span> 音量、速度（dropup）、字幕（dropup）、全螢幕
+//     </div>
+//   </div>
+//   <div class="player-knobs" aria-hidden="true"><span></span><span></span></div>
+// </div>
+// ============================================================
+
+$tv:          $ink;
+$tv-soft:     #43395A; // 機身亮一階：控制鈕 hover 底（向日葵圖示對它 6.9）
+$tv-track:    $ink-2;  // 進度軌道（向日葵已播放對它 4.6）
+
+.player {
+  position: relative;
+  margin-top: 2.25rem; // 天線的空間
+  padding: .625rem .625rem .5rem;
+  border: 2px solid $ink;
+  border-radius: $radius-card;
+  background: $tv;
+  color: $white;
+  box-shadow: $shadow-hard;
+
+  @include media-breakpoint-up(sm) { padding: 1rem 1rem .625rem; }
+
+  // 天線：兩根斜線＋圓頭（裝飾）
+  &::before {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    width: 96px;
+    height: 38px;
+    translate: -50% 2px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 38'%3E%3Cpath d='M48 36 18 8M48 36 78 8' stroke='#{svg-color($ink)}' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='7' r='5.5' fill='#{svg-color($coral)}' stroke='#{svg-color($ink)}' stroke-width='2.5'/%3E%3Ccircle cx='80' cy='7' r='5.5' fill='#{svg-color($sky)}' stroke='#{svg-color($ink)}' stroke-width='2.5'/%3E%3Cpath d='M34 36a14 9 0 0 1 28 0z' fill='#{svg-color($ink)}'/%3E%3C/svg%3E") center bottom / contain no-repeat;
+    pointer-events: none;
+  }
+
+  // 墨色機身上的焦點環改用向日葵（深天空對墨只有 2.7）
+  :focus-visible { outline-color: $sunflower; }
+}
+
+// 畫面
+.player-screen {
+  overflow: hidden;
+  border: 2px solid $ink;
+  border-radius: $radius-image;
+  background: #000;
+
+  .player-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// 畫面上的覆蓋文字（課程詳情：免費試看｜第 1 章 ‧ …）：白色貼紙
+.player-caption {
+  position: absolute;
+  top: .75rem;
+  left: .75rem;
+  right: auto;
+  bottom: auto;
+  width: auto;
+  height: auto;
+  max-width: calc(100% - 1.5rem);
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  padding: .25rem .875rem;
+  border: 2px solid $ink;
+  border-radius: $border-radius-pill;
+  background: $white;
+  color: $ink;
+  font-size: $font-size-sm;
+  font-weight: 800;
+  line-height: 1.5;
+
+  @include media-breakpoint-down(sm) {
+    top: .5rem;
+    left: .5rem;
+    max-width: calc(100% - 1rem);
+    padding: .125rem .625rem;
+  }
+}
+
+// 畫面中央大圓播放鈕（未播放時）
+.player-bigplay {
+  --orb: 72px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--orb);
+  height: var(--orb);
+  translate: -50% -50%;
+
+  @include media-breakpoint-up(md) { --orb: 112px; }
+}
+// < 768px 覆蓋文字會換成兩行，大圓鈕往下讓開
+@include media-breakpoint-down(md) {
+  .player-caption ~ .player-bigplay { top: 62%; }
+}
+.player.is-playing .player-bigplay { display: none; }
+
+// 控制列（墨底）
+.player-controls {
+  padding: .75rem .25rem .25rem;
+
+  @include media-breakpoint-up(sm) { padding-inline: .5rem; }
+}
+.player-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem;
+}
+.player-spacer { flex: 1; }
+.player-time {
+  margin-inline: .375rem .25rem;
+  color: $white;
+  font-size: .9375rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.player-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .25rem;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 .5rem;
+  border: 2px solid transparent;
+  border-radius: $border-radius-pill;
+  background: transparent;
+  color: $sunflower;
+  font-family: $font-family-num;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1;
+  transition: $transition-base;
+
+  &:hover,
+  &[aria-expanded="true"] { background: $tv-soft; border-color: $sunflower; }
+
+  &.is-primary {
+    background: $sunflower;
+    border-color: $sunflower;
+    color: $ink;
+
+    &:hover { background: tint-color($sunflower, 30%); }
+  }
+}
+.player-speed-label { font-size: 1rem; }
+.player .dropdown-menu { --bs-dropdown-min-width: 8rem; }
+.player .dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+
+// 音量條（裝飾性的滑桿，70%）
+.player-volume {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+}
+.player-volume-bar {
+  position: relative;
+  width: 56px;
+  height: 10px;
+  border-radius: $border-radius-pill;
+  background: linear-gradient(90deg, $sunflower 70%, $tv-track 70%);
+
+  @include media-breakpoint-down(sm) { display: none; }
+}
+// < 576px 控制列只留播放、時間、進度條、字幕、全螢幕（SPEC）：音量整組不顯示（手機用實體音量鍵），
+// 速度鈕的「1x」換成碼表圖示 .player-speed-icon，按鈕與下拉選單照常可用，aria-label「播放速度」不變
+// （只限控制列裡的速度鈕；Guideline 的按鈕狀態示範一律顯示文字）
+@include media-breakpoint-down(sm) {
+  .player-volume { display: none; }
+  .player-bar .player-speed-label { display: none; }
+}
+@include media-breakpoint-up(sm) {
+  .player-speed-icon { display: none; }
+}
+
+// 進度條：軌道（淡墨）→ 已緩衝（白 35%）→ 已播放（向日葵）→ 已觀看位置標記（天空圓點）→ 播放頭（白圓＋墨框）
+.player-progress {
+  --played: 0%;
+  --buffered: 0%;
+  --mark: 0%;
+  position: relative;
+  height: 14px;
+  margin: .25rem .375rem .625rem;
+  border-radius: $border-radius-pill;
+  background: $tv-track;
+  cursor: pointer;
+}
+.player-progress-buffer,
+.player-progress-played {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+}
+.player-progress-buffer { width: var(--buffered); background: rgba($white, .35); }
+.player-progress-played { width: var(--played); background: $sunflower; }
+.player-progress-head {
+  position: absolute;
+  top: 50%;
+  left: var(--played);
+  width: 22px;
+  height: 22px;
+  border: 3px solid $ink;
+  border-radius: 50%;
+  background: $white;
+  translate: -50% -50%;
+  box-shadow: 0 0 0 2px $sunflower;
+}
+.player-progress-mark {
+  position: absolute;
+  top: 50%;
+  left: var(--mark);
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  translate: -50% -50%;
+
+  // 看得見的是中間 14px 的天空色圓點＋墨框；外圍 30px 是觸控範圍
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 2px solid $ink;
+    border-radius: 50%;
+    background: $sky;
+  }
+}
+
+// 底部：左邊喇叭孔、右邊兩顆旋鈕（裝飾）
+.player-knobs {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: .5rem;
+  height: 30px;
+  padding-inline: .5rem;
+  // 喇叭孔：一排 5 道圓角短線
+  background-image: repeating-linear-gradient(90deg, $tv-track 0 6px, transparent 6px 12px);
+  background-size: 54px 6px;
+  background-repeat: no-repeat;
+  background-position: .625rem 50%;
+
+  span {
+    width: 22px;
+    height: 22px;
+    border: 2px solid $ink;
+    border-radius: 50%;
+    background: $sunflower;
+    box-shadow: inset -4px -4px 0 rgba($ink, .18);
+
+    + span { background: $coral; }
+  }
+}
+
+// 載入中：畫面中央一圈向日葵虛線轉動
+.player-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 72px;
+  height: 72px;
+  border: 8px dashed $sunflower;
+  border-radius: 50%;
+  translate: -50% -50%;
+  animation: player-spin 2.4s linear infinite;
+}
+@keyframes player-spin { to { rotate: 360deg; } }
+
+// 載入失敗：畫面換成淡番茄底的錯誤貼紙（Notion 文案＋重新載入）
+.player-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem;
+  padding: 1rem;
+  background: $tomato-soft;
+  color: $ink;
+  text-align: center;
+
+  p { max-width: 24em; margin: 0; font-weight: 700; }
+}
+.player-error-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border: 2px solid $tomato;
+  border-radius: 50%;
+  background: $white;
+  color: $tomato;
+  font-size: 2rem;
+
+  @include media-breakpoint-down(sm) { width: 48px; height: 48px; font-size: 1.5rem; }
+}
+
+// 手機：錯誤訊息比 16:9 的畫面高，畫面改成跟著內容長高
+@include media-breakpoint-down(sm) {
+  .player-screen:has(> .player-error) {
+    &::before { padding-top: 0; }
+
+    > .player-error {
+      position: relative;
+      height: auto;
+      min-height: 200px;
+      padding-block: 1.25rem;
+    }
+  }
+}
+
+// 手機：機身內距縮小（方向說明：外框內距 16 → 10）
+@include media-breakpoint-down(sm) {
+  .player { border-radius: 1.25rem; }
+  .player-screen { border-radius: .875rem; }
+}

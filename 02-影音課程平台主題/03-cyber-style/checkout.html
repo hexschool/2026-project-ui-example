@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description（description 結尾一律加「設計稿 03｜AI 賽博學院。」） -->
+  <title>購買課程｜Craftory 手感工藝線上學院</title>
+  <meta name="description" content="確認要購買的課程與付款方式，付款完成就能開始上課，一次購買永久觀看。設計稿 03｜AI 賽博學院。">
+  <meta name="theme-color" content="#0B0D2A">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Noto Sans TC（中文 400／700／900）、Oxanium（品牌字、價格、統計數字）、JetBrains Mono（時間碼、編號、終端機筆記） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+TC:wght@400;700;900&family=Oxanium:wght@600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾、搜尋抽屜、登入對話框在每一頁都完整寫一份；改的時候 10 個 .html 要一起改，
+      改完執行 npm run check 確認都與這份範本一致。
+    - 頁首是同一份 header.site-header（不是兩份標記），只靠 CSS 在 992px 切換兩種形態：
+      992px 以上：固定在左側的 App 導覽軌（寬 88px）。由上而下：品牌 → 首頁、探索課程 → 我的課程、搜尋 → 最下方登入／註冊。
+      992px 以下：頂欄（高 64px＋底緣 2px 光束）。品牌靠左，右側是搜尋、登入／註冊（576px 以下縮成圖示）與選單鈕；
+      選單展開後是直向清單（首頁、探索課程、我的課程）。
+    - 「我的課程」有兩個連結：選單裡一個（992px 以下）、導覽軌工具區一個（992px 以上），兩個都連到 my-courses.html。
+    - 每頁只需要調整一處「目前頁面」標示（加 active；目前頁本身再加 aria-current="page"）：
+      index.html → 首頁；courses.html → 探索課程；
+      course.html → 探索課程（只加 active，不加 aria-current）；
+      my-courses.html → 我的課程（選單裡與導覽軌各一個，兩個都加 active 與 aria-current）；
+      learn.html、orders.html → 我的課程（兩個都只加 active，不加 aria-current）；
+      guideline.html、register.html、checkout.html、order-result.html 不標示。
+      這份對照和 scripts/check-layout.mjs 的 expectedNav、noCurrent 一致。
+    - 搜尋：導覽軌與頂欄的搜尋鈕都開同一個 Offcanvas（#siteSearch，從左滑出），
+      js/main.js 在 shown.bs.offcanvas 時把焦點放進搜尋框。Offcanvas 與對話框放在頁尾之後（不在頁首裡），
+      z-index 才會高於導覽軌與遮罩。
+    - 登入對話框：頁首「登入／註冊」、課程詳情「立即購買，開始上課」與註冊頁「登入」共用。
+      從購買按鈕開啟時（按鈕加 data-auth-context="purchase"），js/main.js 會顯示未登入提示，
+      把主要按鈕改成「登入並開始上課」，並把表單改成送出到 checkout.html（一般情境送出到 learn.html）。
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="site-rail" aria-label="主要導覽">
+        <a class="site-brand" href="index.html" aria-label="Craftory 手感工藝線上學院 首頁">
+          <svg class="site-brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+            <path class="site-brand-frame" d="M1.5 1.5h22l7 7v22h-22l-7-7z" />
+            <path class="site-brand-play" d="M12.5 10.5v11l9-5.5z" />
+          </svg>
+          <span class="site-brand-name">Craftory</span>
+        </a>
+
+        <!-- 992px 以下：頂欄右側的按鈕（桌機的同一組功能在導覽軌裡） -->
+        <div class="site-bar-actions">
+          <button class="site-icon-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-label="搜尋課程">
+            <i class="bi bi-search" aria-hidden="true"></i>
+          </button>
+          <!-- 576px 以上顯示文字按鈕，以下縮成圖示 -->
+          <button class="btn btn-sm btn-outline-primary site-login d-none d-sm-inline-flex" type="button" data-bs-toggle="modal" data-bs-target="#authModal">登入／註冊</button>
+          <button class="site-icon-btn d-sm-none" type="button" data-bs-toggle="modal" data-bs-target="#authModal" aria-label="登入／註冊">
+            <i class="bi bi-person" aria-hidden="true"></i>
+          </button>
+          <button class="site-icon-btn site-menu-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+            <i class="bi bi-list" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <!-- 992px 以上一直顯示（導覽軌本體）；以下是選單鈕展開的直向清單 -->
+        <div id="siteNav" class="collapse site-rail-body">
+          <ul class="site-nav">
+            <li><a class="nav-link" href="index.html"><i class="bi bi-house-door" aria-hidden="true"></i><span>首頁</span></a></li>
+            <li><a class="nav-link" href="courses.html"><i class="bi bi-grid-1x2" aria-hidden="true"></i><span>探索課程</span></a></li>
+            <!-- 992px 以下：我的課程收進選單 -->
+            <li class="d-lg-none"><a class="nav-link" href="my-courses.html"><i class="bi bi-collection-play" aria-hidden="true"></i><span>我的課程</span></a></li>
+          </ul>
+          <!-- 992px 以上：導覽軌的工具區（我的課程、搜尋），和主導覽之間隔一段短光束 -->
+          <ul class="site-nav site-nav-tools">
+            <li><a class="nav-link" href="my-courses.html"><i class="bi bi-collection-play" aria-hidden="true"></i><span>我的課程</span></a></li>
+            <li><button class="site-rail-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#siteSearch" aria-controls="siteSearch"><i class="bi bi-search" aria-hidden="true"></i><span>搜尋</span></button></li>
+          </ul>
+          <div class="site-rail-foot">
+            <button class="site-rail-btn site-rail-login" type="button" data-bs-toggle="modal" data-bs-target="#authModal"><i class="bi bi-person" aria-hidden="true"></i><span>登入／註冊</span></button>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!--
+        購買課程（2026-11 補，只做手捏陶）：摘要主控台在左、付款在右（版型見 scss/pages/_checkout.scss）
+        - 整個 .co-layout 就是一張 <form action="order-result.html">。只有付款方式的 radio 有 name（payment=card／linepay／applepay，不是個資）；
+          卡號、有效期限、安全碼、電子發票都不加 name，網址不會帶上個資。卡號欄位不加 required，審稿時不填也能走到付款結果
+        - HTML 依手機的閱讀順序寫：主控台（課程摘要 → 應付金額＋確認付款）→ 購買帳號、付款方式、發票；
+          992px 以下主控台是 display: contents，用 order 排成「課程摘要 → 表單 → 應付金額＋確認付款」，
+          992px 以上主控台是左欄 sticky 的切角面板（視窗高度不到 760px 時不 sticky）
+        - 信用卡欄位放在「信用卡」選項的面板裡；選 LINE Pay、Apple Pay 時用 CSS :has() 收起（沒有 JS）
+      -->
+      <header class="page-header grid-bg">
+        <div class="container">
+          <a class="btn btn-text co-back" href="course.html"><i class="bi bi-arrow-left" aria-hidden="true"></i>回到課程介紹</a>
+          <h1>購買課程</h1>
+          <p class="page-lead text-phrase">付款完成後，<wbr>課程會開通在你的帳號，<wbr>馬上就能開始上課。</p>
+        </div>
+      </header>
+
+      <div class="container">
+        <form class="co-layout" action="order-result.html">
+          <!-- ========== 主控台：購買摘要（992px 以上左欄 sticky） ========== -->
+          <div class="co-console">
+            <span class="co-console-beam" aria-hidden="true"></span>
+            <section id="summary" class="co-summary" aria-labelledby="coSummaryTitle">
+              <h2 id="coSummaryTitle" class="hud-title">購買的課程</h2>
+              <div class="course-summary">
+                <div class="course-summary-media"><img src="images/course-pottery.jpg" alt="" width="1600" height="900"></div>
+                <div class="course-summary-body">
+                  <p class="course-summary-title text-phrase">從零開始的手捏陶｜<wbr>做出第一只日用食器</p>
+                  <p class="course-card-teacher"><span class="avatar-text" aria-hidden="true">林</span><span><span class="visually-hidden">講師</span>林子謙</span></p>
+                  <ul class="meta-list course-summary-meta" aria-label="課程資訊">
+                    <li><i class="bi bi-collection-play" aria-hidden="true"></i><span class="mono">6&nbsp;章 28&nbsp;單元</span></li>
+                    <li><i class="bi bi-clock" aria-hidden="true"></i><span>總長 <span class="mono">4&nbsp;小時 20&nbsp;分</span></span></li>
+                  </ul>
+                </div>
+              </div>
+              <h3 class="purchase-card-title">購買包含</h3>
+              <ul class="purchase-card-includes co-includes">
+                <li><i class="bi bi-play-btn" aria-hidden="true"></i><span><span class="num">28</span>&nbsp;支教學影片</span></li>
+                <li><i class="bi bi-infinity" aria-hidden="true"></i>永久觀看</li>
+                <li><i class="bi bi-chat-dots" aria-hidden="true"></i>課程問答區</li>
+                <li><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>可下載材料清單 PDF</li>
+              </ul>
+              <!-- 永久觀看的說明：課程詳情常見問題的一問一答（Notion 原文） -->
+              <dl class="co-faq">
+                <dt>購買後可以看多久？</dt>
+                <dd>永久觀看，課程日後更新的單元也會一併開放。</dd>
+              </dl>
+            </section>
+
+            <!-- 應付金額＋安心提示＋確認付款：不論哪個寬度，按鈕之前都看得到金額與安心提示 -->
+            <div class="co-total">
+              <dl class="co-amount">
+                <dt>應付金額</dt>
+                <dd class="price">NT$&nbsp;2,480</dd>
+              </dl>
+              <p class="purchase-card-note"><i class="bi bi-shield-check" aria-hidden="true"></i><span>7 天內觀看未逾 20%，可全額退費。</span></p>
+              <button class="btn btn-primary btn-lg w-100" type="submit">確認付款 NT$&nbsp;2,480</button>
+            </div>
+          </div>
+
+          <!-- ========== 右欄：購買帳號、付款方式、發票 ========== -->
+          <div class="co-fields">
+            <section class="co-section" aria-labelledby="coAccountTitle">
+              <h2 id="coAccountTitle" class="hud-title">購買帳號</h2>
+              <p class="co-account">
+                <i class="bi bi-person" aria-hidden="true"></i>
+                <span><span class="co-account-email">koen.hsu@example.com</span><span class="co-account-note">課程會開通在這個帳號。</span></span>
+              </p>
+            </section>
+
+            <fieldset id="payment" class="co-section">
+              <legend class="hud-title">付款方式</legend>
+              <!-- 3 塊切角面板：選中＝電光粉框＋紫光（CSS :has()），radio 本身是實心圓點 -->
+              <div class="co-pay-options">
+                <div class="co-pay">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="payment" id="payCard" value="card" checked>
+                    <label class="form-check-label" for="payCard">
+                      <span class="co-pay-name"><i class="bi bi-credit-card" aria-hidden="true"></i>信用卡</span>
+                      <span class="co-pay-note">支援 VISA、Mastercard、JCB。</span>
+                    </label>
+                  </div>
+                  <div class="co-card-fields">
+                    <div class="co-card-number">
+                      <label class="form-label" for="cardNumber">卡號</label>
+                      <input class="form-control" id="cardNumber" type="text" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000">
+                    </div>
+                    <div>
+                      <label class="form-label" for="cardExpiry">有效期限</label>
+                      <input class="form-control" id="cardExpiry" type="text" inputmode="numeric" autocomplete="cc-exp" placeholder="MM / YY">
+                    </div>
+                    <div>
+                      <label class="form-label" for="cardCsc">安全碼</label>
+                      <input class="form-control" id="cardCsc" type="text" inputmode="numeric" autocomplete="cc-csc" aria-describedby="cardCscHelp">
+                      <div class="form-text" id="cardCscHelp">卡片背面 3 碼</div>
+                    </div>
+                  </div>
+                </div>
+                <!-- LINE Pay 不畫品牌標誌，用一般的錢包圖示 -->
+                <div class="co-pay">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="payment" id="payLinePay" value="linepay">
+                    <label class="form-check-label" for="payLinePay">
+                      <span class="co-pay-name"><i class="bi bi-wallet2" aria-hidden="true"></i>LINE Pay</span>
+                      <span class="co-pay-note">按下確認付款後，會開啟 LINE Pay 完成付款。</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="co-pay">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="payment" id="payApplePay" value="applepay">
+                    <label class="form-check-label" for="payApplePay">
+                      <span class="co-pay-name"><i class="bi bi-apple" aria-hidden="true"></i>Apple Pay</span>
+                      <span class="co-pay-note">在支援 Apple Pay 的裝置與瀏覽器上使用。</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <section id="invoice" class="co-section" aria-labelledby="coInvoiceTitle">
+              <h2 id="coInvoiceTitle" class="hud-title">發票</h2>
+              <!-- 選手機條碼、捐贈、公司報帳時要多填的欄位，設計稿不畫 -->
+              <label class="form-label" for="invoiceType">電子發票</label>
+              <select class="form-select" id="invoiceType" autocomplete="off" aria-describedby="invoiceHelp">
+                <option selected>會員載具（寄到電子郵件）</option>
+                <option>手機條碼載具</option>
+                <option>捐贈發票</option>
+                <option>公司報帳（需填統一編號）</option>
+              </select>
+              <div class="form-text" id="invoiceHelp">付款完成後開立，寄到購買帳號的電子郵件。</div>
+            </section>
+          </div>
+        </form>
+      </div>
+
+      <!-- ========== 設計稿狀態示意 ========== -->
+      <section class="demo-state" aria-labelledby="checkoutDemoTitle">
+        <div class="container">
+          <p class="demo-state-tag"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意</p>
+          <h2 id="checkoutDemoTitle" class="demo-state-heading">這一頁的其他狀態</h2>
+
+          <div class="row g-4 g-xl-5">
+            <div class="col-lg-6">
+              <div class="demo-state-item">
+                <h3 class="demo-state-title">付款處理中</h3>
+                <p class="text-note">按下確認付款之後、付款結果出來之前，按鈕停用並顯示轉圈，避免重複付款。</p>
+                <div class="demo-state-stage">
+                  <div class="co-demo-console">
+                    <button class="btn btn-primary btn-lg w-100 co-processing" type="button" disabled><span class="spinner-border spinner-border-sm" aria-hidden="true"></span>付款處理中</button>
+                    <p class="text-note mt-3 mb-0">付款處理中，請不要關閉或重新整理這個頁面。</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-6">
+              <div class="demo-state-item">
+                <h3 class="demo-state-title">付款失敗</h3>
+                <p class="text-note">從付款結果頁按「重新付款」回來時，這則提示出現在付款方式上方；選好的付款方式與發票設定保留，卡號要重新輸入。</p>
+                <div class="demo-state-stage">
+                  <div class="notice is-error">
+                    <i class="bi bi-x-octagon" aria-hidden="true"></i>
+                    <div>
+                      <p class="co-alert-title">剛才的付款沒有完成</p>
+                      <p>發卡銀行沒有核准這筆交易，這次沒有扣款。可以確認額度後再試一次，或改用 LINE Pay、Apple Pay 付款。</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="row gy-5">
+          <div class="col-lg-4">
+            <a class="site-brand" href="index.html" aria-label="Craftory 手感工藝線上學院 首頁">
+              <svg class="site-brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+                <path class="site-brand-frame" d="M1.5 1.5h22l7 7v22h-22l-7-7z" />
+                <path class="site-brand-play" d="M12.5 10.5v11l9-5.5z" />
+              </svg>
+              <span class="site-brand-name">Craftory</span>
+            </a>
+            <p class="site-footer-name">Craftory 手感工藝線上學院</p>
+            <p class="site-footer-lead text-phrase">專為「想養成第二專長、<wbr>但一直沒開始」的上班族<wbr>打造的工藝影音學院</p>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2 offset-lg-1">
+            <h2 class="site-footer-title">探索課程</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="courses.html">陶藝</a></li>
+              <li><a href="courses.html">皮革</a></li>
+              <li><a href="courses.html">木工</a></li>
+              <li><a href="courses.html">織品染繡</a></li>
+              <li><a href="courses.html">金工銀飾</a></li>
+              <li><a href="courses.html">蠟燭香氛</a></li>
+              <li><a href="courses.html">紙藝絹印</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">學習保障</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="index.html#guarantee">7 天不滿意退費</a></li>
+              <li><a href="index.html#guarantee">一次購買永久觀看</a></li>
+              <li><a href="index.html#guarantee">卡關有人回答</a></li>
+            </ul>
+          </div>
+          <!-- 關於我們、成為講師、聯絡我們尚未設計頁面：不帶 href 的佔位連結 -->
+          <div class="col-md-4 col-lg-3">
+            <h2 class="site-footer-title">關於 Craftory</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a>關於我們</a></li>
+              <li><a>成為講師</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="site-footer-copy">
+          © 2026 Craftory 手感工藝線上學院｜<wbr>本站為課程設計稿範例，課程、講師與評價皆為示意資料。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!--
+    搜尋抽屜（所有頁面共用）：導覽軌與頂欄的搜尋鈕都開這一個，從左滑出（寬 400px）。
+    表單送到課程列表 courses.html（name="q"）
+  -->
+  <div class="offcanvas offcanvas-start site-search-panel" tabindex="-1" id="siteSearch" aria-labelledby="siteSearchTitle">
+    <div class="offcanvas-header">
+      <h2 class="offcanvas-title" id="siteSearchTitle">搜尋課程</h2>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="關閉"></button>
+    </div>
+    <div class="offcanvas-body">
+      <form class="site-search" role="search" action="courses.html">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input class="form-control" type="search" name="q" placeholder="搜尋課程、工藝或講師" aria-label="搜尋課程">
+      </form>
+    </div>
+  </div>
+
+  <!--
+    登入對話框（所有頁面共用）
+    - 設計稿沒有後端：表單送出後直接前往學習頁 learn.html（視為登入成功）。
+      欄位沒有 name，送出時網址不會帶上帳號密碼；串接後端時再補上 name 與 method="post"。
+    - .auth-hint 預設隱藏；從「立即購買，開始上課」開啟時由 js/main.js 顯示
+  -->
+  <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content auth-modal">
+        <div class="modal-header">
+          <h2 class="modal-title h4" id="authModalTitle">登入 Craftory</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body">
+          <p class="auth-hint" hidden>
+            <i class="bi bi-info-circle" aria-hidden="true"></i>
+            <span>登入後就能開始上課，馬上註冊只要 30 秒。</span>
+          </p>
+          <form class="auth-form" action="learn.html">
+            <div class="mb-3">
+              <label class="form-label" for="authEmail">電子郵件</label>
+              <input class="form-control" id="authEmail" type="email" placeholder="mail@example.com" autocomplete="email">
+            </div>
+            <div class="mb-2">
+              <label class="form-label" for="authPassword">密碼</label>
+              <input class="form-control" id="authPassword" type="password" placeholder="至少 8 碼" autocomplete="current-password">
+            </div>
+            <p class="text-end mb-4">
+              <a class="btn btn-text">忘記密碼？</a>
+            </p>
+            <button class="btn btn-primary w-100" type="submit" data-auth-submit data-label-default="登入" data-label-purchase="登入並開始上課">登入</button>
+          </form>
+        </div>
+        <div class="modal-footer auth-modal-footer">
+          <p class="mb-0">還沒有帳號？<a class="btn btn-text" href="register.html">立即註冊</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

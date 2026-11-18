@@ -1,6 +1,6 @@
 # _wireframe：共用的線框圖參考
 
-這個資料夾是影音課程平台設計稿的**資訊架構與版型依據**：所有風格（`01-dark-theater-style`、`04-scholar-style`、`05-swiss-style` 以及之後的各套）的頁面組成、區塊順序與欄數都以這裡為準。它本身不需要安裝任何東西，瀏覽器直接開就能看。
+這個資料夾是影音課程平台設計稿的**資訊架構與版型依據**：6 套風格（`01-dark-theater-style`、`02-nordic-style`、`03-cyber-style`、`04-scholar-style`、`05-swiss-style`、`06-kids-style`）的頁面組成、區塊順序與欄數都以這裡為準。它本身不需要安裝任何東西，瀏覽器直接開就能看。
 
 - 來源：<https://wireframe-2-video-platform.vercel.app/>（v0 產生的 Next.js 單頁應用，原站標題「Craftory｜把想學很久的事，變成手上的作品」）
 - 鏡像日期：2026-10-06，共 5 個鏡像頁：4 個對應本次頁面（首頁、課程列表、課程詳情、學習頁）＋講師後台（參考，不做）

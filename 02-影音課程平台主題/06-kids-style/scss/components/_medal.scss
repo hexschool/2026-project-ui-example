@@ -1,0 +1,140 @@
+// ============================================================
+// 通關勳章（招牌）：向日葵圓牌＋墨框＋白色星星＋珊瑚與天空兩條緞帶
+// 用在：首頁底部 CTA（靜態裝飾）、付款結果（載入時 pop）、學習頁狀態示意（完成一章、全課完成）、
+//       我的課程的已完課卡（捲進畫面才播）、Guideline 示範
+//
+// 標記（整枚勳章是裝飾，aria-hidden；意思由旁邊的文字說明）：
+//   <span class="medal medal-animate" aria-hidden="true">
+//     <svg class="medal-art" viewBox="0 0 120 120">
+//       <path class="medal-ribbon-a" d="M44 76 30 114l14-8 8 12 10-36z"/><path class="medal-ribbon-b" d="M76 76l14 38-14-8-8 12-10-36z"/>
+//       <circle class="medal-disc" cx="60" cy="50" r="40"/><circle class="medal-ring" cx="60" cy="50" r="31"/>
+//       <path class="medal-star" d="M60 33l4.41 10.93 11.76.82-9.04 7.57 2.86 11.43L60 57.5l-9.99 6.25 2.86-11.43-9.04-7.57 11.76-.82z"/>
+//     </svg>
+//     <span class="medal-shine"></span>
+//     <span class="medal-spark is-1"></span><span class="medal-spark is-2"></span><span class="medal-spark is-3"></span>
+//   </span>
+// 尺寸：--medal（預設 120px），盒子尺寸固定，動畫只動 transform 與 opacity，不影響周圍版面
+// 動畫：.medal-animate＝載入時播一次（首屏內）；.medal-animate-view＝捲進畫面才播（首屏以下，
+//       只在支援 animation-timeline: view() 的瀏覽器，不支援就是靜態勳章；整枚進到畫面時已經播完）；不加＝靜態
+// prefers-reduced-motion: reduce：直接顯示最終狀態，沒有光澤與星星（_base.scss 統一關掉動畫）
+// ============================================================
+
+.medal {
+  --medal: 120px;
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: var(--medal);
+  height: var(--medal);
+  vertical-align: middle;
+}
+.medal-sm { --medal: 72px; }
+.medal-md { --medal: 96px; }
+
+.medal-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  stroke: $ink;
+  stroke-linejoin: round;
+}
+.medal-ribbon-a { fill: $coral; stroke-width: 3; }
+.medal-ribbon-b { fill: $sky; stroke-width: 3; }
+.medal-disc     { fill: $sunflower; stroke-width: 3; }
+.medal-ring     { fill: none; stroke-width: 2; stroke-dasharray: 4 5; stroke-linecap: round; }
+.medal-star     { fill: $white; stroke-width: 2.5; }
+
+// 光澤：疊在圓牌上（圓牌在 SVG 的 cx60 cy50 r40 → 盒子的 16.67%／8.33%，直徑 66.67%）
+.medal-shine {
+  position: absolute;
+  top: 8.333%;
+  left: 16.667%;
+  width: 66.667%;
+  height: 66.667%;
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    left: 0;
+    width: 36%;
+    background: linear-gradient(90deg, rgba($white, 0), rgba($white, .75), rgba($white, 0));
+    transform: translateX(-180%) rotate(18deg);
+  }
+}
+
+// 小星星：預設不顯示（只在動畫裡閃一次）
+.medal-spark {
+  position: absolute;
+  width: 14%;
+  height: 14%;
+  background: $sky;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  opacity: 0;
+  pointer-events: none;
+
+  &.is-1 { top: 2%;  left: 4%; }
+  &.is-2 { top: 0;   right: 6%; background: $coral; width: 11%; height: 11%; }
+  &.is-3 { top: 44%; right: 0;  background: $leaf; }
+  &.is-4 { top: 48%; left: 0;   background: $sunflower; width: 10%; height: 10%; }
+}
+
+@keyframes medal-pop {
+  0%   { opacity: 0; transform: scale(.6) rotate(-8deg); }
+  60%  { opacity: 1; transform: scale(1.08) rotate(2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes medal-shine {
+  from { transform: translateX(-180%) rotate(18deg); }
+  to   { transform: translateX(320%) rotate(18deg); }
+}
+@keyframes medal-spark {
+  0%   { opacity: 0; transform: scale(.3); }
+  45%  { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0; transform: scale(.6); }
+}
+
+// 載入時播一次：pop 700ms → 光澤掃過 → 星星閃一下
+.medal-animate {
+  .medal-art { animation: medal-pop 700ms $ease-pop both; transform-origin: 50% 45%; }
+  .medal-shine::after { animation: medal-shine 650ms ease-out 650ms both; }
+  .medal-spark { animation: medal-spark 900ms ease-out 500ms both; }
+  .medal-spark.is-2 { animation-delay: 620ms; }
+  .medal-spark.is-3 { animation-delay: 740ms; }
+  .medal-spark.is-4 { animation-delay: 860ms; }
+}
+
+// 捲進畫面才播（scroll-driven）；不支援時是靜態勳章
+// 整段動畫在勳章「進場」的這段捲動裡跑完（entry 0%＝勳章上緣碰到視窗底、entry 100%＝勳章整枚進到畫面）：
+// 只要整枚勳章看得到，就一定是最終狀態，停在畫面下緣也不會半透明。
+// 捲進版只動 transform、不動 opacity：還沒捲到的勳章（例如不捲動的整頁截圖）是縮小、微斜的勳章，不會是一塊空白
+@keyframes medal-pop-in {
+  0%   { transform: scale(.6) rotate(-8deg); }
+  60%  { transform: scale(1.08) rotate(2deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+@supports (animation-timeline: view()) {
+  .medal-animate-view {
+    .medal-art {
+      transform-origin: 50% 45%;
+      animation: medal-pop-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+    .medal-shine::after {
+      animation: medal-shine linear both;
+      animation-timeline: view();
+      animation-range: entry 55% entry 100%;
+    }
+    .medal-spark {
+      animation: medal-spark linear both;
+      animation-timeline: view();
+      animation-range: entry 40% entry 100%;
+    }
+  }
+}

@@ -1,0 +1,559 @@
+// ============================================================
+// 首頁 index.html（class 前綴 home-）
+// 首屏是「鏡像分割」：左 5 欄拱門形主圖＋120px 大圓播放鈕＋斜貼的「正在播放」貼紙；
+// 右 7 欄是淡向日葵色帶與兩座小山丘，放 H1、副標、兩顆按鈕
+// < 992px：拱門在上（上方 40% 圓角、4:5）→ 正在播放貼紙壓在圖片下緣、不旋轉 → 文字在滿版色帶上
+// ============================================================
+
+// 小山丘（天空色的後山＋葉綠色的前山，墨色描邊）：每 640px 一組，左右接得起來
+$hills-back:  "M0 64C80 64 140 24 220 24C300 24 360 72 440 72C520 72 560 64 640 64";
+$hills-front: "M0 104C120 104 200 104 260 92C340 76 420 52 500 52C580 52 600 104 640 104";
+$hills-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 120' width='640' height='120'%3E%3Cpath d='#{$hills-back}V120H0Z' fill='#{svg-color($sky)}'/%3E%3Cpath d='#{$hills-back}' fill='none' stroke='#{svg-color($ink)}' stroke-width='2'/%3E%3Cpath d='#{$hills-front}V120H0Z' fill='#{svg-color($leaf)}'/%3E%3Cpath d='#{$hills-front}' fill='none' stroke='#{svg-color($ink)}' stroke-width='2'/%3E%3C/svg%3E");
+
+// ---------- 首屏 ----------
+.home-hero {
+  position: relative;
+  overflow: clip; // 色帶往右延伸到視窗外，在這裡裁掉
+
+  @include media-breakpoint-up(lg) {
+    display: flex;
+    min-height: max(600px, calc(100svh - #{$header-offset}));
+  }
+}
+.home-hero-inner {
+  @include media-breakpoint-up(lg) {
+    display: flex;
+    flex-direction: column;
+  }
+}
+.home-hero-row {
+  @include media-breakpoint-up(lg) { flex: 1; }
+}
+
+// 右側文字：淡向日葵色帶（::before，往右延伸到視窗邊、往左伸到拱門後面）＋小山丘
+.home-hero-copy {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 2.5rem;
+  padding-bottom: 8rem; // 留給小山丘
+
+  &::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    bottom: 0;
+    left: -100vw;
+    right: -100vw;
+    background: $hills-svg 0 100% / 640px 120px repeat-x, $sun-soft;
+  }
+
+  @include media-breakpoint-up(lg) {
+    padding: 4rem 0 9.5rem 3.5rem;
+
+    &::before {
+      left: -34%;
+      border-bottom-left-radius: 120px;
+    }
+  }
+  @include media-breakpoint-up(xl) { padding-left: 4.5rem; }
+}
+
+.home-hero-title {
+  margin-bottom: 1.25rem;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.home-hero-lead {
+  max-width: 30em;
+  margin-bottom: 2rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: $ink-2;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+
+  @include media-breakpoint-up(lg) { font-size: 1.1875rem; }
+}
+.home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+// 色帶角落的圓形色塊（裝飾）
+.home-hero-dot-a { --d: 84px; --c: #{$sky}; top: 2.5rem; right: -1.5rem; }
+.home-hero-dot-b { --d: 30px; --c: #{$coral}; top: 8.5rem; right: 4.5rem; }
+@include media-breakpoint-down(lg) {
+  .home-hero-dot-a { --d: 56px; top: 1.5rem; right: -.75rem; }
+  .home-hero-dot-b { top: 4.5rem; right: 3rem; }
+}
+
+// 左側：拱門主圖
+.home-hero-media {
+  order: -1; // 畫面上永遠在文字前（左、上）；DOM 裡 H1 在前
+  container-type: inline-size;
+  padding-top: 2rem;
+
+  @include media-breakpoint-up(lg) {
+    display: flex;
+    padding-top: 3rem;
+    padding-bottom: 5.5rem; // 大圓播放鈕跨在拱門底緣，下方要留半顆的空間
+  }
+}
+
+.home-arch {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
+
+  @include media-breakpoint-up(lg) {
+    max-width: none;
+    min-height: 460px;
+  }
+}
+
+// 拱門：上方半圓（半徑＝拱門寬的一半，用 cqw 算）、下方 28px；後面錯開一片天空色拱門當層次
+.home-arch-frame,
+.home-arch::before {
+  border: 2px solid $ink;
+  border-radius: 40% 40% #{$radius-card} #{$radius-card} / 32% 32% #{$radius-card} #{$radius-card};
+
+  @include media-breakpoint-up(lg) {
+    border-radius: 50cqw 50cqw $radius-card $radius-card;
+  }
+}
+.home-arch::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 14px -14px -14px 14px;
+  background: $sky;
+
+  @include media-breakpoint-down(sm) { inset: 10px -6px -10px 6px; }
+}
+.home-arch-frame {
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  background: $sky-soft;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 72% 35%; // 讓右上的手和碗留在拱門裡
+  }
+
+  @include media-breakpoint-up(lg) {
+    position: absolute;
+    inset: 0;
+    aspect-ratio: auto;
+  }
+}
+
+// 大圓播放鈕：≥ 992px 跨在拱門底緣的正中央（不擋住手和碗）；以下在圖片中央偏下
+// 文字按鈕已經有同一個連結，所以 tabindex="-1"＋aria-hidden
+.home-hero-orb {
+  --orb: 88px;
+  position: absolute;
+  z-index: 1;
+  top: 44%;
+  left: 50%;
+  translate: -50% -50%;
+
+  @include media-breakpoint-up(lg) {
+    --orb: 120px;
+    top: auto;
+    bottom: 0;
+    translate: -50% 50%;
+  }
+}
+
+// 「正在播放」貼紙：≥ 992px 斜貼在拱門右下角、跨過拱門邊緣；以下壓在圖片下緣、不旋轉
+.now-playing {
+  position: relative;
+  z-index: 2;
+  margin: -3rem .75rem 0;
+  padding: 1rem 1.125rem 1.125rem;
+  border: 2px solid $ink;
+  border-radius: $border-radius;
+  background: $white;
+  box-shadow: $shadow-hard;
+
+  @include media-breakpoint-up(lg) {
+    position: absolute;
+    right: -3rem;
+    bottom: 5.75rem; // 在大圓播放鈕上方
+    width: 19rem;
+    margin: 0;
+  }
+  @include media-breakpoint-down(lg) { rotate: none; }
+}
+.now-playing-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0 0 .75rem;
+  padding: 0 .75rem;
+  border: 2px solid $ink;
+  border-radius: $border-radius-pill;
+  background: $sky;
+  font-size: $font-size-sm;
+  font-weight: 800;
+  line-height: 1.7;
+}
+// 等化器小直條（靜態裝飾）
+.now-playing-eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+
+  span {
+    width: 3px;
+    border-radius: 2px;
+    background: $ink;
+
+    &:nth-child(1) { height: 7px; }
+    &:nth-child(2) { height: 12px; }
+    &:nth-child(3) { height: 9px; }
+  }
+}
+.now-playing-body {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: .75rem;
+  align-items: start;
+  margin-bottom: .875rem;
+}
+.now-playing-thumb {
+  width: 64px;
+  height: 64px;
+  border: 2px solid $ink;
+  border-radius: .875rem;
+  overflow: hidden;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+.now-playing-course {
+  margin: 0 0 .125rem;
+  font-size: $font-size-sm;
+  font-weight: 800;
+  line-height: 1.5;
+}
+.now-playing-unit {
+  margin: 0;
+  color: $ink-2;
+  font-size: $font-size-sm;
+  line-height: 1.5;
+}
+.now-playing .progress { --bs-progress-height: .875rem; }
+.now-playing-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: .75rem;
+
+  .num { font-weight: 800; }
+}
+
+@include media-breakpoint-down(lg) {
+  .home-hero-copy {
+    margin-top: 2rem;
+    text-align: left;
+  }
+}
+
+// ---------- 學得完的理由：4 個色塊泡泡，高低錯落（第 2、4 個往下 24px） ----------
+.home-why-list {
+  @include media-breakpoint-up(lg) {
+    align-items: flex-start;
+
+    > li:nth-child(even) { padding-top: 1.5rem; }
+  }
+}
+.why-bubble {
+  height: 100%;
+  padding: 1.75rem 1.5rem 1.5rem;
+  border: 2px solid $ink;
+  border-radius: 2.5rem 2.5rem 2.5rem .75rem; // 對話泡泡：左下角收尖一點
+  background: $sunflower;
+  box-shadow: $shadow-hard;
+
+  p { margin: 0; }
+
+  &.is-sky   { background: $sky; }
+  &.is-coral { background: $coral; }
+  &.is-leaf  { background: $leaf; }
+}
+.why-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1rem;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  background: $white;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+.why-title {
+  margin-bottom: .5rem;
+  font-weight: 800;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ---------- 工藝作品入口：4 個圓形舷窗，文字在圖片下方置中，課程數與完課時間是常駐 chip ----------
+.home-crafts { overflow: clip; }
+.home-crafts .deco-dot {
+  --d: 120px;
+  --c: #{$coral-soft};
+  top: 3rem;
+  right: -3rem;
+
+  @include media-breakpoint-down(md) { display: none; } // 手機會壓到說明文字
+}
+
+.craft-porthole {
+  --ring-color: #{$sunflower};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  padding: 14px 4px .5rem;
+  border-radius: $radius-card;
+  color: $ink;
+  text-align: center;
+  text-decoration: none;
+
+  &.is-sky   { --ring-color: #{$sky}; }
+  &.is-coral { --ring-color: #{$coral}; }
+  &.is-leaf  { --ring-color: #{$leaf}; }
+
+  &:hover { color: $ink; }
+  &:hover .craft-porthole-window,
+  &:focus-visible .craft-porthole-window { --ring-color: #{$sun-soft}; }
+  &:hover .craft-porthole-title,
+  &:focus-visible .craft-porthole-title {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: .3em;
+    text-decoration-color: $sky-deep;
+  }
+}
+// 舷窗：圓形圖片＋墨框，外圈彩色環＋墨色外框＋硬陰影（都是 box-shadow，不佔版面）
+.craft-porthole-window {
+  position: relative;
+  width: calc(100% - 28px);
+  max-width: 220px;
+  aspect-ratio: 1;
+  margin-bottom: 1.5rem;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  overflow: hidden;
+  background: $sky-soft;
+  box-shadow:
+    0 0 0 10px var(--ring-color),
+    0 0 0 12px $ink,
+    4px 4px 0 12px $ink;
+  transition: box-shadow .2s ease;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @include media-breakpoint-down(sm) {
+    margin-bottom: 1.25rem;
+    box-shadow:
+      0 0 0 7px var(--ring-color),
+      0 0 0 9px $ink,
+      3px 3px 0 9px $ink;
+  }
+}
+.craft-porthole-title {
+  margin-bottom: .125rem;
+  font-size: 1.1875rem;
+  font-weight: 800;
+  line-height: 1.5;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+
+  @include media-breakpoint-up(lg) { font-size: 1.3125rem; }
+}
+.craft-porthole-craft {
+  margin-bottom: .75rem;
+  color: $ink-2;
+  font-weight: 700;
+}
+.craft-porthole-chips {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .375rem;
+  margin-top: auto;
+
+  .chip {
+    white-space: normal;
+    border-radius: 1rem;
+  }
+}
+// < 576px 兩欄舷窗：「最短 4 小時 20 分完課」要維持一行膠囊（375 寬以上放得下；更窄才折成兩行圓角框）
+// 舷窗卡左右內距歸零（圓窗本來就內縮 14px 給彩色環），chip 字級 14、左右內距 8（同小徑單元的 chip）
+@include media-breakpoint-down(sm) {
+  .craft-porthole { padding-inline: 0; }
+  .craft-porthole-chips .chip {
+    padding-inline: .5rem;
+    font-size: .875rem;
+  }
+}
+.home-crafts-more {
+  margin-top: 1.5rem;
+  padding-left: 56px;
+}
+
+// ---------- 熱門課程：淡天空色帶，上下緣是圓弧波浪 ----------
+.home-featured {
+  margin-block: 1.5rem;
+  background: $sky-soft;
+
+  &::before { @include scallop($sky-soft, top, 16px); }
+  &::after  { @include scallop($sky-soft, bottom, 16px); }
+}
+
+// ---------- 學員作品牆＋學習保障：左邊兩張拍立得貼紙，右邊淡天空大圓角清單卡 ----------
+.polaroid {
+  position: relative;
+  margin: 0;
+  padding: .875rem .875rem 1.25rem;
+  border: 2px solid $ink;
+  border-radius: 1rem;
+  background: $white;
+  box-shadow: $shadow-hard;
+
+  // 紙膠帶（裝飾）
+  &::before {
+    content: "";
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    width: 88px;
+    height: 26px;
+    border: 2px solid $ink;
+    border-radius: 4px;
+    background: rgba($sunflower, .85);
+    translate: -50% 0;
+    rotate: -4deg;
+  }
+  &.is-sky::before { background: rgba($sky, .85); rotate: 3deg; }
+
+  figcaption { padding: 1rem .25rem 0; }
+  blockquote {
+    margin: 0 0 .625rem;
+    font-weight: 700;
+    line-height: 1.7;
+  }
+}
+.polaroid-photo {
+  border: 2px solid $ink;
+  border-radius: .75rem;
+  overflow: hidden;
+  aspect-ratio: 1;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+.polaroid-handle {
+  margin: 0;
+  color: $coral-deep;
+  font-family: $font-family-num;
+  font-weight: 800;
+}
+
+.guarantee-card {
+  margin: 0;
+  padding: .75rem 1.5rem;
+  border: 2px solid $ink;
+  border-radius: 2.5rem;
+  background: $sky-soft;
+  box-shadow: $shadow-hard;
+  list-style: none;
+
+  @include media-breakpoint-up(md) { padding: 1rem 2rem; }
+
+  li {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+    padding-block: 1.25rem;
+
+    + li { border-top: 2px dashed rgba($ink, .35); }
+  }
+  p { margin: 0; color: $ink-2; }
+}
+.guarantee-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  background: $white;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.guarantee-title {
+  margin-bottom: .25rem;
+  font-weight: 800;
+}
+
+// ---------- 底部 CTA：向日葵色帶，上下緣圓弧波浪，置中文字＋珊瑚按鈕，旁邊一枚勳章 ----------
+.home-cta {
+  position: relative;
+  margin-top: 2rem;
+  padding-block: 4rem;
+  background: $sunflower;
+
+  &::before { @include scallop($sunflower, top, 16px); }
+  &::after  { @include scallop($sunflower, bottom, 16px); }
+
+  @include media-breakpoint-up(lg) { padding-block: 5rem; }
+}
+.home-cta-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  text-align: center;
+
+  @include media-breakpoint-up(md) {
+    flex-direction: row;
+    justify-content: center;
+    gap: 2.5rem;
+    text-align: left;
+  }
+}
+.home-cta-medal { rotate: -8deg; }
+.home-cta-title {
+  margin-bottom: 1.25rem;
+  word-break: keep-all;
+}
+.home-cta-copy {
+  @include media-breakpoint-down(md) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}

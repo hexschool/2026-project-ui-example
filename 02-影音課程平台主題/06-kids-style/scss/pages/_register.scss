@@ -1,0 +1,190 @@
+// ============================================================
+// 註冊 register.html（2026-11 補頁，class 前綴 register-）
+// 招牌：760 寬的白色貼紙表單卡置中，右上角斜貼一張「課程票」（接續購買提示），轉 3°、往卡片外跨出 24px
+// ≥ 768px：卡片是 CSS Grid，"head ticket" / "form form" / "switch switch"
+// < 768px：課程票不旋轉、排在 H1 上方（"ticket" "head" "form" "switch"），欄位單欄
+// 表單卡本身不轉（含表單的卡片不旋轉）；1920 寬時卡片仍是 760，兩側是圓形色塊裝飾
+// ============================================================
+
+$register-card-w: 760px;
+$register-pad-x-md: 2.75rem;  // 44
+$register-pad-top-md: 2.5rem; // 40
+$register-overhang: 1.5rem;   // 課程票跨出卡片 24
+
+.register-stage {
+  position: relative;
+  padding-block: .5rem 0;
+
+  @include media-breakpoint-up(md) { padding-top: $register-overhang + .5rem; }
+}
+
+// 兩側的圓形色塊（≥ 992px；以卡片左右緣為基準定位，壓在卡片後面一點點）
+.register-dot-a,
+.register-dot-b,
+.register-dot-c {
+  display: none;
+
+  @include media-breakpoint-up(lg) { display: block; }
+}
+.register-dot-a { --d: 120px; --c: #{$sky};       top: 22%;  left: calc(50% - #{$register-card-w * .5} - 100px); }
+.register-dot-b { --d: 56px;  --c: #{$coral};     bottom: 18%; right: calc(50% - #{$register-card-w * .5} - 76px); }
+.register-dot-c { --d: 32px;  --c: #{$sunflower}; top: 12%;  left: calc(50% - #{$register-card-w * .5} - 132px); }
+
+// ---------- 表單卡 ----------
+.register-card {
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "ticket"
+    "head"
+    "form"
+    "switch";
+  max-width: $register-card-w;
+  margin-inline: auto;
+  padding: 1.25rem 1.25rem 0;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 1fr) 280px;
+    grid-template-areas:
+      "head ticket"
+      "form form"
+      "switch switch";
+    column-gap: 2rem;
+    padding: $register-pad-top-md $register-pad-x-md 0;
+  }
+}
+.register-head {
+  grid-area: head;
+  margin-bottom: 1.75rem;
+
+  h1 { margin-bottom: .75rem; }
+
+  @include media-breakpoint-up(md) { padding-top: .25rem; }
+}
+.register-form { grid-area: form; }
+
+.register-terms {
+  margin: 0;
+
+  .form-check-label { line-height: 1.7; }
+  // 不帶 href 的佔位連結也要看起來像連結（Bootstrap 的 a:not([href]):not([class]) 會繼承文字色，所以要同樣的權重）
+  a:not([href]) {
+    color: $sky-deep;
+    font-weight: 800;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .25em;
+  }
+}
+
+// 卡片底部的淡天空帶：已經有帳號？[登入]
+.register-switch {
+  grid-area: switch;
+  margin: 2rem -1.25rem 0;
+  padding: .5rem 1rem;
+  border-top: 2px dashed rgba($ink, .35);
+  border-radius: 0 0 calc(#{$radius-card} - 2px) calc(#{$radius-card} - 2px);
+  background: $sky-soft;
+  font-weight: 700;
+  text-align: center;
+
+  .btn-text { margin-left: .25rem; vertical-align: middle; }
+
+  @include media-breakpoint-up(md) { margin-inline: -$register-pad-x-md; }
+}
+
+// ---------- 課程票（接續購買提示）：向日葵票頭＋小封面＋課名講師＋虛線撕口＋淡向日葵票根（價格、安心提示） ----------
+.register-ticket {
+  position: relative;
+  z-index: 2;
+  grid-area: ticket;
+  align-self: start;
+  margin-bottom: 1.5rem;
+  border: 2px solid $ink;
+  border-radius: $radius-image;
+  overflow: hidden; // 票頭圓角、撕口的半圓
+  background: $white;
+  box-shadow: $shadow-hard;
+
+  @include media-breakpoint-up(sm) { max-width: 360px; }
+  @include media-breakpoint-up(md) {
+    max-width: none;
+    // 往右上跨出卡片 24px（卡片內距 40／44 再加 24）
+    margin: calc(-1 * (#{$register-pad-top-md} + #{$register-overhang})) calc(-1 * (#{$register-pad-x-md} + #{$register-overhang})) 1.75rem 0;
+    rotate: 3deg;
+  }
+}
+.register-ticket-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  padding: .5rem 1rem;
+  border-bottom: 2px solid $ink;
+  background: $sunflower;
+  font-size: .9375rem;
+  font-weight: 800;
+  line-height: 1.6;
+
+  .bi { font-size: 1.125rem; }
+}
+.register-ticket-course {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: .875rem;
+  padding: 1rem;
+}
+.register-ticket-cover {
+  --w: 76px;
+  border-radius: .75rem;
+}
+.register-ticket-name {
+  margin: 0 0 .375rem;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+.register-ticket-stub {
+  position: relative;
+  padding: .875rem 1rem 1rem;
+  border-top: 2px dashed $ink;
+  background: $sun-soft;
+
+  // 撕口兩側的半圓缺口（被票的 overflow: hidden 裁成半圓）
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: -11px;
+    width: 20px;
+    height: 20px;
+    border: 2px solid $ink;
+    border-radius: 50%;
+    background: $white;
+  }
+  &::before { left: -12px; }
+  &::after { right: -12px; }
+
+  .price { font-size: 1.625rem; }
+}
+.register-ticket-note {
+  display: flex;
+  align-items: flex-start;
+  gap: .375rem;
+  margin: .375rem 0 0;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  line-height: 1.6;
+
+  .bi { flex: none; color: $leaf-deep; font-size: 1.125rem; line-height: 1.35; }
+}
+
+// ---------- 設計稿狀態示意：欄位有錯誤時 ----------
+.register-demo {
+  max-width: $register-card-w;
+  padding: 1.5rem 1.25rem;
+
+  @include media-breakpoint-up(md) { padding: 2rem $register-pad-x-md; }
+}

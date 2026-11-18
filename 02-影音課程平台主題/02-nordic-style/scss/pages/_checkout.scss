@@ -1,0 +1,175 @@
+// ============================================================
+// 購買課程 checkout.html：單欄約 720 寬置中的一疊白卡（.flow-stack），所有寬度都是同一疊
+// 標題區 → 購買的課程（#summary）→ 購買帳號 → 付款方式（#payment，3 張 radio 卡）→ 發票（#invoice）
+// → 總金額卡（霜藍、沒有陰影）緊貼在全寬「確認付款」前
+// 6 套裡唯一完全單欄的結帳；既有 3 套都是表單左、摘要右
+// ============================================================
+
+// ---------- 購買的課程 ----------
+.checkout-includes {
+  margin-top: 1.5rem;
+
+  .purchase-includes {
+    margin-bottom: 0;
+    @include media-breakpoint-up(sm) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .75rem 1.5rem;
+    }
+  }
+}
+// 永久觀看的說明：常見問題的一組問答，放在一塊霜藍小框裡
+.checkout-faq {
+  margin: 1.5rem 0 0;
+  padding: 1rem 1.125rem;
+  border-radius: $border-radius;
+  background-color: $frost;
+  font-size: .9375rem;
+  line-height: 1.7;
+
+  dt {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: .25rem;
+    color: $ink;
+    font-weight: $font-weight-bold;
+
+    .bi { color: $glacier; }
+  }
+  dd { margin: 0; color: $ink; }
+}
+
+// ---------- 購買帳號 ----------
+.checkout-account {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  margin: 0 0 .25rem;
+  color: $ink;
+  font-weight: $font-weight-medium;
+  overflow-wrap: anywhere;
+
+  .bi { color: $glacier; font-size: 1.25rem; }
+}
+
+// ---------- 付款方式：3 張 radio 卡（整張可點） ----------
+// 選中＝冰底＋冰河藍 2px 框（內側陰影補 1px，不改尺寸）＋實心 radio，不只靠顏色
+// 信用卡欄位在「信用卡」卡片裡；選 LINE Pay、Apple Pay 時用 :has() 收起（不支援 :has() 的瀏覽器固定顯示）
+// <div class="pay-option">
+//   <input id="payCard" class="form-check-input" type="radio" name="payment" value="card" checked>
+//   <label class="pay-option-label" for="payCard"><span class="pay-option-name">信用卡</span><span class="pay-option-note">…</span></label>
+//   <i class="bi bi-credit-card pay-option-icon" aria-hidden="true"></i>
+//   <div class="pay-card-fields">…</div>
+// </div>
+.pay-options {
+  display: grid;
+  gap: .75rem;
+}
+.pay-option {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0 .875rem;
+  align-items: start;
+  padding: 1rem 1.125rem;
+  border: 1px solid $line;
+  border-radius: $border-radius-lg;
+  background-color: $white;
+  transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+
+  > .form-check-input {
+    margin: .3125rem 0 0;
+    border-color: $control;
+  }
+  &:hover { border-color: mix($glacier-mid, $white, 60%); }
+}
+.pay-option:has(> .form-check-input:checked) {
+  border-color: $glacier;
+  background-color: $ice;
+  box-shadow: inset 0 0 0 1px $glacier;
+}
+// label 撐滿整張卡：點卡片任何地方都會選中
+.pay-option-label {
+  display: grid;
+  gap: .125rem;
+  cursor: pointer;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+}
+.pay-option-name {
+  color: $ink;
+  font-weight: $font-weight-bold;
+  line-height: 1.6;
+}
+.pay-option-note {
+  color: $slate;
+  font-size: .875rem;
+  line-height: 1.6;
+}
+.pay-option-icon {
+  color: $slate;
+  font-size: 1.375rem;
+  line-height: 1.3;
+}
+.pay-option:has(> .form-check-input:checked) .pay-option-icon { color: $glacier; }
+
+// 信用卡欄位：卡號滿寬，有效期限與安全碼並排（390 寬也並排）；在 label 的點擊層之上
+.pay-card-fields {
+  position: relative;
+  z-index: 1;
+  grid-column: 2 / -1;
+  margin-top: 1rem;
+
+  @include media-breakpoint-down(sm) { grid-column: 1 / -1; }
+}
+.pay-option:not(:has(> .form-check-input:checked)) .pay-card-fields {
+  display: none;
+}
+
+// ---------- 總金額卡（霜藍）＋確認付款 ----------
+.checkout-total {
+  display: grid;
+  gap: .75rem;
+
+  .info-list > div { align-items: center; }
+  .info-list dt {
+    color: $ink;
+    font-size: 1rem;
+    font-weight: $font-weight-medium;
+  }
+  // 應付金額：Manrope 600、28px（手機 26px），蓋過 .info-list dd 的 15px
+  .info-list dd {
+    font-size: $price-font-size-mobile;
+    line-height: 1.2;
+    @include media-breakpoint-up(lg) { font-size: $price-font-size; }
+  }
+}
+// 總金額卡緊貼在按鈕前（卡片之間是 24px，這裡收成 12px）
+.checkout-submit {
+  margin-top: -.75rem;
+}
+
+// ---------- 設計稿狀態示意 ----------
+.checkout-demo-pay {
+  display: grid;
+  gap: .75rem;
+}
+.checkout-demo-hint {
+  margin: 0;
+  color: $slate;
+  font-size: .875rem;
+  text-align: center;
+}
+.checkout-demo-error {
+  p { margin: 0; }
+  strong {
+    display: block;
+    margin-bottom: .125rem;
+    font-size: .9375rem;
+  }
+}

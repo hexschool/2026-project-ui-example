@@ -1,0 +1,414 @@
+// ============================================================
+// 課程列表 courses.html
+// 標題區 →「選關卡」色板（招牌：8 個工藝分類大方塊＋難度、價格、排序）→ 工具列（共 52 門課程）
+// → 橫式貼紙卡（≥ 1200px 2 欄、768～1199px 1 欄、< 768px 直式單欄）→ 大圓鈕分頁 → 設計稿狀態示意
+// 沒有左側欄：< 992px 分類方塊變成一列橫向捲動，難度、價格、排序收進底部抽屜（.offcanvas-lg .offcanvas-bottom）
+// ============================================================
+
+.courses-header { margin-bottom: 2rem; }
+
+// ---------- 選關卡色板：淡向日葵底＋墨框＋28px 圓角＋硬陰影 ----------
+// 注意：色板不能加 z-index、transform 或 isolation，否則 < 992px 的底部抽屜（position: fixed）會被困在色板的堆疊環境裡、壓在遮罩底下
+.courses-board {
+  position: relative;
+  overflow: hidden; // 角落的圓形色塊
+  margin-bottom: 2rem;
+  padding: 1.25rem 1rem .75rem;
+  border: 2px solid $ink;
+  border-radius: $radius-card;
+  background: $sun-soft;
+  box-shadow: $shadow-hard;
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: 2.5rem;
+    padding: 1.75rem 2rem 2rem;
+  }
+}
+.courses-board-dot-a,
+.courses-board-dot-b {
+  display: none;
+
+  @include media-breakpoint-up(lg) { display: block; }
+}
+.courses-board-dot-a { --d: 132px; --c: #{$sky}; top: -64px; right: -48px; }
+.courses-board-dot-b { --d: 56px; --c: #{$coral}; right: 7%; bottom: -26px; }
+
+.courses-board-grid {
+  position: relative; // 畫在色塊上面
+
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    column-gap: 2rem;
+  }
+  @include media-breakpoint-up(xl) { column-gap: 2.75rem; }
+}
+
+// 小標（legend 與排序的 label 共用）
+.courses-board-title {
+  display: block;
+  float: none;
+  width: auto;
+  margin: 0 0 .75rem;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+@include media-breakpoint-up(lg) {
+  .courses-crafts {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+// 分類大方塊：≥ 992px 4×2 網格；< 992px 一列橫向捲動（每個 120 寬）
+.courses-tiles {
+  display: flex;
+  gap: .75rem;
+  margin-inline: -1rem;
+  padding: .25rem 1rem 1rem; // 硬陰影與焦點環的空間
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 1rem;
+
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    flex: 1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-rows: 1fr; // 兩列等高，撐滿右欄的高度
+    gap: 1rem;
+    margin-inline: 0;
+    padding: 0 .25rem .25rem 0;
+    overflow: visible;
+  }
+}
+.courses-tile {
+  position: relative;
+  display: flex;
+  flex: 0 0 120px;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 132px;
+  margin: 0;
+  padding: .75rem .875rem .625rem;
+  border: 2px solid $ink;
+  border-radius: $radius-image;
+  background: $white;
+  color: $ink;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: $transition-base;
+  user-select: none;
+
+  &:hover { background: $sky-soft; }
+
+  @include media-breakpoint-up(lg) { min-height: 140px; padding: .875rem 1rem .75rem; }
+}
+.courses-tile-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: auto;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  background: $sunflower;
+  font-size: 1.125rem;
+  line-height: 1;
+
+  &.is-sky   { background: $sky; }
+  &.is-coral { background: $coral; }
+  &.is-leaf  { background: $leaf; }
+
+  @include media-breakpoint-up(lg) { width: 52px; height: 52px; font-size: 1.375rem; }
+}
+.courses-tile-name {
+  margin-top: .625rem;
+  font-weight: 800;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.courses-tile-count {
+  font-size: 1.625rem;
+  font-weight: 800;
+  line-height: 1.1;
+
+  @include media-breakpoint-up(lg) { font-size: 2rem; }
+}
+// 選中的勾（狀態，不是 hover 才出現的資訊）：右上角白色小圓章
+.courses-tile-check {
+  position: absolute;
+  top: .625rem;
+  right: .625rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  background: $white;
+  font-size: 1rem;
+  opacity: 0;
+
+  .bi { -webkit-text-stroke: .5px currentColor; }
+}
+.btn-check:checked + .courses-tile {
+  background: $sunflower;
+  box-shadow: $shadow-hard;
+
+  .courses-tile-check { opacity: 1; }
+}
+.btn-check:focus-visible + .courses-tile,
+.btn-check:focus-visible + .courses-pill {
+  outline: $focus-outline;
+  outline-offset: $focus-outline-offset;
+}
+
+// ---------- 右欄：難度、價格（粗膠囊 checkbox）、排序、清除篩選 ----------
+.courses-group { margin: 0 0 1.25rem; }
+.courses-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem .625rem;
+}
+.courses-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 44px;
+  margin: 0;
+  padding: .375rem 1rem .375rem .5rem;
+  border: 2px solid $ink;
+  border-radius: $border-radius-pill;
+  background: $white;
+  color: $ink;
+  font-size: .9375rem;
+  font-weight: 800;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: $transition-base;
+  user-select: none;
+
+  // 左邊的圓形勾選框：未選＝白圈，選中＝墨底白勾
+  &::before {
+    content: "";
+    flex: none;
+    width: 22px;
+    height: 22px;
+    border: 2px solid $ink;
+    border-radius: 50%;
+    background: $white center / 12px no-repeat;
+  }
+  &:hover { background: $sky-soft; }
+}
+.btn-check:checked + .courses-pill {
+  background: $sky;
+  box-shadow: $shadow-hard-sm;
+
+  &::before {
+    background-color: $ink;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 4.8' fill='none' stroke='#{svg-color($white)}' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+}
+// 停用（目前課程列表沒有停用的選項，Guideline 示範這個狀態）：虛線淡墨框、奶油底、淡墨字，不能點
+.btn-check:disabled + .courses-tile,
+.btn-check:disabled + .courses-pill {
+  border-style: dashed;
+  border-color: $ink-2;
+  background: $cream;
+  color: $ink-2;
+  box-shadow: none;
+  cursor: default;
+  pointer-events: none;
+}
+.courses-sort .form-select { max-width: 20rem; }
+.courses-reset { margin-top: -.25rem; }
+
+// < 992px：底部抽屜（奶油底、上方 28px 圓角）
+@include media-breakpoint-down(lg) {
+  .courses-more {
+    --bs-offcanvas-height: auto;
+    max-height: 88vh;
+    border-radius: $radius-card $radius-card 0 0;
+
+    .offcanvas-header { padding: 1.25rem 1.25rem .5rem; }
+    .offcanvas-body { padding: .75rem 1.25rem 1.5rem; }
+    .courses-sort .form-select { max-width: none; }
+  }
+}
+// ≥ 992px：右欄直排，和分類方塊之間一條虛線
+@include media-breakpoint-up(lg) {
+  .courses-more {
+    padding-left: 2rem;
+    border-left: 2px dashed rgba($ink, .35);
+
+    .offcanvas-body {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+}
+@include media-breakpoint-up(xl) {
+  .courses-more { padding-left: 2.75rem; }
+}
+
+// ---------- 工具列：結果數（數字是天空色小貼紙） ----------
+.courses-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1rem;
+  margin-bottom: 1.5rem;
+}
+.courses-count {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 800;
+}
+.courses-count-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  height: 2.5rem;
+  padding: .15em .625rem 0;
+  border: 2px solid $ink;
+  border-radius: $border-radius-pill;
+  background: $sky;
+  font-size: 1.375rem;
+  line-height: 1;
+}
+
+// ---------- 橫式貼紙卡（≥ 768px）：封面 5/12、文字 7/12；< 768px 用 components 的直式卡 ----------
+@include media-breakpoint-up(md) {
+  .course-card-row {
+    flex-direction: row;
+
+    .course-card-media {
+      flex: 0 0 auto;
+      width: calc(41.667% - .625rem);
+      min-height: 232px;
+      margin: .625rem 0 .625rem .625rem;
+      aspect-ratio: auto;
+
+      img {
+        position: absolute;
+        inset: 0;
+      }
+    }
+    .course-card-body {
+      flex: 1;
+      min-width: 0;
+      padding: 1.125rem 1.5rem 1.25rem 1.25rem;
+    }
+    .course-card-title { margin-bottom: .5rem; }
+    .course-card-meta { margin-bottom: .75rem; }
+    .course-card-foot { padding-top: .875rem; }
+  }
+}
+
+// ---------- 分頁：大圓鈕（目前頁＝向日葵＋硬陰影） ----------
+.courses-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 3rem;
+
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .5rem;
+    margin: 0;
+
+    @include media-breakpoint-up(sm) { gap: .75rem; }
+  }
+  .page-item .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin: 0;
+    padding: 0;
+    border-radius: 50%;
+    font-family: $font-family-num;
+    font-size: 1.125rem;
+    font-weight: 800;
+    line-height: 1;
+    box-shadow: $shadow-hard-sm;
+
+    @include media-breakpoint-up(sm) { width: 52px; height: 52px; font-size: 1.25rem; }
+  }
+  .page-item.active .page-link { box-shadow: $shadow-hard; }
+  .page-item.disabled .page-link {
+    border-style: dashed;
+    box-shadow: none;
+  }
+  .page-item .page-link-gap {
+    width: auto;
+    border-color: transparent;
+    background: transparent;
+    color: $ink;
+  }
+}
+
+// ---------- 設計稿狀態示意：篩選沒有結果 ----------
+.courses-empty-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border: 2px solid $ink;
+  border-radius: $radius-card;
+  background: $sun-soft;
+}
+.courses-picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.courses-picked-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 44px;
+  padding: .25rem .375rem .25rem 1rem;
+  border: 2px solid $ink;
+  border-radius: $border-radius-pill;
+  background: $sunflower;
+  color: $ink;
+  font-size: .9375rem;
+  font-weight: 800;
+  transition: $transition-base;
+
+  .bi {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 2px solid $ink;
+    border-radius: 50%;
+    background: $white;
+    font-size: .75rem;
+    -webkit-text-stroke: .5px currentColor;
+  }
+  &:hover { background: tint-color($sunflower, 30%); }
+}
+.courses-empty {
+  margin-top: 1.5rem;
+  padding-block: 2.5rem;
+  border: 2px dashed rgba($ink, .4);
+  border-radius: $radius-card;
+  background: $white;
+}

@@ -1,0 +1,276 @@
+// ============================================================
+// 闖關小徑（招牌）：一條直向的墨色虛線小徑，章節是圓形「站牌」，單元是小徑旁的「小石頭」
+// 用在：課程詳情的大綱（Bootstrap Accordion）、學習頁側欄（Collapse）、付款結果的「接下來」（手機直線版）、Guideline 目錄與示範
+// 小徑不做真的蜿蜒（Accordion 展開時高度會變，蜿蜒會對不齊）；蜿蜒只出現在固定高度的地方（付款結果迷你地圖）
+//
+// 小徑：容器加 .trail，--trail-x 是站牌圓心到容器左緣的距離（預設 24px＝48px 站牌的一半）
+// 兩種寫法：
+//   A. 一般清單（付款結果手機版、Guideline）：<ol class="trail list-unstyled"><li class="trail-stop">站牌＋<div>內容</div></li>…</ol>
+//   B. Bootstrap Accordion／Collapse（課程詳情大綱、學習頁側欄）：.accordion 再加 .trail.trail-accordion
+//      <div class="accordion trail trail-accordion" id="curriculum">
+//        <div class="accordion-item">
+//          <h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ch1" aria-expanded="false" aria-controls="ch1">
+//            <span class="trail-sign is-done">…</span>
+//            <span class="trail-chapter"><span class="trail-chapter-title">第 1 章　認識陶土</span><span class="trail-chapter-meta">4 個單元 ‧ 32 分</span></span>
+//          </button></h3>
+//          <div id="ch1" class="accordion-collapse collapse" data-bs-parent="#curriculum"><div class="accordion-body"><ul class="trail-units">…</ul></div></div>
+//        </div>
+//      </div>
+//      學習頁側欄要能同時展開多章，就拿掉 data-bs-parent（「全部收合」用 data-collapse-all）
+// 站牌：<span class="trail-sign is-done"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">已完成</span></span>
+//       數字用 <span class="trail-sign"><span class="num">4</span></span>；狀態一律有圖示或文字，不只靠顏色
+//   .is-done（葉綠＋勾）、.is-trial（向日葵，含試看單元）、.is-current（天空，目前章節）、.is-medal（向日葵＋小勳章，學習頁已完成的章）、
+//   預設＝白底（未開始）；.trail-sign-sm 是 36px 小站牌
+// 小石頭（單元列）：<li class="trail-stone is-playing">…</li>，左邊 14px 圓點
+//   .is-done（葉綠）、.is-playing（天空＋粗墨框）、.is-trial（向日葵）、.is-locked（白底虛線）、預設＝白底（未開始）
+// ============================================================
+
+.trail {
+  --trail-x: 24px;
+  position: relative;
+  isolation: isolate;
+
+  // 虛線小徑
+  &::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 24px;
+    bottom: 24px;
+    left: calc(var(--trail-x) - 2px);
+    width: 4px;
+    background: repeating-linear-gradient(to bottom, $ink 0 8px, transparent 8px 16px);
+    border-radius: 2px;
+  }
+}
+
+// 站牌
+.trail-sign {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 2px solid $ink;
+  border-radius: 50%;
+  background: $white;
+  color: $ink;
+  font-family: $font-family-num;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: $shadow-hard-sm;
+
+  .num { padding-top: .12em; } // Baloo 2 字身偏上
+  .bi { font-size: 1.375rem; -webkit-text-stroke: .5px currentColor; }
+
+  &.is-done    { background: $leaf; }
+  &.is-trial   { background: $sunflower; }
+  &.is-current { background: $sky; }
+  &.is-medal   { background: $sunflower; }
+}
+.trail-sign-sm {
+  width: 36px;
+  height: 36px;
+  font-size: 1rem;
+
+  .bi { font-size: 1.125rem; }
+}
+
+// 一站（不用 Accordion 時）：站牌＋內容
+.trail-stop {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  column-gap: 1rem;
+  align-items: start;
+
+  + .trail-stop { margin-top: 1.5rem; }
+}
+
+// 小石頭（單元列）
+.trail-units {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.trail-stone {
+  position: relative;
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) auto;
+  column-gap: .75rem;
+  align-items: center;
+  min-height: 44px;
+  padding-block: .375rem;
+
+  &::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    border: 2px solid $ink;
+    border-radius: 50%;
+    background: $white;
+  }
+
+  &.is-done::before    { background: $leaf; }
+  &.is-trial::before   { background: $sunflower; }
+  &.is-locked::before  { border-style: dashed; border-color: $ink-2; }
+  &.is-playing {
+    &::before { background: $sky; box-shadow: 0 0 0 3px $sky-soft, 0 0 0 5px $ink; }
+  }
+}
+
+// Accordion 版：章節不是卡片，靠站牌與粗字撐起；展開的單元縮排到站牌右邊
+.trail-accordion {
+  --bs-accordion-bg: transparent;
+  --bs-accordion-border-width: 0;
+  --bs-accordion-border-radius: 0;
+  --bs-accordion-inner-border-radius: 0;
+  --bs-accordion-btn-padding-x: 0;
+  --bs-accordion-btn-padding-y: .375rem;
+  --bs-accordion-active-bg: transparent;
+  --bs-accordion-btn-focus-box-shadow: none;
+  --bs-accordion-body-padding-x: 0;
+  --bs-accordion-body-padding-y: 0;
+
+  .accordion-item + .accordion-item { margin-top: .75rem; }
+  .accordion-button {
+    gap: 1rem;
+    color: $ink;
+    text-align: left;
+
+    &::after { margin-left: .75rem; }
+    &:hover .trail-chapter-title {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: .25em;
+    }
+  }
+  .accordion-body { padding: .25rem 0 .5rem calc(48px + 1rem); }
+}
+.trail-chapter {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+// 長章名換行時不讓一兩個字單獨掉到下一行（方向說明 §4.10）：章名照片語換行（同 .text-phrase），
+// HTML 在「：」「、」後面放 <wbr>，例如「第 3 章　手捏成形：<wbr>從土球到碗」；片語比一行還長時才在字中間斷
+.trail-chapter-title {
+  font-size: $h4-font-size;
+  font-weight: 700;
+  line-height: 1.5;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.trail-chapter-meta {
+  color: $ink-2;
+  font-size: $font-size-sm;
+  font-weight: 500;
+}
+
+// 進行中的章（學習頁第 5、6 章：2／4）：站牌下半是葉綠，旁邊仍有完成數文字
+.trail-sign.is-partial { background: linear-gradient(to top, $leaf 50%, $white 50%); }
+
+// ---------- 單元列的可點區（課程詳情、學習頁）：編號 → 名稱（後面接狀態 chip 或圖示）→ 片長 ----------
+// <li class="trail-stone is-trial">
+//   <a class="trail-unit" href="#trial">（鎖定單元用 <button class="trail-unit" type="button" data-bs-toggle="modal" …>）
+//     <span class="trail-unit-no num">1-1</span>
+//     <span class="trail-unit-name"><span>單元名稱</span><span class="chip chip-trial">…試看</span></span>
+//     <span class="trail-unit-time num">05:10</span>
+//   </a>
+// </li>
+// 狀態圖示（鎖頭、勾、未開始的圓圈）用 <span class="trail-unit-icon">＋visually-hidden 文字；目前播放的單元加 aria-current="true"
+// ≥ 768px 狀態 chip 靠右對齊成一欄；手機與 .is-compact（學習頁側欄）接在名稱後面，放不下時 chip 換到下一行
+.trail-units > .trail-stone { padding-block: .125rem; }
+.trail-stone > .trail-unit { grid-column: 2 / -1; }
+
+.trail-unit {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: .75rem;
+  width: 100%;
+  min-height: 44px;
+  padding: .375rem .75rem;
+  border: 2px solid transparent;
+  border-radius: .875rem;
+  background: transparent;
+  color: $ink;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  transition: $transition-base;
+
+  &:hover { background: $sun-soft; color: $ink; }
+  &:focus-visible { outline-offset: 1px; }
+}
+.trail-unit-no {
+  min-width: 2.25em;
+  color: $ink-2;
+  font-size: $font-size-sm;
+  font-weight: 800;
+}
+// 單元名：名稱（第一個 span）與後面的 chip／圖示是兩個 flex 項目，名稱用 text-wrap: balance 把各行排得一樣長，
+// 最後一行不會只剩一兩個字，也不會出現「一個字＋chip」（方向說明 §4.10；不支援 balance 的瀏覽器照一般換行）
+//   圖示（鎖頭、勾勾、空心圈）：不換行，名稱折行時圖示貼在名稱右邊
+//   chip（試看、播放中）：名稱加 chip 放不下時，chip 整顆排到下一行
+.trail-unit-name {
+  display: flex;
+  align-items: center;
+  gap: .125rem .5rem;
+  min-width: 0;
+  font-weight: 500;
+  line-height: 1.55;
+  text-wrap: balance;
+
+  > span:first-child { min-width: 0; }
+  .chip { padding-block: 0; font-size: .875rem; }
+}
+.trail-unit-name:has(> .chip) { flex-wrap: wrap; }
+.trail-unit-time {
+  color: $ink-2;
+  font-size: $font-size-sm;
+  font-weight: 600;
+}
+.trail-unit-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: $ink-2;
+  flex: none;
+  font-size: 1rem;
+
+  &.is-done { color: $leaf-deep; font-size: 1.25rem; -webkit-text-stroke: .5px currentColor; }
+}
+.trail-stone.is-locked .trail-unit-name { color: $ink-2; }
+.trail-stone.is-playing > .trail-unit {
+  border-color: $ink;
+  background: $sky-soft;
+  font-weight: 700;
+
+  .trail-unit-name { font-weight: 700; }
+}
+
+@include media-breakpoint-up(md) {
+  .trail-accordion:not(.is-compact) .trail-unit-name {
+    flex-wrap: nowrap; // chip 固定在右邊一欄，名稱自己換行
+    justify-content: space-between;
+    gap: .75rem;
+  }
+}
+
+// 單元小石頭直接落在小徑上（學習頁側欄；課程詳情在 576px 以下也這樣，省下縮排）
+.trail-accordion.is-compact {
+  .accordion-body { padding-left: calc(var(--trail-x) - 7px); }
+  // 側欄窄，勾勾與空心圈會被擠到下一行；小石頭本身就分得出完成（葉綠實心）、播放中（天空圈）、未開始（空心），文字留給螢幕報讀器
+  .trail-unit-icon { @include visually-hidden; }
+}
+@include media-breakpoint-down(sm) {
+  .trail-accordion .accordion-body { padding-left: calc(var(--trail-x) - 7px); }
+  .trail-unit { column-gap: .5rem; padding-inline: .5rem; }
+}

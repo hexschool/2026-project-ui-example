@@ -1,0 +1,1097 @@
+// ============================================================
+// 設計 Guideline guideline.html
+// 標題區（背景網格：左邊麵包屑、H1、說明，右邊一塊 HUD 規格面板）→ sticky 的水平錨點列（等寬字）→
+// 10 節，每節是「標題列＋HUD 面板」，單欄、滿版心寬（不做 01 那種左側目錄）。
+// 992px 以下錨點列橫向捲動，sticky 在頂欄下方（top: var(--header-offset)）。
+// 示範一律用頁面上真的在用的 class；這裡只寫 Guideline 自己的排版（gl- 前綴），
+// 以及把 hover、鍵盤焦點「固定出來」的示範類別 .gl-hover、.gl-focus（數值和真正的狀態相同，改元件時一起改）
+// ============================================================
+
+$gl-anchor-height: 3rem; // 錨點列一項高 48px（≥ 44px 觸控）
+
+// ---------- 標題區：左文字、右 HUD 規格面板 ----------
+.gl-header {
+  margin-bottom: 0;
+  border-bottom: 0;
+}
+.gl-header-grid {
+  display: grid;
+  gap: map-get($spacers, 4);
+  align-items: end;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: map-get($spacers, 5);
+  }
+}
+
+// ---------- 錨點列：sticky、等寬字、橫向捲動 ----------
+.gl-anchors {
+  position: sticky;
+  top: var(--header-offset);
+  z-index: $zindex-sticky - 5; // 低於頁首（頂欄 1020、導覽軌 1030），高於頁面內容
+  background-color: $deck;
+  border-block: 1px solid $line;
+}
+.gl-anchors-list {
+  display: flex;
+  margin: 0 -.875rem;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    min-height: $gl-anchor-height;
+    padding-inline: .875rem;
+    color: $text-3;
+    font-family: $font-family-monospace;
+    font-size: $mono-font-size;
+    letter-spacing: $letter-spacing-mono;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: color .2s ease, background-color .2s ease;
+
+    &:hover {
+      color: $text;
+      background-color: $deck-2;
+    }
+    // 捲動容器會裁掉外擴的焦點環，改畫在內側
+    &:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 2px $pink-text;
+    }
+  }
+}
+.gl-anchors-no {
+  color: $violet-text;
+}
+
+// ---------- 節 ----------
+.gl-body {
+  padding-bottom: map-get($spacers, 6);
+  @include media-breakpoint-up(lg) {
+    padding-bottom: map-get($spacers, 7);
+  }
+}
+.gl-section {
+  padding-top: map-get($spacers, 6);
+  // html 已有 scroll-padding-top: var(--sticky-top)；再扣掉錨點列的高度
+  scroll-margin-top: $gl-anchor-height + .5rem;
+
+  @include media-breakpoint-up(lg) {
+    padding-top: map-get($spacers, 7);
+  }
+  > .section-heading {
+    margin-bottom: map-get($spacers, 4);
+  }
+}
+.gl-panel + .gl-panel {
+  margin-top: map-get($spacers, 4);
+}
+// 面板裡的一段：上一段之後隔一條虛線
+// 排在示範格（.row、表單格、卡片格）後面的段落也一樣；開場說明後面不加
+.gl-block + .gl-block,
+.gl-panel > :not(.gl-block, .gl-note) + .gl-block {
+  margin-top: map-get($spacers, 5);
+  padding-top: map-get($spacers, 5) - 1rem;
+  border-top: 1px dashed $line;
+}
+.gl-note {
+  max-width: 48em;
+  margin-bottom: map-get($spacers, 3);
+  color: $text-3;
+  font-size: $font-size-sm;
+}
+.gl-rules {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: $text-2;
+  font-size: .9375rem;
+
+  li + li { margin-top: .5rem; }
+  li::marker { color: $pink-text; }
+}
+
+// 規格清單：等寬 key（text-3）＋一般字 value
+.gl-spec {
+  margin: 0;
+
+  > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: .25rem;
+    padding-block: .75rem;
+    border-bottom: 1px dashed $line;
+
+    &:first-child { padding-top: 0; }
+    &:last-child { border-bottom: 0; padding-bottom: 0; }
+
+    @include media-breakpoint-up(sm) {
+      grid-template-columns: 8rem minmax(0, 1fr);
+      gap: 1rem;
+    }
+  }
+  dt {
+    color: $text-3;
+    font-family: $font-family-monospace;
+    font-size: $mono-font-size;
+    font-weight: 400;
+    letter-spacing: $letter-spacing-mono;
+    line-height: 1.8;
+  }
+  dd {
+    margin: 0;
+    color: $text-2;
+  }
+  strong { color: $text; }
+}
+.gl-quote {
+  margin: 0;
+  padding-left: .875rem;
+  border-left: 2px solid $pink-text;
+  color: $text;
+}
+
+// 圖片框：切角面板，圖片在內
+.gl-figure-media {
+  @include cut-frame;
+  padding: 1px;
+  aspect-ratio: 16 / 9;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 60% 35%;
+    display: block;
+    clip-path: cut-outer(calc(#{$cut-panel} - .6px));
+  }
+}
+.gl-figure figcaption {
+  margin-top: .75rem;
+}
+
+// 設計原則：4 格
+.gl-principles {
+  display: grid;
+  gap: map-get($spacers, 3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  > li {
+    @include cut-frame($cut-panel, $line, $deck-2);
+    padding: 1.125rem 1.25rem;
+  }
+  h4 {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: .375rem;
+    font-size: 1rem;
+
+    .bi { color: $violet-text; }
+  }
+  p {
+    margin: 0;
+    color: $text-2;
+    font-size: .9375rem;
+  }
+}
+
+// 頁面清單：像 ls 的檔案列（2 欄）
+.gl-pages {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid $line;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: map-get($spacers, 5);
+  }
+  > li {
+    border-bottom: 1px solid $line;
+  }
+  a {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    gap: .25rem .75rem;
+    min-height: 2.75rem;
+    padding: .75rem .5rem;
+    color: $text-2;
+    text-decoration: none;
+    transition: color .2s ease, background-color .2s ease;
+
+    &:hover {
+      background-color: $deck-2;
+      color: $text;
+    }
+    &:focus-visible {
+      outline: 2px solid $pink-text;
+      outline-offset: -2px;
+    }
+    &[aria-current="page"] {
+      background-color: $pink-veil;
+      box-shadow: inset 3px 0 0 $pink-text;
+    }
+    > .bi {
+      color: $violet-text;
+      font-size: 1.125rem;
+      line-height: 1.6;
+    }
+  }
+}
+.gl-pages-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .25rem .75rem;
+}
+.gl-pages-name {
+  color: $text;
+  font-weight: 700;
+}
+.gl-pages-file {
+  color: $violet-text;
+}
+.gl-pages-desc {
+  grid-column: 2;
+  color: $text-3;
+  font-size: $font-size-sm;
+  line-height: 1.7;
+}
+
+// ---------- 招牌：光束的規格列、三種軌道的對照 ----------
+.gl-beam-rows {
+  margin: 0;
+
+  > div {
+    display: grid;
+    gap: .75rem;
+    align-items: center;
+    padding-block: 1rem;
+    border-bottom: 1px dashed $line;
+
+    &:first-child { padding-top: 0; }
+    &:last-child { border-bottom: 0; padding-bottom: 0; }
+
+    @include media-breakpoint-up(md) {
+      grid-template-columns: 15rem minmax(0, 1fr);
+      gap: 2rem;
+    }
+  }
+  dt {
+    color: $text;
+    font-family: $font-family-monospace;
+    font-size: $mono-font-size;
+    font-weight: 400;
+    letter-spacing: $letter-spacing-mono;
+
+    small {
+      display: block;
+      margin-top: .125rem;
+      color: $text-3;
+      font-family: $font-family-sans-serif;
+      font-size: $font-size-sm;
+      letter-spacing: 0;
+    }
+  }
+  dd {
+    margin: 0;
+    padding-right: .5rem; // 光束前端的發光點
+  }
+}
+.gl-tracks {
+  display: grid;
+  gap: map-get($spacers, 3);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.gl-track {
+  padding: 1.25rem 1.25rem 1rem;
+  border: 1px solid $line;
+
+  &.on-void { background-color: $void; }
+  &.on-deck { background-color: $deck; }
+  &.is-bad { border: 1px dashed $flare; }
+
+  .progress { margin-block: .75rem 1rem; }
+}
+.gl-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  color: $mint;
+  font-family: $font-family-monospace;
+  font-size: $mono-font-size;
+  letter-spacing: $letter-spacing-mono;
+
+  &.is-bad { color: $flare; }
+}
+// 反例：拿 $line 當軌道（violet 只有 2.93:1，看不出光束從哪裡開始）
+.gl-beam-bad {
+  --bs-progress-bg: #{$line};
+}
+
+// ---------- 色彩 ----------
+$gl-swatches: (
+  "void": $void,
+  "deck": $deck,
+  "deck-2": $deck-2,
+  "screen": $screen,
+  "text": $text,
+  "text-2": $text-2,
+  "text-3": $text-3,
+  "violet": $violet,
+  "violet-text": $violet-text,
+  "pink": $pink,
+  "pink-text": $pink-text,
+  "pink-veil": $pink-veil,
+  "mint": $mint,
+  "mint-veil": $mint-veil,
+  "amber": $amber,
+  "amber-veil": $amber-veil,
+  "flare": $flare,
+  "flare-veil": $flare-veil,
+  "violet-veil": $violet-veil,
+  "line": $line,
+  "grid": $grid,
+  "control": $control,
+  "beam-track": $beam-track,
+  "beam-track-deck": $beam-track-deck,
+);
+.gl-swatch {
+  @include cut-frame($cut-panel, $line, $deck-2);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1px;
+}
+.gl-swatch-chip {
+  height: 4.5rem;
+  clip-path: polygon(0 0, calc(100% - #{$cut-panel} + .6px) 0, 100% calc(#{$cut-panel} - .6px), 100% 100%, 0 100%);
+  box-shadow: inset 0 -1px 0 $line;
+}
+@each $name, $value in $gl-swatches {
+  .gl-sw-#{$name} { background-color: $value; }
+}
+.gl-sw-beam { background-image: $beam; }
+.gl-sw-btn { background-image: $btn-grad; }
+.gl-sw-buffered { background-color: mix($violet-text, $beam-track, 28%); } // rgba($violet-text, .28) 疊在軌道上（約 #453F81）
+.gl-sw-mark { background: linear-gradient(90deg, $screen 0 46%, $text 46% 54%, $screen 54% 100%); }
+.gl-swatch-body {
+  padding: .875rem 1rem 1rem;
+  font-size: $font-size-sm;
+
+  p { margin: 0; }
+}
+.gl-swatch-name {
+  margin-bottom: .25rem;
+  color: $text;
+  font-size: .9375rem;
+  font-weight: 700;
+}
+.gl-swatch-code {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 .5rem;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  letter-spacing: .02em;
+
+  code { color: $violet-text; }
+  span { color: $text; }
+}
+.gl-swatch-use {
+  margin-top: .375rem !important;
+  color: $text-2;
+}
+.gl-swatch-ratio {
+  margin-top: .375rem !important;
+  color: $text-3;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  letter-spacing: .02em;
+}
+
+// ---------- 表格：768px 以上是表格，以下每列變成一塊（欄名寫在 data-label） ----------
+.gl-table {
+  --bs-table-bg: transparent;
+  margin: 0;
+  font-size: $font-size-sm;
+
+  th {
+    color: $text-3;
+    font-family: $font-family-monospace;
+    font-size: $mono-font-size;
+    font-weight: 400;
+    letter-spacing: $letter-spacing-mono;
+    white-space: nowrap;
+  }
+  td:first-child,
+  th[scope="row"] {
+    color: $text;
+    font-weight: 700;
+  }
+  @include media-breakpoint-down(md) {
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    tr {
+      display: block;
+      padding-block: .75rem;
+      border-bottom: 1px solid $line;
+    }
+    th,
+    td {
+      display: block;
+      padding: .25rem 0;
+      border: 0;
+    }
+    td[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      color: $text-3;
+      font-family: $font-family-monospace;
+      font-size: .75rem;
+      font-weight: 400;
+      letter-spacing: $letter-spacing-mono;
+    }
+  }
+}
+
+// ---------- 字級 ----------
+.gl-fonts {
+  display: grid;
+  gap: map-get($spacers, 3);
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  > div {
+    @include cut-frame($cut-panel, $line, $deck-2);
+    padding: 1.25rem;
+  }
+  p { margin: 0; }
+}
+.gl-font-sample {
+  margin-bottom: .75rem !important;
+  color: $text;
+  font-size: 2.25rem;
+  line-height: 1.2;
+}
+.gl-font-name {
+  color: $text;
+  font-weight: 700;
+}
+.gl-type-row {
+  display: grid;
+  gap: .5rem;
+  padding-block: 1.25rem;
+  border-bottom: 1px dashed $line;
+
+  &:last-child { border-bottom: 0; padding-bottom: 0; }
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: 2rem;
+    align-items: baseline;
+  }
+  > :last-child { margin-bottom: 0; }
+}
+.gl-type-spec {
+  margin: 0;
+  color: $text-3;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  letter-spacing: .02em;
+  line-height: 1.7;
+
+  strong {
+    display: block;
+    color: $text;
+    font-family: $font-family-sans-serif;
+    font-size: $font-size-sm;
+    letter-spacing: 0;
+  }
+}
+.gl-type-nums {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .75rem 1.75rem;
+}
+
+// ---------- 間距 ----------
+.gl-space-row {
+  display: grid;
+  grid-template-columns: 2.5rem 4.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  min-height: 2rem;
+  font-family: $font-family-monospace;
+  font-size: $mono-font-size;
+  letter-spacing: $letter-spacing-mono;
+
+  code { color: $violet-text; }
+  > span:nth-child(2) { color: $text; }
+}
+.gl-space-bar {
+  display: block;
+  height: .75rem;
+  background-image: $beam;
+}
+
+// ---------- 切角與光 ----------
+.gl-shapes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: map-get($spacers, 3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  > li {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+  }
+  p {
+    margin: 0;
+    color: $text-3;
+    font-size: $font-size-sm;
+  }
+}
+.gl-shape-stage {
+  display: grid;
+  place-items: center;
+  min-height: 6.5rem;
+  padding: 1rem;
+  background-color: $void;
+  border: 1px solid $line;
+}
+.gl-shape-panel {
+  width: 100%;
+  height: 4.5rem;
+}
+.gl-glows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: map-get($spacers, 3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  > li {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+  }
+  p {
+    margin: 0;
+    color: $text-3;
+    font-size: $font-size-sm;
+  }
+  code { font-size: .75rem; }
+}
+// 光的示範：撐滿舞台寬度（舞台是 place-items: center 的 grid），四周留 .75rem 給光
+.gl-glow-panel,
+.gl-glow-box,
+.gl-glow-dot {
+  justify-self: stretch;
+}
+.gl-glow-panel {
+  @include cut-frame($cut-panel, $line, $deck-2);
+  height: 4.5rem;
+  margin: .75rem;
+
+  &.is-filter {
+    --cut-line: #{$violet-text};
+    filter: $glow-filter;
+  }
+}
+.gl-glow-box {
+  height: 4.5rem;
+  margin: .75rem;
+  background-color: $deck-2;
+  border: 1px solid $line;
+
+  &.is-violet { box-shadow: $glow-violet; border-color: $violet-text; }
+  &.is-float { box-shadow: $box-shadow; }
+}
+.gl-glow-dot {
+  display: grid;
+  place-items: center;
+  height: 4.5rem;
+  margin: .75rem;
+
+  span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: $pink;
+    box-shadow: $glow-pink-dot;
+  }
+}
+
+// ---------- 元件狀態：一排狀態（標籤＋示範） ----------
+.gl-group + .gl-group {
+  margin-top: map-get($spacers, 4);
+}
+.gl-group-title {
+  margin-bottom: .75rem;
+  color: $text;
+  font-size: $font-size-sm;
+  font-weight: 700;
+
+  code { margin-left: .375rem; font-weight: 400; }
+}
+.gl-states {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1.25rem 1.5rem;
+}
+.gl-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .5rem;
+  min-width: 0;
+}
+.gl-state-label {
+  margin: 0;
+  color: $text-3;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  letter-spacing: $letter-spacing-mono;
+}
+// 播放器控制鈕放在 screen 底上示範
+.gl-on-screen {
+  display: inline-flex;
+  padding: .375rem;
+  background-color: $screen;
+  border: 1px solid $line;
+}
+// 表單示範：兩欄
+.gl-form-grid {
+  display: grid;
+  gap: 1.25rem 2rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+// 有 :hover 的示範區（卡片）：3 張並排
+.gl-cards {
+  display: grid;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  > li {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+
+    // 卡片本身寫了 height: 100%，上面多了一行狀態標籤，改成撐滿剩下的高度
+    > :last-child {
+      flex: 1 1 auto;
+      height: auto;
+    }
+  }
+}
+// 工藝情境卡：示範時封面固定 4:3
+.gl-craft-demo .craft-card-media {
+  flex: none;
+  aspect-ratio: 4 / 3;
+  min-height: 0;
+}
+// 兩欄示範（播放器、章節清單、對話框）
+.gl-pair {
+  display: grid;
+  gap: 1.5rem 2rem;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  > div {
+    min-width: 0;
+  }
+  // 播放器：992～1199px 兩欄時每個只有約 416px，控制列放不下，1200px 起才並排
+  &.is-wide {
+    @include media-breakpoint-only(lg) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}
+// 章節清單的示範面板（課程詳情與學習頁兩種）
+.gl-chapters {
+  @include cut-frame($cut-panel, $line, $deck);
+  padding: .5rem .75rem .75rem;
+}
+// 學習進度的示範面板
+.gl-progress {
+  @include cut-frame($cut-panel, $line, $deck);
+  padding: 1.25rem;
+
+  .stat { font-size: 2.5rem; }
+  .progress { margin-top: .875rem; }
+}
+
+// ---------- 固定出來的 hover 與焦點（只在這一頁示範；數值和 _base.scss、components/* 的真正狀態相同） ----------
+.btn-primary.gl-hover {
+  --cut-fill: #{$btn-grad-hover};
+  filter: $glow-filter;
+}
+.btn-outline-primary.gl-hover {
+  --cut-fill: #{$deck-2};
+  --cut-line: #{$text};
+  color: $text;
+}
+.btn-outline-light.gl-hover {
+  --cut-fill: #{$deck-2};
+  --cut-line: #{$violet-text};
+}
+.btn-text.gl-hover {
+  color: $text;
+}
+.btn.gl-focus {
+  box-shadow: $focus-ring-double;
+}
+.btn-text.gl-focus {
+  box-shadow: none;
+  outline: 2px solid $pink-text;
+  outline-offset: 3px;
+}
+.player-btn.gl-hover {
+  background-color: rgba($deck-2, .85);
+  border-color: $line;
+}
+.player-btn.gl-focus {
+  outline: 2px solid $pink-text;
+  outline-offset: -2px;
+}
+.form-control.gl-focus,
+.form-select.gl-focus {
+  --input-line: #{$pink-text};
+  border-color: $pink-text;
+  box-shadow: inset 0 0 0 1px $pink-text;
+}
+.form-check-input.gl-focus {
+  border-color: $pink-text;
+  box-shadow: $focus-ring-double;
+}
+.nav-tabs .nav-link.gl-hover {
+  color: $text;
+  background-color: rgba($deck-2, .6);
+}
+.nav-tabs .nav-link.gl-focus {
+  box-shadow: inset 0 0 0 2px $pink-text;
+}
+.course-card.gl-hover {
+  --cut-line: #{$violet-text};
+  filter: $glow-filter;
+
+  .course-card-title a {
+    text-decoration: underline;
+    text-decoration-color: $violet-text;
+    text-underline-offset: .3em;
+  }
+}
+.course-card.gl-focus {
+  --cut-line: #{$pink-text};
+  outline: 2px solid $pink-text;
+  outline-offset: 3px;
+}
+.craft-card.gl-hover {
+  --cut-line: #{$violet-text};
+  filter: $glow-filter;
+
+  .craft-card-media img { filter: brightness(1.08); }
+}
+.unit.gl-hover {
+  background-color: $deck-2;
+  color: $text;
+}
+
+// ---------- 講師課程狀態卡（只在 Guideline） ----------
+.gl-instructor-card {
+  @include cut-frame;
+  padding: 1.25rem;
+
+  &.is-off { --cut-line: #{$control}; }
+}
+.gl-instructor-card-title {
+  margin: .75rem 0 .375rem;
+  color: $text;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+}
+.gl-instructor-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem 1.25rem;
+  margin: 0;
+  color: $text-3;
+  font-size: $font-size-sm;
+}
+.gl-instructor-card-note {
+  margin: .75rem 0 0;
+  color: $text-2;
+  font-size: $font-size-sm;
+}
+
+// ---------- 狀態文案：每則一塊 HUD 面板 ----------
+.gl-notion {
+  display: grid;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  > li { min-width: 0; }
+}
+.gl-notion-card {
+  height: 100%;
+}
+.gl-notion-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: .25rem .875rem;
+  align-items: baseline;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed $line;
+
+  h3 {
+    margin: 0;
+    font-size: 1.0625rem;
+  }
+}
+.gl-notion-no {
+  grid-row: span 2;
+  color: $pink-text;
+  font-family: $font-family-display;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.gl-notion-pages {
+  margin: 0;
+  color: $violet-text;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  letter-spacing: .02em;
+}
+
+// ---------- RWD：斷點條 ----------
+.gl-bp {
+  display: grid;
+  gap: .5rem;
+  margin-bottom: map-get($spacers, 4);
+}
+.gl-bp-row {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  font-family: $font-family-monospace;
+  font-size: $mono-font-size;
+  letter-spacing: $letter-spacing-mono;
+  color: $text;
+
+  > span:last-child {
+    display: block;
+    height: .5rem;
+    background-image: $beam;
+  }
+}
+
+// ---------- Do／Don't ----------
+.gl-dodont + .gl-dodont {
+  margin-top: map-get($spacers, 4);
+}
+.gl-dodont {
+  h3 {
+    margin-bottom: 1rem;
+    font-size: 1.0625rem;
+  }
+}
+.gl-dodont-pair {
+  display: grid;
+  gap: 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+.gl-do,
+.gl-dont {
+  display: flex;
+  flex-direction: column;
+  gap: .875rem;
+  min-width: 0;
+  padding: 1rem 1.25rem 1.25rem;
+
+  > p:last-child {
+    margin: 0;
+    color: $text-2;
+    font-size: $font-size-sm;
+  }
+}
+.gl-do {
+  @include cut-frame($cut-panel, mix($mint, $deck, 45%), $deck);
+}
+.gl-dont {
+  background-color: $deck;
+  border: 1px dashed $flare;
+}
+.gl-do-label,
+.gl-dont-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  font-family: $font-family-monospace;
+  font-size: $mono-font-size;
+  font-weight: 600;
+  letter-spacing: $letter-spacing-mono;
+}
+.gl-do-label { color: $mint; }
+.gl-dont-label { color: $flare; }
+.gl-sample {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+  min-height: 4rem;
+  padding: 1rem;
+  background-color: $void;
+  border: 1px solid $line;
+
+  > .progress { flex: 1 1 100%; }
+}
+// 反例用的樣式（只在 Don't 裡出現）
+.gl-bad-error {
+  width: 100%;
+  margin: 0;
+  padding: .875rem 1rem;
+  border: 1px solid $pink;
+  background-color: $pink-veil;
+  color: $pink-text;
+}
+// 反例「白字放在電光粉上」：頁面上不真的畫出白字，只放色塊與算出來的比值
+.gl-bad-pink {
+  display: block;
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  background-color: $pink;
+}
+.gl-bad-ratio {
+  margin: 0;
+  color: $text-2;
+  font-family: $font-family-monospace;
+  font-size: $mono-font-size;
+  letter-spacing: .02em;
+}
+.gl-bad-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: .625rem;
+  height: .625rem;
+  border-radius: 50%;
+  background-color: $line;
+
+  &.is-done { background-color: $mint; }
+  &.is-playing { background-color: $pink; }
+}
+.gl-bad-units {
+  display: grid;
+  gap: .5rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: $text-2;
+  font-size: .9375rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+  }
+}
+.gl-narrow {
+  max-width: 11.5em;
+  margin: 0;
+  color: $text;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.gl-sample .terminal {
+  flex: 1 1 100%;
+  min-width: 0;
+  padding-block: .5rem;
+}
+// 反例「整句都標」：.terminal mark 平常不斷行（數字與單位不拆開），整句標起來時要允許換行
+.terminal .gl-bad-mark {
+  white-space: normal;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.gl-sample .unit-list {
+  width: 100%;
+}
+// 反例：任意斷字
+.gl-bad-break {
+  word-break: break-all;
+}
+// 單選示範（工藝分類）：和篩選面板差不多寬
+.gl-radio-demo {
+  max-width: 20rem;
+}
