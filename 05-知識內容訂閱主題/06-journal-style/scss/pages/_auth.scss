@@ -1,0 +1,277 @@
+// ============================================================
+// 登入、註冊、忘記密碼（2026-11 補頁）共用：login.html、register.html、forgot-password.html
+// 構圖：紙張內距 64 → 上方大字 H1（.display-1 64px，螢光筆）＋說明，最寬 720、靠左
+//       （登入頁右側一支手繪箭頭往下指向表單）→ 兩欄：左「橫線索引卡」表單｜右設計稿狀態示意或免費會員權益
+//       ≥ 1200 是 6 欄｜空 1 欄｜5 欄（註冊頁右欄 4 欄）
+//       992–1199：註冊頁 7 : 5（權益卡內容短，並排放得下）；登入與忘記密碼改成上下排
+//       （示意框裡還有提示框，右欄只剩 5 欄時一行不到 10 個字），索引卡最寬 544、靠左
+// - 橫線索引卡 .auth-card：白紙卡、24px 圓角、上緣兩段紙膠帶；只有上緣的裝飾帶是淡藍橫線＋一條珊瑚抬頭線，欄位底下是白
+//   卡片底部一條點線撕線，下面是切換連結（還沒有帳號？免費註冊）
+// - 免費會員權益 .auth-plan（註冊頁右欄）：紙色底＋1.5px 點格色框，沒有膠帶、陰影、活頁孔，層級低於表單
+// - 設計稿狀態示意 .auth-demo：虛線框（不傾斜），忘記密碼的 3 張用手繪小箭頭 .auth-chain-arrow 串起來
+// 手機：H1 → 索引卡 →（權益）→ 示意，單欄
+// ============================================================
+
+$auth-band:     3.5rem;   // 索引卡上緣裝飾帶的高度（56px：兩條淡藍橫線＋珊瑚抬頭線）
+$auth-rule-gap: 1.125rem; // 裝飾帶的橫線間距 18px
+
+.auth-sheet {
+  @include media-breakpoint-up(lg) {
+    padding: 4rem; // 表單頁的紙張內距 64
+  }
+}
+
+// ---------- 標題列：大字 H1＋說明，靠左、最寬 720 ----------
+.auth-head {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+  max-width: 45rem;
+  margin-bottom: map-get($spacers, 5); // 36
+
+  @include media-breakpoint-up(lg) {
+    margin-bottom: map-get($spacers, 6); // 52
+  }
+}
+.auth-head-text {
+  min-width: 0;
+}
+.auth-title {
+  margin-bottom: .75rem;
+}
+.auth-lead {
+  margin: 0;
+  color: $pen-body;
+  font-size: 1.0625rem;
+  line-height: 1.85;
+
+  @include media-breakpoint-up(lg) {
+    font-size: $lead-font-size; // 19
+  }
+}
+// 登入頁：說明右邊一支手繪箭頭，往下彎進表單的方向（裝飾；窄螢幕沒有留白，不顯示）
+.auth-arrow {
+  position: relative; // 蓋掉 .doodle 的絕對定位，跟著標題列排
+  display: none;
+  flex: none;
+  width: 4.5rem;
+  height: 5.5rem;
+  margin-bottom: -3.25rem;
+  stroke-width: 2.4;
+
+  @include media-breakpoint-up(lg) {
+    display: block;
+  }
+}
+
+// ---------- 橫線索引卡 ----------
+.auth-card {
+  --card-px: 1.25rem;
+  position: relative;
+  padding: calc(#{$auth-band} + 1.75rem) var(--card-px) 0;
+  border-radius: 1.5rem;
+  background:
+    // 珊瑚抬頭線（索引卡第一條紅線）
+    linear-gradient(rgba($coral, .6), rgba($coral, .6)) 0 calc(#{$auth-band} - 2px) / 100% 2px no-repeat,
+    // 裝飾帶的淡藍橫線，只畫在卡片上緣
+    repeating-linear-gradient(to bottom, transparent 0 calc(#{$auth-rule-gap} - 1.5px), $rule-line calc(#{$auth-rule-gap} - 1.5px) $auth-rule-gap) 0 0 / 100% calc(#{$auth-band} - 2px) no-repeat,
+    $white;
+  box-shadow: $box-shadow;
+  color: $pen;
+
+  @include media-breakpoint-up(sm) { --card-px: 2.25rem; }
+  @include media-breakpoint-up(xl) { --card-px: 2.75rem; }
+  // 上下排的寬度（< 1200）：表單卡維持窄欄（規格建議 440–520px），不跟著紙張拉寬
+  @include media-breakpoint-down(xl) { max-width: 34rem; }
+
+  // 忘記密碼：右欄的 3 張示意比表單高，表單卡在 ≥ 1200px（左右兩欄時）跟著捲動停在頁首下方
+  &.is-sticky {
+    @include media-breakpoint-up(xl) {
+      position: sticky;
+      top: $sticky-top-offset;
+    }
+  }
+}
+// 標籤與「忘記密碼？」同一列：標籤靠左、文字連結靠右（連結本身有 44px 觸控高度）
+.auth-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .25rem;
+
+  .form-label { margin-bottom: 0; }
+}
+// 同意條款：方框和第一行文字對齊，文字可以換行；「服務條款」「隱私權政策」沒有頁面，用不帶 href 的 <a> 做成連結樣式
+.auth-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: .625rem;
+
+  .form-check-input {
+    flex: none;
+    margin: .25rem 0 0; // 20px 方框置中在 28px 的第一行
+  }
+  .form-check-label a {
+    color: $coral-ink;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .25em;
+    white-space: nowrap; // 「隱私權政策」不從中間斷開
+    cursor: pointer;
+    &:hover { text-decoration-thickness: 2px; }
+  }
+}
+// 欄位錯誤：兩行以上時，圖示對齊第一行（不跟著整段垂直置中）
+.auth-card,
+.auth-demo-form {
+  .field-error {
+    align-items: flex-start;
+    .bi { flex: none; margin-top: .3em; }
+  }
+}
+// 勾選框的錯誤文字：和標籤文字對齊（縮排 = 方框寬 20 ＋ 間距 10）
+.auth-terms-error {
+  padding-left: 1.875rem;
+}
+// 卡片底部：一條點線撕線，下面置中小字＋切換連結
+.auth-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0 .375rem;
+  margin: 1.75rem calc(var(--card-px) * -1) 0;
+  padding: .625rem var(--card-px);
+  border-top: 2px dotted $paper-edge;
+  color: $pen-muted;
+  font-size: $font-size-sm;
+
+  .btn-text { --bs-btn-font-size: #{$font-size-sm}; }
+}
+
+// ---------- 免費會員權益（註冊頁右欄）：層級低於表單 ----------
+.auth-plan {
+  padding: 1.75rem 1.5rem 1.25rem;
+  border: 1.5px solid $dot;
+  border-radius: $border-radius-lg;
+  background-color: $sheet;
+
+  @include media-breakpoint-up(xl) {
+    padding: 2rem 2rem 1.5rem;
+  }
+  // 手機與平板排在表單下方時，和表單卡同寬
+  @include media-breakpoint-down(lg) { max-width: 34rem; }
+  .check-list { margin-bottom: 1rem; }
+}
+
+// ---------- 設計稿狀態示意：虛線框（不傾斜） ----------
+// .demo-state 預設是「上緣一條虛線＋上方留白」；表單頁的示意放在欄裡，改成整圈虛線的示意框
+.auth-demos {
+  display: grid;
+  gap: 1.5rem;
+}
+.auth-demo {
+  margin-top: 0;
+  padding: 1rem .875rem 1.25rem;
+  border: 1.5px dashed $control;
+  border-radius: .5rem;
+  background-color: $sheet;
+
+  @include media-breakpoint-up(sm) {
+    padding: 1.5rem 1.5rem 1.75rem;
+  }
+  > .text-note { margin-bottom: 1rem; }
+
+  // 註冊頁的欄位錯誤示意（重畫的表單）：排在表單下方時和表單卡同寬
+  &.is-form {
+    @include media-breakpoint-down(lg) { max-width: 34rem; }
+  }
+
+  // 手機：示意框、提示框兩層內距疊起來太窄（內文一行只剩 10 個字，Email 擠成單獨一行），
+  // 提示框收一點內距，圖示改成和標題同一列，內文用滿提示框的寬度
+  @include media-breakpoint-down(sm) {
+    .callout {
+      position: relative;
+      display: block;
+      padding: .875rem 1rem;
+    }
+    .callout-icon {
+      position: absolute;
+      top: .875rem;
+      left: 1rem;
+    }
+    .callout-body {
+      padding-top: 0;
+
+      > :first-child {
+        min-height: 2rem;
+        padding-top: .1875rem;
+        padding-left: 2.625rem; // 圖示 32 ＋ 間距 10
+      }
+    }
+  }
+}
+// 註冊頁的欄位錯誤示意：重畫的欄位直接放在示意框裡
+.auth-demo-form {
+  padding-top: .25rem;
+}
+
+// 忘記密碼：表單右邊一支手繪箭頭，指向第一張示意「重設信已寄出」（送出後會看到的畫面）
+// 放在欄裡、不在 sticky 的表單卡裡，所以不跟著捲動；跨過兩欄之間的留白（空的 1 欄＋欄距，≥ 1200 才有這段留白）
+.auth-form-col {
+  position: relative;
+}
+.auth-next-arrow {
+  display: none;
+  top: 9rem;
+  left: calc(100% - 1rem);
+  width: 6.5rem;
+  height: 3.75rem;
+  stroke-width: 2.4;
+
+  @include media-breakpoint-up(xl) {
+    display: block;
+  }
+}
+
+// 忘記密碼：3 張示意之間的手繪小箭頭（照實際發生的順序往下）
+.auth-demos.is-chain {
+  gap: .25rem;
+}
+.auth-chain-arrow {
+  justify-self: center;
+  width: 2.5rem;
+  height: 3rem;
+  fill: none;
+  stroke: $matcha-deep;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+// 「重新寄送」是句子裡的文字按鈕（保留 44px 觸控高度）
+.auth-resend {
+  color: $pen-body;
+  font-size: $font-size-sm;
+
+  .btn-text { --bs-btn-font-size: #{$font-size-sm}; }
+}
+// 設定新密碼示意：示意框裡的一張白紙卡表單（和索引卡一樣是窄欄，最寬 544）
+.auth-stage-card {
+  max-width: 34rem;
+  padding: 1.5rem 1.25rem;
+
+  @include media-breakpoint-up(sm) {
+    padding: 1.75rem 1.75rem 2rem;
+  }
+}
+.auth-stage-title {
+  margin-bottom: .375rem;
+  font-size: $h3-font-size;
+}
+.auth-stage-lead {
+  margin-bottom: 1.25rem;
+  color: $pen-body;
+  font-size: $font-size-sm;
+  overflow-wrap: anywhere;
+}

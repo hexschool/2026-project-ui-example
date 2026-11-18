@@ -1,0 +1,1202 @@
+// ============================================================
+// 設計 Guideline（guideline.html）
+// 版面：.ide.ide-xl.gl-ide
+// - ≥ 1200px：活動列｜側欄面板「目錄」（288px，12 節：等寬編號 01–12＋節名；ScrollSpy 目前項 $volt-tint 底＋左側 2px）
+//   ｜編輯區 .wrap-account 1040
+// - 1200px 以下：沒有側欄面板，目錄變成編輯區頂端一列可橫向捲動的分頁（992–1199 貼齊視窗頂端、以下貼在頂端列下方，都 sticky）
+// 每一節：等寬節號 → ## H2 → 「// 原則」註解列 → 示範
+// 示範一律用頁面上真的在用的 class；這裡只有排列示範用的 gl- 類別（色票列、字級列、示意圖、Do／Don't 對照）
+// ============================================================
+
+$gl-toc-row-h: 2.75rem; // 1200px 以下的目錄橫列高度（觸控 44px）
+
+// 色票：色塊的顏色從 _variables.scss 取，HTML 裡只寫 hex 文字（改色時兩邊一起改，見 README「換色時同步檢查」）
+$gl-swatches: (
+  "rail": $rail,
+  "editor": $editor,
+  "panel": $panel,
+  "panel-raised": $panel-raised,
+  "row-hover": $row-hover,
+  "line": $line,
+  "line-strong": $line-strong,
+  "control": $control,
+  "fg-strong": $fg-strong,
+  "fg": $fg,
+  "fg-muted": $fg-muted,
+  "fg-dim": $fg-dim,
+  "volt": $volt,
+  "volt-hover": $volt-hover,
+  "volt-tint": $volt-tint,
+  "rec-tint": $rec-tint,
+  "on-volt": $on-volt,
+  "sky": $sky,
+  "sky-hover": $sky-hover,
+  "info-tint": $info-tint,
+  "pass": $pass,
+  "pass-tint": $pass-tint,
+  "warn": $warn,
+  "warn-tint": $warn-tint,
+  "fail": $fail,
+  "fail-tint": $fail-tint,
+  "branch-admin": $branch-admin,
+  "syntax-string": $syntax-string,
+  "selection": $selection,
+  "chart-bar-on-light": $chart-bar-on-light,
+  "chart-text-on-light": $chart-text-on-light,
+  "chart-bg-on-light": $chart-bg-on-light,
+);
+
+// 淺色漏斗示範的次要字與格線（由 $chart-text-on-light 與 $chart-bg-on-light 混出來：次要字 5.84、格線只當裝飾）
+$gl-light-muted: mix($chart-text-on-light, $chart-bg-on-light, 70%);
+$gl-light-line:  mix($chart-text-on-light, $chart-bg-on-light, 20%);
+
+// ---------- 1. 版面：側欄面板目錄（≥ 1200）／頂端目錄橫列（以下） ----------
+// .ide-xl 在 1200px 以下會把側欄面板藏起來；這一頁改成橫列，所以要再顯示
+.gl-ide > .gl-side {
+  display: block;
+}
+.gl-toc-total {
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  color: $fg-muted;
+}
+.gl-toc-list {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  margin: 0;
+  padding: .5rem 0 1rem;
+  list-style: none;
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    min-height: $row-height;
+    padding: .375rem 1rem;
+    border-radius: 0;
+    color: $fg;
+    font-size: .875rem;
+    line-height: 1.4;
+    transition: $hover-transition;
+
+    &:hover {
+      background-color: $row-hover;
+      color: $fg-strong;
+    }
+    &:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 2px $volt;
+    }
+    // 目前節：電光綠淡底＋左側 2px 電光綠＋粗體（和個人頁分支樹的目前項同一組）
+    &.active {
+      background-color: $volt-tint;
+      color: $fg-strong;
+      font-weight: $font-weight-bold;
+      box-shadow: inset 2px 0 0 $volt;
+
+      .gl-toc-num { color: $volt; }
+    }
+  }
+}
+.gl-toc-num {
+  flex: 0 0 auto;
+  min-width: 1.5em;
+  font-family: $font-family-monospace;
+  font-size: $mono-size;
+  font-weight: $font-weight-normal;
+  letter-spacing: 0;
+  color: $fg-muted;
+}
+.gl-side-note {
+  margin: 0;
+  padding: 1rem;
+  border-top: 1px solid $line;
+  font-size: $small-font-size;
+  line-height: 1.7;
+  color: $fg-muted;
+
+  code {
+    font-size: .75rem;
+  }
+}
+
+// 1200px 以下：面板變成 sticky 的目錄橫列（只留 12 個分頁，標題列與說明隱藏）
+@include media-breakpoint-down(xl) {
+  .gl-side {
+    position: sticky;
+    top: $topbar-height;
+    z-index: $zindex-sticky - 1;
+    height: auto;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid $line;
+
+    > .panel-head,
+    > .gl-side-note {
+      display: none;
+    }
+  }
+  .gl-toc-list {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0;
+    scrollbar-width: none;
+
+    .nav-link {
+      gap: .5rem;
+      min-height: $gl-toc-row-h;
+      padding: 0 .875rem;
+      white-space: nowrap;
+
+      &.active {
+        box-shadow: inset 0 -2px 0 $volt;
+      }
+    }
+  }
+}
+@include media-breakpoint-between(lg, xl) {
+  .gl-side {
+    top: 0;
+  }
+}
+
+// ---------- 2. 版心、節 ----------
+.gl-wrap {
+  padding-bottom: 4rem;
+}
+.gl-header .statusline {
+  margin-top: 1.25rem;
+}
+.gl-section {
+  padding-block: $section-gap-sm;
+  border-top: 1px solid $line;
+  // 1200px 以下目錄橫列也是 sticky，錨點要再往下讓一列
+  scroll-margin-top: $gl-toc-row-h + .25rem;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: $section-gap;
+  }
+  @include media-breakpoint-up(xl) {
+    scroll-margin-top: 0;
+  }
+  > h2 {
+    margin-bottom: .75rem;
+  }
+}
+.gl-section-num {
+  margin: 0 0 .5rem;
+  font-family: $font-family-monospace;
+  font-size: $mono-size;
+  letter-spacing: 0;
+  color: $fg-muted;
+}
+// 每節開頭的原則：寫成程式碼註解（// 是裝飾，螢幕閱讀器不讀）
+.gl-principle {
+  max-width: 46em;
+  margin: 0 0 2.25rem;
+  color: $fg-muted;
+
+  &::before {
+    content: "// " / "";
+    font-family: $font-family-monospace;
+    letter-spacing: 0;
+    color: $fg-dim;
+    white-space: pre;
+  }
+}
+.gl-sub {
+  margin: 3rem 0 1rem;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+  color: $fg-strong;
+}
+.gl-caption {
+  margin: 0 0 .5rem;
+  font-size: $small-font-size;
+  line-height: 1.6;
+  color: $fg-muted;
+}
+.gl-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: $fg;
+
+  li + li {
+    margin-top: .375rem;
+  }
+}
+// 示範台：放元件的底（預設編輯區底；.gl-stage-panel 是面板底，元件在窗格裡長什麼樣子）
+.gl-stage {
+  padding: 1.25rem 1rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $editor;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.5rem;
+  }
+}
+.gl-stage-panel {
+  background-color: $panel;
+}
+.gl-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+}
+// 規格表：沿用 .table-data，第一欄是項目名
+// 768px 以下改成一列一張（表頭留給螢幕閱讀器，每格前面用 data-label 補上欄名；data-label 由表頭文字產生，改表頭時一起改）
+.gl-table th[scope="row"] {
+  color: $fg-strong;
+  font-weight: $font-weight-bold;
+}
+.gl-table td,
+.gl-table th {
+  vertical-align: top;
+}
+@include media-breakpoint-up(md) {
+  .gl-table th[scope="row"],
+  .gl-table code,
+  .gl-table td.num {
+    white-space: nowrap;
+  }
+}
+@include media-breakpoint-down(md) {
+  .table.gl-table {
+    border: 0;
+
+    > thead {
+      @include visually-hidden;
+    }
+    > tbody > tr {
+      display: block;
+      padding: .75rem 1rem;
+      border: 1px solid $line;
+      border-top: 0;
+
+      &:first-child {
+        border-top: 1px solid $line;
+      }
+    }
+    > tbody > tr > th,
+    > tbody > tr > td {
+      display: block;
+      padding: 0;
+      border: 0;
+    }
+    > tbody > tr > td {
+      margin-top: .375rem;
+
+      &[data-label]::before {
+        content: attr(data-label) / "";
+        display: block;
+        font-family: $font-family-monospace;
+        font-size: .75rem;
+        line-height: 1.6;
+        color: $fg-muted;
+      }
+    }
+  }
+}
+
+// ---------- 3. 01 色彩：「主題設定檔」樣式的色票列 ----------
+// <li class="gl-token"><span class="gl-chip gl-c-rail"></span><p class="gl-token-name">…</p><p class="gl-token-use">…</p><p class="gl-token-ratio">…</p></li>
+@each $name, $color in $gl-swatches {
+  .gl-c-#{$name} { --chip: #{$color}; }
+}
+.gl-palette + .gl-palette {
+  margin-top: 1rem;
+}
+.gl-palette > .pane-head {
+  justify-content: space-between;
+}
+.gl-tokens {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gl-token {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  grid-template-areas:
+    "chip name"
+    "chip use"
+    "chip ratio";
+  align-items: start;
+  gap: .125rem 1rem;
+  padding: .875rem 1rem;
+
+  + .gl-token {
+    border-top: 1px solid $line;
+  }
+  > p {
+    margin: 0;
+  }
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 2.5rem 10rem minmax(0, 1fr) 11rem;
+    grid-template-areas: "chip name use ratio";
+    align-items: center;
+    padding-inline: 1.25rem;
+  }
+}
+.gl-chip {
+  grid-area: chip;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid $line-strong;
+  border-radius: $border-radius-sm;
+  background-color: var(--chip);
+  font-weight: $font-weight-bold;
+  line-height: 1;
+
+  // 文字色：編輯區底上寫一個 Aa
+  &.is-text {
+    background-color: $editor;
+    color: var(--chip);
+  }
+  // 只用在淺色底上的文字色（漏斗圖淺色示範）：Aa 畫在它實際使用的 $chart-bg-on-light 底上
+  &.is-text.is-on-light {
+    background-color: $chart-bg-on-light;
+  }
+  // 線：編輯區底上畫一條 2px
+  &.is-line {
+    background: linear-gradient(var(--chip), var(--chip)) center / 100% 2px no-repeat, $editor;
+  }
+}
+.gl-token-name {
+  grid-area: name;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 .625rem;
+
+  code {
+    padding: 0;
+    background: none;
+    color: $fg-strong;
+    font-size: $mono-size;
+  }
+  .num {
+    font-size: $mono-size;
+    color: $fg-muted;
+  }
+  @include media-breakpoint-up(md) {
+    flex-direction: column;
+    gap: .125rem;
+  }
+}
+.gl-token-use {
+  grid-area: use;
+  font-size: $font-size-sm;
+  line-height: 1.6;
+  color: $fg;
+
+  .perm,
+  .status {
+    margin-right: .25rem;
+  }
+}
+.gl-token-ratio {
+  grid-area: ratio;
+  font-size: $small-font-size;
+  line-height: 1.6;
+  color: $fg-muted;
+
+  .num {
+    color: $fg-strong;
+  }
+  @include media-breakpoint-up(md) {
+    text-align: right;
+  }
+}
+// 對比等級標記：中性小框（不用狀態色，等級靠文字）
+.gl-grade {
+  display: inline-block;
+  margin-left: .375rem;
+  padding: 0 .3125rem;
+  border: 1px solid $line-strong;
+  border-radius: 3px;
+  font-family: $font-family-monospace;
+  font-size: .6875rem;
+  line-height: 1.6;
+  letter-spacing: 0;
+  color: $fg-muted;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+// ---------- 4. 02 字級階層：實際字樣＋等寬規格列 ----------
+.gl-type-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+}
+.gl-type-row {
+  padding: 1.25rem 1rem;
+
+  + .gl-type-row {
+    border-top: 1px solid $line;
+  }
+  @include media-breakpoint-up(md) {
+    padding: 1.5rem;
+  }
+  .statusline {
+    margin-top: .75rem;
+  }
+}
+.gl-type-sample {
+  min-width: 0;
+}
+.gl-type-use {
+  margin: .25rem 0 0;
+  font-size: $small-font-size;
+  color: $fg-muted;
+}
+
+// ---------- 5. 03 長文：排版示範、Aa 三段、閱讀模式示意 ----------
+.gl-prose-demo {
+  @include media-breakpoint-up(lg) {
+    max-width: calc(#{$prose-max-width} + #{$gutter-width});
+  }
+}
+.gl-aa {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: grid;
+    gap: .375rem 1.5rem;
+    padding-block: 1.25rem;
+    border-top: 1px solid $line;
+
+    @include media-breakpoint-up(md) {
+      grid-template-columns: 9rem minmax(0, 1fr);
+    }
+  }
+  .prose > p {
+    margin: 0;
+  }
+}
+.gl-aa-label {
+  margin: 0;
+  font-family: $font-family-monospace;
+  font-size: $mono-size;
+  line-height: 1.7;
+  letter-spacing: 0;
+  color: $fg-muted;
+
+  strong {
+    display: block;
+    color: $fg-strong;
+  }
+}
+// 閱讀模式示意：兩個縮小的版面框（純裝飾，說明寫在圖說）
+.gl-modes {
+  display: grid;
+  gap: 1.5rem;
+  margin: 0;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  figure {
+    margin: 0;
+  }
+  figcaption {
+    margin-top: .625rem;
+    font-size: $small-font-size;
+    line-height: 1.6;
+    color: $fg-muted;
+  }
+}
+.gl-mode-frame {
+  display: flex;
+  height: 9rem;
+  border: 1px solid $line-strong;
+  border-radius: $border-radius;
+  background-color: $editor;
+  overflow: hidden;
+}
+.gl-mode-bar {
+  flex: 0 0 9%;
+  background-color: $rail;
+  border-right: 1px solid $line;
+}
+.gl-mode-side {
+  flex: 0 0 24%;
+  padding: .75rem .5rem;
+  background-color: $panel;
+  border-right: 1px solid $line;
+}
+.gl-mode-doc {
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
+  padding: .875rem .75rem;
+}
+.gl-mode-gutter {
+  flex: 0 0 .75rem;
+  margin-right: .5rem;
+  background-image: repeating-linear-gradient(transparent 0 .375rem, $fg-dim .375rem calc(.375rem + 2px), transparent calc(.375rem + 2px) .875rem);
+  opacity: .7;
+}
+.gl-mode-lines {
+  flex: 0 1 11rem;
+  background-image: repeating-linear-gradient(transparent 0 .375rem, $line-strong .375rem calc(.375rem + 3px), transparent calc(.375rem + 3px) .875rem);
+}
+.gl-mode-side .gl-mode-lines {
+  display: block;
+  height: 100%;
+  background-image: repeating-linear-gradient(transparent 0 .25rem, $line-strong .25rem calc(.25rem + 2px), transparent calc(.25rem + 2px) .75rem);
+}
+
+// ---------- 6. 04 間距與格線 ----------
+// IDE 三欄示意：活動列｜側欄面板｜編輯區（版心在編輯區裡）
+.gl-ide-map {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  border: 1px solid $line-strong;
+  border-radius: $border-radius;
+  overflow: hidden;
+  font-size: $small-font-size;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 7rem 12rem minmax(0, 1fr);
+    min-height: 12rem;
+  }
+  > div {
+    padding: .875rem .75rem;
+  }
+  p {
+    margin: 0;
+    color: $fg-muted;
+  }
+  strong {
+    display: block;
+    color: $fg-strong;
+  }
+  .num {
+    color: $volt;
+  }
+}
+.gl-ide-map-bar {
+  background-color: $rail;
+  border-bottom: 1px solid $line;
+
+  @include media-breakpoint-up(md) {
+    border-bottom: 0;
+    border-right: 1px solid $line;
+  }
+}
+.gl-ide-map-side {
+  background-color: $panel;
+  border-bottom: 1px solid $line;
+
+  @include media-breakpoint-up(md) {
+    border-bottom: 0;
+    border-right: 1px solid $line;
+  }
+}
+.gl-ide-map-editor {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  background-color: $editor;
+}
+.gl-ide-map-wrap {
+  flex: 1 1 auto;
+  width: min(100%, 22rem);
+  margin-inline: auto;
+  padding: .75rem;
+  border: 1px dashed $fg-dim;
+  border-radius: $border-radius-sm;
+}
+// 間距尺度
+.gl-space {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: grid;
+    grid-template-columns: 2.25rem 3rem minmax(0, 1fr);
+    align-items: center;
+    gap: .25rem .75rem;
+    padding-block: .5rem;
+    font-size: $font-size-sm;
+
+    + li {
+      border-top: 1px solid $line;
+    }
+    @include media-breakpoint-up(md) {
+      grid-template-columns: 2.25rem 3rem 6.5rem minmax(0, 1fr);
+    }
+  }
+  .num {
+    font-size: $mono-size;
+    color: $fg-muted;
+  }
+}
+.gl-space-bar {
+  display: block;
+  height: .75rem;
+  background-color: $fg-dim;
+  border-radius: 1px;
+}
+.gl-space-use {
+  grid-column: 1 / -1;
+  color: $fg;
+
+  @include media-breakpoint-up(md) {
+    grid-column: auto;
+  }
+}
+
+// ---------- 7. 05 圓角與陰影 ----------
+.gl-shapes {
+  display: grid;
+  gap: 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @include media-breakpoint-up(xxl) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.gl-shape {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+
+  p {
+    margin: 0;
+    font-size: $small-font-size;
+    color: $fg-muted;
+  }
+  strong {
+    display: block;
+    color: $fg-strong;
+  }
+}
+.gl-shape-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem;
+  min-height: 6rem;
+  padding: 1rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $editor;
+}
+.gl-shape-edge {
+  width: 100%;
+  height: 3rem;
+  background-color: $rail;
+  border-right: 1px solid $line;
+  border-left: 3px solid $volt;
+}
+// 底色分層：由深到淺的四層
+.gl-layers {
+  display: grid;
+  gap: 0;
+  padding: .75rem;
+  border-radius: $border-radius;
+  background-color: $rail;
+  font-size: $small-font-size;
+
+  > div {
+    padding: .75rem;
+    border: 1px solid $line;
+    border-radius: $border-radius;
+  }
+  p {
+    margin: 0 0 .625rem;
+    color: $fg-muted;
+  }
+  code {
+    padding: 0;
+    background: none;
+    color: $fg-strong;
+  }
+}
+.gl-layer-editor { background-color: $editor; }
+.gl-layer-panel { background-color: $panel; }
+.gl-layer-raised {
+  background-color: $panel-raised;
+
+  p { margin: 0; }
+}
+// 浮層兩種陰影
+.gl-elev {
+  display: grid;
+  gap: 1.5rem;
+  padding: 2rem 1.5rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $editor;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.gl-elev-card {
+  padding: 1rem 1.125rem;
+  background-color: $panel;
+  border: $overlay-border;
+  border-radius: $border-radius;
+  font-size: $small-font-size;
+  color: $fg-muted;
+
+  &.is-lg { box-shadow: $box-shadow; }
+  &.is-sm { box-shadow: $box-shadow-sm; }
+  p { margin: 0; }
+  strong {
+    display: block;
+    margin-bottom: .25rem;
+    color: $fg-strong;
+  }
+}
+
+// ---------- 8. 06 元件狀態 ----------
+// 靜態示範焦點（不是真的聚焦）：和 :focus-visible 同一組外觀
+.gl-force-focus {
+  &.btn {
+    box-shadow: $focus-ring-double;
+  }
+  &.form-control {
+    border-color: $volt;
+    box-shadow: $input-focus-box-shadow;
+  }
+}
+.gl-fields {
+  display: grid;
+  gap: 1.25rem 1.5rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @include media-breakpoint-up(xxl) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  > div {
+    min-width: 0;
+  }
+}
+.gl-pair {
+  display: grid;
+  gap: 1.5rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  > div {
+    min-width: 0;
+  }
+}
+// 首頁的主題窗格是 2 欄，這裡只示範一列
+.topic-pane.gl-topic {
+  grid-template-columns: minmax(0, 1fr);
+}
+// 作者頁的追蹤按鈕在側欄面板裡是滿寬，這裡和其他按鈕並排
+.gl-row > .author-follow {
+  width: auto;
+}
+.gl-avatars {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: .75rem 1rem;
+}
+
+// ---------- 9. 08 主題專屬元件 ----------
+// ① 付費牆：編輯器的分割畫面，左右兩個分頁（未訂閱｜已訂閱）；1400px 以下上下排（欄寬不夠放付費牆）
+.gl-split {
+  display: grid;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $editor;
+  overflow: clip;
+
+  @include media-breakpoint-up(xxl) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.gl-split-col {
+  min-width: 0;
+
+  + .gl-split-col {
+    border-top: 1px solid $line;
+
+    @include media-breakpoint-up(xxl) {
+      border-top: 0;
+      border-left: 1px solid $line;
+    }
+  }
+  // 窄欄裡的方案選項上下排（和手機上的付費牆同一個樣子）
+  .radio-card-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.gl-split-tab {
+  display: flex;
+  align-items: stretch;
+  margin: 0;
+  background-color: $panel-raised;
+  border-bottom: 1px solid $line;
+
+  > span {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    min-height: 2.25rem;
+    padding: 0 1rem;
+    background-color: $editor;
+    border-right: 1px solid $line;
+    box-shadow: inset 0 2px 0 $volt;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    color: $fg-strong;
+  }
+}
+.gl-split-body {
+  padding: 1.25rem 1rem 1.5rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.5rem;
+  }
+  > .prose > :last-child {
+    margin-bottom: 0;
+  }
+}
+// ② 閱讀進度 3 × 3：頂端細條在這裡改成一般區塊（頁面上是 fixed／sticky）
+.gl-progress {
+  border: 1px solid $line;
+  border-radius: $border-radius;
+}
+.gl-progress-row {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem 1rem;
+
+  + .gl-progress-row {
+    border-top: 1px solid $line;
+  }
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    padding: 1.25rem 1.5rem;
+  }
+  .reading-progress {
+    position: static;
+    z-index: auto;
+    background-color: $rail;
+  }
+  .paywall-progress > .num {
+    white-space: nowrap;
+  }
+}
+.gl-progress-title {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  color: $fg-strong;
+
+  span {
+    margin-left: .5rem;
+    font-weight: $font-weight-normal;
+    color: $fg-muted;
+  }
+}
+// ③ 方案：月繳／年繳兩種狀態
+.gl-billing {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .segmented {
+    max-width: 100%;
+  }
+}
+// ⑤ 訂閱狀態 4 態、⑥ 作者申請 4 態：≥ 768px 兩欄、≥ 1400px 四欄
+.gl-states-4 {
+  display: grid;
+  gap: .75rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @include media-breakpoint-up(xxl) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  > div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    > .pane,
+    > .callout,
+    > .gl-stage {
+      flex: 1 1 auto;
+    }
+  }
+  .sub-pane-date {
+    font-size: 1.75rem;
+  }
+}
+// ⑧ 角色三欄：3 棵權限分支樹（≥ 768px 並排）
+.gl-roles {
+  display: grid;
+  gap: .75rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  > .pane {
+    min-width: 0;
+  }
+  .pane-body {
+    padding: .5rem .75rem 1rem .5rem;
+  }
+}
+// 讀者那一棵有「申請成為作者」的虛線分支，主幹要一路畫到分岔點
+// （_account-ui.scss 依 body 的 data-role 收尾主幹；Guideline 沒有 data-role，所以在這裡指定）
+.branch-tree.gl-tree-reader .branch-lane.is-account::before {
+  bottom: 0;
+}
+// ⑨ 編輯器元件集
+.gl-editor {
+  display: grid;
+  gap: 1.5rem;
+
+  @include media-breakpoint-up(xxl) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  > div {
+    min-width: 0;
+  }
+}
+
+// ---------- 10. 09 數據圖表 ----------
+// 深色、淺色兩張漏斗上下排（並排時每張不到 480px，刻度字會擠在一起）
+.gl-funnels {
+  display: grid;
+  gap: 1.5rem;
+}
+// 同一張漏斗的淺色示範：#F3F3F3 底、#1F6FB2 橫條（對白 5.28、對 #F3F3F3 4.76）、#1E1E1E 字（15.02）
+.gl-funnel-light {
+  background-color: $chart-bg-on-light;
+  border-color: $gl-light-line;
+  color: $chart-text-on-light;
+
+  > .pane-head {
+    background-color: $chart-bg-on-light;
+    border-bottom-color: $gl-light-line;
+
+    > p {
+      color: $chart-text-on-light;
+    }
+  }
+  .funnel-sub,
+  .funnel-value small,
+  .funnel-axis .funnel-label,
+  .funnel-ticks {
+    color: $gl-light-muted;
+  }
+  .funnel-label,
+  .funnel-value > .num {
+    color: $chart-text-on-light;
+  }
+  .funnel-track {
+    background-image: repeating-linear-gradient(90deg, $gl-light-line 0 1px, transparent 1px 20%);
+    box-shadow: inset -1px 0 0 $gl-light-line;
+  }
+  .funnel-bar {
+    background-color: $chart-bar-on-light;
+  }
+}
+// Do／Don't 小圖：等比例橫條 vs 梯形
+.gl-mini-bars,
+.gl-mini-trapezoid {
+  display: grid;
+  gap: .375rem;
+  margin: .5rem 0 .75rem;
+
+  > span {
+    display: block;
+    height: .75rem;
+  }
+}
+.gl-mini-bars > span {
+  width: var(--w);
+  min-width: 2px;
+  background-color: $sky;
+}
+.gl-mini-trapezoid {
+  justify-items: center;
+
+  > span {
+    height: 1rem;
+    background-color: $fg-dim;
+    clip-path: polygon(0 0, 100% 0, 92% 100%, 8% 100%);
+  }
+  > :nth-child(1) { width: 100%; }
+  > :nth-child(2) { width: 84%; }
+  > :nth-child(3) { width: 68%; }
+  > :nth-child(4) { width: 52%; }
+}
+
+// ---------- 11. 10 狀態文案 ----------
+// 文案表裡的「下一步按鈕」：等寬方框字（不是真的按鈕）
+.gl-copy-btn {
+  display: inline-block;
+  margin: .125rem .25rem 0 0;
+  padding: 0 .375rem;
+  border: 1px solid $control;
+  border-radius: $border-radius-sm;
+  font-size: $small-font-size;
+  line-height: 1.6;
+  color: $fg-strong;
+  white-space: nowrap;
+}
+.gl-copy-table td:last-child {
+  color: $fg-muted;
+}
+@include media-breakpoint-up(md) {
+  .gl-copy-table td:nth-child(3) {
+    min-width: 18rem;
+  }
+  .gl-copy-table td:last-child {
+    min-width: 12rem;
+  }
+}
+.gl-empties {
+  display: grid;
+  gap: .75rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+// ---------- 12. 12 Do／Don't：每一組畫成一份 diff（− 刪掉的寫法／＋ 改成的寫法） ----------
+.gl-diffs {
+  display: grid;
+  gap: 1rem;
+
+  @include media-breakpoint-up(xxl) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.gl-diff {
+  min-width: 0;
+
+  > .pane-head > h3 {
+    color: $fg-strong;
+  }
+}
+.gl-diff-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  padding: .875rem 1rem .875rem 0;
+  font-size: $font-size-sm;
+  line-height: 1.7;
+
+  // 左側 ± 記號欄（裝飾）
+  &::before {
+    content: "−" / "";
+    display: block;
+    font-family: $font-family-monospace;
+    font-weight: $font-weight-bold;
+    text-align: center;
+  }
+  p {
+    margin: 0;
+    color: $fg;
+  }
+  &.is-del {
+    background-color: $fail-tint;
+    box-shadow: inset 3px 0 0 $fail;
+
+    &::before { color: $fail; }
+  }
+  &.is-add {
+    background-color: $pass-tint;
+    box-shadow: inset 3px 0 0 $pass;
+
+    &::before {
+      content: "+" / "";
+      color: $pass;
+    }
+  }
+  + .gl-diff-row {
+    border-top: 1px solid $line;
+  }
+  .gl-diff-demo {
+    margin-top: .625rem;
+  }
+}
+.gl-diff-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: .25rem !important;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0;
+
+  .is-del & { color: $fail; }
+  .is-add & { color: $pass; }
+}
+// Don't 示意：鎖頭縮在角落、到期日藏在小字
+.gl-dont-corner {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .5rem .75rem;
+  border: 1px solid $line;
+  border-radius: $border-radius-sm;
+  background-color: $editor;
+  color: $fg-strong;
+
+  .bi {
+    align-self: flex-end;
+    font-size: .6875rem;
+    color: $fg-dim;
+  }
+}
+.gl-dont-dots {
+  display: inline-flex;
+  gap: .75rem;
+
+  > span {
+    width: .75rem;
+    height: .75rem;
+    border-radius: 50%;
+    background-color: $pass;
+  }
+  > span:last-child {
+    background-color: $fail;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-toc-list .nav-link {
+    transition: none;
+  }
+}

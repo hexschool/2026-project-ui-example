@@ -1,0 +1,301 @@
+// ============================================================
+// 頁首 SiteHeader：浮起的圓角膠囊列
+// - position: sticky; top: 12px；外層透明，內層是 64px 高的奶油色膠囊（陰影＋內側 5px 一圈虛線縫線）
+// - 品牌（手繪筆記本）靠左、導覽置中（目前頁背後一筆手繪珊瑚螢光筆）、搜尋圓鈕與會員膠囊靠右
+// - < 992：膠囊只留品牌＋搜尋、會員、選單三個圓鈕；選單展開成膠囊下方的一張圓角紙卡
+// - 搜尋列展開在膠囊正下方，是一張圓角紙條（Collapse，絕對定位，不推擠頁面）
+// ============================================================
+
+// 導覽目前頁的手繪螢光筆；hover 是同一筆畫的淡珊瑚
+$nav-marker: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30' preserveAspectRatio='none'><path d='M6 17.5C26 13 50 19.5 72 15.5S90 14 94 15' fill='none' stroke='#{$coral-marker}' stroke-width='15' stroke-linecap='round'/></svg>");
+$nav-marker-soft: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30' preserveAspectRatio='none'><path d='M6 17.5C26 13 50 19.5 72 15.5S90 14 94 15' fill='none' stroke='#{$coral-tint}' stroke-width='15' stroke-linecap='round'/></svg>");
+
+.site-header {
+  position: sticky;
+  top: $site-header-gap;
+  z-index: $zindex-sticky;
+  margin-top: $site-header-gap;
+}
+.site-header-inner {
+  position: relative;
+}
+
+// 膠囊本體（.navbar）
+.site-capsule {
+  min-height: $site-header-height;
+  padding: 0 .625rem 0 1.25rem;
+  border-radius: $border-radius-pill;
+  background-color: $sheet;
+  box-shadow: $shadow-capsule;
+  flex-wrap: nowrap;
+
+  // 內側 5px 處一圈 1.5px 虛線縫線（裝飾）
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border: 1.5px dashed $dot;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  @include media-breakpoint-up(lg) {
+    padding-inline: 1.5rem .625rem;
+  }
+}
+
+// 品牌：手繪筆記本＋現場筆記（Huninn）＋FieldNotes（Fredoka）
+.site-brand {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 2.75rem;
+  margin-right: 0;
+  padding: 0;
+  color: $pen;
+  text-decoration: none;
+
+  &:hover { color: $pen; }
+}
+.site-brand-mark {
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  .site-brand-book { fill: $sheet; }
+  .site-brand-ribbon {
+    fill: $coral;
+    stroke: $coral-press;
+    stroke-width: 1.2;
+  }
+  .site-brand-lines { stroke: $matcha-deep; stroke-width: 1.6; }
+}
+.site-brand-name {
+  font-family: $font-family-hand;
+  font-size: 1.375rem;
+  line-height: 1;
+  letter-spacing: .06em;
+  font-synthesis: none;
+}
+.site-brand-en {
+  font-family: $font-family-num;
+  font-size: .8125rem;
+  font-weight: 500;
+  letter-spacing: .02em;
+  color: $pen-muted;
+
+  @include media-breakpoint-down(sm) {
+    display: none;
+  }
+}
+
+// 44px 圓鈕：搜尋、會員頭像、選單
+.site-round-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1.5px solid $control;
+  border-radius: 50%;
+  background-color: $white;
+  color: $pen;
+  font-size: 1.125rem;
+  line-height: 1;
+  transition: background-color .12s ease;
+
+  &:hover {
+    background-color: $butter;
+    color: $pen;
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: $focus-ring-double;
+  }
+  &[aria-expanded="true"] {
+    background-color: $coral-tint;
+    border-color: $coral-ink;
+  }
+}
+.site-round-avatar {
+  border-color: $matcha-deep;
+  background-color: $matcha-tint;
+
+  img {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+}
+.navbar-toggler.site-round-btn {
+  border: 1.5px solid $control;
+  border-radius: 50%;
+  &:focus { box-shadow: none; }
+  &:focus-visible { box-shadow: $focus-ring-double; }
+}
+.site-quick {
+  align-items: center;
+  gap: .375rem;
+  margin-left: auto;
+  position: relative; // 蓋在縫線之上
+}
+
+// 主導覽
+.site-nav {
+  gap: .25rem;
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding-inline: 1rem;
+    border-radius: .75rem;
+    color: $pen;
+    font-weight: $font-weight-medium;
+    background: no-repeat center 60% / 100% 1.75rem;
+
+    &:hover {
+      color: $pen;
+      background-image: escape-svg($nav-marker-soft);
+    }
+    &.active,
+    &[aria-current="page"] {
+      color: $pen;
+      background-image: escape-svg($nav-marker);
+    }
+    &:focus-visible {
+      outline: 2px solid $coral-ink;
+      outline-offset: 0;
+    }
+  }
+}
+
+// 桌機：導覽置中於膠囊（不受左右寬度影響），右側搜尋＋會員
+@include media-breakpoint-up(lg) {
+  .site-menu {
+    justify-content: flex-end;
+  }
+  .site-nav {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+.site-header-actions {
+  position: relative;
+  align-items: center;
+  gap: .5rem;
+}
+
+// 會員膠囊：抹茶淡底、32px 圓頭像、「我的現場筆記」
+.site-member {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 2.75rem;
+  padding: .3125rem 1rem .3125rem .3125rem;
+  border: 1.5px solid $matcha-deep;
+  border-radius: $border-radius-pill;
+  background-color: $matcha-tint;
+  color: $pen;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color .12s ease;
+
+  img {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  &:hover {
+    background-color: $matcha;
+    color: $pen;
+  }
+  // 個人頁面：會員膠囊也畫上螢光筆
+  &.is-active {
+    background-color: $matcha-tint;
+    span {
+      background: escape-svg($nav-marker) no-repeat center 65% / 100% 1.25rem;
+    }
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: $focus-ring-double;
+  }
+}
+
+// 手機選單：膠囊下方的一張圓角紙卡
+@include media-breakpoint-down(lg) {
+  .site-menu {
+    position: absolute;
+    top: calc(100% + .5rem);
+    left: 0;
+    right: 0;
+    z-index: 2;
+    border-radius: 1.25rem;
+    background-color: $sheet;
+    box-shadow: $box-shadow-lg;
+  }
+  .site-nav {
+    padding: .5rem;
+
+    .nav-link {
+      padding-inline: 1rem;
+      background-size: 9rem 1.75rem;
+      background-position: .25rem 60%;
+    }
+  }
+}
+
+// 搜尋列：膠囊下方的一張圓角紙條
+.site-search-panel {
+  position: absolute;
+  top: calc(100% + .5rem);
+  left: 0;
+  right: 0;
+  z-index: 3;
+
+  @include media-breakpoint-up(lg) {
+    left: auto;
+    width: 36rem;
+  }
+}
+.site-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .5rem;
+  border-radius: $border-radius-pill;
+  background-color: $sheet;
+  box-shadow: $box-shadow-lg;
+
+  > .bi {
+    position: absolute;
+    left: 1.5rem;
+    color: $pen-muted;
+    pointer-events: none;
+  }
+  .form-control {
+    flex: 1;
+    min-width: 0;
+    min-height: 2.75rem;
+    padding-left: 2.75rem;
+    border-radius: $border-radius-pill;
+  }
+  .btn {
+    flex-shrink: 0;
+  }
+}

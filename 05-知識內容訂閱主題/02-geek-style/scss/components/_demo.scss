@@ -1,0 +1,147 @@
+// ============================================================
+// 設計稿專用（不是產品介面）：設計稿切換器、設計稿狀態示意、依狀態顯示／隱藏
+// 外觀刻意和產品元件區隔：$fg-dim 虛線框、灰階、不用電光綠與天藍
+// ============================================================
+
+// ---------- 依狀態顯示／隱藏（js/main.js 設定 body 的 data-view／data-role） ----------
+// <body data-view="unsubscribed">：只顯示 data-show-view="unsubscribed" 的元素
+// <body data-role="reader">：只顯示 data-show-role 清單裡有 reader 的元素（例如 data-show-role="author admin"）
+// 沒有 JS 時以 HTML 寫的預設值（未訂閱、讀者）呈現
+body[data-view="unsubscribed"] [data-show-view="subscribed"],
+body[data-view="subscribed"] [data-show-view="unsubscribed"],
+body[data-role="reader"] [data-show-role]:not([data-show-role~="reader"]),
+body[data-role="author"] [data-show-role]:not([data-show-role~="author"]),
+body[data-role="admin"] [data-show-role]:not([data-show-role~="admin"]) {
+  display: none !important;
+}
+
+// ---------- 設計稿切換器 ----------
+// <div class="demo-switch" role="group" aria-labelledby="switchLabel">
+//   <span class="demo-switch-label" id="switchLabel"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意（非產品介面）</span>
+//   <button type="button" data-switch="view" data-value="unsubscribed" aria-pressed="true">未訂閱</button>
+//   <button type="button" data-switch="view" data-value="subscribed" aria-pressed="false">已訂閱</button>
+// </div>
+.demo-switch {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: .25rem;
+  max-width: 100%;
+  padding: .25rem .25rem .25rem .75rem;
+  border: 1px dashed $fg-dim;
+  border-radius: $border-radius-sm;
+  background-color: $editor;
+  font-family: $font-family-sans-serif;
+  font-size: .8125rem;
+  color: $fg-muted;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  button {
+    flex: 0 0 auto;
+    min-height: 2.5rem;
+    padding: .25rem .875rem;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    color: $fg-muted;
+    font-size: .8125rem;
+    white-space: nowrap;
+    transition: $hover-transition;
+
+    &:hover { background-color: $panel-raised; color: $fg-strong; }
+    // 選中：淺灰底深字（刻意不用產品的電光綠）
+    &[aria-pressed="true"] {
+      background-color: $fg-muted;
+      color: $editor;
+      font-weight: $font-weight-bold;
+    }
+    &:focus-visible {
+      outline: 2px solid $fg-strong;
+      outline-offset: -2px;
+    }
+  }
+}
+.demo-switch-label {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-right: .375rem;
+  white-space: nowrap;
+  color: $fg-muted;
+}
+@include media-breakpoint-down(sm) {
+  .demo-switch {
+    flex-wrap: wrap;
+    padding: .375rem;
+  }
+  .demo-switch-label {
+    flex: 0 0 100%;
+    padding: 0 .375rem .25rem;
+  }
+}
+
+// ---------- 設計稿狀態示意區塊 ----------
+// 放在相關區塊下方，以虛線和正式內容分開；標題一律寫「設計稿狀態示意：○○」
+// <section class="demo-state" aria-labelledby="…">
+//   <h3 class="demo-state-title" id="…"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意：○○</h3>
+//   <p class="demo-state-note">什麼情況下出現（選用）</p>
+//   …示意畫面（放在 .demo-stage 裡）…
+// </section>
+.demo-state {
+  margin-top: 2.5rem;
+  padding: 1.25rem 1rem 1rem;
+  border: 1px dashed $fg-dim;
+  border-radius: $border-radius;
+  background-color: rgba($rail, .55);
+
+  @include media-breakpoint-up(md) {
+    padding: 1.5rem;
+  }
+}
+.demo-state-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: 1rem;
+  font-family: $font-family-sans-serif;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+  color: $fg-muted;
+}
+.demo-state-note {
+  margin: -.5rem 0 1rem;
+  font-size: $small-font-size;
+  color: $fg-muted;
+}
+// 多個狀態並列時，每個狀態的名稱
+.demo-caption {
+  display: block;
+  margin-bottom: .5rem;
+  font-size: .75rem;
+  color: $fg-muted;
+  letter-spacing: $letter-spacing-label;
+}
+// 示意舞台：編輯區底色＋1px 線框，裝真的元件
+.demo-stage {
+  height: 100%;
+  padding: 1rem;
+  background-color: $editor;
+  border: 1px solid $line;
+  border-radius: $border-radius-sm;
+}
+.demo-state .row > :has(> .demo-stage) {
+  display: flex;
+  flex-direction: column;
+
+  > .demo-stage {
+    flex: 1 1 auto;
+    height: auto;
+  }
+}
+.demo-stage > .empty-state {
+  padding: 0;
+  border: 0;
+}

@@ -1,0 +1,234 @@
+// ============================================================
+// 文章列表 articles.html
+// 版頭（麵包屑 → H1 螢光筆畫在「現場筆記」→ 說明 → 56px 白底膠囊搜尋＋抹茶「搜尋」膠囊）
+// → 3 : 9：左欄 sticky 的一疊 4 張便利貼（主題分類黃、熱門標籤珊瑚、閱讀權限藍、閱讀時間抹茶，不傾斜）
+//          右欄 ≥ 1200 兩欄拍立得文章卡（components/_article-card.scss）
+// < 992：便利貼收進 Offcanvas（bottom，圓角上緣），列表上方一顆「篩選條件（3）」膠囊
+// ============================================================
+
+// ---------- 版頭的搜尋列：56px 白底膠囊（最寬 720）＋抹茶膠囊按鈕 ----------
+// 焦點畫在外框（:focus-within），輸入框本身不另畫
+.articles-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  max-width: 45rem;
+  min-height: 3.5rem;
+  margin-top: map-get($spacers, 4);
+  padding: .3125rem .3125rem .3125rem 0;
+  border: 1.5px solid $control;
+  border-radius: $border-radius-pill;
+  background-color: $white;
+  box-shadow: $box-shadow-sm;
+
+  > .bi {
+    position: absolute;
+    left: 1.25rem;
+    color: $pen-muted;
+    pointer-events: none;
+  }
+  .form-control {
+    min-width: 0;
+    min-height: 2.75rem;
+    padding-left: 3rem;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .btn {
+    flex-shrink: 0;
+    min-height: 2.75rem;
+  }
+  // 手機：縮小左側圖示的留白與按鈕內距，讓 placeholder 完整顯示
+  @include media-breakpoint-down(sm) {
+    > .bi { left: 1rem; }
+    .form-control { padding-left: 2.5rem; padding-right: .25rem; font-size: .9375rem; }
+    .btn { --bs-btn-padding-x: 1rem; }
+  }
+  &:focus-within {
+    border-color: $coral-ink;
+    box-shadow: 0 0 0 1px $coral-ink;
+  }
+}
+
+// ---------- 左欄：一疊便利貼（篩選） ----------
+$filter-sticky-min-h-lg: 1600px; // 992–1199：1,480＋100＋16
+$filter-sticky-min-h-xl: 1380px; // ≥ 1200：1,260＋100＋16
+.articles-filter {
+  // < 992：Offcanvas（bottom）：圓角上緣，最高 85% 視窗
+  @include media-breakpoint-down(lg) {
+    --bs-offcanvas-height: 85dvh;
+    border-radius: $border-radius-xl $border-radius-xl 0 0;
+  }
+  // ≥ 992：左欄一疊便利貼（左右留 12px 給便利貼的陰影）
+  @include media-breakpoint-up(lg) {
+    margin-inline: -.75rem;
+    padding: 0 .75rem 1rem;
+
+    // Bootstrap 在 ≥ 992 會把 .offcanvas-header 藏起來、body 改成 flex；這裡的標題列要留著
+    .offcanvas-header { display: flex; }
+    .offcanvas-body { display: block; }
+  }
+  // 視窗放得下整疊時才 sticky：整疊約 1,260px 高（992–1199 欄窄，約 1,480px），再加 100px 偏移與 16px 呼吸。
+  // 放不下時跟著頁面捲動，4 張便利貼一次全部看得到，不在面板裡再捲一層、把閱讀權限與閱讀時間藏在下面
+  // （和編輯器的設定便利貼同一個做法）。max-height＋overflow 只是字型或內容變長時的保險
+  @media (min-width: map-get($grid-breakpoints, lg)) and (min-height: $filter-sticky-min-h-lg),
+         (min-width: map-get($grid-breakpoints, xl)) and (min-height: $filter-sticky-min-h-xl) {
+    position: sticky;
+    top: $sticky-top-offset;
+    max-height: calc(100dvh - #{$sticky-top-offset} - 1rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: $paper-edge transparent;
+  }
+}
+.articles-filter-head {
+  gap: .5rem;
+  padding: 1.25rem 1.5rem .5rem;
+
+  .btn-text { margin-left: auto; }
+  .btn-close { margin: 0 0 0 .5rem; }
+
+  @include media-breakpoint-up(lg) {
+    padding: 0 0 .75rem;
+  }
+}
+.articles-filter-title {
+  margin: 0;
+  font-size: 1.375rem;
+}
+.articles-filter-body {
+  @include media-breakpoint-down(lg) {
+    padding: .75rem 1.5rem 1.5rem;
+  }
+}
+.filter-stack {
+  display: grid;
+  gap: 1.25rem;
+
+  // Offcanvas 在 768–991 兩欄
+  @include media-breakpoint-between(md, lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+// 每組篩選是一張便利貼（fieldset），不傾斜
+.filter-note {
+  min-width: 0;
+  margin: 0;
+  padding: 1.125rem 1.25rem 1.5rem;
+  border: 0;
+
+  .tag-list { gap: .5rem .375rem; }
+  .tag { font-size: $small-font-size; }
+  .form-check-row { font-size: .9375rem; }
+}
+.filter-note-title {
+  margin-bottom: .375rem;
+  font-family: $font-family-hand;
+  font-size: 1.125rem;
+  font-synthesis: none;
+  line-height: 1.5;
+  letter-spacing: $letter-spacing-heading;
+}
+
+// 主題分類：手繪圓圈 radio（未選：控件色的圈；選中：藍黑圈＋珊瑚填色＋藍黑圓點，字加粗）
+$radio-hand: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12.6 2.6c5.2.3 8.8 4 8.6 9.6-.2 5.2-4.2 9-9.6 8.8C6.4 20.8 2.8 17 3 11.8 3.2 6.4 7.4 2.6 13.8 3.4' fill='#{$white}' stroke='#{$control}' stroke-width='1.8' stroke-linecap='round'/></svg>");
+$radio-hand-on: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12.6 2.6c5.2.3 8.8 4 8.6 9.6-.2 5.2-4.2 9-9.6 8.8C6.4 20.8 2.8 17 3 11.8 3.2 6.4 7.4 2.6 13.8 3.4' fill='#{$coral}' stroke='#{$pen}' stroke-width='1.8' stroke-linecap='round'/><circle cx='12' cy='12' r='3.6' fill='#{$pen}'/></svg>");
+.filter-topics {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    min-height: 2.75rem;
+    font-size: .9375rem;
+    cursor: pointer;
+
+    &::before {
+      content: "";
+      flex-shrink: 0;
+      width: 1.375rem;
+      height: 1.375rem;
+      background: escape-svg($radio-hand) no-repeat center / contain;
+    }
+    &:hover { text-decoration: underline; text-decoration-color: $coral-ink; text-underline-offset: .3em; }
+  }
+  .btn-check:checked + label {
+    font-weight: $font-weight-bold;
+    &::before { background-image: escape-svg($radio-hand-on); }
+  }
+  .btn-check:focus-visible + label {
+    outline: 2px solid $coral-ink;
+    outline-offset: 2px;
+    border-radius: .5rem;
+  }
+}
+// Offcanvas 底部：清除＋套用
+.articles-filter-foot {
+  display: flex;
+  gap: .75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1.5px dashed $paper-edge;
+
+  .btn { flex: 1; }
+}
+
+// ---------- 右欄：工具列 ----------
+// （< 992）篩選膠囊、顯示筆數同一列，排序分頁籤在下一列（滿寬、可橫向捲動）
+.articles-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  margin-bottom: map-get($spacers, 5);
+
+  .sort-tabs {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  @include media-breakpoint-down(lg) {
+    .sort-tabs { order: 3; flex-basis: 100%; }
+    .articles-count { margin-left: auto; }
+  }
+}
+.articles-filter-btn {
+  gap: .5rem;
+}
+.articles-count {
+  margin: 0;
+  color: $pen-muted;
+  font-size: $font-size-sm;
+  white-space: nowrap;
+}
+// 排序分頁籤：radio 版的 .nav-underline（選中項下方一筆手繪珊瑚底線）
+.sort-tabs {
+  .nav-link { cursor: pointer; }
+  .btn-check:checked + .nav-link {
+    color: $pen;
+    background-image: escape-svg($tab-scribble);
+  }
+  .btn-check:focus-visible + .nav-link {
+    box-shadow: inset 0 0 0 2px $coral-ink;
+    border-radius: .5rem;
+  }
+}
+
+// ---------- 右欄：文章卡 ----------
+// ≥ 1200 兩欄、其餘單欄；列距留給紙膠帶
+.article-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.25rem 1.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.75rem 1.75rem;
+  }
+}

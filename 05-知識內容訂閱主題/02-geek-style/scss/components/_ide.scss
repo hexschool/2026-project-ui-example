@@ -1,0 +1,541 @@
+// ============================================================
+// IDE 版面與元件（本風格的骨架）
+// 1. .ide：側欄面板｜編輯區（活動列在頁首，固定在左側）
+// 2. .pane：窗格（$panel 底、1px $line、6px 圓角、上方 32px 標題列）；.pane-group 無間距相接
+// 3. .tree：樹狀列表（├─ └─ 連接線用 border 畫，不打字元）
+// 4. .node、.branch-h、.branch-v：分支節點與分支線（權限分支樹、提交紀錄、方案節點的基本零件）
+// 5. .indent-guides：縮排導線
+// 6. .cmdline：指令列（❯ 提示符號＋輸入框＋按鈕）
+// ============================================================
+
+// ---------- 1. 側欄面板｜編輯區 ----------
+// <div class="ide">
+//   <aside class="side-panel" aria-label="篩選">
+//     <div class="panel-head"><h2 class="panel-title">篩選</h2>（右側動作，選用）</div>
+//     <div class="panel-body">…</div>
+//   </aside>
+//   <div class="editor-area">…（.wrap-list 等版心）</div>
+// </div>
+// ≥ 992px：側欄 256px（≥ 1200px 288px），sticky、滿高（100dvh）、自己捲動；面板與編輯區貼齊視窗
+// < 992px：.ide 變成單欄，側欄面板不 sticky，各頁照 SPEC 的手機做法（Offcanvas、下拉、內容上方的區塊）
+// 加 .ide-xl：側欄 ≥ 1200px 才出現（文章內頁）
+.ide {
+  display: block;
+
+  @include media-breakpoint-up(lg) {
+    display: grid;
+    grid-template-columns: $side-panel-width-lg minmax(0, 1fr);
+    align-items: stretch;
+    min-height: 100%;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: var(--side-w, #{$side-panel-width}) minmax(0, 1fr);
+  }
+}
+.ide.ide-xl {
+  @include media-breakpoint-between(lg, xl) {
+    display: block;
+  }
+}
+// 側欄面板本身是視窗高（sticky、自己捲動）；欄位底色與右框線畫在 .ide 上，捲到頁尾時左側仍是一整條面板
+@mixin ide-side-column($w) {
+  background-image: linear-gradient(90deg, $panel calc(#{$w} - 1px), $line calc(#{$w} - 1px) $w, transparent $w);
+  background-repeat: no-repeat;
+}
+@include media-breakpoint-up(lg) {
+  .ide:not(.ide-xl) { @include ide-side-column($side-panel-width-lg); }
+}
+@include media-breakpoint-up(xl) {
+  .ide,
+  .ide:not(.ide-xl) { @include ide-side-column(var(--side-w, #{$side-panel-width})); }
+}
+.side-panel {
+  background-color: $panel;
+  border-bottom: 1px solid $line;
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: $line-strong transparent;
+    border-bottom: 0;
+    border-right: 1px solid $line;
+  }
+}
+.ide-xl > .side-panel {
+  @include media-breakpoint-down(xl) {
+    display: none;
+  }
+}
+// 面板標題列：36px、Noto Sans TC 700 13px、$fg-muted；右側可放文字按鈕（例如「清除篩選」）
+.panel-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  min-height: $panel-head-height;
+  padding: 0 1rem;
+  background-color: $panel;
+  border-bottom: 1px solid $line;
+}
+.panel-title {
+  margin: 0;
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+  line-height: 1.4;
+  letter-spacing: $letter-spacing-label;
+  color: $fg-muted;
+}
+.panel-body {
+  padding: 1rem;
+}
+// 面板裡的小節（篩選的每一組、大綱、進度、字級）：上方 1px 線分隔
+.panel-section + .panel-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid $line;
+}
+.editor-area {
+  min-width: 0;
+}
+
+// ---------- 2. 窗格 ----------
+// <section class="pane">
+//   <div class="pane-head">（既有文字：方案名、分類、「訂閱摘要」…；不補寫英文檔名）</div>
+//   <div class="pane-body">…</div>
+// </section>
+.pane {
+  min-width: 0;
+  background-color: $panel;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  color: $fg;
+}
+.pane-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .75rem;
+  min-height: $pane-head-height;
+  padding: .25rem 1rem;
+  background-color: $panel-raised;
+  border-bottom: 1px solid $line;
+  border-radius: calc(#{$border-radius} - 1px) calc(#{$border-radius} - 1px) 0 0;
+  font-size: $small-font-size;
+  color: $fg-muted;
+
+  > h2, > h3, > p {
+    margin: 0;
+    font-size: $small-font-size;
+    font-weight: $font-weight-bold;
+    line-height: 1.5;
+    color: $fg-muted;
+  }
+}
+.pane-body {
+  padding: 1.25rem;
+
+  @include media-breakpoint-up(lg) {
+    padding: 1.5rem;
+  }
+  > :last-child {
+    margin-bottom: 0;
+  }
+}
+// 強調的窗格：1px 電光綠框（首頁 CTA 主窗格、選中的選項）
+.pane.is-accent {
+  border-color: $volt;
+}
+// 推薦的窗格：2px 電光綠框＋推薦淡底（方案頁月費）
+.pane.is-recommended {
+  border: 2px solid $volt;
+  background-color: $rec-tint;
+}
+
+// 無間距相接的窗格：共用 1px 框，外圍 6px 圓角（方案、結帳、首頁 CTA）
+// <div class="pane-group pane-group-2">…兩個 .pane…</div>（≥ 768px 並排；以下上下排，共用上下框）
+// 欄數由各頁 partial 設定 grid-template-columns；.pane-group-2／-3 是等寬的預設
+.pane-group {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  overflow: clip;
+
+  > .pane {
+    border: 0;
+    border-radius: 0;
+
+    > .pane-head {
+      border-radius: 0;
+    }
+  }
+  > .pane + .pane {
+    border-top: 1px solid $line;
+  }
+  // 強調的那一格：框線畫在內側，不改變格子尺寸
+  > .pane.is-accent {
+    box-shadow: inset 0 0 0 1px $volt;
+  }
+}
+@include media-breakpoint-up(md) {
+  .pane-group-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pane-group-2 > .pane + .pane {
+    border-top: 0;
+    border-left: 1px solid $line;
+  }
+}
+@include media-breakpoint-up(lg) {
+  .pane-group-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pane-group-3 > .pane + .pane {
+    border-top: 0;
+    border-left: 1px solid $line;
+  }
+}
+
+// ---------- 3. 樹狀列表 ----------
+// <ul class="tree"><li>…</li><li>…</li></ul>
+// 每一列左側：從父層垂直線接出的 ├─（最後一列是 └─）；用 border 畫，替代文字不需要
+// --tree-indent：清單左內距（預設 20px）；--tree-x：垂直線距離清單左緣；--tree-line：線色；--tree-y：橫線落在列內的高度
+.tree {
+  --tree-indent: 1.25rem;
+  --tree-line: #{$line-strong};
+  --tree-y: .8125rem;
+  --tree-x: .375rem; // 垂直線距離清單左緣
+  margin: 0;
+  padding: 0 0 0 var(--tree-indent);
+  list-style: none;
+
+  > li {
+    position: relative;
+
+    // 垂直線：從列頂到列底（最後一列只到橫線的高度）
+    &::before {
+      content: "";
+      position: absolute;
+      left: calc(var(--tree-x) - var(--tree-indent));
+      top: 0;
+      bottom: 0;
+      border-left: 1px solid var(--tree-line);
+    }
+    // 橫線：├─
+    &::after {
+      content: "";
+      position: absolute;
+      left: calc(var(--tree-x) - var(--tree-indent));
+      top: var(--tree-y);
+      width: calc(var(--tree-indent) - var(--tree-x) - .25rem);
+      border-top: 1px solid var(--tree-line);
+    }
+    &:last-child::before {
+      bottom: auto;
+      height: var(--tree-y);
+    }
+  }
+}
+
+// ---------- 4. 分支節點與分支線 ----------
+// 節點：<span class="node node-volt" aria-hidden="true"></span>（12px）；加 .node-lg 為 20px，可放圖示
+// 實心：.node-volt（電光綠）、.node-sky（天藍）、.node-admin（紫）、.node-pass（成功）、.node-fail（錯誤）
+// 空心：.node-hollow（$fg-dim 框）、.node-hollow-sky（天藍框）；虛線空心：.node-dashed（✗ 無、還沒合併的分支）
+.node {
+  --node-size: .75rem;
+  --node-color: #{$fg-dim};
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--node-size);
+  height: var(--node-size);
+  border: 2px solid var(--node-color);
+  border-radius: 50%;
+  background-color: var(--node-color);
+  color: $on-volt;
+  font-size: calc(var(--node-size) * .55);
+  line-height: 1;
+  box-shadow: 0 0 0 3px var(--node-ring, #{$editor}); // 和背景之間留一圈底色，線穿過節點時看起來是「接上」
+
+  .bi {
+    line-height: 1;
+  }
+}
+.node-lg { --node-size: 1.25rem; }
+.node-volt  { --node-color: #{$volt}; }
+.node-sky   { --node-color: #{$sky}; }
+.node-admin { --node-color: #{$branch-admin}; }
+.node-pass  { --node-color: #{$pass}; }
+.node-fail  { --node-color: #{$fail}; }
+.node-warn  { --node-color: #{$warn}; }
+.node-hollow,
+.node-hollow-sky,
+.node-dashed {
+  background-color: var(--node-bg, #{$editor});
+  color: var(--node-color);
+}
+.node-hollow-sky { --node-color: #{$sky}; }
+.node-dashed {
+  border-style: dashed;
+  border-width: 1.5px;
+}
+// 放在 $panel 底上的節點：外圈改成面板色
+.on-panel .node,
+.pane .node,
+.side-panel .node {
+  --node-ring: #{$panel};
+  --node-bg: #{$panel};
+}
+
+// 橫向分支線：一條水平線串起每個子元素頂端的節點（首頁精選次要 3 篇、方案頁的 3 個方案）
+// <div class="branch-h"><article><span class="node node-volt branch-node" aria-hidden="true"></span>…</article>…</div>
+// ≥ 768px 橫向：每個子元素（最後一個除外）從自己的節點畫一段線到下一個子元素的節點；
+//   欄數由各頁 partial 設定（grid-template-columns），欄距寫在 --branch-gap（column-gap 用同一個變數）
+// < 768px 直向：節點排在左側，線從上一個節點接到下一個節點（加 .branch-h-lg 改成 992px 才變橫向）
+@mixin branch-h-vertical {
+  > * {
+    padding: 0 0 var(--branch-gap) 2rem;
+  }
+  > :last-child {
+    padding-bottom: 0;
+  }
+  > * > .branch-node {
+    top: calc(var(--branch-node-y) - var(--node-size) / 2);
+  }
+  > :not(:last-child)::before {
+    top: var(--branch-node-y);
+    left: calc(var(--node-x) - 1px);
+    width: 0;
+    height: 100%;
+    border-top: 0;
+    border-left: 2px solid var(--branch-color);
+  }
+}
+@mixin branch-h-horizontal {
+  > * {
+    padding: 1.75rem 0 0;
+  }
+  > * > .branch-node {
+    top: calc(.375rem - var(--node-size) / 2);
+  }
+  > :not(:last-child)::before {
+    top: calc(.375rem - 1px);
+    left: var(--node-x);
+    width: calc(100% + var(--branch-gap));
+    height: 0;
+    border-left: 0;
+    border-top: 2px solid var(--branch-color);
+  }
+}
+.branch-h {
+  --branch-color: #{$line-strong};
+  --branch-gap: 1.5rem;
+  --branch-node-y: .75rem; // 直向時，節點中心距離子元素頂端（約第一行的中間）
+  --node-x: .375rem;       // 節點中心距離子元素左緣
+  display: grid;
+  column-gap: var(--branch-gap);
+
+  > * {
+    position: relative;
+  }
+  > * > .branch-node {
+    position: absolute;
+    left: calc(var(--node-x) - var(--node-size) / 2);
+  }
+  > :not(:last-child)::before {
+    content: "";
+    position: absolute;
+  }
+  @include branch-h-vertical;
+
+  @include media-breakpoint-up(md) {
+    &:not(.branch-h-lg) { @include branch-h-horizontal; }
+  }
+  @include media-breakpoint-up(lg) {
+    &.branch-h-lg { @include branch-h-horizontal; }
+  }
+}
+
+// 直向分支線：左側一條直線，每個子元素的節點落在線上（提交紀錄、FAQ 樹、流程線、權益摘要）
+// <ol class="branch-v"><li><span class="node node-volt branch-node" aria-hidden="true"></span>…</li></ol>
+// --branch-x：線的位置（距左緣，預設 20px）；--branch-pad：內容的左內距；--branch-node-y：節點中心距離子元素頂端
+.branch-v {
+  --branch-color: #{$line-strong};
+  --branch-x: 1.25rem;
+  --branch-pad: 2.75rem;
+  --branch-node-y: 1.5rem;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > * {
+    position: relative;
+    padding-left: var(--branch-pad);
+  }
+  // 每一段直線畫在子元素自己身上：從上一個節點接到下一個節點（第一段從節點開始、最後一段到節點結束）
+  > *::before {
+    content: "";
+    position: absolute;
+    left: calc(var(--branch-x) - 1px);
+    top: 0;
+    bottom: 0;
+    border-left: 2px solid var(--branch-color);
+  }
+  > :first-child::before { top: var(--branch-node-y); }
+  > :last-child::before { bottom: auto; height: var(--branch-node-y); }
+  > :only-child::before { display: none; }
+  > * > .branch-node {
+    position: absolute;
+    top: calc(var(--branch-node-y) - var(--node-size) / 2);
+    left: calc(var(--branch-x) - var(--node-size) / 2);
+  }
+}
+
+// ---------- 5. 縮排導線：清單左側一條 1px 垂直細線（保障清單、答案、程式碼縮排） ----------
+.indent-guides {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    position: relative;
+    padding-left: 1.75rem;
+    padding-bottom: 1rem;
+
+    // 導線：從圖示下方接到下一項
+    &:not(:last-child)::before {
+      content: "";
+      position: absolute;
+      left: .5625rem;
+      top: 1.75rem;
+      bottom: 0;
+      border-left: 1px solid $line;
+    }
+    > .bi:first-child {
+      position: absolute;
+      left: 0;
+      top: .125rem;
+      font-size: 1.125rem;
+      line-height: 1.4;
+    }
+  }
+  > li:last-child {
+    padding-bottom: 0;
+  }
+}
+
+// ---------- 6. 指令列：❯ 提示符號（裝飾）＋輸入框＋按鈕 ----------
+// <form class="cmdline" role="search" action="articles.html">
+//   <span class="cmdline-prompt" aria-hidden="true">❯</span>
+//   <input class="form-control" type="search" name="q" placeholder="搜尋文章、作者或標籤" aria-label="搜尋文章">
+//   <button class="btn btn-primary btn-sm" type="submit">搜尋</button>
+// </form>
+.cmdline {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .375rem .375rem .375rem .875rem;
+  background-color: $rail;
+  border: 1px solid $control;
+  border-radius: $border-radius-sm;
+
+  &:focus-within {
+    border-color: $volt;
+    box-shadow: 0 0 0 1px $volt;
+  }
+  .form-control {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: .375rem .25rem;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+
+    &:focus {
+      box-shadow: none;
+    }
+  }
+  .btn {
+    flex: 0 0 auto;
+  }
+}
+.cmdline-prompt {
+  flex: 0 0 auto;
+  font-family: $font-family-monospace;
+  font-weight: $font-weight-bold;
+  color: $volt;
+}
+
+// ---------- 分頁盒 TabBox：上方編輯器分頁籤列（右側可放計數），下方內容（文章列表、收藏、我的文章、審核佇列共用） ----------
+// <section class="tabbox">
+//   <div class="tabbox-bar"><div class="nav editor-tabs">…</div><p class="tabbox-count">顯示 1–8 篇</p></div>
+//   …內容…
+// </section>
+// 分頁籤可以是 Bootstrap tab 的 <button class="nav-link">，也可以是 radio（.btn-check ＋ label.nav-link，選中狀態不需要 JS）
+.tabbox {
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $editor;
+  overflow: clip;
+}
+.tabbox-bar {
+  display: flex;
+  align-items: stretch;
+  background-color: $panel-raised;
+  border-bottom: 1px solid $line;
+
+  > .editor-tabs {
+    flex: 1 1 auto;
+    min-width: 0;
+    border-bottom: 0;
+  }
+}
+.tabbox-count {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0 1rem;
+  border-left: 1px solid $line;
+  font-family: $font-family-monospace;
+  font-size: $mono-size;
+  color: $fg-muted;
+  white-space: nowrap;
+
+  @include media-breakpoint-down(sm) {
+    padding: 0 .75rem;
+  }
+}
+// 分頁盒的內容區（放窗格時用；放表格時直接放 .table-responsive，表格外框由分頁盒提供）
+.tabbox-body {
+  padding: 1rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.25rem;
+  }
+}
+.tabbox .table-data {
+  border-width: 0; // 只拿掉寬度：border 簡寫會把框色重設成文字色，儲存格繼承後列線會變亮
+}
+.editor-tabs {
+  > .btn-check:checked + .nav-link {
+    color: $fg-strong;
+    background-color: $editor;
+    box-shadow: inset 0 2px 0 $volt;
+    font-weight: $font-weight-bold;
+  }
+  > .btn-check:focus-visible + .nav-link {
+    box-shadow: inset 0 0 0 2px $volt;
+  }
+  > label.nav-link {
+    cursor: pointer;
+  }
+}

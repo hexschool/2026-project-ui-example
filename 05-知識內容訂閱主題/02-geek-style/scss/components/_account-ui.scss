@@ -1,0 +1,732 @@
+// ============================================================
+// 個人頁元件：權限分支樹、訂閱狀態窗格、鍵值列、收藏窗格、狀態列（相接 4 格）、數據卡、閱讀漏斗、
+// 申請審核卡、違規下架列、取消確認、危險次要按鈕
+// （Guideline 的 3 棵角色樹也用 .branch-tree）
+// ============================================================
+
+// ---------- 1. 權限分支樹 ----------
+// 閱讀是主幹（2px $branch-trunk），創作分出 $branch-create 分支，平台管理分出 $branch-admin 分支，帳號回到主幹；
+// 讀者的「申請成為作者」是還沒合併的虛線分支（末端 + 節點）。看不到的分支整條不渲染（data-show-role → display: none）
+// <nav class="branch-tree">
+//   <div class="branch-lane is-trunk">
+//     <p class="branch-lane-name"><span class="node node-volt" aria-hidden="true"></span>閱讀</p>
+//     <ul class="lane-items"><li><a class="nav-link lane-link active" href="#subscription">訂閱狀態</a></li>…</ul>
+//   </div>
+//   <div class="branch-lane is-branch is-create" data-show-role="author admin">…</div>
+//   <div class="branch-lane is-branch is-admin" data-show-role="admin">…</div>
+//   <div class="branch-lane is-trunk is-account">…</div>
+//   <div class="branch-lane is-branch is-pending" data-show-role="reader">
+//     <p class="lane-pending-note">…</p><a class="lane-apply" href="#apply"><span class="node node-lg node-dashed node-sky">＋</span>申請成為作者</a>
+//   </div>
+// </nav>
+// 線都是 border 畫的裝飾，節點 aria-hidden；連結用 .nav-link 讓 Bootstrap ScrollSpy 標示目前區塊（.active）
+// 每個群組自己畫一段主幹（::before）；分支群組另外畫分岔的弧線（名稱列 ::before）與分支直線（群組 ::after）
+// 群組之間不留外距（間距放在群組的 padding-top），線才會一路接上
+.branch-tree {
+  --trunk-x: .875rem;  // 主幹距離群組左緣
+  --lane-x: 2.125rem;  // 分支線距離群組左緣
+  --row-h: 2.25rem;    // 一列的高度（< 992px 2.75rem）
+  --gap-y: .875rem;    // 群組之間
+  --line-w: 2px;
+
+  @include media-breakpoint-down(lg) {
+    --row-h: 2.75rem;
+  }
+}
+.branch-lane {
+  --line-x: var(--trunk-x);
+  --lane-color: #{$branch-trunk};
+  position: relative;
+  padding-top: var(--gap-y);
+
+  // 主幹：從群組頂端到底端（第一個群組從節點開始）
+  &::before {
+    content: "";
+    position: absolute;
+    left: calc(var(--trunk-x) - var(--line-w) / 2);
+    top: 0;
+    bottom: 0;
+    border-left: var(--line-w) solid $branch-trunk;
+  }
+  &:first-child::before {
+    top: calc(var(--gap-y) + var(--row-h) / 2);
+  }
+}
+// 作者、管理員看不到「申請成為作者」：主幹在帳號群組的最後一列結束（└）
+body:not([data-role="reader"]) .branch-lane.is-account::before {
+  bottom: calc(var(--row-h) / 2);
+}
+.branch-lane.is-branch { --line-x: var(--lane-x); }
+.branch-lane.is-create { --lane-color: #{$branch-create}; }
+.branch-lane.is-admin  { --lane-color: #{$branch-admin}; }
+.branch-lane.is-pending { --lane-color: #{$branch-create}; }
+
+// 分支直線：從分支節點到最後一列
+.branch-lane.is-branch:not(.is-pending)::after {
+  content: "";
+  position: absolute;
+  left: calc(var(--lane-x) - var(--line-w) / 2);
+  top: calc(var(--gap-y) + var(--row-h) / 2);
+  bottom: calc(var(--row-h) / 2);
+  border-left: var(--line-w) solid var(--lane-color);
+}
+
+// 群組名稱列：節點落在線上，名稱接在後面；設計稿角色標記靠右
+.branch-lane-name {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  min-height: var(--row-h);
+  margin: 0;
+  padding-left: calc(var(--line-x) - .375rem); // 12px 節點的中心對齊線
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+  color: $fg-strong;
+
+  .role-chip {
+    margin-left: auto;
+  }
+  .is-branch > & {
+    color: var(--lane-color);
+  }
+  // 分岔弧線 ╮：從主幹往右，再彎下來接到分支節點
+  .is-branch:not(.is-pending) > &::before {
+    content: "";
+    position: absolute;
+    left: calc(var(--trunk-x) - var(--line-w) / 2);
+    top: -.375rem;
+    width: calc(var(--lane-x) - var(--trunk-x) + var(--line-w));
+    height: calc(var(--row-h) / 2); // 下緣剛好接到節點頂端
+    border-top: var(--line-w) solid var(--lane-color);
+    border-right: var(--line-w) solid var(--lane-color);
+    border-top-right-radius: .75rem;
+  }
+}
+
+// 項目：├─ 短橫線接到所屬的線（主幹或分支）
+.lane-items {
+  margin: 0;
+  padding: 0 0 0 calc(var(--line-x) + .875rem);
+  list-style: none;
+
+  > li {
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: -.875rem;
+      top: calc(var(--row-h) / 2);
+      width: .625rem;
+      border-top: 1px solid $line-strong;
+    }
+  }
+}
+.branch-tree .lane-link {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  min-height: var(--row-h);
+  padding: .25rem .625rem;
+  border-radius: $border-radius-sm;
+  color: $fg;
+  font-size: .875rem;
+  line-height: 1.4;
+  text-decoration: none;
+  transition: $hover-transition;
+
+  .tab-count {
+    margin-left: auto;
+  }
+  &:hover {
+    background-color: $row-hover;
+    color: $fg-strong;
+  }
+  // 目前區塊：電光綠淡底＋左側 2px 電光綠（ScrollSpy 換 .active）
+  &.active {
+    background-color: $volt-tint;
+    color: $fg-strong;
+    font-weight: $font-weight-bold;
+    box-shadow: inset 2px 0 0 $volt;
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px $volt;
+  }
+}
+
+// 還沒合併的虛線分支：主幹在分岔點結束 → 虛線弧線 → 虛線直線 → 末端 + 節點
+.branch-lane.is-pending {
+  padding-top: calc(var(--gap-y) + .75rem);
+
+  &::before {
+    bottom: auto;
+    height: calc(.5rem + var(--line-w));
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    left: calc(var(--trunk-x) - var(--line-w) / 2);
+    top: .5rem;
+    width: calc(var(--lane-x) - var(--trunk-x) + var(--line-w));
+    height: calc(var(--gap-y) + .25rem);
+    border-top: var(--line-w) dashed var(--lane-color);
+    border-right: var(--line-w) dashed var(--lane-color);
+    border-top-right-radius: .75rem;
+  }
+}
+.lane-pending-note {
+  position: relative;
+  margin: 0;
+  padding: .125rem 0 .375rem calc(var(--line-x) + .875rem);
+  font-size: $small-font-size;
+  line-height: 1.5;
+  color: $fg-muted;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: calc(var(--line-x) - var(--line-w) / 2);
+    top: 0;
+    bottom: 0;
+    border-left: var(--line-w) dashed var(--lane-color);
+  }
+}
+.lane-apply {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  min-height: 2.75rem;
+  padding-left: calc(var(--line-x) - .625rem); // 20px 節點的中心對齊線
+  border-radius: $border-radius-sm;
+  color: $sky;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  text-decoration: underline;
+  text-decoration-color: rgba($sky, .45);
+  text-underline-offset: .3em;
+  transition: $hover-transition;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: calc(var(--line-x) - var(--line-w) / 2);
+    top: 0;
+    height: 50%;
+    border-left: var(--line-w) dashed var(--lane-color);
+  }
+  .node {
+    font-size: .75rem;
+  }
+  &:hover {
+    color: $sky-hover;
+    text-decoration-color: currentColor;
+  }
+  &:focus-visible {
+    outline: 2px solid $volt;
+    outline-offset: 2px;
+  }
+}
+
+// ---------- 2. 訂閱狀態窗格：左＝徽章、到期日（本頁唯一的主數字）、剩餘天數｜右＝鍵值列＋兩顆同大小次要按鈕 ----------
+// ≥ 1200px 左右 5 : 7（左欄至少容得下到期日），以下上下排、到期日在上
+.sub-pane {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(min-content, 5fr) minmax(0, 7fr);
+  }
+}
+.sub-pane-main {
+  padding: 1.25rem;
+  border-bottom: 1px solid $line;
+
+  @include media-breakpoint-up(xl) {
+    padding: 1.5rem;
+    border-bottom: 0;
+    border-right: 1px solid $line;
+  }
+  p {
+    margin: 0;
+  }
+}
+.sub-pane-label {
+  margin-top: 1.25rem !important;
+  font-size: $small-font-size;
+  color: $fg-muted;
+}
+.sub-pane-date {
+  margin: .25rem 0 .375rem !important;
+  font-size: map-get($figure-sizes, sm);
+  color: $volt;
+
+  @include media-breakpoint-up(xxl) {
+    font-size: map-get($figure-sizes, lg);
+  }
+}
+.sub-pane-remain {
+  font-size: $small-font-size;
+  color: $fg-muted;
+}
+.sub-pane-detail {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+
+  @include media-breakpoint-up(xl) {
+    padding: 1.5rem;
+  }
+}
+.sub-pane-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin-top: auto;
+  padding-top: 1.25rem;
+  border-top: 1px solid $line;
+}
+
+// ---------- 3. 鍵值列 <dl class="kv-list"><div><dt>…</dt><dd>…</dd></div>…</dl> ----------
+// 名稱固定寬、值靠左；列之間 1px 線。.kv-compact：名稱｜值左右兩端、無分隔線（設定面板）
+.kv-list {
+  margin: 0 0 1.25rem;
+
+  > div {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: .25rem 1rem;
+    min-height: 2.75rem;
+    padding: .5rem 0;
+    border-bottom: 1px solid $line;
+  }
+  > div:first-child {
+    padding-top: 0;
+  }
+  > div:last-child {
+    border-bottom: 0;
+  }
+  dt {
+    font-size: $small-font-size;
+    font-weight: $font-weight-normal;
+    color: $fg-muted;
+  }
+  dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: .375rem;
+    margin: 0;
+    color: $fg-strong;
+
+    .num {
+      font-size: $mono-size;
+    }
+    // 「更換」：保留 44px 點擊範圍，但不撐高這一列
+    .btn-text {
+      margin: -.75rem 0 -.75rem .625rem;
+    }
+  }
+}
+.kv-compact {
+  margin: 0;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    min-height: 0;
+    padding: .25rem 0;
+    border: 0;
+  }
+  > div:first-child {
+    padding-top: 0;
+  }
+}
+
+// ---------- 4. 收藏窗格：標題列＝權限徽章｜閱讀狀態；內容＝標題 → 作者 ‧ 時間 → 進度 → 按鈕 ----------
+.bookmark {
+  display: flex;
+  flex-direction: column;
+
+  > .pane-head {
+    justify-content: space-between;
+  }
+  > .pane-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .5rem;
+    padding: 1.125rem 1.25rem 1.25rem;
+  }
+  .btn {
+    margin-top: .375rem;
+  }
+}
+.bookmark-title {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+.bookmark-progress {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-top: auto;
+  padding-top: .375rem;
+
+  .progress {
+    flex: 1 1 auto;
+    height: .375rem;
+  }
+}
+.bookmark-progress-label {
+  flex: 0 0 auto;
+  font-size: $small-font-size;
+  color: $fg-muted;
+  white-space: nowrap;
+}
+
+// ---------- 5. 狀態列：相接的 4 格（我的文章；< 1200px 2 × 2） ----------
+// <dl class="stat-strip"><div><dt>已發布</dt><dd><span class="figure-num">18</span><span class="figure-unit">篇</span></dd></div>…</dl>
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0 0 1.5rem;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+  background-color: $line; // 格子之間的 1px 線
+  overflow: clip;
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  > div {
+    padding: .875rem 1rem 1rem;
+    background-color: $panel;
+  }
+  dt {
+    margin-bottom: .375rem;
+    font-size: $small-font-size;
+    font-weight: $font-weight-normal;
+    color: $fg-muted;
+  }
+  dd {
+    margin: 0;
+  }
+  .figure-num {
+    font-size: 1.75rem;
+
+    @include media-breakpoint-up(md) {
+      font-size: 2rem;
+    }
+  }
+  .figure-unit {
+    font-size: $small-font-size;
+  }
+}
+
+// ---------- 6. 數據卡：分開的 4 個窗格（內容數據）；.is-accent 是唯一強調的一張 ----------
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin: 0 0 1.5rem;
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.stat-card {
+  padding: 1rem 1.125rem 1.125rem;
+
+  dt {
+    margin-bottom: .5rem;
+    font-size: $small-font-size;
+    font-weight: $font-weight-normal;
+    color: $fg-muted;
+  }
+  dd {
+    margin: 0;
+  }
+  .figure-num {
+    font-size: 1.75rem;
+
+    @include media-breakpoint-up(md) {
+      font-size: 2rem;
+    }
+  }
+  .figure-unit {
+    font-size: $small-font-size;
+  }
+  &.is-accent {
+    background-color: $rec-tint;
+
+    dt {
+      font-weight: $font-weight-bold;
+      color: $volt;
+    }
+    .figure-num {
+      color: $volt;
+    }
+  }
+}
+
+// ---------- 7. 閱讀漏斗：4 條同色 $sky 等比例橫條、同一個刻度（0–25,000 人），數值直接標在橫條右側 ----------
+// 每列 style="--value: 73.68%"（人數 ÷ 25,000）；刻度 style="--at: 20%"。不用圖表套件
+.funnel {
+  margin: 0 0 1.25rem;
+
+  > .pane-head {
+    justify-content: space-between;
+  }
+}
+.funnel-sub {
+  font-size: .75rem;
+  color: $fg-muted;
+}
+.funnel-chart {
+  display: grid;
+  gap: .75rem;
+}
+.funnel-row,
+.funnel-axis {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: .25rem;
+  align-items: center;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    gap: 1rem;
+  }
+}
+.funnel-label {
+  font-size: $font-size-sm;
+  color: $fg;
+}
+// 軌道：每 20% 一條 1px 格線（就是刻度的位置）
+.funnel-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 2.25rem;
+  background-image: repeating-linear-gradient(90deg, $line 0 1px, transparent 1px 20%);
+  box-shadow: inset -1px 0 0 $line;
+}
+.funnel-bar {
+  flex: 0 0 var(--value);
+  min-width: 2px;
+  height: 1.25rem;
+  border-radius: 0 2px 2px 0;
+  background-color: $sky;
+}
+.funnel-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 .5rem;
+  min-width: 0;
+  padding-left: .5rem;
+  line-height: 1.4;
+
+  > .num {
+    font-size: $mono-size;
+    font-weight: $font-weight-bold;
+    color: $fg-strong;
+  }
+  small {
+    font-size: .75rem;
+    color: $fg-muted;
+  }
+}
+.funnel-axis {
+  margin-top: -.25rem;
+
+  .funnel-label {
+    font-size: .75rem;
+    color: $fg-muted;
+  }
+}
+.funnel-ticks {
+  position: relative;
+  height: 1.25rem;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  color: $fg-muted;
+  letter-spacing: 0;
+
+  > span {
+    position: absolute;
+    top: 0;
+    left: var(--at);
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  > :first-child { transform: none; }
+  > :last-child { transform: translateX(-100%); }
+
+  // 576px 以下刻度太密（20,000 和 25,000 會疊在一起），只留 0、10,000、25,000；格線照樣每 5,000 一條
+  @include media-breakpoint-down(sm) {
+    > :nth-child(2),
+    > :nth-child(4),
+    > :nth-child(5) {
+      display: none;
+    }
+  }
+}
+
+// ---------- 8. 申請審核卡：字首頭像｜姓名＋審核中＋職稱｜按鈕 → 寫作方向 → 日期 → 退件原因 ----------
+.review-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: .75rem 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  @include media-breakpoint-only(lg) {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}
+.review-who p {
+  margin: 0;
+}
+.review-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .75rem;
+  font-weight: $font-weight-bold;
+  color: $fg-strong;
+}
+.review-meta {
+  margin-top: .25rem !important;
+  font-size: $small-font-size;
+  color: $fg-muted;
+}
+.review-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-column: auto;
+  }
+  @include media-breakpoint-only(lg) {
+    grid-column: 1 / -1;
+  }
+}
+.review-plan {
+  margin: 1.25rem 0 .75rem;
+  padding: .875rem 1rem;
+  border-left: 2px solid $line-strong;
+  background-color: $editor;
+
+  dt {
+    margin-bottom: .25rem;
+    font-size: $small-font-size;
+    font-weight: $font-weight-normal;
+    color: $fg-muted;
+  }
+  dd {
+    max-width: 44em;
+    margin: 0;
+    color: $fg;
+  }
+}
+.review-pane .form-label {
+  margin-top: 1rem;
+}
+
+// 使用者表格的頭像＋名稱
+.user-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: .625rem;
+  font-weight: $font-weight-medium;
+  color: $fg-strong;
+}
+
+// ---------- 9. 違規下架列：封面｜標題＋作者 ‧ 分類 ‧ 日期｜按鈕 ----------
+.admin-article > .pane-body {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 7.5rem minmax(0, 1fr) auto;
+  }
+  @include media-breakpoint-only(lg) {
+    grid-template-columns: 6rem minmax(0, 1fr);
+  }
+}
+.admin-article-title {
+  margin: 0 0 .25rem;
+  font-weight: $font-weight-bold;
+  color: $fg-strong;
+}
+.admin-article-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-column: auto;
+  }
+  @include media-breakpoint-only(lg) {
+    grid-column: 1 / -1;
+  }
+}
+
+// ---------- 10. 取消確認（對話框與靜態示意共用）：兩顆一樣大的按鈕，「先不要」是主要 ----------
+.cancel-pane {
+  max-width: 32rem;
+
+  > .pane-head > p {
+    font-size: .9375rem;
+    color: $fg-strong;
+  }
+  .pane-body > p {
+    margin-bottom: 0;
+  }
+}
+.cancel-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin: 1.25rem 0;
+
+  + .text-note {
+    padding-top: 1rem;
+    border-top: 1px solid $line;
+  }
+}
+
+// ---------- 11. 危險的次要按鈕（違規下架）：1px $fail 框＋$fail 字，hover 只換淡底 ----------
+.btn-outline-fail {
+  --bs-btn-color: #{$fail};
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: #{$fail};
+  --bs-btn-hover-color: #{$fail};
+  --bs-btn-hover-bg: #{$fail-tint};
+  --bs-btn-hover-border-color: #{$fail};
+  --bs-btn-active-color: #{$fail};
+  --bs-btn-active-bg: #{$fail-tint};
+  --bs-btn-active-border-color: #{$fail};
+  --bs-btn-disabled-color: #{$fg-dim};
+  --bs-btn-disabled-bg: #{$panel-raised};
+  --bs-btn-disabled-border-color: #{$line-strong};
+}

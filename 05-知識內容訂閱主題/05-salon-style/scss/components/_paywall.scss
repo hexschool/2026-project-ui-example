@@ -1,0 +1,160 @@
+// ============================================================
+// 付費預覽牆 Paywall（文章內頁、Guideline）
+// 殘句上覆蓋 140px 漸層淡出（到白），再壓上付費牆卡：
+//   白底、3px $ink 框、20px 圓角、8px 硬陰影（全站唯一壓在內容上的卡片）
+//   頂端 56px 活力橘帶：進度條＋「已免費讀完 32%」→ 標題 28px 900 → 說明 → 月／年 RadioCard（預設年費）
+//   → 藍色滿寬主要按鈕 → 登入 → 信任小字 → 替代入口（小字連結）
+// 已訂閱時整個元件不渲染（data-show-view="unsubscribed"）
+// ============================================================
+
+// 殘句：上面覆蓋漸層淡出（裝飾，pointer-events: none，不擋選字），略往下延伸到付費牆上緣
+// <p class="paywall-teaser">……真正的問題不在食材，而是我們一直沒算進去的那一項：</p>
+.paywall-teaser {
+  position: relative;
+  margin-bottom: 0 !important;
+
+  &::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: -1.5rem;
+    left: 0;
+    height: 8.75rem; // 140px（規格 120–160px）
+    background-image: linear-gradient(to bottom, rgba($paper, 0), $paper 85%);
+    pointer-events: none;
+  }
+}
+
+.paywall {
+  position: relative;
+  z-index: 1;
+  max-width: $prose-max-width;
+  margin-top: 1.5rem;
+  border: 3px solid $ink;
+  border-radius: $block-radius;
+  background-color: $paper;
+  box-shadow: $shadow-hard;
+  overflow: hidden; // 讓頂端橘帶跟著圓角
+}
+// 頂端 56px 活力橘帶：進度條（橘積木裡自動黑色填色）＋已讀百分比
+.paywall-band {
+  @include surface-orange;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 3.5rem;
+  padding: .625rem 1.5rem;
+  border-bottom: $line;
+
+  .read-progress { flex: 1 1 auto; }
+  .read-progress::before { background-color: $ink; } // 橘底上黑色填色
+
+  @include media-breakpoint-up(md) {
+    padding-right: 2.5rem;
+    padding-left: 2.5rem;
+  }
+}
+.paywall-band-text {
+  flex: none;
+  margin: 0;
+  font-weight: $font-weight-bold;
+  font-variant-numeric: tabular-nums;
+}
+.paywall-body {
+  padding: 1.5rem 1.5rem 1.75rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 2rem 2.5rem 2.25rem;
+  }
+}
+.paywall-title {
+  margin-bottom: .75rem;
+  font-size: 1.5rem;
+  font-weight: $font-weight-black;
+  line-height: 1.35;
+  letter-spacing: 0;
+
+  @include media-breakpoint-up(md) {
+    font-size: 1.75rem; // 28px
+  }
+}
+.paywall-text {
+  margin-bottom: 1.5rem;
+  line-height: 1.8;
+  color: $ink-2;
+}
+// 兩種方案快速切換：≥ 576px 並排、手機上下堆疊（真正的 radio）
+.paywall-plans {
+  display: grid;
+  gap: .75rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  border: 0;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+// RadioCard 裡的方案資訊：名稱 → 價格（Bricolage）→ 小字
+.plan-option-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .5rem;
+  font-weight: $font-weight-bold;
+}
+.plan-option-price {
+  font-family: $font-family-display;
+  font-size: 1.75rem;
+  font-weight: 800;
+  font-variation-settings: "opsz" 96;
+  letter-spacing: -.01em;
+  line-height: 1.15;
+
+  small {
+    margin-left: .125rem;
+    font-family: $font-family-sans-serif;
+    font-size: .9375rem;
+    font-weight: $font-weight-bold;
+  }
+}
+.paywall-login {
+  margin: 1rem 0 .5rem;
+  text-align: center;
+  font-weight: $font-weight-medium;
+
+  a { font-weight: $font-weight-bold; }
+}
+.paywall-trust,
+.paywall-alt {
+  margin: 0;
+  text-align: center;
+  font-size: .8125rem;
+  line-height: 1.7;
+  color: $ink-2;
+}
+.paywall-alt {
+  margin-top: .75rem;
+  padding-top: .75rem;
+  border-top: 1px solid $hairline;
+
+  a { color: $ink; }
+}
+
+// 「省下兩個月」「省 NT$ 360」：活力橘方角小牌（黑字 6.35:1）
+.save-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 .4375rem;
+  border: $line;
+  border-radius: $border-radius-sm;
+  background-color: $orange;
+  color: $ink;
+  font-family: $font-family-sans-serif;
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.6;
+  letter-spacing: $letter-spacing-label;
+  white-space: nowrap;
+  vertical-align: middle;
+}

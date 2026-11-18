@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>文章列表｜現場筆記 FieldNotes</title>
+  <meta name="description" content="565 篇第一線工作者親自寫的長文，依主題、標籤、閱讀權限與閱讀時間篩選。每篇付費文章都能免費讀前三分之一。">
+  <meta name="theme-color" content="#F7EEDC">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Huninn 粉圓（標題、引言）、Chiron GoRound TC（介面與長文）、Fredoka（數字與英文） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Chiron+GoRound+TC:wght@400;500;700&family=Fredoka:wght@500;600&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，10 個 .html 要一起改，
+      改完執行 npm run check 確認都與這份範本一致。
+    - 頁首是離視窗頂 12px 的浮起膠囊（64px 高）：
+      品牌（手繪筆記本＋現場筆記＋FieldNotes）靠左 → 主導覽（首頁、文章列表、訂閱方案）置中 → 搜尋圓鈕、會員膠囊靠右。
+      992px 以下：膠囊只留品牌＋「搜尋、會員頭像、選單」三個圓鈕；選單展開成膠囊下方的一張圓角紙卡（3 個導覽連結＋會員入口）。
+      HTML 的順序是「品牌 → 手機圓鈕列 → 選單（主導覽＋桌機的搜尋與會員入口）」，Tab 順序與畫面順序一致。
+      搜尋列（#siteSearch）展開在膠囊正下方，是一張圓角紙條。
+    - 每頁只需要調整一處「目前頁面」標示：
+      首頁、文章列表、訂閱方案：頁首導覽的 <a class="nav-link"> 加 active 與 aria-current="page"
+      文章內頁（article.html）、作者個人頁（author.html）：「文章列表」加 active，不加 aria-current
+      個人頁面（account.html）：手機選單的「我的現場筆記」加 active 與 aria-current，
+                               桌機的 .site-member 加 is-active 與 aria-current
+      Guideline、登入（login.html）、註冊（register.html）、忘記密碼（forgot-password.html）不標示目前頁
+      （目前頁的手繪珊瑚螢光筆由 CSS 依 .active／.is-active 畫上去）
+    - 示意使用者已登入（陳柏諺），所以頁首沒有「登入 / 註冊」
+    - <main> 裡的內容放在一張「手帳紙」上：.container > .sheet（點格紋）；長文、表單底下用 .sheet-plain 區塊（純紙色）
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <div class="container">
+        <div class="site-header-inner">
+          <nav class="navbar navbar-expand-lg site-capsule" aria-label="主要導覽">
+            <a class="navbar-brand site-brand" href="index.html">
+              <svg class="site-brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+                <path class="site-brand-ribbon" d="M20.5 3.5h4.5v10l-2.25-1.9-2.25 1.9z"/>
+                <path class="site-brand-book" d="M8.6 3.9c4.9-.5 10.6-.4 16 .2 1.3.2 2 .9 2.1 2.2.3 6.6.3 13.2-.1 19.6-.1 1.3-.9 2.1-2.2 2.2-5.2.4-10.5.4-15.8 0-1.3-.1-2.1-.9-2.2-2.2-.3-6.5-.3-13.1.1-19.7.1-1.3.9-2.2 2.1-2.3z"/>
+                <path class="site-brand-lines" d="M12.2 11.2c3.2-.2 6.6-.2 9.6 0M12.2 15.8c3.2-.2 6.6-.2 9.6 0M12.2 20.4c2.2-.1 4.4-.1 6.4 0"/>
+                <path class="site-brand-rings" d="M4.4 8.6h4.8M4.4 16h4.8M4.4 23.4h4.8"/>
+              </svg>
+              <span class="site-brand-name">現場筆記</span>
+              <span class="site-brand-en">FieldNotes</span>
+            </a>
+
+            <!-- 992px 以下的圓鈕列：搜尋、會員入口、選單 -->
+            <div class="site-quick d-flex d-lg-none">
+              <button class="site-round-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋文章">
+                <i class="bi bi-search" aria-hidden="true"></i>
+              </button>
+              <a class="site-round-btn site-round-avatar" href="account.html" aria-label="我的現場筆記">
+                <img src="images/avatar-chen.jpg" alt="" width="32" height="32">
+              </a>
+              <button class="navbar-toggler site-round-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+                <i class="bi bi-list" aria-hidden="true"></i>
+              </button>
+            </div>
+
+            <div id="siteNav" class="collapse navbar-collapse site-menu">
+              <ul class="navbar-nav site-nav">
+                <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+                <li class="nav-item"><a class="nav-link active" href="articles.html" aria-current="page">文章列表</a></li>
+                <li class="nav-item"><a class="nav-link" href="pricing.html">訂閱方案</a></li>
+                <li class="nav-item d-lg-none"><a class="nav-link" href="account.html">我的現場筆記</a></li>
+              </ul>
+              <!-- 桌機右側：搜尋圓鈕 → 會員膠囊 -->
+              <div class="site-header-actions d-none d-lg-flex">
+                <button class="site-round-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋文章">
+                  <i class="bi bi-search" aria-hidden="true"></i>
+                </button>
+                <a class="site-member" href="account.html">
+                  <img src="images/avatar-chen.jpg" alt="" width="32" height="32">
+                  <span>我的現場筆記</span>
+                </a>
+              </div>
+            </div>
+          </nav>
+
+          <!-- 點放大鏡展開的搜尋列（桌機與手機共用）：膠囊正下方的一張圓角紙條，送出到文章列表 -->
+          <div id="siteSearch" class="collapse site-search-panel">
+            <form class="site-search" role="search" action="articles.html">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input class="form-control" type="search" name="q" placeholder="搜尋文章、作者或標籤" aria-label="搜尋文章">
+              <button class="btn btn-primary" type="submit">搜尋</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="site-main flex-grow-1" tabindex="-1">
+      <!-- 文章列表：版頭（麵包屑、H1、說明、搜尋）→ 3 : 9（一疊便利貼篩選 : 兩欄拍立得文章卡）→ 分頁 → 設計稿狀態示意
+           （文案：CONTENT.md §4、§10.3）
+           構圖：左欄是 4 張不同顏色的便利貼（不傾斜）；右欄 ≥ 1200 兩欄紙卡、縮圖在上（白框＋紙膠帶）；
+           768–1199 單欄、縮圖在左；手機單欄、縮圖在上，篩選收進 Offcanvas（bottom） -->
+      <div class="container">
+        <div class="sheet">
+
+          <header class="page-header articles-header">
+            <nav aria-label="目前位置">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+                <li class="breadcrumb-item active" aria-current="page">文章列表</li>
+              </ol>
+            </nav>
+            <h1 class="text-phrase">所有<span class="hl">現場筆記</span></h1>
+            <p class="page-lead">565&nbsp;篇文章 ‧ 142&nbsp;位第一線作者 ‧ 每篇付費文章都能免費讀前三分之一。</p>
+            <!-- 搜尋列放在版頭而不是側欄：讀者多半帶著具體問題進來。56px 白底膠囊＋抹茶「搜尋」膠囊 -->
+            <form class="articles-search" role="search" action="articles.html">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input class="form-control" type="search" name="q" placeholder="搜尋文章、作者或標籤" aria-label="搜尋文章、作者或標籤">
+              <button class="btn btn-matcha" type="submit">搜尋</button>
+            </form>
+          </header>
+
+          <div class="row gx-xl-5 gy-4">
+            <!-- 篩選：≥ 992px 是左欄的一疊便利貼（視窗高到放得下整疊才 sticky）；以下收進 Offcanvas（bottom），由列表上方的「篩選條件（3）」開啟
+                 篩選是靜態示意：選中狀態可以點，但列表不會真的變 -->
+            <div class="col-lg-3">
+              <aside id="filterPanel" class="offcanvas-lg offcanvas-bottom articles-filter" tabindex="-1" aria-labelledby="filterTitle">
+                <div class="offcanvas-header articles-filter-head">
+                  <h2 id="filterTitle" class="articles-filter-title">篩選</h2>
+                  <button class="btn btn-text" type="button">清除篩選</button>
+                  <button class="btn-close d-lg-none" type="button" data-bs-dismiss="offcanvas" data-bs-target="#filterPanel" aria-label="關閉篩選"></button>
+                </div>
+                <div class="offcanvas-body articles-filter-body">
+                  <form class="filter-stack" action="articles.html">
+                    <!-- 1. 主題分類（黃便利貼）：單選，手繪圓圈 radio；不顯示篇數（Notion 列表沒給，首頁 6 主題相加也不等於全站 565 篇） -->
+                    <fieldset class="sticky-note is-butter filter-note">
+                      <legend class="filter-note-title">主題分類</legend>
+                      <ul class="filter-topics">
+                        <li><input class="btn-check" type="radio" name="topic" id="topicAll" checked><label for="topicAll">全部</label></li>
+                        <li><input class="btn-check" type="radio" name="topic" id="topicA"><label for="topicA">餐飲與零售</label></li>
+                        <li><input class="btn-check" type="radio" name="topic" id="topicB"><label for="topicB">製造與供應鏈</label></li>
+                        <li><input class="btn-check" type="radio" name="topic" id="topicC"><label for="topicC">農業與食品</label></li>
+                        <li><input class="btn-check" type="radio" name="topic" id="topicD"><label for="topicD">軟體與數位產品</label></li>
+                        <li><input class="btn-check" type="radio" name="topic" id="topicE"><label for="topicE">文化與創作產業</label></li>
+                        <li><input class="btn-check" type="radio" name="topic" id="topicF"><label for="topicF">醫療與社會工作</label></li>
+                        <li><input class="btn-check" type="radio" name="topic" id="topicG"><label for="topicG">物流與運輸</label></li>
+                      </ul>
+                    </fieldset>
+                    <!-- 2. 熱門標籤（珊瑚淡底便利貼）：吊牌標籤可多選；#離職潮 示範「目前條件下 0 篇」（虛線＋次要字，不隱藏） -->
+                    <fieldset class="sticky-note is-coral filter-note">
+                      <legend class="filter-note-title">熱門標籤</legend>
+                      <div class="tag-list">
+                        <input class="btn-check" type="checkbox" id="tag1" checked><label class="tag" for="tag1">#成本結構</label>
+                        <input class="btn-check" type="checkbox" id="tag2"><label class="tag" for="tag2">#定價</label>
+                        <input class="btn-check" type="checkbox" id="tag3"><label class="tag" for="tag3">#選址</label>
+                        <input class="btn-check" type="checkbox" id="tag4"><label class="tag" for="tag4">#良率</label>
+                        <input class="btn-check" type="checkbox" id="tag5"><label class="tag" for="tag5">#通路</label>
+                        <input class="btn-check" type="checkbox" id="tag6"><label class="tag" for="tag6">#排班</label>
+                        <input class="btn-check" type="checkbox" id="tag7"><label class="tag" for="tag7">#外銷</label>
+                        <input class="btn-check" type="checkbox" id="tag8"><label class="tag" for="tag8">#技術債</label>
+                        <input class="btn-check" type="checkbox" id="tag9"><label class="tag" for="tag9">#補助</label>
+                        <input class="btn-check" type="checkbox" id="tag10"><label class="tag is-empty" for="tag10">#離職潮<span class="tag-count">0</span></label>
+                      </div>
+                    </fieldset>
+                    <!-- 3. 閱讀權限（藍便利貼）：radio，後兩項加權限徽章樣式 -->
+                    <fieldset class="sticky-note is-blue filter-note">
+                      <legend class="filter-note-title">閱讀權限</legend>
+                      <label class="form-check-row" for="accessAll"><input class="form-check-input" type="radio" name="access" id="accessAll" checked>全部</label>
+                      <label class="form-check-row" for="accessFree"><input class="form-check-input" type="radio" name="access" id="accessFree"><span class="badge-access is-free"><i class="bi bi-unlock" aria-hidden="true"></i>免費文章</span></label>
+                      <label class="form-check-row" for="accessPaid"><input class="form-check-input" type="radio" name="access" id="accessPaid"><span class="badge-access is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span></label>
+                    </fieldset>
+                    <!-- 4. 閱讀時間（抹茶便利貼）：可複選 -->
+                    <fieldset class="sticky-note is-matcha filter-note">
+                      <legend class="filter-note-title">閱讀時間</legend>
+                      <label class="form-check-row" for="time1"><input class="form-check-input" type="checkbox" id="time1">5&nbsp;分鐘以內</label>
+                      <label class="form-check-row" for="time2"><input class="form-check-input" type="checkbox" id="time2" checked>5–15&nbsp;分鐘</label>
+                      <label class="form-check-row" for="time3"><input class="form-check-input" type="checkbox" id="time3" checked>15&nbsp;分鐘以上</label>
+                    </fieldset>
+                  </form>
+                </div>
+                <!-- 只在 Offcanvas（< 992px）出現 -->
+                <div class="articles-filter-foot d-lg-none">
+                  <button class="btn btn-paper" type="button">清除篩選</button>
+                  <button class="btn btn-primary" type="button" data-bs-dismiss="offcanvas" data-bs-target="#filterPanel">套用</button>
+                </div>
+              </aside>
+            </div>
+
+            <div class="col-lg-9">
+              <!-- 工具列：（< 992px）篩選膠囊 → 排序分頁籤（選中項下方一筆手繪珊瑚底線）→ 顯示筆數 -->
+              <div class="articles-toolbar">
+                <button class="btn btn-paper articles-filter-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#filterPanel" aria-controls="filterPanel">
+                  <i class="bi bi-sliders" aria-hidden="true"></i>篩選條件（3）
+                </button>
+                <div class="nav nav-underline sort-tabs" role="radiogroup" aria-label="排序">
+                  <input class="btn-check" type="radio" name="sort" id="sortNew" checked><label class="nav-link" for="sortNew">最新發布</label>
+                  <input class="btn-check" type="radio" name="sort" id="sortRead"><label class="nav-link" for="sortRead">最多人讀完</label>
+                  <input class="btn-check" type="radio" name="sort" id="sortSave"><label class="nav-link" for="sortSave">最多收藏</label>
+                  <input class="btn-check" type="radio" name="sort" id="sortPick"><label class="nav-link" for="sortPick">編輯精選</label>
+                </div>
+                <p class="articles-count">顯示 1–8&nbsp;篇</p>
+              </div>
+
+              <!-- 8 篇文章，依發布日期新到舊；導言完整顯示、不截斷
+                   紙卡（不傾斜）：拍立得縮圖（白框＋紙膠帶，DOM 放在最前）→ 權限徽章＋分類 → h2 → 作者 → 導言 → 吊牌標籤 → 資訊列
+                   縮圖和標題連到同一頁：圖片連結不進 Tab 順序（tabindex="-1"、aria-hidden），避免同一個連結按兩次 -->
+              <ol class="article-cards" aria-label="文章">
+                <li>
+                  <article class="article-card note-card">
+                    <a class="polaroid article-card-thumb" href="article.html" tabindex="-1" aria-hidden="true">
+                      <span class="tape tape-coral" aria-hidden="true"></span>
+                      <img src="images/cover-restaurant-costs.jpg" alt="" width="1200" height="630" loading="lazy">
+                    </a>
+                    <div class="article-card-body">
+                      <p class="meta-line">
+                        <span class="badge-access is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                        <span class="meta-category">餐飲與零售</span>
+                      </p>
+                      <h2 class="article-card-title text-phrase"><a href="article.html">一間餐廳的成本結構：<wbr>從食材到翻桌率，<wbr>錢到底花到哪去</a></h2>
+                      <div class="author-line article-card-author">
+                        <img class="avatar avatar-xs" src="images/avatar-chen.jpg" alt="" width="24" height="24">
+                        <p><span class="author-line-name">陳柏諺</span><span class="article-card-job">（台北某獨立餐酒館主廚兼老闆&nbsp;‧ <span class="text-nowrap">開店第 4&nbsp;年）</span></span></p>
+                      </div>
+                      <p class="article-card-lede">開店第三年我才真的看懂損益表。食材成本 32%、人事 28%、租金 15%——這些數字網路上都查得到，但沒人告訴你剩下的 25% 會被什麼吃掉。這篇我把去年整年的數字攤開，包含兩次差點關門的月份。</p>
+                      <ul class="tag-list" aria-label="標籤">
+                        <li><a class="tag" href="articles.html">#成本結構</a></li>
+                        <li><a class="tag" href="articles.html">#開店</a></li>
+                        <li><a class="tag" href="articles.html">#損益表</a></li>
+                      </ul>
+                      <p class="article-card-stats"><span class="text-nowrap">約 6,800&nbsp;字 ‧</span> <span class="text-nowrap">閱讀 18&nbsp;分鐘 ‧</span> <span class="text-nowrap">發布於 <time datetime="2026-09-28">2026/09/28</time> ‧</span> <span class="article-card-preview">免費預覽前 2,200&nbsp;字</span></p>
+                    </div>
+                  </article>
+                </li>
+                <li>
+                  <article class="article-card note-card">
+                    <a class="polaroid article-card-thumb" href="article.html" tabindex="-1" aria-hidden="true">
+                      <span class="tape tape-matcha" aria-hidden="true"></span>
+                      <img src="images/cover-chip-packaging.jpg" alt="" width="1200" height="630" loading="lazy">
+                    </a>
+                    <div class="article-card-body">
+                      <p class="meta-line">
+                        <span class="badge-access is-free"><i class="bi bi-unlock" aria-hidden="true"></i>免費閱讀</span>
+                        <span class="meta-category">製造與供應鏈</span>
+                      </p>
+                      <h2 class="article-card-title text-phrase"><a href="article.html">封測廠的一天：<wbr>從晶圓進料到出貨的 14&nbsp;個小時</a></h2>
+                      <div class="author-line article-card-author">
+                        <img class="avatar avatar-xs" src="images/avatar-wang.jpg" alt="" width="24" height="24">
+                        <p><span class="author-line-name">王孟潔</span><span class="article-card-job">（竹科封測廠製程工程師&nbsp;‧ <span class="text-nowrap">年資 7&nbsp;年）</span></span></p>
+                      </div>
+                      <p class="article-card-lede">一片晶圓從進我們廠到變成可以賣的晶片，中間經過 11&nbsp;道站點、被機台手臂拿起放下 40 幾次。這篇用一個班的時間順序，帶你走完整條線，順便說說為什麼良率掉 0.3% 就會有人被叫去會議室。</p>
+                      <ul class="tag-list" aria-label="標籤">
+                        <li><a class="tag" href="articles.html">#產線</a></li>
+                        <li><a class="tag" href="articles.html">#良率</a></li>
+                        <li><a class="tag" href="articles.html">#半導體</a></li>
+                      </ul>
+                      <p class="article-card-stats"><span class="text-nowrap">約 4,500&nbsp;字 ‧</span> <span class="text-nowrap">閱讀 12&nbsp;分鐘 ‧</span> <span class="text-nowrap">發布於 <time datetime="2026-09-24">2026/09/24</time></span></p>
+                    </div>
+                  </article>
+                </li>
+                <li>
+                  <article class="article-card note-card">
+                    <a class="polaroid article-card-thumb" href="article.html" tabindex="-1" aria-hidden="true">
+                      <span class="tape tape-butter" aria-hidden="true"></span>
+                      <img src="images/cover-pineapple-export.jpg" alt="" width="1200" height="630" loading="lazy">
+                    </a>
+                    <div class="article-card-body">
+                      <p class="meta-line">
+                        <span class="badge-access is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                        <span class="meta-category">農業與食品</span>
+                      </p>
+                      <h2 class="article-card-title text-phrase"><a href="article.html">一顆鳳梨怎麼進到<wbr>日本超市的貨架上</a></h2>
+                      <div class="author-line article-card-author">
+                        <img class="avatar avatar-xs" src="images/avatar-lin.jpg" alt="" width="24" height="24">
+                        <p><span class="author-line-name">林振豐</span><span class="article-card-job">（農產外銷公司業務經理&nbsp;‧ <span class="text-nowrap">年資 12&nbsp;年）</span></span></p>
+                      </div>
+                      <p class="article-card-lede">從屏東的田到東京的超市，一顆鳳梨要經過預冷、檢疫、海運、通關、分裝五道關卡，中間有 23&nbsp;天。這篇講的是每一關會死掉多少貨、誰來吸收損失，以及為什麼日本買家可以因為一個黑點退掉整櫃。</p>
+                      <ul class="tag-list" aria-label="標籤">
+                        <li><a class="tag" href="articles.html">#外銷</a></li>
+                        <li><a class="tag" href="articles.html">#冷鏈</a></li>
+                        <li><a class="tag" href="articles.html">#通路</a></li>
+                      </ul>
+                      <p class="article-card-stats"><span class="text-nowrap">約 5,600&nbsp;字 ‧</span> <span class="text-nowrap">閱讀 15&nbsp;分鐘 ‧</span> <span class="text-nowrap">發布於 <time datetime="2026-09-19">2026/09/19</time> ‧</span> <span class="article-card-preview">免費預覽前 1,800&nbsp;字</span></p>
+                    </div>
+                  </article>
+                </li>
+                <li>
+                  <article class="article-card note-card">
+                    <a class="polaroid article-card-thumb" href="article.html" tabindex="-1" aria-hidden="true">
+                      <span class="tape tape-coral" aria-hidden="true"></span>
+                      <img src="images/cover-bookstore-cashflow.jpg" alt="" width="1200" height="630" loading="lazy">
+                    </a>
+                    <div class="article-card-body">
+                      <p class="meta-line">
+                        <span class="badge-access is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                        <span class="meta-category">文化與創作產業</span>
+                      </p>
+                      <h2 class="article-card-title text-phrase"><a href="article.html">獨立書店的現金流：<wbr>為什麼賣書不是主要收入</a></h2>
+                      <div class="author-line article-card-author">
+                        <img class="avatar avatar-xs" src="images/avatar-su.jpg" alt="" width="24" height="24">
+                        <p><span class="author-line-name">蘇曉薇</span><span class="article-card-job"><span class="text-nowrap">（台南獨立書店店主 ‧</span> <span class="text-nowrap">經營第 6&nbsp;年）</span></span></p>
+                      </div>
+                      <p class="article-card-lede">書的毛利大約 30%，一本 450&nbsp;元的書我賺 135&nbsp;元，扣掉租金攤提後是 -12&nbsp;元。這篇講我們怎麼靠講座、選物與空間租借活下來，以及為什麼我還是堅持把書放在門口最好的位置。</p>
+                      <ul class="tag-list" aria-label="標籤">
+                        <li><a class="tag" href="articles.html">#現金流</a></li>
+                        <li><a class="tag" href="articles.html">#獨立書店</a></li>
+                        <li><a class="tag" href="articles.html">#定價</a></li>
+                      </ul>
+                      <p class="article-card-stats"><span class="text-nowrap">約 4,100&nbsp;字 ‧</span> <span class="text-nowrap">閱讀 11&nbsp;分鐘 ‧</span> <span class="text-nowrap">發布於 <time datetime="2026-09-15">2026/09/15</time> ‧</span> <span class="article-card-preview">免費預覽前 1,400&nbsp;字</span></p>
+                    </div>
+                  </article>
+                </li>
+                <li>
+                  <article class="article-card note-card">
+                    <a class="polaroid article-card-thumb" href="article.html" tabindex="-1" aria-hidden="true">
+                      <span class="tape tape-matcha" aria-hidden="true"></span>
+                      <img src="images/cover-game-launch.jpg" alt="" width="1200" height="630" loading="lazy">
+                    </a>
+                    <div class="article-card-body">
+                      <p class="meta-line">
+                        <span class="badge-access is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                        <span class="meta-category">軟體與數位產品</span>
+                      </p>
+                      <h2 class="article-card-title text-phrase"><a href="article.html">遊戲上線第一週：<wbr>我們準備了兩年，<wbr>然後伺服器<wbr>在第&nbsp;4&nbsp;小時倒了</a></h2>
+                      <div class="author-line article-card-author">
+                        <img class="avatar avatar-xs" src="images/avatar-guo.jpg" alt="" width="24" height="24">
+                        <p><span class="author-line-name">郭懷恩</span><span class="article-card-job">（獨立遊戲工作室製作人）</span></p>
+                      </div>
+                      <p class="article-card-lede">上線日當天的時間軸，分鐘級還原。包含我們怎麼誤判同時在線人數、為什麼壓測沒測出問題、第一波負評怎麼來的，以及我們在 72&nbsp;小時內做了哪些事把分數救回來。</p>
+                      <ul class="tag-list" aria-label="標籤">
+                        <li><a class="tag" href="articles.html">#上線</a></li>
+                        <li><a class="tag" href="articles.html">#維運</a></li>
+                        <li><a class="tag" href="articles.html">#危機處理</a></li>
+                      </ul>
+                      <p class="article-card-stats"><span class="text-nowrap">約 7,200&nbsp;字 ‧</span> <span class="text-nowrap">閱讀 19&nbsp;分鐘 ‧</span> <span class="text-nowrap">發布於 <time datetime="2026-09-10">2026/09/10</time> ‧</span> <span class="article-card-preview">免費預覽前 2,400&nbsp;字</span></p>
+                    </div>
+                  </article>
+                </li>
+                <li>
+                  <article class="article-card note-card">
+                    <a class="polaroid article-card-thumb" href="article.html" tabindex="-1" aria-hidden="true">
+                      <span class="tape tape-butter" aria-hidden="true"></span>
+                      <img src="images/cover-caseload.jpg" alt="" width="1200" height="630" loading="lazy">
+                    </a>
+                    <div class="article-card-body">
+                      <p class="meta-line">
+                        <span class="badge-access is-free"><i class="bi bi-unlock" aria-hidden="true"></i>免費閱讀</span>
+                        <span class="meta-category">醫療與社會工作</span>
+                      </p>
+                      <h2 class="article-card-title text-phrase"><a href="article.html">社工的個案量：<wbr>一個人同時扛 48&nbsp;個家庭<wbr>是什麼感覺</a></h2>
+                      <div class="author-line article-card-author">
+                        <img class="avatar avatar-xs" src="images/avatar-fang.jpg" alt="" width="24" height="24">
+                        <p><span class="author-line-name">方禹彤</span><span class="article-card-job">（家庭暴力防治社工督導&nbsp;‧ <span class="text-nowrap">年資 9&nbsp;年）</span></span></p>
+                      </div>
+                      <p class="article-card-lede">法定建議個案量是 25&nbsp;件，我手上最多的時候是 48&nbsp;件。這篇不談理念、只談時間怎麼分配：一週 40&nbsp;小時要怎麼切給 48&nbsp;個家庭、哪些訪視只能用電話、以及我們怎麼決定先去哪一家。</p>
+                      <ul class="tag-list" aria-label="標籤">
+                        <li><a class="tag" href="articles.html">#個案量</a></li>
+                        <li><a class="tag" href="articles.html">#排班</a></li>
+                        <li><a class="tag" href="articles.html">#制度</a></li>
+                      </ul>
+                      <p class="article-card-stats"><span class="text-nowrap">約 5,900&nbsp;字 ‧</span> <span class="text-nowrap">閱讀 16&nbsp;分鐘 ‧</span> <span class="text-nowrap">發布於 <time datetime="2026-09-05">2026/09/05</time></span></p>
+                    </div>
+                  </article>
+                </li>
+                <li>
+                  <article class="article-card note-card">
+                    <a class="polaroid article-card-thumb" href="article.html" tabindex="-1" aria-hidden="true">
+                      <span class="tape tape-coral" aria-hidden="true"></span>
+                      <img src="images/cover-store-location.jpg" alt="" width="1200" height="630" loading="lazy">
+                    </a>
+                    <div class="article-card-body">
+                      <p class="meta-line">
+                        <span class="badge-access is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                        <span class="meta-category">餐飲與零售</span>
+                      </p>
+                      <h2 class="article-card-title text-phrase"><a href="article.html">便利商店的選址：<wbr>為什麼對街那間活了，<wbr>我們這間撐不過一年</a></h2>
+                      <div class="author-line article-card-author">
+                        <img class="avatar avatar-xs" src="images/avatar-huang.jpg" alt="" width="24" height="24">
+                        <p><span class="author-line-name">黃敬哲</span><span class="article-card-job"><span class="text-nowrap">（連鎖超商展店專員 ‧</span> <span class="text-nowrap">年資 5&nbsp;年）</span></span></p>
+                      </div>
+                      <p class="article-card-lede">展店評估表上有 37&nbsp;個欄位，但真正決定生死的只有三個。這篇拆解我們怎麼數人流、怎麼判斷動線方向，以及一個常被忽略的致命因素——馬路中間那條分隔島。</p>
+                      <ul class="tag-list" aria-label="標籤">
+                        <li><a class="tag" href="articles.html">#選址</a></li>
+                        <li><a class="tag" href="articles.html">#人流</a></li>
+                        <li><a class="tag" href="articles.html">#展店</a></li>
+                      </ul>
+                      <p class="article-card-stats"><span class="text-nowrap">約 4,800&nbsp;字 ‧</span> <span class="text-nowrap">閱讀 13&nbsp;分鐘 ‧</span> <span class="text-nowrap">發布於 <time datetime="2026-08-30">2026/08/30</time> ‧</span> <span class="article-card-preview">免費預覽前 1,600&nbsp;字</span></p>
+                    </div>
+                  </article>
+                </li>
+                <li>
+                  <article class="article-card note-card">
+                    <a class="polaroid article-card-thumb" href="article.html" tabindex="-1" aria-hidden="true">
+                      <span class="tape tape-matcha" aria-hidden="true"></span>
+                      <img src="images/cover-concert-pricing.jpg" alt="" width="1200" height="630" loading="lazy">
+                    </a>
+                    <div class="article-card-body">
+                      <p class="meta-line">
+                        <span class="badge-access is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                        <span class="meta-category">文化與創作產業</span>
+                      </p>
+                      <h2 class="article-card-title text-phrase"><a href="article.html">一場演唱會的票價<wbr>是誰決定的：<wbr>從場租、拆帳到<wbr>那排最貴的位置</a></h2>
+                      <div class="author-line article-card-author">
+                        <img class="avatar avatar-xs" src="images/avatar-zheng.jpg" alt="" width="24" height="24">
+                        <p><span class="author-line-name">鄭昱安</span><span class="article-card-job">（演出經紀公司製作統籌&nbsp;‧ <span class="text-nowrap">年資 8&nbsp;年）</span></span></p>
+                      </div>
+                      <p class="article-card-lede">一場 5,000&nbsp;人的演唱會，場租佔 18%、藝人保底佔 35%、製作佔 22%。這篇算給你看票價怎麼反推出來，為什麼搖滾區一定要貴那麼多，以及售票數到哪個百分比我們才開始不虧錢。</p>
+                      <ul class="tag-list" aria-label="標籤">
+                        <li><a class="tag" href="articles.html">#定價</a></li>
+                        <li><a class="tag" href="articles.html">#拆帳</a></li>
+                        <li><a class="tag" href="articles.html">#票務</a></li>
+                      </ul>
+                      <p class="article-card-stats"><span class="text-nowrap">約 6,100&nbsp;字 ‧</span> <span class="text-nowrap">閱讀 17&nbsp;分鐘 ‧</span> <span class="text-nowrap">發布於 <time datetime="2026-08-25">2026/08/25</time> ‧</span> <span class="article-card-preview">免費預覽前 2,000&nbsp;字</span></p>
+                    </div>
+                  </article>
+                </li>
+              </ol>
+
+              <!-- 分頁：44px 圓形泡泡，目前頁珊瑚底（靜態）；手機（< 576）收掉第 3 頁，讓整排留在同一行 -->
+              <nav class="pager" aria-label="文章分頁">
+                <ul class="pagination">
+                  <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left" aria-hidden="true"></i><span class="visually-hidden">上一頁</span></span></li>
+                  <li class="page-item active" aria-current="page"><span class="page-link">1</span></li>
+                  <li class="page-item"><a class="page-link" href="articles.html">2</a></li>
+                  <li class="page-item d-none d-sm-block"><a class="page-link" href="articles.html">3</a></li>
+                  <li class="page-item page-ellipsis"><span class="page-link">…</span></li>
+                  <li class="page-item"><a class="page-link" href="articles.html">71</a></li>
+                  <li class="page-item"><a class="page-link" href="articles.html"><span class="visually-hidden">下一頁</span><i class="bi bi-chevron-right" aria-hidden="true"></i></a></li>
+                </ul>
+              </nav>
+
+              <!-- 設計稿狀態示意：S09 篩選無結果、S10 搜尋無結果（列表的位置換成下面的空狀態，工具列與便利貼篩選維持原樣） -->
+              <section class="demo-state" aria-labelledby="demoEmptyTitle">
+                <p class="demo-state-tag"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意</p>
+                <h2 id="demoEmptyTitle" class="demo-state-title">設計稿狀態示意：篩選或搜尋沒有結果時</h2>
+                <p class="text-note">列表區換成空狀態，工具列與篩選便利貼維持原樣。</p>
+                <div class="row g-4">
+                  <div class="col-md-6 d-flex flex-column">
+                    <p class="demo-state-label">篩選無結果（S09）</p>
+                    <div class="demo-state-stage flex-grow-1">
+                      <div class="empty-state py-0">
+                        <span class="empty-state-icon"><i class="bi bi-funnel" aria-hidden="true"></i></span>
+                        <p>這個條件下目前沒有文章，試著放寬主題或閱讀時間範圍。</p>
+                        <button class="btn btn-paper" type="button">清除篩選</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6 d-flex flex-column">
+                    <p class="demo-state-label">搜尋無結果（S10，以「鳳梨出口」為例）</p>
+                    <div class="demo-state-stage flex-grow-1">
+                      <div class="empty-state py-0">
+                        <span class="empty-state-icon"><i class="bi bi-search" aria-hidden="true"></i></span>
+                        <p>找不到「鳳梨出口」相關的文章。試試其他關鍵字，或 <a href="articles.html">瀏覽全部主題</a>。</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="site-footer-paper">
+          <div class="row gy-4 gx-lg-5">
+            <div class="col-lg-5">
+              <a class="site-brand" href="index.html">
+                <svg class="site-brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+                  <path class="site-brand-ribbon" d="M20.5 3.5h4.5v10l-2.25-1.9-2.25 1.9z"/>
+                  <path class="site-brand-book" d="M8.6 3.9c4.9-.5 10.6-.4 16 .2 1.3.2 2 .9 2.1 2.2.3 6.6.3 13.2-.1 19.6-.1 1.3-.9 2.1-2.2 2.2-5.2.4-10.5.4-15.8 0-1.3-.1-2.1-.9-2.2-2.2-.3-6.5-.3-13.1.1-19.7.1-1.3.9-2.2 2.1-2.3z"/>
+                  <path class="site-brand-lines" d="M12.2 11.2c3.2-.2 6.6-.2 9.6 0M12.2 15.8c3.2-.2 6.6-.2 9.6 0M12.2 20.4c2.2-.1 4.4-.1 6.4 0"/>
+                  <path class="site-brand-rings" d="M4.4 8.6h4.8M4.4 16h4.8M4.4 23.4h4.8"/>
+                </svg>
+                <span class="site-brand-name">現場筆記</span>
+                <span class="site-brand-en">FieldNotes</span>
+              </a>
+              <!-- 品牌說明寫在一張黃便利貼上（不傾斜） -->
+              <p class="site-footer-lead sticky-note is-butter">這裡不收二手整理、不收懶人包，只收第一線工作者親自寫的長文。每篇文章都可以免費讀前三分之一，讀到關鍵的那一段才需要訂閱。</p>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2 offset-lg-1">
+              <h2 class="site-footer-title">讀者</h2>
+              <ul class="list-unstyled site-footer-links mb-0">
+                <li><a href="articles.html">瀏覽文章</a></li>
+                <li><a href="pricing.html">訂閱方案</a></li>
+                <li><a href="account.html#library">我的收藏</a></li>
+                <li><a href="account.html#subscription">訂閱狀態</a></li>
+              </ul>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+              <h2 class="site-footer-title">作者</h2>
+              <ul class="list-unstyled site-footer-links mb-0">
+                <li><a href="account.html?role=reader#apply">申請成為作者</a></li>
+                <li><a href="account.html?role=author#my-articles">我的文章</a></li>
+                <li><a href="account.html?role=author#editor">撰寫新文章</a></li>
+                <li><a href="account.html?role=author#analytics">內容數據</a></li>
+              </ul>
+            </div>
+            <!-- 關於現場筆記、作者審核標準、聯絡我們尚未設計頁面：不帶 href 的佔位連結 -->
+            <div class="col-md-4 col-lg-2">
+              <h2 class="site-footer-title">平台</h2>
+              <ul class="list-unstyled site-footer-links mb-0">
+                <li><a>關於現場筆記</a></li>
+                <li><a>作者審核標準</a></li>
+                <li><a href="pricing.html#faq">退費與取消政策</a></li>
+                <li><a>聯絡我們</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="site-footer-copy">© 2026 現場筆記 FieldNotes｜<wbr>本站為課程設計稿範例，文章、作者與數據皆為示意資料。</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

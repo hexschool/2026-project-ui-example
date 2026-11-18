@@ -1,0 +1,240 @@
+// ============================================================
+// 文章列表 articles.html
+// 版頭（麵包屑 → H1 → 說明 → 64px 搜尋列）→ 篩選板（一排 4 塊積木，不 sticky）
+// → 工具列（方塊排序＋顯示 1–8 篇）→ 8 塊文章積木（單欄滿寬、間距 12px）→ 分頁 → 設計稿狀態示意
+// 篩選板 ≥ 1200px：主題（白，4 欄）｜標籤（橘，4 欄）｜權限（白，2 欄）｜時間（黑，2 欄）
+//        992–1199px：2 × 2；< 992px 收進 Offcanvas（bottom），由「篩選條件（3）」黑色按鈕開啟
+// ============================================================
+
+// ---------- 版頭搜尋列：64px 高、2px 框、12px 圓角的輸入框，右側接黑底白字「搜尋」 ----------
+.articles-search {
+  position: relative;
+  display: flex;
+  max-width: 47.5rem; // 760px
+  margin-top: 1.5rem;
+
+  > .bi {
+    position: absolute;
+    top: 50%;
+    left: 1.25rem;
+    font-size: 1.25rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+  .form-control {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-left: 3.25rem;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    font-size: 1.0625rem;
+  }
+  .btn {
+    flex: none;
+    min-height: 4rem;
+    margin-left: -2px;
+    padding-right: 1.75rem;
+    padding-left: 1.75rem;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    font-size: 1.0625rem;
+  }
+  @include media-breakpoint-up(lg) {
+    margin-top: 2rem;
+  }
+}
+
+// ---------- 篩選板 ----------
+.articles-filter { margin-bottom: 2rem; }
+.filter-board-head {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 1rem;
+
+  .btn-text { margin-left: auto; }
+  .btn-close {
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: $line;
+    border-radius: $border-radius;
+    background-size: .875rem;
+  }
+}
+.filter-board-title {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: $font-weight-black;
+  letter-spacing: 0;
+}
+// 4 塊篩選積木
+.filter-bento {
+  @include media-breakpoint-up(lg) {
+    .filter-block { grid-column: span 6; }
+  }
+  @include media-breakpoint-up(xl) {
+    .filter-topics,
+    .filter-tags { grid-column: span 4; }
+    .filter-perm,
+    .filter-time { grid-column: span 2; }
+  }
+}
+.filter-block {
+  min-width: 0;
+  margin: 0;
+}
+.filter-block-title {
+  // legend 沿用 Bootstrap 的 float: left; width: 100%（不壓在 fieldset 框線上）
+  float: left;
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-black;
+  line-height: 1.4;
+}
+// 主題分類：8 個胖 radio 方塊排 2 欄，選中黑底白字（不顯示篇數）
+.filter-chunks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.filter-chunk {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  height: 100%;
+  padding: .375rem .75rem;
+  border: $line;
+  border-radius: $border-radius-sm;
+  background-color: $paper;
+  color: $ink;
+  font-size: .9375rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.35;
+  cursor: pointer;
+  transition: background-color .12s ease-out, color .12s ease-out;
+
+  &:hover { background-color: $fog; }
+}
+.btn-check:checked + .filter-chunk {
+  background-color: $ink;
+  color: $paper;
+}
+.btn-check:focus-visible + .filter-chunk { box-shadow: $focus-ring-double; }
+.filter-tags .tag-list { gap: .5rem; }
+// 閱讀權限、閱讀時間：一列一個選項（44px 高）
+.filter-block .form-check {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 2.75rem;
+  margin: 0;
+  padding-left: 0;
+
+  .form-check-input {
+    flex: none;
+    float: none;
+    margin: 0;
+  }
+  .form-check-label { font-weight: $font-weight-medium; }
+}
+// 黑積木裡的核取方塊：白框；勾選時活力橘底＋黑勾
+.block.is-ink .form-check-input {
+  border-color: $paper;
+  background-color: $ink;
+
+  &:checked {
+    border-color: $paper;
+    background-color: $orange;
+    background-image: escape-svg(url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='#{$ink}' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/></svg>"));
+  }
+}
+// 手機 Offcanvas 的底部按鈕列
+.filter-board-foot {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  padding: 1rem;
+  border-top: $line;
+  background-color: $paper;
+}
+
+// < 992px：篩選板是從底部滑出的 Offcanvas（高 88vh），4 塊篩選積木堆疊、可捲動
+@include media-breakpoint-down(lg) {
+  .filter-board.offcanvas-lg {
+    --bs-offcanvas-height: 88vh;
+    border-top: $line;
+    border-radius: $block-radius $block-radius 0 0;
+  }
+  .filter-board-head {
+    flex: none;
+    margin: 0;
+    padding: 1rem 1rem .75rem;
+    border-bottom: $line;
+  }
+  .filter-board-body {
+    flex: 1 1 auto;
+    padding: 1rem;
+    overflow-y: auto;
+  }
+  .filter-board-foot { flex: none; }
+}
+// 手機的「篩選條件（3）」：黑色滿寬按鈕
+.filter-open {
+  width: 100%;
+  margin-bottom: 1.25rem;
+}
+
+// ---------- 工具列：方塊排序（radio）｜顯示 1–8 篇 ----------
+.articles-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1.5rem;
+  margin-bottom: 1.25rem;
+
+  .nav-blocks { max-width: 100%; }
+}
+.articles-count {
+  margin: 0;
+  font-weight: $font-weight-bold;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- 文章積木：單欄滿寬、間距 12px（.article-stack 在 components/_cards.scss，作者個人頁共用） ----------
+.article-block-author {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  font-size: .9375rem;
+  line-height: 1.5;
+  color: var(--fn-muted);
+
+  strong { color: var(--fn-fg); font-weight: $font-weight-bold; }
+}
+
+.articles-pager { margin-bottom: .5rem; }
+// < 576px：收起第 3 頁，分頁維持一列（上一頁／下一頁只留箭頭的規則在 _base.scss 的 .pagination）
+@include media-breakpoint-down(sm) {
+  .articles-pager .page-item.is-far { display: none; }
+}
+
+// 設計稿狀態示意：兩種空狀態積木並排
+.articles-empty {
+  display: grid;
+  gap: $bento-gap-sm;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $bento-gap;
+  }
+}

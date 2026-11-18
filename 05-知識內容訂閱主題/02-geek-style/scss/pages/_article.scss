@@ -1,0 +1,550 @@
+// ============================================================
+// 文章內頁（article.html）
+// - ≥ 1200px：.ide.ide-xl 側欄面板「本篇目錄」（大綱樹 ## 記號 → 閱讀進度 → 字級）｜編輯區
+//   閱讀欄 700px，內文左側有行號槽（.md-lines-xl），標題區、付費牆、文末都對齊內文文字的左緣
+// - 992–1199px：沒有側欄面板（.ide-xl 退回單欄），目錄改成標題區下方的 .toc-pane；行號槽隱藏
+// - 992px 以下：同上，工具列改成底部固定行動列（56px，$rail，4 格圖示＋文字），頁尾預留它的高度
+// - 閱讀模式（body.is-reading-mode）：隱藏側欄面板與行號槽，閱讀欄置中
+// 付費牆與方案選項卡在 components/_paywall.scss
+// ============================================================
+
+// ---------- 版心：閱讀欄置中 ----------
+.article-wrap {
+  width: 100%;
+  max-width: calc(#{$prose-max-width} + 2 * #{$wrap-pad-x});
+  margin-inline: auto;
+  padding: 0 1rem 4rem;
+
+  @include media-breakpoint-up(md) {
+    padding-inline: 1.5rem;
+  }
+  @include media-breakpoint-up(lg) {
+    padding-inline: $wrap-pad-x;
+    padding-bottom: 5rem;
+  }
+  @include media-breakpoint-up(xl) {
+    max-width: calc(#{$prose-max-width} + #{$gutter-width} + 2 * #{$wrap-pad-x});
+  }
+}
+// ≥ 1200px：行號槽在內文左側，其他區塊往右推一個行號槽寬，和內文文字對齊
+@include media-breakpoint-up(xl) {
+  .article-main {
+    > .prose {
+      max-width: calc(#{$prose-max-width} + #{$gutter-width});
+    }
+    > :not(.prose) {
+      margin-left: $gutter-width;
+    }
+  }
+}
+
+// ---------- 第一列：麵包屑＋設計稿切換器 ----------
+.article-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1.5rem;
+  padding-block: 1.25rem 1.75rem;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: 2rem 2.5rem;
+  }
+}
+
+// ---------- 標題區 ----------
+.article-header {
+  max-width: $prose-max-width;
+
+  .kicker {
+    margin-bottom: 1rem;
+  }
+}
+.article-header-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: .25rem .75rem;
+  font-family: $font-family-monospace;
+  font-size: $mono-size;
+  letter-spacing: 0;
+
+  a {
+    color: $sky;
+    text-decoration: none;
+
+    &:hover {
+      color: $sky-hover;
+      text-decoration: underline;
+    }
+  }
+}
+.article-title {
+  margin-bottom: 1.25rem;
+  font-size: map-get($article-title-sizes, xs);
+  line-height: 1.35;
+  color: $fg-strong;
+
+  @include media-breakpoint-up(lg) {
+    font-size: map-get($article-title-sizes, lg);
+  }
+}
+.article-lede {
+  margin-bottom: 1.75rem;
+}
+.article-byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+
+  .author-line-meta {
+    margin-top: .125rem;
+
+    .text-sans {
+      font-family: $font-family-sans-serif;
+      font-size: $small-font-size;
+    }
+  }
+}
+.article-tools {
+  align-items: center;
+  gap: .375rem;
+}
+// 工具按鈕：$line 框、透明底；按下（aria-pressed）後電光綠字
+.btn-tool {
+  --bs-btn-padding-y: .375rem;
+  --bs-btn-padding-x: .75rem;
+  --bs-btn-font-size: #{$font-size-sm};
+  --bs-btn-color: #{$fg};
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: #{$line-strong};
+  --bs-btn-hover-color: #{$fg-strong};
+  --bs-btn-hover-bg: #{$panel-raised};
+  --bs-btn-hover-border-color: #{$control};
+  --bs-btn-active-color: #{$fg-strong};
+  --bs-btn-active-bg: #{$panel-raised};
+  --bs-btn-active-border-color: #{$control};
+  gap: .375rem;
+  min-height: 2.5rem;
+
+  &[aria-pressed="true"] {
+    color: $volt;
+    border-color: rgba($volt, .5);
+  }
+}
+.btn-tool-icon {
+  --bs-btn-padding-x: 0;
+  width: 2.5rem;
+}
+.tool-size-menu {
+  min-width: 13rem;
+  padding: .75rem;
+}
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.article-header-rule {
+  height: 2px;
+  margin: 1.75rem 0 2rem;
+  border: 0;
+  background-image: linear-gradient(90deg, $line-strong 0 .6rem, transparent .6rem 1rem);
+  background-size: 1rem 2px;
+  opacity: 1;
+}
+
+// ---------- 側欄面板的小標、閱讀進度 ----------
+.side-label {
+  margin: 0 0 .625rem;
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+  letter-spacing: $letter-spacing-label;
+  color: $fg-muted;
+}
+.side-progress-figure {
+  margin: 0 0 .75rem;
+  line-height: 1;
+
+  .figure-num {
+    font-size: map-get($figure-sizes, sm);
+    color: $volt;
+  }
+  .figure-unit {
+    font-family: $font-family-monospace;
+    font-size: 1.25rem;
+    color: $fg-muted;
+  }
+}
+.side-progress-meta {
+  flex-direction: column;
+  gap: .125rem;
+  margin: .875rem 0 0;
+  clip-path: none;
+
+  > li::before {
+    content: none;
+  }
+}
+
+// ---------- 大綱樹（側欄面板與 1200px 以下的目錄窗格共用） ----------
+// <ol class="tree outline"><li><a class="outline-link is-current" href="#…">…</a></li>…</ol>
+.outline {
+  --tree-indent: 1rem;
+  --tree-x: .3125rem;
+  --tree-y: 1.125rem;
+
+  > li + li {
+    margin-top: .125rem;
+  }
+}
+.outline-link {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  min-height: 2.25rem;
+  padding: .4375rem .5rem;
+  border-radius: $border-radius-sm;
+  font-size: $font-size-sm;
+  line-height: 1.55;
+  color: $fg;
+  text-decoration: none;
+  transition: $hover-transition;
+
+  // ## 記號：讀螢幕軟體跳過
+  &::before {
+    content: "##" / "";
+    flex: 0 0 auto;
+    margin-top: .0625rem;
+    font-family: $font-family-monospace;
+    font-size: .75rem;
+    font-weight: $font-weight-bold;
+    letter-spacing: 0;
+    color: $volt;
+  }
+  &:hover {
+    background-color: $row-hover;
+    color: $fg-strong;
+  }
+  &.is-current {
+    background-color: $volt-tint;
+    color: $fg-strong;
+    font-weight: $font-weight-bold;
+  }
+  &.is-locked {
+    color: $fg-dim;
+    cursor: default;
+
+    &::before {
+      color: $fg-dim;
+    }
+    &:hover {
+      background-color: transparent;
+      color: $fg-dim;
+    }
+    .bi {
+      flex: 0 0 auto;
+      margin-left: auto;
+      margin-top: .1875rem;
+      font-size: .75rem;
+    }
+  }
+}
+
+// ---------- 目錄窗格（1200px 以下，標題區下方） ----------
+.toc-pane {
+  margin-top: -.5rem;
+  margin-bottom: 2.5rem;
+  overflow: clip;
+}
+.toc-pane-toggle {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: .5rem 1rem;
+  border: 0;
+  background-color: $panel-raised;
+  color: $fg-strong;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  text-align: left;
+  transition: $hover-transition;
+
+  &:hover {
+    background-color: $row-hover;
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px $volt;
+  }
+  .bi {
+    font-size: .75rem;
+    color: $fg-muted;
+    transition: transform .15s ease;
+  }
+  &[aria-expanded="true"] .bi {
+    transform: rotate(90deg);
+  }
+}
+.toc-pane-body {
+  padding: .75rem 1rem 1rem 2rem;
+  border-top: 1px solid $line;
+}
+
+// ---------- 內文裡的表格：外層 figure 佔一行行號；合計列 ----------
+.prose .md-table-figure {
+  --ln-top: .4375rem;
+
+  > .md-table-wrap {
+    margin: 0;
+  }
+}
+.md-table .is-total > * {
+  background-color: $panel-raised;
+  color: $fg-strong;
+  font-weight: $font-weight-bold;
+}
+
+// ---------- 文末 ----------
+.article-end {
+  max-width: $prose-max-width;
+  margin-top: 3.5rem;
+}
+.article-end-block + .article-end-block {
+  margin-top: 3.5rem;
+  padding-top: 3rem;
+  border-top: 1px solid $line;
+}
+.article-end-title {
+  margin-bottom: 1.25rem;
+  font-size: 1.375rem;
+  line-height: 1.45;
+}
+.article-end-count {
+  margin-left: .375rem;
+  font-size: $mono-size;
+  font-weight: $font-weight-normal;
+  color: $fg-muted;
+}
+.author-pane .pane-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+.author-pane-body {
+  min-width: 0;
+
+  p {
+    margin: 0;
+  }
+}
+.author-pane-name {
+  font-size: 1.125rem;
+  font-weight: $font-weight-bold;
+  color: $fg-strong;
+}
+.author-pane-job {
+  margin-top: .125rem !important;
+  font-size: $small-font-size;
+  color: $fg-muted;
+}
+.author-pane-bio {
+  margin-top: .75rem !important;
+  color: $fg;
+}
+.author-pane-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1.25rem;
+  margin-top: 1rem;
+}
+.article-tags {
+  margin-top: 1.75rem;
+}
+.related-panes {
+  display: grid;
+  gap: 1rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .pane-body {
+    padding: 1.125rem 1.25rem;
+  }
+  .story-title {
+    font-size: 1rem;
+  }
+}
+
+// ---------- 讀者回應 ----------
+.comment-gate {
+  margin-bottom: 1rem;
+}
+// 留言框：編輯器輸入框外觀（$rail 底、$control 框）；未訂閱時停用＝虛線框
+.comment-form {
+  .form-control {
+    min-height: 6.5rem;
+    resize: vertical;
+  }
+  &.is-disabled .form-control {
+    border-style: dashed;
+    border-color: $line-strong;
+    background-color: transparent;
+    color: $fg-dim;
+    cursor: not-allowed;
+  }
+}
+.comment-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: .75rem;
+}
+.comment-list {
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+
+  > .comment + .comment {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid $line;
+  }
+}
+.comment-head {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+
+  p {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .25rem .75rem;
+    margin: 0;
+  }
+  strong {
+    color: $fg-strong;
+  }
+  time {
+    font-size: $mono-size;
+    color: $fg-muted;
+  }
+}
+.comment-body {
+  margin: .5rem 0 0;
+  padding-left: 2.75rem;
+  color: $fg;
+}
+// 有回覆的留言：從頭像下緣沿著留言內文往下畫一條線，接到回覆的分支（└─）
+.comment.has-replies > .comment-body {
+  margin: 0 0 0 1rem;
+  padding: .5rem 0 0 calc(1.75rem - 1px);
+  border-left: 1px solid $line-strong;
+}
+// 作者回覆：掛在縮排的分支線上（└─），線從留言者頭像的中線往下接
+.comment-replies {
+  --tree-indent: 2.75rem;
+  --tree-x: 1rem;
+  --tree-y: 1rem;
+  --tree-line: #{$line-strong};
+  margin-top: 1rem;
+
+  > .comment-reply {
+    padding: .75rem 0 0;
+  }
+  > li::before {
+    top: -1rem;
+  }
+  > li::after {
+    top: calc(var(--tree-y) + .75rem);
+  }
+  > li:last-child::before {
+    height: calc(var(--tree-y) + 1.75rem);
+  }
+}
+.comment-more {
+  margin-top: 1.75rem;
+}
+
+// ---------- 992px 以下：底部固定行動列 ----------
+.article-actionbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: $zindex-fixed;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  height: 3.5rem;
+  background-color: $rail;
+  border-top: 1px solid $line;
+
+  > .btn-tool,
+  > .dropup > .btn-tool {
+    --bs-btn-font-size: .75rem;
+    flex-direction: column;
+    gap: .125rem;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    line-height: 1.2;
+
+    .bi {
+      font-size: 1.125rem;
+    }
+  }
+  > .dropup {
+    display: flex;
+  }
+  > * + * {
+    border-left: 1px solid $line;
+  }
+}
+@include media-breakpoint-down(lg) {
+  body:has(.article-actionbar) .site-footer {
+    padding-bottom: 3.5rem;
+  }
+}
+
+// ---------- 閱讀模式：隱藏側欄面板與行號槽，閱讀欄置中 ----------
+body.is-reading-mode {
+  .article-ide {
+    display: block;
+    background-image: none;
+  }
+  .article-side {
+    display: none;
+  }
+  .article-wrap {
+    max-width: calc(#{$prose-max-width} + 2 * #{$wrap-pad-x});
+  }
+  .article-main {
+    > .prose {
+      max-width: $prose-max-width;
+      padding-left: 0;
+
+      > *::after,
+      > .md-blank::before {
+        content: none;
+      }
+    }
+    > :not(.prose) {
+      margin-left: 0;
+    }
+  }
+  .toc-pane {
+    display: block !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toc-pane-toggle .bi {
+    transition: none;
+  }
+}

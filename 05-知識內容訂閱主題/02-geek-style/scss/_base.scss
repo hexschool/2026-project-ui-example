@@ -1,0 +1,915 @@
+// ============================================================
+// 全站基礎：深色主題、字體、Markdown 記號、行號槽、方塊游標、版心、區塊節奏、
+// 按鈕、表單、分段控制、標籤、提示框、空狀態、資料表、焦點與減少動態
+// ============================================================
+
+// 單一深色主題：原生捲軸、日期選擇器等表單元件也固定用深色
+:root {
+  color-scheme: dark;
+  accent-color: $volt;
+}
+
+// 錨點與焦點不被頂端列遮住：≥ 992px 沒有頂端列（活動列在左側）
+html {
+  scroll-padding-top: $scroll-pad-mobile;
+
+  @include media-breakpoint-up(lg) {
+    scroll-padding-top: $scroll-pad-desktop;
+  }
+}
+
+body {
+  background-color: $editor;
+  letter-spacing: $letter-spacing-body;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+
+  // ≥ 992px 左側是固定的活動列：整頁從活動列右緣開始（滿版區塊也是）
+  @include media-breakpoint-up(lg) {
+    position: relative;
+    padding-left: $activity-bar-width;
+  }
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  letter-spacing: $letter-spacing-heading;
+  text-wrap: balance;
+}
+h1, .h1 {
+  font-size: map-get($page-title-sizes, xs);
+  line-height: 1.3;
+  @include media-breakpoint-up(lg) { font-size: map-get($page-title-sizes, lg); }
+}
+h2, .h2 {
+  font-size: map-get($section-title-sizes, xs);
+  @include media-breakpoint-up(lg) { font-size: map-get($section-title-sizes, lg); }
+}
+h3, .h3 {
+  line-height: 1.45;
+}
+p,
+li,
+dd,
+label,
+.form-text {
+  text-wrap: pretty;
+}
+strong, b {
+  font-weight: $font-weight-bold;
+  color: $fg-strong;
+}
+
+::selection {
+  background-color: $selection;
+  color: #FFFFFF;
+}
+
+// ---------- 等寬字：只給記號、數字、資訊列、徽章、程式碼 ----------
+// .mono：JetBrains Mono（中文自動退回 Noto Sans TC）；.num：等寬數字（JetBrains Mono 本來就等寬）
+.mono,
+.num {
+  font-family: $font-family-monospace;
+  font-variant-ligatures: none;
+  letter-spacing: 0;
+}
+.num {
+  font-variant-numeric: tabular-nums;
+}
+// 大數字：價格、到期日、數據卡（JetBrains Mono 700）。字級由所在位置決定
+.figure-num {
+  font-family: $font-family-monospace;
+  font-weight: $font-weight-bold;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+  line-height: 1.1;
+  color: $fg-strong;
+  white-space: nowrap;
+}
+.figure-unit {
+  margin-left: .25em;
+  font-size: .45em;
+  font-weight: $font-weight-medium;
+  color: $fg-muted;
+  letter-spacing: 0;
+}
+.text-volt  { color: $volt !important; }
+.text-sky   { color: $sky !important; }
+.text-pass  { color: $pass !important; }
+.text-dim   { color: $fg-dim !important; }
+.text-muted-fg { color: $fg-muted !important; }
+
+// 次要說明文字
+.text-note {
+  font-size: $small-font-size;
+  color: $fg-muted;
+}
+
+// 中繼資料列（字數 ‧ 閱讀時間 ‧ 日期）：等寬小字，Notion 原文用「‧」串接
+// 每一項前面畫一個固定寬度的「‧」，整列左移同樣寬度再用 clip-path 切掉，換行時「‧」不會留在行首
+.meta {
+  --meta-sep: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 0 0 calc(-1 * var(--meta-sep));
+  padding: 0;
+  list-style: none;
+  font-family: $font-family-monospace;
+  font-size: $mono-size;
+  line-height: 1.6;
+  color: $fg-muted;
+  letter-spacing: 0;
+  clip-path: inset(-.5rem -.5rem -.5rem var(--meta-sep));
+
+  > li,
+  > span {
+    white-space: nowrap;
+
+    &::before {
+      content: "‧" / "";
+      display: inline-block;
+      width: var(--meta-sep);
+      text-align: center;
+      color: $fg-dim;
+    }
+  }
+  .is-volt { color: $volt; }
+  // 人名、職稱、分類這類文字項目：改回 Noto Sans TC（等寬只給數字與資訊）
+  > .text-sans {
+    font-family: $font-family-sans-serif;
+    font-size: $small-font-size;
+  }
+}
+
+// 等寬狀態列：「438 篇 付費文章 ｜ 127 篇 免費文章」，項目之間 1px 直線（不是打字的｜）
+// <ul class="statusline"><li><span class="num text-volt">438</span> 篇 付費文章</li>…</ul>
+.statusline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: $font-family-monospace;
+  font-size: $mono-size;
+  line-height: 1.6;
+  color: $fg-muted;
+  letter-spacing: 0;
+
+  > li {
+    white-space: nowrap;
+  }
+  > li + li {
+    margin-left: 1rem;
+    padding-left: 1rem;
+    border-left: 1px solid $line-strong;
+  }
+}
+
+// ---------- 詞組換行 ----------
+// 中文只在空白、標點與 <wbr> 處換行；用在標題、短說明，長段落不要用
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// ============================================================
+// Markdown 記號（本風格的招牌 1）
+// #、##、### 用 ::before 產生，替代文字留空（content: "## " / ""）：螢幕閱讀器不讀、複製標題不會帶到 #
+// 記號放在標題的第 0 欄，標題文字往右縮（hanging）：標題換行時第二行和第一行的字對齊
+// 記號用標題本身的字級畫、再 scale 縮小，所以永遠和標題第一行垂直置中，不必另算行高
+// ============================================================
+$md-marker-scale: .55;
+$md-mono-advance: .6em; // JetBrains Mono 每個字元的寬度
+@mixin md-marker($marker, $count: 1, $scale: $md-marker-scale, $gap: .32em) {
+  position: relative;
+  padding-left: calc(#{$count} * #{$md-mono-advance} * #{$scale} + #{$gap});
+
+  &::before {
+    content: "#{$marker}" / "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-family: $font-family-monospace;
+    font-weight: $font-weight-bold;
+    font-variant-ligatures: none;
+    letter-spacing: 0;
+    color: $md-marker-color;
+    white-space: pre;
+    transform: scale($scale);
+    transform-origin: 0 50%;
+    pointer-events: none;
+  }
+}
+// <h1 class="md-h1">、<h2 class="md-h2">：只有 H1、H2（與長文 h2／h3）有記號；卡片標題、H3 沒有
+.md-h1 { @include md-marker("#", 1); }
+.md-h2 { @include md-marker("##", 2); }
+.md-h3 { @include md-marker("###", 3, .6); }
+
+// 方塊游標：首頁 H1 結尾、編輯器空行。固定 1ch 寬的行內方塊，閃爍只改 opacity（不推擠文字）
+// <span class="cursor" aria-hidden="true"></span>
+.cursor {
+  display: inline-block;
+  width: .5em;
+  height: .92em;
+  margin-left: .12em;
+  vertical-align: -.1em;
+  background-color: $volt;
+  animation: cursor-blink $cursor-blink steps(1) $cursor-blink infinite; // 先常亮 1 秒再開始閃
+}
+@keyframes cursor-blink {
+  50% { opacity: 0; }
+}
+
+// ============================================================
+// 行號槽（本風格的招牌 1）
+// .md-lines 裡的每個直接子元素是一「行」，行號用 ::after 的 CSS counter 畫在左側 56px 槽裡
+// 子元素加 .md-blank 時，上方的間距也算一行空行（在 ::before 畫一個行號）
+// 行號替代文字留空，純裝飾；預設只在 ≥ 992px 顯示（.md-lines-xl 改成 ≥ 1200px）
+// 每一行的高度用 --ln-h 指定（第一行的行高，例如 calc(4rem * 1.18)），行號在這個高度內垂直置中
+// ============================================================
+@mixin gutter-number {
+  position: absolute;
+  right: calc(100% + 1rem);
+  width: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-family: $font-family-monospace;
+  font-size: $mono-size;
+  font-weight: $font-weight-normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: 0;
+  color: $gutter-color;
+  text-align: right;
+  transform: none;
+  pointer-events: none;
+}
+.md-lines {
+  counter-reset: ln;
+
+  > * {
+    position: relative;
+  }
+}
+@mixin md-lines-on {
+  padding-left: $gutter-width;
+
+  > *::after {
+    @include gutter-number;
+    counter-increment: ln;
+    content: counter(ln) / "";
+    top: var(--ln-top, 0);
+    height: var(--ln-h, 1.65em);
+  }
+  // 空行：畫在上方間距的正中央（--ln-gap 是這一行上方的間距）
+  > .md-blank::before {
+    @include gutter-number;
+    counter-increment: ln;
+    content: counter(ln) / "";
+    top: calc(-1 * var(--ln-gap, 2rem) / 2 - .8125rem);
+    height: 1.625rem;
+  }
+}
+@include media-breakpoint-up(lg) {
+  .md-lines:not(.md-lines-xl) { @include md-lines-on; }
+}
+@include media-breakpoint-up(xl) {
+  .md-lines.md-lines-xl { @include md-lines-on; }
+}
+
+// ============================================================
+// 版心：只存在於編輯區內（活動列與側欄面板貼齊視窗、背景滿版）
+// .wrap（1200）首頁、訂閱方案；.wrap-list（960）文章列表、作者頁；.wrap-account（1040）個人頁、Guideline
+// 左右內距：手機 16px → 768px 24px → 992px 48px
+// ============================================================
+.wrap,
+.wrap-list,
+.wrap-account {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: 1rem;
+
+  @include media-breakpoint-up(md) { padding-inline: 1.5rem; }
+  @include media-breakpoint-up(lg) { padding-inline: $wrap-pad-x; }
+}
+.wrap { max-width: $wrap-wide + 2 * 48px; }
+.wrap-list { max-width: $wrap-list + 2 * 48px; }
+.wrap-account { max-width: $wrap-account + 2 * 48px; }
+
+// ---------- 區塊節奏：上下 48px → 64px（≥ 992px） ----------
+.section {
+  padding-block: $section-gap-sm;
+
+  @include media-breakpoint-up(lg) {
+    padding-block: $section-gap;
+  }
+}
+// 相鄰區塊之間一條 1px 分隔線（像編輯器裡的區段）
+.section-rule {
+  border-top: 1px solid $line;
+}
+
+// 區塊標題列：左 H2（＋副標）｜右動作，動作和標題底部對齊；992px 以下動作排到標題下方
+// <div class="section-head"><div><h2 class="md-h2">…</h2><p class="section-sub">…</p></div><a class="btn …">…</a></div>
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  margin-bottom: 1.75rem;
+
+  h2 {
+    margin-bottom: 0;
+  }
+  > :first-child {
+    min-width: 0;
+    flex: 1 1 28rem;
+  }
+}
+.section-sub {
+  margin: .5rem 0 0;
+  max-width: 40em;
+  color: $fg-muted;
+}
+
+// ---------- 頁面標題區（文章列表、訂閱方案、個人頁、作者頁）：等寬路徑麵包屑 → H1（#）→ 說明 ----------
+.page-header {
+  padding-top: 1.5rem;
+  padding-bottom: 2rem;
+
+  @include media-breakpoint-up(lg) {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+  .breadcrumb {
+    margin-bottom: .75rem;
+  }
+  h1 {
+    margin-bottom: 0;
+  }
+}
+.page-lead {
+  max-width: 40em;
+  margin: .75rem 0 0;
+  color: $fg-muted;
+}
+
+// ---------- 麵包屑：等寬路徑「首頁 / 文章列表」 ----------
+.breadcrumb {
+  align-items: center;
+  font-family: $font-family-monospace;
+  letter-spacing: 0;
+}
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+
+  &.active {
+    color: $fg;
+  }
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem; // 觸控目標 44px
+  color: $sky;
+  text-decoration: none;
+
+  &:hover {
+    color: $sky-hover;
+    text-decoration: underline;
+  }
+}
+
+// ============================================================
+// 按鈕
+// 主要 .btn-primary：電光綠底＋黑字（同一個區塊只放一個）
+// 次要 .btn-outline-info：1px 天藍框＋天藍字，hover 天藍淡底
+// 中性 .btn-outline-secondary：1px $control 框＋內文字，hover $panel-raised 底
+// 文字連結 .btn-text：天藍字＋底線
+// 停用：保留原尺寸，改成 $panel-raised 底＋$fg-dim 字＋$line-strong 框，滑鼠 not-allowed
+// hover 只換底色、字色、框色，不位移、不放大
+// ============================================================
+.btn {
+  --bs-btn-focus-box-shadow: #{$focus-ring-double};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  letter-spacing: $letter-spacing-label;
+  transition: $hover-transition;
+
+  &:disabled,
+  &.disabled {
+    cursor: not-allowed;
+    pointer-events: auto;
+  }
+}
+.btn-primary {
+  --bs-btn-color: #{$on-volt};
+  --bs-btn-bg: #{$volt};
+  --bs-btn-border-color: #{$volt};
+  --bs-btn-hover-color: #{$on-volt};
+  --bs-btn-hover-bg: #{$volt-hover};
+  --bs-btn-hover-border-color: #{$volt-hover};
+  --bs-btn-active-color: #{$on-volt};
+  --bs-btn-active-bg: #{$volt-hover};
+  --bs-btn-active-border-color: #{$volt-hover};
+  --bs-btn-disabled-color: #{$fg-dim};
+  --bs-btn-disabled-bg: #{$panel-raised};
+  --bs-btn-disabled-border-color: #{$line-strong};
+}
+.btn-outline-info {
+  --bs-btn-color: #{$sky};
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: #{$sky};
+  --bs-btn-hover-color: #{$sky-hover};
+  --bs-btn-hover-bg: #{$info-tint};
+  --bs-btn-hover-border-color: #{$sky-hover};
+  --bs-btn-active-color: #{$sky-hover};
+  --bs-btn-active-bg: #{$info-tint};
+  --bs-btn-active-border-color: #{$sky-hover};
+  --bs-btn-disabled-color: #{$fg-dim};
+  --bs-btn-disabled-bg: #{$panel-raised};
+  --bs-btn-disabled-border-color: #{$line-strong};
+}
+.btn-outline-primary {
+  --bs-btn-color: #{$volt};
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: #{$volt};
+  --bs-btn-hover-color: #{$volt};
+  --bs-btn-hover-bg: #{$volt-tint};
+  --bs-btn-hover-border-color: #{$volt};
+  --bs-btn-active-color: #{$volt};
+  --bs-btn-active-bg: #{$volt-tint};
+  --bs-btn-active-border-color: #{$volt};
+  --bs-btn-disabled-color: #{$fg-dim};
+  --bs-btn-disabled-bg: #{$panel-raised};
+  --bs-btn-disabled-border-color: #{$line-strong};
+}
+.btn-outline-secondary {
+  --bs-btn-color: #{$fg};
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: #{$control};
+  --bs-btn-hover-color: #{$fg-strong};
+  --bs-btn-hover-bg: #{$panel-raised};
+  --bs-btn-hover-border-color: #{$fg-muted};
+  --bs-btn-active-color: #{$fg-strong};
+  --bs-btn-active-bg: #{$panel-raised};
+  --bs-btn-active-border-color: #{$fg-muted};
+  --bs-btn-disabled-color: #{$fg-dim};
+  --bs-btn-disabled-bg: #{$panel-raised};
+  --bs-btn-disabled-border-color: #{$line-strong};
+}
+.btn-secondary {
+  --bs-btn-color: #{$fg-strong};
+  --bs-btn-bg: #{$panel-raised};
+  --bs-btn-border-color: #{$line-strong};
+  --bs-btn-hover-color: #{$fg-strong};
+  --bs-btn-hover-bg: #{$row-hover};
+  --bs-btn-hover-border-color: #{$control};
+  --bs-btn-active-color: #{$fg-strong};
+  --bs-btn-active-bg: #{$row-hover};
+  --bs-btn-active-border-color: #{$control};
+}
+.btn-text {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: .25rem;
+  --bs-btn-color: #{$sky};
+  --bs-btn-hover-color: #{$sky-hover};
+  --bs-btn-active-color: #{$sky-hover};
+  --bs-btn-border-width: 0;
+  --bs-btn-disabled-color: #{$fg-dim};
+  min-height: 2.75rem;
+  font-weight: $font-weight-medium;
+  text-decoration: underline;
+  text-decoration-color: rgba($sky, .45);
+  text-decoration-thickness: 1px;
+  text-underline-offset: .35em;
+
+  &:hover { text-decoration-color: currentColor; }
+  &:focus-visible {
+    box-shadow: none;
+    outline: 2px solid $volt;
+    outline-offset: 2px;
+  }
+}
+.btn-sm {
+  min-height: 2.75rem; // 小號按鈕仍維持 44px 觸控高度
+}
+@include media-breakpoint-up(lg) {
+  .btn-sm { min-height: 2.25rem; } // 桌機介面列高 36–40px（滑鼠操作）
+}
+
+// 內文裡沒有 class 的連結：天藍＋細底線，hover 換淺
+a:not([class]) {
+  text-decoration-color: rgba($sky, .45);
+  text-underline-offset: .25em;
+
+  &:hover {
+    color: $sky-hover;
+    text-decoration-color: currentColor;
+  }
+}
+
+// ---------- 表單 ----------
+.form-control,
+.form-select {
+  caret-color: $volt;
+}
+.form-control::placeholder {
+  font-family: $font-family-monospace;
+}
+.form-label-optional {
+  margin-left: .5rem;
+  color: $fg-muted;
+  font-size: $small-font-size;
+  font-weight: $font-weight-normal;
+}
+// 錯誤文字：圖示＋文字，不只靠紅框
+.invalid-feedback,
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin-top: .375rem;
+  font-size: $small-font-size;
+  color: $fail;
+}
+.form-control.is-invalid ~ .invalid-feedback {
+  display: flex;
+}
+.form-control.is-invalid {
+  border-color: $fail;
+}
+// 多行字數提示
+.form-count {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: .375rem;
+  font-family: $font-family-monospace;
+  font-size: $small-font-size;
+  color: $fg-muted;
+}
+.form-check-input:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+.form-check-input:disabled ~ .form-check-label {
+  cursor: not-allowed;
+}
+.form-check-input:checked[type="checkbox"] {
+  --bs-form-check-bg-image: #{escape-svg(url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='#{$on-volt}' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/></svg>"))};
+}
+
+// ---------- 分段控制（月／年、字級、付費層級、數據期間） ----------
+// <div class="btn-group segmented" role="group" aria-label="…">
+//   <input type="radio" class="btn-check" name="…" id="…" checked><label class="btn" for="…">月繳</label>
+// </div>
+// 外框 $control、內部選項之間 1px $line；選中＝電光綠淡底＋電光綠字＋底部 2px 電光綠（像編輯器分頁）
+.segmented {
+  flex-wrap: nowrap;
+  padding: 2px;
+  border: 1px solid $control;
+  border-radius: $border-radius-sm;
+  background-color: $rail;
+
+  > .btn {
+    --bs-btn-padding-y: .375rem;
+    --bs-btn-padding-x: .875rem;
+    --bs-btn-font-size: #{$font-size-sm};
+    --bs-btn-font-weight: #{$font-weight-medium};
+    --bs-btn-color: #{$fg-muted};
+    --bs-btn-border-width: 0;
+    --bs-btn-border-radius: 3px;
+    --bs-btn-hover-color: #{$fg-strong};
+    --bs-btn-hover-bg: #{$panel-raised};
+    --bs-btn-active-bg: #{$volt-tint};
+    --bs-btn-active-color: #{$volt};
+    min-height: 2.5rem;
+    white-space: nowrap;
+  }
+  > .btn-check:checked + .btn {
+    background-color: $volt-tint;
+    color: $volt;
+    box-shadow: inset 0 -2px 0 $volt;
+  }
+  > .btn-check:focus-visible + .btn {
+    z-index: 1;
+    box-shadow: inset 0 0 0 2px $volt;
+  }
+}
+.segmented-sm > .btn {
+  --bs-btn-padding-x: .625rem;
+  --bs-btn-font-size: #{$small-font-size};
+  min-height: 2.25rem;
+}
+
+// ---------- 編輯器分頁籤（排序、收藏、我的文章、審核佇列） ----------
+// <ul class="nav editor-tabs" role="tablist">… <button class="nav-link active">最新<span class="tab-count">8</span></button>
+// 分頁籤列 $panel-raised 底；選中的分頁頂端 2px 電光綠、底色同編輯區（像 VS Code 的檔案分頁）
+.editor-tabs {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background-color: $panel-raised;
+  border-bottom: 1px solid $line;
+
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    min-height: 2.75rem;
+    padding: .5rem 1rem;
+    border: 0;
+    border-right: 1px solid $line;
+    border-radius: 0;
+    background-color: transparent;
+    color: $fg-muted;
+    font-size: $font-size-sm;
+    white-space: nowrap;
+    box-shadow: inset 0 2px 0 transparent;
+    transition: $hover-transition;
+
+    &:hover {
+      color: $fg-strong;
+      background-color: $row-hover;
+    }
+    &.active {
+      color: $fg-strong;
+      background-color: $editor;
+      box-shadow: inset 0 2px 0 $volt;
+      font-weight: $font-weight-bold;
+    }
+    &:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 2px $volt;
+    }
+  }
+}
+.tab-count {
+  margin-left: .25rem;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  font-weight: $font-weight-normal;
+  color: $fg-muted; // 分支樹的 hover 與目前項底色上 $fg-dim 不到 4.5，改用次要字色
+}
+
+// ---------- 標籤 #成本結構：等寬記號 ----------
+// 一般：$panel-raised 底＋$fg；選中：電光綠底黑字；0 篇：虛線框＋$fg-dim（仍顯示，不隱藏）
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  min-height: 1.75rem;
+  padding: .125rem .5rem;
+  border: 1px solid transparent;
+  border-radius: $border-radius-sm;
+  background-color: $panel-raised;
+  color: $fg;
+  font-family: $font-family-monospace;
+  font-size: $mono-size;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: $hover-transition;
+
+  &:hover {
+    border-color: $control;
+    color: $fg-strong;
+  }
+  &.is-selected,
+  .btn-check:checked + & {
+    border-color: $volt;
+    background-color: $volt;
+    color: $on-volt;
+  }
+  .btn-check:focus-visible + & {
+    box-shadow: $focus-ring-double;
+  }
+  &.is-zero {
+    border: 1px dashed $line-strong;
+    background-color: transparent;
+    color: $fg-dim;
+  }
+}
+// 觸控：點擊範圍上下各加 8px（不改變外觀尺寸）
+label.tag,
+a.tag {
+  cursor: pointer;
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -8px 0;
+  }
+}
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------- 提示框 Callout：左側 3px 色條＋圖示＋文字（＋一個按鈕） ----------
+// <div class="callout callout-warning" role="status">
+//   <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+//   <div class="callout-body"><p class="callout-title">標題（選用）</p><p>內容</p></div>
+// </div>
+.callout {
+  --callout-color: #{$sky};
+  --callout-bg: #{$info-tint};
+  display: flex;
+  gap: .75rem;
+  padding: .875rem 1rem;
+  border-left: 3px solid var(--callout-color);
+  border-radius: 0 $border-radius-sm $border-radius-sm 0;
+  background-color: var(--callout-bg);
+  color: $fg;
+
+  > .bi {
+    flex: 0 0 auto;
+    margin-top: .125rem;
+    color: var(--callout-color);
+    font-size: 1.0625rem;
+    line-height: 1.5;
+  }
+  p {
+    margin-bottom: 0;
+  }
+  .btn {
+    margin-top: .75rem;
+  }
+}
+.callout-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.callout-title {
+  margin-bottom: .25rem !important;
+  font-weight: $font-weight-bold;
+  color: var(--callout-color);
+}
+.callout-success { --callout-color: #{$pass}; --callout-bg: #{$pass-tint}; }
+.callout-warning { --callout-color: #{$warn}; --callout-bg: #{$warn-tint}; }
+.callout-danger  { --callout-color: #{$fail}; --callout-bg: #{$fail-tint}; }
+// 品牌強調（洞察、編輯器提示）：電光綠淡底＋電光綠條
+.callout-brand   { --callout-color: #{$volt}; --callout-bg: #{$volt-tint}; }
+
+// ---------- 空狀態：圖示＋一句說明＋一個下一步按鈕 ----------
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: 1.5rem;
+  border: 1px dashed $line-strong;
+  border-radius: $border-radius;
+
+  > .bi {
+    font-size: 1.5rem;
+    line-height: 1;
+    color: $fg-muted;
+  }
+  p {
+    max-width: 32em;
+    margin: 0;
+    color: $fg;
+  }
+}
+
+// ---------- 資料表 DataTable ----------
+// 外框＋表頭 $panel-raised＋列分隔線；數字欄 .text-end.num；外層 .table-responsive
+.table-data {
+  margin-bottom: 0;
+  border: 1px solid $line;
+  font-size: $font-size-sm;
+
+  > :not(caption) > * > * {
+    background-color: transparent;
+  }
+  > thead > tr > th {
+    background-color: $panel-raised;
+    color: $fg-muted;
+    font-size: $small-font-size;
+    font-weight: $font-weight-medium;
+    white-space: nowrap;
+    border-bottom-color: $line-strong;
+  }
+  td,
+  th {
+    vertical-align: middle;
+  }
+  td.num,
+  .num {
+    font-size: $mono-size;
+  }
+  // 資料表（Guideline 說明表除外）整列不換行，窄螢幕由外層 .table-responsive 橫向捲動；
+  // 列標題 th 也要一起設，否則手機上標題欄會被其他欄擠成每行兩個字
+  &:not(.gl-table) td,
+  &:not(.gl-table) > tbody > tr > th {
+    white-space: nowrap;
+  }
+}
+.table-responsive {
+  position: relative;
+  padding-bottom: 1px; // 表格框線是合併模式，最下面那條有一半落在表格外，留 1px 才不會被捲動容器切掉
+  scrollbar-width: thin;
+}
+
+// ---------- 進度條 ----------
+// 進行中：電光綠；已讀完：$pass；尚未開始：空軌（只有框線，沒有填色）
+.progress {
+  box-shadow: inset 0 0 0 1px $line;
+}
+.progress-bar.is-done {
+  background-color: $pass;
+}
+.progress.is-empty {
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1px $line-strong;
+}
+
+// ---------- 浮層：$panel 底＋1px $line-strong 框＋陰影 ----------
+.dropdown-menu {
+  box-shadow: var(--bs-dropdown-box-shadow);
+}
+.modal-content {
+  box-shadow: $box-shadow-lg;
+}
+
+// ---------- 鍵盤焦點：2px 電光綠 ----------
+:focus-visible {
+  outline: 2px solid $volt;
+  outline-offset: 2px;
+}
+.offcanvas:focus-visible,
+.modal:focus-visible {
+  outline: 0;
+}
+[tabindex="-1"]:focus {
+  outline: 0;
+}
+.btn:focus-visible,
+.btn-close:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible {
+  outline: none;
+}
+
+// 跳至主要內容：浮在活動列上方
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: -4rem;
+  z-index: $zindex-fixed + 20;
+  padding: .625rem 1rem;
+  border-radius: $border-radius-sm;
+  background: $volt;
+  color: $on-volt;
+  font-weight: $font-weight-bold;
+  text-decoration: none;
+
+  &:focus { top: 1rem; }
+}
+
+// ---------- 減少動態：游標常亮、所有 transition 與平滑捲動關閉、chevron 直接換方向 ----------
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+// ---------- 圖片框：固定比例、裁切填滿、1px $line 框（和深底分開，不加濾鏡、不壓暗） ----------
+.img-frame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: $border-radius-sm;
+  background-color: $panel-raised;
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+.ratio-cover { aspect-ratio: 1200 / 630; }
+.ratio-16x9 { aspect-ratio: 16 / 9; }

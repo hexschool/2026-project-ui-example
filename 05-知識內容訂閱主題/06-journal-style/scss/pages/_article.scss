@@ -1,0 +1,502 @@
+// ============================================================
+// 文章內頁 article.html
+// 整張紙不放點格紋（.sheet-plain），≥ 1200：長文欄（左側 40px 一條珊瑚筆記本邊線，長文 680）｜間距 64｜右欄 280
+// 右欄是 3 張貼在頁緣的便利貼（目錄黃、閱讀進度抹茶、字級藍，sticky），右緣超出紙張 8px 像索引
+// 992–1199：右欄隱藏，目錄變成標題區下方可展開的黃便利貼；長文欄置中
+// 手機：底部固定行動列是一條浮起的圓角膠囊（離底 12px）
+// 付費牆見 components/_paywall.scss，長文見 components/_prose.scss
+// ============================================================
+
+// 這一頁整張紙都是純紙色（點格紋會干擾閱讀）
+.article-sheet {
+  background-image: none;
+
+  // ≥ 1200 右欄便利貼要超出紙張 8px：這個寬度兩側都有留白，紙張不必裁切（Chrome 的 overflow-clip-margin 只在兩軸都 clip 時生效）
+  @include media-breakpoint-up(xl) {
+    overflow: visible;
+  }
+}
+
+// ---------- 麵包屑＋設計稿切換器 ----------
+.article-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1.5rem;
+  margin-bottom: map-get($spacers, 5);
+
+  .breadcrumb { margin-bottom: 0; }
+}
+
+// ---------- 版面：長文欄｜右欄 ----------
+.article-layout {
+  @include media-breakpoint-up(xl) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 17.5rem; // 右欄 280
+    column-gap: 4rem;                                // 間距 64
+    align-items: start;
+  }
+}
+.article-main {
+  min-width: 0;
+  max-width: $prose-max-width;
+  margin-inline: auto;
+
+  // ≥ 1200：長文靠左，左側 40px 處一條 2px 的珊瑚筆記本邊線（裝飾）
+  @include media-breakpoint-up(xl) {
+    position: relative;
+    max-width: none;
+    margin: 0;
+    padding-left: 3rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: .5rem;
+      border-left: 2px solid rgba($coral, .55);
+      pointer-events: none;
+    }
+    > article > *,
+    > .demo-state {
+      max-width: $prose-max-width;
+    }
+  }
+}
+
+// ---------- 文章標題區 ----------
+.article-header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .625rem 1rem;
+  margin-bottom: 1rem;
+
+  .tag { min-height: 2rem; font-size: $small-font-size; }
+}
+.article-title {
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+.lede {
+  margin-bottom: map-get($spacers, 4);
+  color: $pen-body;
+  font-size: $prose-lede-size;
+  line-height: 1.85;
+  @include media-breakpoint-down(md) { font-size: 1.0625rem; }
+}
+.article-byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.article-header-rule {
+  margin-block: map-get($spacers, 4) map-get($spacers, 5);
+}
+
+// 工具列：收藏、分享是帶字的小膠囊（40px 高）；Aa、閱讀模式是 40px 圓鈕
+.article-tools {
+  align-items: center;
+  gap: .5rem;
+}
+.tool-chip,
+.tool-round {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .375rem;
+  height: 2.5rem;
+  border: 1.5px solid $control;
+  border-radius: $border-radius-pill;
+  background-color: $white;
+  color: $pen;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  transition: background-color .12s ease, border-color .12s ease;
+
+  &:hover { background-color: $butter; }
+  &[aria-pressed="true"],
+  &[aria-expanded="true"] {
+    border-color: $coral-ink;
+    background-color: $coral-tint;
+  }
+}
+.tool-chip {
+  padding: 0 1rem;
+}
+.tool-round {
+  width: 2.5rem;
+  padding: 0;
+}
+.tool-aa {
+  font-family: $font-family-num;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.font-size-menu {
+  min-width: 13rem;
+  padding: .75rem 1rem 1rem;
+
+  > p {
+    margin-bottom: .5rem;
+    color: $pen-muted;
+    font-size: $small-font-size;
+  }
+}
+
+// 字級：3 個 44px 圓鈕（小、中、大），選中＝珊瑚底＋厚度
+.size-picker {
+  display: flex;
+  gap: .625rem;
+
+  label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1.5px solid $control;
+    border-radius: 50%;
+    background-color: $white;
+    color: $pen;
+    cursor: pointer;
+    transition: background-color .12s ease, border-color .12s ease;
+
+    &:hover { background-color: $butter; }
+  }
+  label:nth-of-type(1) { font-size: .8125rem; }
+  label:nth-of-type(2) { font-size: 1rem; }
+  label:nth-of-type(3) { font-size: 1.1875rem; }
+  .btn-check:checked + label {
+    border-color: $coral-press;
+    background-color: $coral;
+    box-shadow: 0 3px 0 $coral-press;
+    font-weight: $font-weight-bold;
+  }
+  .btn-check:focus-visible + label {
+    outline: 2px solid $coral-ink;
+    outline-offset: 2px;
+  }
+}
+
+// ---------- 目錄（右欄的黃便利貼、< 1200 的收合便利貼共用） ----------
+// 每項前面一枚 1–5 的小圓貼紙；目前項（ScrollSpy 的 .active）有珊瑚螢光筆；鎖住的項目是鎖頭＋次要色
+.toc {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  a,
+  .toc-locked {
+    display: flex;
+    align-items: flex-start;
+    gap: .625rem;
+    padding: .5rem .25rem;
+    font-size: $font-size-sm;
+    line-height: 1.6;
+  }
+  a {
+    min-height: 2.75rem;
+    color: $pen;
+    text-decoration: none;
+    border-radius: .5rem;
+
+    &:hover { text-decoration: underline; text-decoration-color: $coral-ink; text-underline-offset: .25em; }
+    &.active {
+      font-weight: $font-weight-bold;
+      background: escape-svg($marker-stroke) no-repeat 2.125rem 88% / calc(100% - 2.375rem) .7em;
+    }
+  }
+  .toc-locked {
+    color: $pen-muted;
+    .bi { margin-top: .25rem; font-size: .8125rem; }
+  }
+}
+.toc-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: -.0625rem;
+  border-radius: 50%;
+  background-color: $white;
+  box-shadow: 0 0 0 1.5px $paper-edge;
+  color: $pen;
+  font-family: $font-family-num;
+  font-size: .75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+// < 1200：標題區下方可展開的黃便利貼
+.article-toc-mobile {
+  margin-top: map-get($spacers, 4);
+  padding: .25rem 1.25rem .75rem;
+
+  > button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: $pen;
+    font-family: $font-family-hand;
+    font-size: 1.125rem;
+
+    .bi { transition: rotate .2s ease; }
+    &[aria-expanded="true"] .bi { rotate: 180deg; }
+  }
+  .toc { padding-bottom: .5rem; }
+}
+
+// ---------- 右欄：貼在頁緣的便利貼（≥ 1200，sticky） ----------
+// 便利貼往右延伸到紙張外 8px（.sheet 的 overflow-clip-margin），文字仍留在 280 的欄內
+.article-aside {
+  position: sticky;
+  top: $sticky-top-offset;
+  display: grid;
+  gap: 1.25rem;
+}
+.aside-note {
+  margin-right: calc(-1 * #{$sheet-padding} - .5rem);
+  padding: 1.25rem calc(#{$sheet-padding} + .5rem + 1.25rem) 1.5rem 1.25rem;
+  border-radius: $border-radius-lg 0 0 $border-radius-lg; // 右緣貼著紙邊：直角
+
+  &::after { display: none; } // 摺角藏在紙張外面
+}
+.aside-note-title {
+  margin-bottom: .5rem;
+  font-size: 1.125rem;
+}
+.aside-progress-num {
+  margin-bottom: .5rem;
+  font-size: 2rem;
+}
+.aside-meta {
+  margin: .75rem 0 0;
+  color: $pen-muted;
+  font-size: $small-font-size;
+  line-height: 1.6;
+}
+
+// ---------- 文末 ----------
+.article-end {
+  margin-top: map-get($spacers, 6);
+
+  > .hr-wave { margin-block: 0 map-get($spacers, 5); }
+}
+.article-end-block + .article-end-block {
+  margin-top: map-get($spacers, 6);
+}
+.article-end-title {
+  margin-bottom: map-get($spacers, 4);
+  font-size: 1.5rem;
+}
+
+// 作者名片：白紙卡（膠帶在左上）＋拍立得頭像（傾斜 -2°，裝飾）＋姓名、職稱、簡介、追蹤膠囊
+.author-card {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  align-items: start;
+  gap: 1.25rem;
+  padding: 1.75rem 1.5rem 1.5rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 7rem minmax(0, 1fr);
+    gap: 1.75rem;
+    padding: 2rem;
+  }
+}
+.author-card-photo {
+  padding: 6px 6px 18px;
+  rotate: -2deg;
+}
+.author-card-name {
+  margin: 0;
+  font-family: $font-family-hand;
+  font-size: 1.375rem;
+  line-height: 1.4;
+}
+.author-card-job {
+  margin: .125rem 0 .75rem;
+  color: $pen-muted;
+  font-size: $font-size-sm;
+}
+.author-card-bio {
+  margin-bottom: 1rem;
+  color: $pen-body;
+  line-height: 1.85;
+}
+.author-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1.25rem;
+}
+// 追蹤按鈕 .follow-btn 和作者個人頁共用，在 _base.scss 的按鈕段落
+.article-tagline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1rem;
+  margin-top: map-get($spacers, 4);
+}
+.article-tagline-title {
+  margin: 0;
+  color: $pen-muted;
+  font-family: $font-family-base;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  letter-spacing: $letter-spacing-label;
+}
+
+// 延伸閱讀：3 張小便利貼一排（≥ 768），四色輪替、不傾斜
+.related-notes {
+  display: grid;
+  gap: 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  > .sticky-note {
+    padding: 1.25rem 1.25rem 1.5rem;
+  }
+  .article-mini-title {
+    margin: .5rem 0;
+    font-size: 1.0625rem;
+  }
+}
+
+// 讀者回應：留言框（白底圓角；未訂閱停用時虛線）→ 對話泡泡
+.comment-form {
+  display: grid;
+  justify-items: end;
+  gap: .75rem;
+  margin-bottom: map-get($spacers, 5);
+
+  .form-control {
+    border-radius: 1.25rem;
+    padding: 1rem 1.25rem;
+  }
+  .form-control:disabled {
+    border-style: dashed;
+  }
+}
+.comment-list {
+  margin: 0 0 map-get($spacers, 4);
+  padding: 0;
+  list-style: none;
+}
+.comment + .comment {
+  margin-top: map-get($spacers, 4);
+}
+.comment-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .625rem;
+}
+.comment-name {
+  font-weight: $font-weight-bold;
+}
+.comment-date {
+  color: $pen-muted;
+  font-size: $small-font-size;
+}
+.comment-text {
+  margin-bottom: 0;
+  line-height: 1.85;
+}
+// 作者回覆：縮排、珊瑚淡底泡泡、姓名旁「作者」貼紙徽章
+.comment-reply {
+  margin-top: 1.25rem;
+  margin-left: 1.5rem;
+  @include media-breakpoint-up(md) { margin-left: 3rem; }
+}
+.author-badge {
+  background-color: $coral;
+  color: $pen;
+  box-shadow: 0 0 0 2px $white, 0 2px 5px rgba($pen, .14);
+}
+
+// ---------- 手機的浮起膠囊行動列（< 768） ----------
+.article-actionbar {
+  position: fixed;
+  left: .75rem;
+  right: .75rem;
+  bottom: .75rem;
+  z-index: $zindex-fixed;
+  display: flex;
+  padding: .375rem;
+  border-radius: $border-radius-pill;
+  background-color: $sheet;
+  box-shadow: $box-shadow-lg;
+
+  // 內側一圈虛線縫線（同頁首膠囊）
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border: 1.5px dashed $dot;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+  > *,
+  > .dropup { flex: 1; min-width: 0; }
+}
+.actionbar-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .125rem;
+  width: 100%;
+  min-height: 3.25rem;
+  padding: .25rem;
+  border: 0;
+  border-radius: $border-radius-pill;
+  background: none;
+  color: $pen;
+  font-size: .75rem;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+
+  .bi,
+  .tool-aa { font-size: 1.125rem; line-height: 1.2; }
+  &:hover { background-color: $butter; }
+  &[aria-pressed="true"],
+  &[aria-expanded="true"] { background-color: $coral-tint; }
+  &:focus-visible { outline-offset: -2px; }
+}
+// 行動列不能蓋住頁尾的最後一行：文章頁（body 有 data-view）在手機多留底部空間
+@include media-breakpoint-down(md) {
+  body[data-view] .site-footer {
+    padding-bottom: 6.5rem;
+  }
+}
+
+// ---------- 閱讀模式（選用，js/main.js 切換 body.is-reading-mode） ----------
+// 隱藏頁首膠囊與右欄便利貼，只留閱讀欄（工具列與手機行動列仍在，可以再按一次離開）
+.is-reading-mode {
+  .site-header,
+  .article-aside {
+    display: none !important;
+  }
+  .article-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .article-main {
+    max-width: calc(#{$prose-max-width} + 3rem);
+    margin-inline: auto;
+  }
+}

@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>登入｜現場筆記 FieldNotes</title>
+  <meta name="description" content="登入現場筆記，回到剛才那篇文章接著讀。">
+  <meta name="theme-color" content="#181818">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Noto Sans TC（介面、標題、長文）、JetBrains Mono（記號、數字、資訊列、程式碼；中文退回 Noto Sans TC） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，10 個 .html 要一起改，
+      改完執行 npm run check 確認都與這份範本一致。
+    - 頁首是編輯器的「活動列」：
+      ≥ 992px 固定在視窗左側（96px 寬，body 留出左內距）：品牌 → 首頁、文章列表、訂閱方案 → 彈性空白 → 搜尋 → 會員入口，
+      每項都是圖示＋文字；目前頁是左緣 3px 電光綠直條＋面板底。
+      992px 以下改成頂端單列 56px（品牌靠左；搜尋、會員、選單靠右），選單展開 3 個導覽＋會員入口。
+      搜尋按下後在編輯區頂端中央出現指令列（fixed 浮層，不推擠版面），送出到文章列表。
+    - 頁尾：頁尾面板（品牌＋說明｜讀者、作者、平台 3 個資料夾樹）→ 電光綠狀態列（版權列）。
+    - 每頁只需要調整「目前頁面」標示：目前頁的 <a class="nav-link"> 加 active 與 aria-current="page"
+      index.html → 首頁；articles.html → 文章列表；pricing.html → 訂閱方案；
+      account.html → 會員入口（選單內的「我的現場筆記」與桌機的 site-member 各一個，兩個都加）；
+      article.html、author.html → 文章列表（只加 active，不加 aria-current）；
+      guideline.html、login.html、register.html、forgot-password.html 不標示。
+    - 示意使用者已登入（陳柏諺），所以頁首沒有「登入 / 註冊」；登入、註冊、忘記密碼頁的頁首也照這份範本。
+    - 版面：沒有側欄面板的頁（首頁、訂閱方案）直接在 <main> 裡放 .wrap 版心；
+      有側欄面板的頁（文章列表、文章內頁、個人頁、作者頁、表單頁、Guideline）在 <main> 裡放
+      <div class="ide"><aside class="side-panel">…</aside><div class="editor-area">…</div></div>（見 README「排版語言」）。
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="activity-bar navbar navbar-expand-lg" aria-label="主要導覽">
+        <a class="navbar-brand site-brand" href="index.html">
+          <span class="site-brand-mark" aria-hidden="true">#</span>
+          <span class="site-brand-name">現場筆記</span>
+        </a>
+
+        <!-- 992px 以下的圖示列：搜尋、會員入口、選單（桌機另一組放在導覽之後，Tab 順序與畫面一致） -->
+        <div class="site-tools d-flex d-lg-none">
+          <button class="site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋文章">
+            <i class="bi bi-search" aria-hidden="true"></i>
+          </button>
+          <a class="site-icon-btn" href="account.html" aria-label="我的現場筆記">
+            <img class="avatar avatar-28" src="images/avatar-chen.jpg" alt="" width="28" height="28">
+          </a>
+          <button class="navbar-toggler site-icon-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+            <i class="bi bi-list" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div id="siteNav" class="collapse navbar-collapse site-nav-wrap">
+          <ul class="navbar-nav site-nav">
+            <li class="nav-item"><a class="nav-link" href="index.html"><i class="bi bi-house" aria-hidden="true"></i><span>首頁</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="articles.html"><i class="bi bi-files" aria-hidden="true"></i><span>文章列表</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="pricing.html"><i class="bi bi-credit-card-2-front" aria-hidden="true"></i><span>訂閱方案</span></a></li>
+            <li class="nav-item d-lg-none"><a class="nav-link" href="account.html"><i class="bi bi-person-circle" aria-hidden="true"></i><span>我的現場筆記</span></a></li>
+          </ul>
+          <!-- 桌機下段：搜尋 → 會員入口 -->
+          <div class="site-actions d-none d-lg-flex">
+            <button class="site-act" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋文章">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <span>搜尋</span>
+            </button>
+            <a class="nav-link site-member" href="account.html">
+              <img class="avatar avatar-32" src="images/avatar-chen.jpg" alt="" width="32" height="32">
+              <span>我的現場筆記</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <!-- 指令列搜尋（所有寬度共用，浮層），送出到文章列表 -->
+      <div id="siteSearch" class="collapse site-search">
+        <div class="site-search-box">
+          <form class="cmdline" role="search" action="articles.html">
+            <span class="cmdline-prompt" aria-hidden="true">❯</span>
+            <input class="form-control" type="search" name="q" placeholder="搜尋文章、作者或標籤" aria-label="搜尋文章">
+            <button class="btn btn-primary btn-sm" type="submit">搜尋</button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!-- ============ 頁面內容從這裡開始 ============ -->
+
+      <!--
+        登入（2026-11 補頁，規格 §3.06）：活動列｜表單面板｜編輯區
+        - 表單面板（.auth-panel，貼齊活動列、滿高、sticky；≥ 1200px 440px、992–1199px 360px）：
+          H1（#）→ 說明 → 表單（「忘記密碼？」在密碼標籤同一列靠右）→ 面板底部「還沒有帳號？免費註冊」
+          內容從頂端 96px 開始，不垂直置中；992px 以下變成內容上方滿寬的面板區塊
+        - 編輯區：設計稿狀態示意由上而下（帳號或密碼錯誤 → 還沒登入就按了訂閱），最寬 640px、靠左
+        文案取自 CONTENT.md §10.10（S01 見 §8）。入口是文章付費牆的「已經是訂閱者了？登入」；送出後到 article.html?view=subscribed
+        樣式在 scss/pages/_auth.scss（登入、註冊、忘記密碼共用）；表單頁不放麵包屑
+      -->
+      <div class="ide auth-ide">
+        <!-- ========== 表單面板 ========== -->
+        <section id="login" class="side-panel auth-panel" aria-labelledby="loginTitle">
+          <div class="auth-panel-body">
+            <h1 id="loginTitle" class="md-h1 auth-title">登入</h1>
+            <p class="auth-lead text-phrase">登入後會回到剛才那篇文章，<wbr>訂閱者可以直接讀完全文。</p>
+            <!-- 設計稿用 GET 換頁：只有 hidden 的 view 有 name，送出後網址是 article.html?view=subscribed。
+                 Email 與密碼刻意不加 name，密碼才不會出現在網址列；串接後端時改用 method="post" 並補上 name -->
+            <form class="auth-form" action="article.html">
+              <input type="hidden" name="view" value="subscribed">
+              <div class="auth-field">
+                <label class="form-label" for="loginEmail">Email</label>
+                <input class="form-control" type="email" id="loginEmail" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="name@example.com" required>
+              </div>
+              <div class="auth-field">
+                <div class="auth-label-row">
+                  <label class="form-label" for="loginPassword">密碼</label>
+                  <a class="auth-forgot" href="forgot-password.html">忘記密碼？</a>
+                </div>
+                <input class="form-control" type="password" id="loginPassword" autocomplete="current-password" required>
+              </div>
+              <button class="btn btn-primary auth-submit" type="submit">登入</button>
+            </form>
+          </div>
+          <!-- 面板底部：切換到註冊（≥ 992px 貼在面板最下方） -->
+          <p class="auth-switch">還沒有帳號？<a class="btn btn-text" href="register.html">免費註冊</a></p>
+        </section>
+
+        <!-- ========== 編輯區：設計稿狀態示意 ========== -->
+        <div class="editor-area">
+          <div class="auth-notes">
+            <section class="demo-state" aria-labelledby="demoLoginErrorTitle">
+              <h2 class="demo-state-title" id="demoLoginErrorTitle"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意：帳號或密碼錯誤</h2>
+              <p class="demo-state-note">送出後驗證沒有通過時，這則提示出現在表單最上方；已填的 Email 保留，密碼清空。</p>
+              <!-- 不標出是哪一欄錯，避免透露這個 Email 有沒有註冊 -->
+              <div class="callout callout-danger">
+                <i class="bi bi-x-circle-fill" aria-hidden="true"></i>
+                <div class="callout-body">
+                  <p class="callout-title">登入沒有成功</p>
+                  <p>Email 或密碼不正確，請再確認一次。忘記密碼的話，可以用「忘記密碼？」重新設定。</p>
+                </div>
+              </div>
+            </section>
+
+            <section class="demo-state" aria-labelledby="demoLoginS01Title">
+              <h2 class="demo-state-title" id="demoLoginS01Title"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意：還沒登入就按了訂閱（S01）</h2>
+              <p class="demo-state-note">從付費牆或方案頁按下訂閱、但還沒登入時，會帶到這一頁，提示放在表單上方。</p>
+              <!-- Notion S01 逐字，不加按鈕：註冊入口就是面板底部的「免費註冊」 -->
+              <div class="callout">
+                <i class="bi bi-info-circle" aria-hidden="true"></i>
+                <div class="callout-body">
+                  <p>登入後就能訂閱，註冊只要 30&nbsp;秒。</p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 頁面內容到這裡結束 ============ -->
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap site-footer-inner">
+        <div class="site-footer-head">
+          <a class="site-brand" href="index.html">
+            <span class="site-brand-mark" aria-hidden="true">#</span>
+            <span class="site-brand-name">現場筆記</span>
+            <span class="site-brand-en">FieldNotes</span>
+          </a>
+          <p class="site-footer-lead">這裡不收二手整理、不收懶人包，只收第一線工作者親自寫的長文。每篇文章都可以免費讀前三分之一，讀到關鍵的那一段才需要訂閱。</p>
+        </div>
+
+        <!-- 讀者｜作者｜平台：資料夾樹；沒有頁面的連結（關於現場筆記、作者審核標準、聯絡我們）用不帶 href 的 <a> -->
+        <div class="site-footer-cols">
+          <div class="site-footer-col">
+            <h2 class="site-footer-title"><i class="bi bi-folder2-open" aria-hidden="true"></i>讀者</h2>
+            <ul class="tree site-footer-links">
+              <li><a href="articles.html">瀏覽文章</a></li>
+              <li><a href="pricing.html">訂閱方案</a></li>
+              <li><a href="account.html#library">我的收藏</a></li>
+              <li><a href="account.html#subscription">訂閱狀態</a></li>
+            </ul>
+          </div>
+          <div class="site-footer-col">
+            <h2 class="site-footer-title"><i class="bi bi-folder2-open" aria-hidden="true"></i>作者</h2>
+            <ul class="tree site-footer-links">
+              <li><a href="account.html?role=reader#apply">申請成為作者</a></li>
+              <li><a href="account.html?role=author#my-articles">我的文章</a></li>
+              <li><a href="account.html?role=author#editor">撰寫新文章</a></li>
+              <li><a href="account.html?role=author#analytics">內容數據</a></li>
+            </ul>
+          </div>
+          <div class="site-footer-col">
+            <h2 class="site-footer-title"><i class="bi bi-folder2-open" aria-hidden="true"></i>平台</h2>
+            <ul class="tree site-footer-links">
+              <li><a>關於現場筆記</a></li>
+              <li><a>作者審核標準</a></li>
+              <li><a href="pricing.html#faq">退費與取消政策</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <p class="site-statusbar">© 2026 現場筆記 FieldNotes｜<wbr>本站為課程設計稿範例，文章、作者與數據皆為示意資料。</p>
+    </footer>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

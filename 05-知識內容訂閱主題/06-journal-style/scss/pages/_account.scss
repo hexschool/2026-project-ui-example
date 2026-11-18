@@ -1,0 +1,367 @@
+// ============================================================
+// 個人頁面 account.html
+// 版頭（麵包屑、H1｜設計稿切換器）→ 便利貼索引板（一排，不 sticky）→ 下方全寬內容
+// 索引板：個人便利貼（白紙、拍立得小頭像）＋閱讀（黃）、創作（珊瑚淡底）、平台管理（抹茶淡底）、帳號（藍）、申請（虛線框）
+//         ≥ 1400 一排排滿，以下換行；< 992 個人便利貼縮成一列，群組收進「目前位置」膠囊按鈕
+// 訂閱卡見 components/_subscription.scss，數據卡與漏斗見 _stats.scss，編輯器見 _editor.scss
+// ============================================================
+
+// ---------- 版頭 ----------
+.account-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.25rem 2rem;
+  margin-bottom: map-get($spacers, 5);
+}
+
+// ---------- 便利貼索引板 ----------
+.account-index {
+  display: grid;
+  gap: 1rem;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: 13.5rem minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+  }
+}
+// 個人便利貼：白紙卡＋紙膠帶＋拍立得小頭像；< 992 縮成一列
+.index-profile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 1.25rem 1.25rem;
+
+  @include media-breakpoint-up(lg) {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 1.75rem 1.5rem 1.5rem;
+  }
+}
+.index-profile-photo {
+  flex: none;
+  width: 4.5rem;
+  padding: 5px 5px 14px;
+  rotate: -3deg;
+
+  @include media-breakpoint-up(lg) { width: 5.5rem; }
+}
+.index-profile-name {
+  margin-bottom: .375rem;
+  font-family: $font-family-hand;
+  font-size: 1.25rem;
+  font-synthesis: none;
+}
+// < 992：「目前位置」膠囊按鈕，展開後是同樣的便利貼群組
+.index-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  min-height: 3rem;
+  padding: .5rem .75rem .5rem 1.25rem;
+  border: 2px solid $pen;
+  border-radius: $border-radius-pill;
+  background-color: $white;
+  color: $pen;
+  font-weight: $font-weight-bold;
+  box-shadow: 0 3px 0 $paper-edge;
+  transition: background-color .12s ease;
+
+  &:hover { background-color: $butter; }
+  .bi { transition: rotate .2s ease; }
+  &[aria-expanded="true"] .bi { rotate: 180deg; }
+}
+.index-toggle-label {
+  margin-right: .625rem;
+  color: $pen-muted;
+  font-size: $small-font-size;
+  font-weight: $font-weight-medium;
+}
+.index-board {
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  // < 992 展開（.collapse.show）時：直排
+  &.show,
+  &.collapsing {
+    display: flex;
+    flex-direction: column;
+  }
+  // 便利貼高度跟著內容（像隨手貼上去的），不拉成一樣高
+  @include media-breakpoint-up(lg) {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+.index-note {
+  flex: 1 1 11.5rem;
+  min-width: 0;
+  padding: 1.125rem 1.125rem 1.25rem;
+}
+.index-note-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: .5rem;
+  font-family: $font-family-hand;
+  font-size: 1.125rem;
+  font-synthesis: none;
+
+  .role-chip { margin-left: 0; font-family: $font-family-base; }
+}
+.index-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    min-height: 2.75rem;
+    padding: .25rem .375rem;
+    color: $pen;
+    font-size: $font-size-sm;
+    text-decoration: none;
+    border-radius: .5rem;
+
+    // 手繪小圓點（不規則圓）
+    &::before {
+      content: "";
+      flex: none;
+      width: .5rem;
+      height: .5rem;
+      border: 1.5px solid $pen;
+      border-radius: 60% 40% 55% 45% / 45% 55% 45% 55%;
+    }
+    .tab-count { margin-left: .125rem; }
+    .bi { margin-left: auto; color: $pen-muted; font-size: .75rem; }
+    &:hover { text-decoration: underline; text-decoration-color: $coral-ink; text-underline-offset: .25em; }
+    // 目前位置（ScrollSpy 的 .active）：珊瑚螢光筆
+    &.active {
+      font-weight: $font-weight-bold;
+      background: escape-svg($marker-stroke) no-repeat 1.125rem 80% / calc(100% - 1.5rem) .75em;
+      &::before { background-color: $coral; border-color: $coral-press; }
+    }
+  }
+}
+// 申請入口：虛線框的空白便利貼（讀者）
+.index-apply {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .75rem;
+  border: 2px dashed $paper-edge;
+  border-radius: $border-radius-lg;
+  background-color: rgba($white, .6);
+
+  .index-note-title { font-size: 1rem; line-height: 1.5; }
+}
+
+// ---------- 區塊 ----------
+// 錨點落點交給 html 的 scroll-padding-top（100px，_base.scss）；這裡不再加 scroll-margin，以免疊成 200px
+.account-section {
+  + .account-section {
+    border-top: 0;
+  }
+  // 區塊標題列右側的分段控制：手機上滿寬換行
+  .section-heading .segmented { flex-wrap: wrap; }
+}
+.account-subtitle {
+  margin: map-get($spacers, 5) 0 map-get($spacers, 3);
+  font-size: 1.25rem;
+}
+
+// ---------- 收藏卡 ----------
+.library-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  padding-top: 1.75rem;
+
+  > .btn { margin-top: auto; }
+}
+.library-card-title {
+  margin: .75rem 0 .375rem;
+  font-size: 1.1875rem;
+  line-height: 1.5;
+}
+.library-card-byline {
+  margin-bottom: 1rem;
+  color: $pen-muted;
+  font-size: $font-size-sm;
+}
+.library-card-progress {
+  width: 100%;
+  margin-bottom: 1.25rem;
+}
+
+// 追蹤的作者：空狀態是一張藍便利貼
+.following-empty {
+  max-width: 36rem;
+  padding: 1.75rem 1.5rem;
+}
+
+// ---------- 表格裡的動作 ----------
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem 1rem;
+}
+// 表格裡的動作排成一行：放不下時由外層 .table-scroll 橫向捲動，不把每一列撐高
+.table-data .row-actions { flex-wrap: nowrap; }
+.is-removed-title {
+  color: $pen-muted;
+  text-decoration: line-through;
+  text-decoration-color: rgba($pen-muted, .7);
+}
+.user-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: .625rem;
+}
+
+// ---------- 平台管理 ----------
+.review-card {
+  padding: 1.75rem 1.5rem 1.5rem;
+  @include media-breakpoint-up(md) { padding: 2rem; }
+}
+.review-card-main {
+  display: grid;
+  gap: 1rem 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+  }
+  p { color: $pen-body; }
+}
+.review-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .25rem;
+  color: $pen !important;
+  font-family: $font-family-hand;
+  font-size: 1.25rem;
+  font-synthesis: none;
+
+  .badge-state { font-family: $font-family-base; }
+}
+.review-meta {
+  color: $pen-muted !important;
+  font-size: $font-size-sm;
+}
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+
+  @include media-breakpoint-up(md) { grid-column: 2; }
+  @include media-breakpoint-up(xl) { grid-column: auto; justify-content: flex-end; }
+}
+.review-reject {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1.5px dashed $dot;
+}
+.admin-article {
+  display: grid;
+  gap: 1rem 1.5rem;
+  align-items: center;
+  padding: 1.25rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 10rem minmax(0, 1fr) auto;
+    padding: 1.5rem;
+  }
+}
+.admin-article-thumb {
+  --ratio: 1200 / 630;
+  max-width: 14rem;
+  padding: 6px 6px 14px;
+}
+.admin-article-title {
+  margin-bottom: .25rem;
+  font-size: 1.125rem;
+}
+.admin-article-meta {
+  margin: 0;
+  color: $pen-muted;
+  font-size: $font-size-sm;
+}
+
+// ---------- 成為作者 ----------
+.apply-form {
+  padding: 2rem 1.5rem 1.75rem;
+  @include media-breakpoint-up(md) { padding: 2.5rem 2.25rem 2.25rem; }
+}
+.apply-form-title {
+  margin-bottom: 1.25rem;
+  font-size: 1.25rem;
+}
+.apply-states {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.apply-note {
+  padding: 1.25rem 1.5rem 1.5rem;
+
+  p { color: $pen; }
+}
+.apply-note-title {
+  margin-bottom: .625rem;
+}
+.reject-quote {
+  margin: 0 0 1rem;
+  padding: .75rem 1rem;
+  border-radius: .75rem;
+  background-color: rgba($white, .7);
+  color: $pen;
+  font-family: $font-family-hand;
+  font-size: 1rem;
+  font-synthesis: none;
+  line-height: 1.8;
+}
+
+// ---------- 帳號設定 ----------
+.settings-card {
+  height: 100%;
+  padding: 1.75rem 1.5rem;
+  @include media-breakpoint-up(md) { padding: 2rem; }
+
+  h3 {
+    margin-bottom: 1.25rem;
+    font-size: 1.25rem;
+  }
+}
+.settings-switches {
+  display: grid;
+  gap: .25rem;
+
+  .form-check {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    min-height: 2.75rem;
+    margin: 0;
+    padding-left: 0;
+
+    .form-check-input { flex: none; margin: 0; float: none; }
+  }
+}

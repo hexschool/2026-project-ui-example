@@ -1,0 +1,202 @@
+// ============================================================
+// 長文 .prose（文章內頁 #article-body、Guideline 的長文示範）
+// 純白底黑字：顏色只出現在 h2 上方的橘色短條、引言的藍條與表格的合計列
+// 720px、18px／1.85、段距 1.3em；Aa 三段 .prose-sm／md／lg（每段行高都 ≥ 1.8，手機不下調）
+// <div id="article-body" class="prose prose-md" data-prose>…</div>
+// ============================================================
+.prose {
+  max-width: $prose-max-width;
+  font-size: $prose-font-size;
+  line-height: $prose-line-height;
+  color: $ink-text;
+  letter-spacing: .02em;
+  overflow-wrap: break-word;
+
+  @each $name, $pair in $prose-sizes {
+    &.prose-#{$name} {
+      font-size: nth($pair, 1);
+      line-height: nth($pair, 2);
+    }
+  }
+
+  p,
+  ul,
+  ol,
+  dl,
+  pre {
+    margin-top: 0;
+    margin-bottom: $prose-paragraph-gap;
+  }
+
+  // h2：900、28px／1.4；上方一條 6 × 48px 的活力橘短條（長文裡唯一的橘色）
+  h2 {
+    position: relative;
+    margin: 2.75rem 0 .875rem;
+    padding-top: 1.375rem;
+    font-size: 1.5rem;
+    font-weight: $font-weight-black;
+    line-height: 1.4;
+    letter-spacing: 0;
+    color: $ink;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3rem;
+      height: 6px;
+      background-color: $orange;
+    }
+
+    @include media-breakpoint-up(md) {
+      margin-top: 3rem;
+      font-size: $prose-h2-size;
+    }
+  }
+  // h3：700、21px／1.5（和 h2 差字級與字重，沒有短條）
+  h3 {
+    margin: 2rem 0 .625rem;
+    font-size: $prose-h3-size;
+    font-weight: $font-weight-bold;
+    line-height: 1.5;
+    color: $ink;
+  }
+  > :first-child { margin-top: 0; }
+
+  a {
+    color: $klein;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .2em;
+  }
+  strong { font-weight: $font-weight-bold; color: $ink; }
+
+  // 引言區塊：700、21px／1.7，左側 8px 克萊因藍實心條；上下留白大於段距
+  blockquote {
+    margin: 2.25rem 0;
+    padding: .25rem 0 .25rem 1.5rem;
+    border-left: 8px solid $klein;
+    font-size: 1.1875rem;
+    font-weight: $font-weight-bold;
+    line-height: $quote-line-height;
+    color: $ink;
+
+    p { margin: 0; }
+
+    @include media-breakpoint-up(md) {
+      font-size: $quote-font-size;
+    }
+  }
+
+  // 圖片與圖說：圖片滿閱讀欄寬，2px 框＋20px 圓角（和積木同一組）
+  figure { margin: 2.25rem 0; }
+  figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: $line;
+    border-radius: $block-radius;
+  }
+  figcaption {
+    margin-top: .625rem;
+    font-size: .875rem;
+    line-height: 1.7;
+    color: $ink-2;
+  }
+
+  ul,
+  ol { padding-left: 1.5em; }
+  li + li { margin-top: .35rem; }
+  li::marker { color: $ink; font-weight: $font-weight-bold; }
+
+  // 行內程式碼：霧白底細框，不用連結色
+  code {
+    padding: .1em .375em;
+    border: 1px solid $hairline;
+    border-radius: .375rem;
+    background-color: $fog;
+    color: $ink;
+    font-size: .875em;
+  }
+  // 程式碼區塊：黑積木、白字、可橫向捲動
+  pre {
+    padding: 1.25rem 1.5rem;
+    border: $line;
+    border-radius: $block-radius;
+    background-color: $ink;
+    color: $paper;
+    font-size: .9375rem;
+    line-height: 1.7;
+    overflow-x: auto;
+
+    code {
+      padding: 0;
+      border: 0;
+      background: none;
+      color: inherit;
+      font-size: inherit;
+    }
+  }
+
+  // 分隔線：話題轉折，2px 黑線、上下 2.4em
+  hr {
+    margin: 2.4em 0;
+    color: $ink;
+  }
+}
+
+// 導言：比內文大一階（20px／1.75、500）
+.lede {
+  font-size: $lede-font-size;
+  font-weight: $font-weight-medium;
+  line-height: $lede-line-height;
+}
+
+// ---------- 數據表格（損益表）：2px 框積木、黑表頭、合計列克萊因藍淡底 ----------
+// 外框 .prose-table 負責圓角與裁切；裡面的 .prose-table-scroll 在窄螢幕橫向捲動，不撐破閱讀欄
+// <div class="prose-table"><div class="prose-table-scroll" tabindex="0" role="region" aria-label="…"><table class="table">…</table></div></div>
+.prose-table {
+  margin: 2rem 0;
+  border: $line;
+  border-radius: $block-radius;
+  overflow: hidden;
+  background-color: $paper;
+}
+.prose-table-scroll { overflow-x: auto; }
+.prose-table .table {
+  min-width: 18rem; // 3 欄的表格在 390px 也不用捲動；欄位多時才在 .prose-table-scroll 裡橫向捲動
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+
+  caption {
+    caption-side: top;
+    padding: .875rem 1.25rem;
+    border-bottom: $line;
+    color: $ink-2;
+    font-size: .875rem;
+  }
+  th,
+  td { padding: .75rem .875rem; }
+  @include media-breakpoint-up(md) {
+    th,
+    td { padding: .75rem 1.25rem; }
+  }
+  thead th {
+    background-color: $ink;
+    color: $paper;
+    font-weight: $font-weight-bold;
+    border-bottom: 0;
+  }
+  tbody th { font-weight: $font-weight-medium; }
+  .is-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  tbody tr:last-child > * { border-bottom: 0; }
+  .is-total > * {
+    background-color: $klein-tint;
+    border-top: $line;
+    font-weight: $font-weight-black;
+  }
+}

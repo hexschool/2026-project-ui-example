@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>一間餐廳的成本結構｜現場筆記 FieldNotes</title>
+  <meta name="description" content="開店第三年我才真的看懂損益表。這篇我把去年整年的數字攤開給你看，包含那些開店教學不會講的隱形成本，以及兩次差點關門的月份。">
+  <meta name="theme-color" content="#FFFFFF">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Noto Sans TC（全部中文：標題 900、介面 400／500／700）、Bricolage Grotesque（數字、價格、到期日、英文品牌） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-view="unsubscribed">
+  <!--
+    ============================================================
+    頁面骨架（10 個頁面共用）
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，10 個 .html 要一起改，
+      改完執行 npm run check 確認都與這份範本一致。
+    - 頁首是一排格子（HTML 順序）：品牌格（克萊因藍）→ 主導覽 3 格（首頁、文章列表、訂閱方案）→ 搜尋方格 → 會員格（活力橘）。
+      992px 以下：品牌格靠左，右側是搜尋、會員（橘）、選單（黑）3 個 56px 方格；選單展開是一疊滿寬格子（3 個導覽＋會員入口）。
+    - 每頁只需要調整一處「目前頁面」標示（在連結的 class 後面加 active，必要時再加 aria-current="page"）：
+      index.html → 首頁；articles.html → 文章列表；pricing.html → 訂閱方案；
+      account.html → 會員入口（桌機的 <a class="site-member"> 與選單裡的「我的現場筆記」<a class="nav-link">）；
+      article.html、author.html → 文章列表只加 active，不加 aria-current；
+      guideline.html、login.html、register.html、forgot-password.html 不標示。
+      目前頁的 class 一律寫成 class="nav-link active" 或 class="site-member active"（scripts/check-layout.mjs 依這個寫法比對）。
+    - 文章內頁（<body data-view>）與個人頁面（<body data-role>）的設計稿切換器說明見 js/main.js。
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <nav class="navbar navbar-expand-lg site-cells" aria-label="主要導覽">
+        <a class="navbar-brand site-brand" href="index.html">
+          <span class="site-brand-name">現場筆記</span>
+          <span class="site-brand-en">FieldNotes</span>
+        </a>
+
+        <!-- 992px 以下的 3 個方格：搜尋、會員（橘）、選單（黑） -->
+        <div class="site-cells-mobile d-flex d-lg-none">
+          <button class="site-cell" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋文章">
+            <i class="bi bi-search" aria-hidden="true"></i>
+          </button>
+          <a class="site-cell site-cell-member" href="account.html" aria-label="我的現場筆記">
+            <i class="bi bi-person-fill" aria-hidden="true"></i>
+          </a>
+          <button class="navbar-toggler site-cell site-cell-menu" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+            <i class="bi bi-list" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div id="siteNav" class="collapse navbar-collapse">
+          <ul class="navbar-nav site-nav">
+            <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+            <li class="nav-item"><a class="nav-link active" href="articles.html">文章列表</a></li>
+            <li class="nav-item"><a class="nav-link" href="pricing.html">訂閱方案</a></li>
+            <li class="nav-item site-nav-member d-lg-none"><a class="nav-link" href="account.html"><i class="bi bi-person-fill" aria-hidden="true"></i>我的現場筆記</a></li>
+          </ul>
+          <!-- 桌機右側：搜尋方格 → 會員格（示意使用者陳柏諺已登入） -->
+          <div class="site-cells-end d-none d-lg-flex">
+            <button class="site-cell" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋文章">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+            <a class="site-member" href="account.html">
+              <img class="avatar" src="images/avatar-chen.jpg" alt="" width="36" height="36">
+              <span>我的現場筆記</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <!-- 點搜尋方格展開的搜尋積木（所有寬度共用），送出到文章列表 -->
+      <div id="siteSearch" class="collapse site-search-panel">
+        <div class="container">
+          <form class="site-search" role="search" action="articles.html">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input class="form-control" type="search" name="q" placeholder="搜尋文章、作者或標籤" aria-label="搜尋文章">
+            <button class="btn btn-dark" type="submit">搜尋</button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-grow-1" tabindex="-1">
+      <!-- ============ 頁面內容從這裡開始 ============ -->
+      <!--
+        文章內頁：<body data-view="unsubscribed|subscribed">，由頁面頂部的設計稿切換器切換（?view=subscribed 直接開已訂閱）。
+        data-show-view="unsubscribed" 的元素（漸層、付費牆、鎖住的目錄、留言提示）在已訂閱時不渲染；
+        data-show-view="subscribed" 的元素（接續的 3 個章節、可用的留言框）在未訂閱時不渲染。
+        版面：≥ 1200px 左欄是克萊因藍「標題海報」積木＋sticky 群組（黑色目錄、橘色進度、白色字級），右欄是純白長文；
+             < 1200px 海報改成長文上方的滿版藍色帶，目錄改成可展開的黑積木。
+      -->
+
+      <!-- ① 頂端閱讀進度條：sticky 在頁首正下方，不帶數字；沒有 JS 時是靜態 32% -->
+      <div class="reading-bar" role="progressbar" aria-label="本篇閱讀進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32" style="--p: 32%"></div>
+
+      <div class="article-shell page-body">
+        <div class="container">
+          <!-- 麵包屑＋設計稿切換器（< 576px 切換器移到下一行） -->
+          <div class="article-crumbs">
+            <nav aria-label="目前位置">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+                <li class="breadcrumb-item"><a href="articles.html">文章列表</a></li>
+                <li class="breadcrumb-item active" aria-current="page">餐飲與零售</li>
+              </ol>
+            </nav>
+            <div class="design-switcher" role="group" aria-labelledby="viewSwitcherLabel" data-switcher="view">
+              <span id="viewSwitcherLabel" class="design-switcher-label"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意（非產品介面）</span>
+              <button type="button" data-value="unsubscribed" aria-pressed="true">未訂閱</button>
+              <button type="button" data-value="subscribed" aria-pressed="false">已訂閱</button>
+            </div>
+          </div>
+
+          <article class="article-layout" aria-labelledby="articleTitle">
+            <!-- 標題海報（藍積木白字）：權限徽章＋分類＋標籤 → 標題 → 導言 → 作者列 → 工具列 -->
+            <header class="block is-klein article-poster">
+              <div class="article-poster-kicker">
+                <span class="perm-badge is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                <a class="card-kicker-link" href="articles.html">餐飲與零售</a>
+                <a class="poster-tag" href="articles.html">#成本結構</a>
+                <a class="poster-tag" href="articles.html">#開店</a>
+                <a class="poster-tag" href="articles.html">#損益表</a>
+              </div>
+              <h1 id="articleTitle" class="article-title text-phrase">一間餐廳的<wbr>成本結構：<wbr>從食材到翻桌率，<wbr>錢到底花到哪去</h1>
+              <p class="article-lede">開店第三年我才真的看懂損益表。這篇我把去年整年的數字攤開給你看，包含那些開店教學不會講的隱形成本，以及兩次差點關門的月份。</p>
+              <div class="author-line article-byline">
+                <img class="avatar avatar-lg" src="images/avatar-chen.jpg" alt="" width="48" height="48">
+                <div>
+                  <p class="author-line-name">陳柏諺</p>
+                  <p class="author-line-meta">台北某獨立餐酒館主廚兼老闆&nbsp;｜ <time class="text-nowrap" datetime="2026-09-28">2026/09/28</time>&nbsp;｜ <span class="text-nowrap">閱讀 18 分鐘</span></p>
+                </div>
+              </div>
+              <!-- 工具列：收藏、分享帶字；字級（≥ 1200px 改在左欄字級積木）、閱讀模式只有圖示。< 576px 改成底部固定行動列 -->
+              <div class="article-tools d-none d-sm-flex">
+                <button class="btn btn-outline-secondary" type="button" aria-pressed="false" data-toggle-pressed data-label-on="已收藏" data-icon-on="bi-heart-fill" data-icon-off="bi-heart">
+                  <i class="bi bi-heart" aria-hidden="true"></i><span>收藏</span>
+                </button>
+                <button class="btn btn-outline-secondary" type="button"><i class="bi bi-share" aria-hidden="true"></i><span>分享</span></button>
+                <div class="dropdown d-xl-none">
+                  <button class="btn btn-outline-secondary btn-icon" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="字級調整">
+                    <i class="bi bi-type" aria-hidden="true"></i>
+                  </button>
+                  <div class="dropdown-menu size-menu">
+                    <p class="size-menu-title">字級調整</p>
+                    <div class="segmented" role="group" aria-label="字級調整">
+                      <input class="btn-check" type="radio" name="proseSize" id="sizeSm" data-prose-size="sm"><label class="btn" for="sizeSm"><span class="size-sample is-sm" aria-hidden="true">A</span><span class="visually-hidden">17px</span></label>
+                      <input class="btn-check" type="radio" name="proseSize" id="sizeMd" data-prose-size="md" checked><label class="btn" for="sizeMd"><span class="size-sample is-md" aria-hidden="true">A</span><span class="visually-hidden">18px</span></label>
+                      <input class="btn-check" type="radio" name="proseSize" id="sizeLg" data-prose-size="lg"><label class="btn" for="sizeLg"><span class="size-sample is-lg" aria-hidden="true">A</span><span class="visually-hidden">20px</span></label>
+                    </div>
+                    <p class="size-menu-note">選擇記在本機，跨文章保留。</p>
+                  </div>
+                </div>
+                <button class="btn btn-outline-secondary btn-icon" type="button" aria-pressed="false" aria-label="閱讀模式" data-reading-mode>
+                  <i class="bi bi-moon" aria-hidden="true"></i>
+                </button>
+              </div>
+            </header>
+
+            <!-- 左欄 sticky 群組（≥ 1200px）：黑色目錄 → 橘色進度 → 白色字級
+                 < 1200px 只留目錄，改成藍色帶下方可展開的黑積木 -->
+            <aside class="article-side" aria-label="本篇目錄與閱讀進度">
+              <div class="article-side-sticky">
+                <nav class="block is-ink article-toc" aria-labelledby="tocTitle">
+                  <h2 id="tocTitle" class="article-toc-title d-none d-xl-block">本篇目錄</h2>
+                  <h2 class="article-toc-title d-xl-none m-0">
+                    <button class="article-toc-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#tocCollapse" aria-expanded="false" aria-controls="tocCollapse">
+                      本篇目錄<i class="bi bi-chevron-down" aria-hidden="true"></i>
+                    </button>
+                  </h2>
+                  <div class="collapse article-toc-collapse" id="tocCollapse">
+                    <!-- 目前位置白底黑字；未訂閱時後 3 節加鎖頭、改灰字，點了捲到付費牆 -->
+                    <ol class="toc-list" id="toc">
+                      <li><a class="toc-link active" aria-current="location" href="#sec-annual"><span class="toc-num" aria-hidden="true">1</span><span>先看去年整年的數字</span></a></li>
+                      <li><a class="toc-link" href="#sec-desk"><span class="toc-num" aria-hidden="true">2</span><span>真正吃掉利潤的，是那張你以為不用錢的桌子</span></a></li>
+                      <li data-show-view="unsubscribed"><a class="toc-link is-locked" href="#paywall"><span class="toc-num" aria-hidden="true">3</span><span><i class="bi bi-lock-fill toc-lock" aria-hidden="true"></i><span class="visually-hidden">訂閱限定：</span>全年逐月的數字拆解</span></a></li>
+                      <li data-show-view="unsubscribed"><a class="toc-link is-locked" href="#paywall"><span class="toc-num" aria-hidden="true">4</span><span><i class="bi bi-lock-fill toc-lock" aria-hidden="true"></i><span class="visually-hidden">訂閱限定：</span>兩次現金流斷鏈的處理過程</span></a></li>
+                      <li data-show-view="unsubscribed"><a class="toc-link is-locked" href="#paywall"><span class="toc-num" aria-hidden="true">5</span><span><i class="bi bi-lock-fill toc-lock" aria-hidden="true"></i><span class="visually-hidden">訂閱限定：</span>我重新談租約的方法</span></a></li>
+                      <li data-show-view="subscribed"><a class="toc-link" href="#sec-monthly"><span class="toc-num" aria-hidden="true">3</span><span>全年逐月的數字拆解</span></a></li>
+                      <li data-show-view="subscribed"><a class="toc-link" href="#sec-cashflow"><span class="toc-num" aria-hidden="true">4</span><span>兩次現金流斷鏈的處理過程</span></a></li>
+                      <li data-show-view="subscribed"><a class="toc-link" href="#sec-lease"><span class="toc-num" aria-hidden="true">5</span><span>我重新談租約的方法</span></a></li>
+                    </ol>
+                  </div>
+                </nav>
+                <div class="block is-orange article-progress d-none d-xl-block">
+                  <div class="article-progress-head">
+                    <p>閱讀進度</p>
+                    <span class="figure-num">32%</span>
+                  </div>
+                  <div class="read-progress" role="progressbar" aria-label="閱讀進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32" style="--p: 32%"></div>
+                  <p class="meta-line"><span>約 6,800 字</span><span>閱讀 18 分鐘</span><span data-show-view="unsubscribed">免費預覽前 2,200 字</span></p>
+                </div>
+                <div class="block is-white article-size d-none d-xl-block">
+                  <p id="sizeSideLabel">字級調整</p>
+                  <div class="segmented" role="group" aria-labelledby="sizeSideLabel">
+                    <input class="btn-check" type="radio" name="proseSizeSide" id="sideSizeSm" data-prose-size="sm"><label class="btn" for="sideSizeSm"><span class="size-sample is-sm" aria-hidden="true">A</span><span class="visually-hidden">17px</span></label>
+                    <input class="btn-check" type="radio" name="proseSizeSide" id="sideSizeMd" data-prose-size="md" checked><label class="btn" for="sideSizeMd"><span class="size-sample is-md" aria-hidden="true">A</span><span class="visually-hidden">18px</span></label>
+                    <input class="btn-check" type="radio" name="proseSizeSide" id="sideSizeLg" data-prose-size="lg"><label class="btn" for="sideSizeLg"><span class="size-sample is-lg" aria-hidden="true">A</span><span class="visually-hidden">20px</span></label>
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            <div class="article-main">
+              <!-- 內文：.prose（720px、18px／1.85）純白底黑字；Aa 切換 .prose-sm／md／lg -->
+              <div id="article-body" class="prose prose-md" data-prose>
+                <p>先說結論：我開店第一年以為自己在做餐飲，第二年發現自己在做人事，第三年才知道我真正在管的是一張一張桌子的時間。</p>
+                <p>這篇文章不談理念，只談帳。下面所有數字都是我自己店裡的實際數字，一間 30 坪、42 個座位的獨立餐酒館，去年全年。</p>
+
+                <h2 id="sec-annual">先看去年整年的數字</h2>
+                <p>下面這張表是去年（2025）的全年損益，營業額 1,842 萬，稅後淨利 61 萬，淨利率 3.3%。這個數字比多數人想像的低很多。</p>
+                <div class="prose-table">
+                  <div class="prose-table-scroll" tabindex="0" role="region" aria-label="2025 年度損益結構表">
+                    <table class="table">
+                      <caption>2025 年度損益結構 ‧ 單位萬元 ‧ 資料來源：作者自店帳務</caption>
+                      <thead>
+                        <tr><th scope="col">項目</th><th scope="col" class="is-num">金額（萬元）</th><th scope="col" class="is-num">佔營收</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><th scope="row">食材成本</th><td class="is-num">589</td><td class="is-num">32.0%</td></tr>
+                        <tr><th scope="row">人事成本</th><td class="is-num">516</td><td class="is-num">28.0%</td></tr>
+                        <tr><th scope="row">租金與管理費</th><td class="is-num">276</td><td class="is-num">15.0%</td></tr>
+                        <tr><th scope="row">水電瓦斯</th><td class="is-num">92</td><td class="is-num">5.0%</td></tr>
+                        <tr><th scope="row">耗材與雜支</th><td class="is-num">147</td><td class="is-num">8.0%</td></tr>
+                        <tr><th scope="row">行銷與平台抽成</th><td class="is-num">161</td><td class="is-num">8.7%</td></tr>
+                        <tr class="is-total"><th scope="row">稅後淨利</th><td class="is-num">61</td><td class="is-num">3.3%</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <p>食材 32%、人事 28%、租金 15%，這三個數字網路上都查得到，看起來也還算健康。問題是剩下的那 25%：水電、耗材、行銷與平台抽成加起來是 400 萬，比我的租金還多了快一半。</p>
+
+                <h2 id="sec-desk">真正吃掉利潤的，是那張你以為不用錢的桌子</h2>
+                <p>桌子是我店裡唯一不在損益表上的成本。它不會每個月寄帳單給我，所以我花了兩年才算到它。</p>
+                <blockquote>
+                  <p>一張四人桌，一個晚上翻兩次和翻三次，全年差距是 47 萬——剛好是我去年的淨利。</p>
+                </blockquote>
+                <p>算法很笨但很有效：把全年營業額除以桌數、再除以營業天數與時數，我會得到「每張桌子每小時應該產出多少錢」。這個數字一算出來，菜單設計、出餐順序、甚至要不要接訂位，全部都有了判斷依據。</p>
+                <figure>
+                  <img src="images/figure-kitchen-pass.jpg" alt="週五晚間的出餐檯" width="1536" height="864" loading="lazy">
+                  <figcaption>尖峰時段的出餐節奏決定翻桌率，這張照片是 19:40，當下有 14 張單在跑。</figcaption>
+                </figure>
+                <p>所以我重新做了一次成本拆解，這次把桌子的時間也放進去。結果讓我重新談了租約、砍掉三道菜、也終於看懂為什麼週二和週三永遠在虧。</p>
+
+                <!-- 未訂閱：殘句停在冒號，上面覆蓋 140px 漸層淡出（::after，裝飾） -->
+                <p class="paywall-teaser" data-show-view="unsubscribed">……真正的問題不在食材，而是我們一直沒算進去的那一項：</p>
+
+                <!-- 已訂閱：沒有漸層、沒有付費牆，殘句接著寫完，接 3 個章節 -->
+                <p data-show-view="subscribed">……真正的問題不在食材，而是我們一直沒算進去的那一項：那張桌子每個小時要幫我賺多少錢。</p>
+                <p data-show-view="subscribed">我把全年營業額除以桌數再除以營業時數，得到一個數字。然後我發現，週二和週三那兩天，我其實是在付錢請自己上班。</p>
+                <h2 id="sec-monthly" data-show-view="subscribed">全年逐月的數字拆解</h2>
+                <p data-show-view="subscribed">把 1,842 萬拆成十二個月之後，最先跳出來的不是哪個月賺最多，而是落差：生意最好和最差的月份差了將近一倍，可是租金、人事和水電幾乎每個月都一樣。固定成本不會跟著淡季休息，這是我第一次看懂「淨利率 3.3%」有多脆弱。</p>
+                <h2 id="sec-cashflow" data-show-view="subscribed">兩次現金流斷鏈的處理過程</h2>
+                <p data-show-view="subscribed">兩次差點關門，都不是發生在虧最多的那個月，而是錢進來的時間和錢出去的時間對不上的時候：信用卡款和外送平台的撥款要晚兩到四週才入帳，房租、薪水和供應商的貨款卻一天都不能晚。</p>
+                <h2 id="sec-lease" data-show-view="subscribed">我重新談租約的方法</h2>
+                <p data-show-view="subscribed">重新談租約前後花了七個月。我沒有要求降租，而是把這三年的營業額和桌子的產出數字攤給房東看，請他用一部分租金換更長的租期。房東在意的是穩定，我在意的是每個月固定要付的那一筆，兩件事其實可以放在同一張桌子上談。</p>
+              </div>
+
+              <!-- 付費預覽牆：橘帶（已讀進度）→ 標題 → 價值訴求 → 月／年切換（預設年費）→ 唯一主要按鈕 → 登入 → 信任小字 → 替代入口（小字連結）
+                   白底、3px 黑框、8px 硬陰影：全站唯一壓在內容上的卡片 -->
+              <section class="paywall" id="paywall" aria-labelledby="paywallTitle" data-show-view="unsubscribed">
+                <div class="paywall-band">
+                  <div class="read-progress is-lg" role="progressbar" aria-label="已免費讀完" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32" style="--p: 32%"></div>
+                  <p class="paywall-band-text">已免費讀完 32%</p>
+                </div>
+                <div class="paywall-body">
+                  <h2 id="paywallTitle" class="paywall-title text-phrase">剩下的 4,600&nbsp;字，<wbr>需要訂閱才能繼續</h2>
+                  <p class="paywall-text">你已經免費讀完這篇的 32%。接下來是全年逐月的數字拆解、兩次現金流斷鏈的處理過程，以及我重新談租約的方法。</p>
+                  <fieldset class="paywall-plans">
+                    <legend class="visually-hidden">選擇方案</legend>
+                    <div>
+                      <input class="btn-check" type="radio" name="paywallPlan" id="pwMonth">
+                      <label class="radio-card" for="pwMonth">
+                        <span class="plan-option-name">月費</span>
+                        <span class="plan-option-price">NT$ 180<small>／月</small></span>
+                        <span class="text-note">隨時取消</span>
+                      </label>
+                    </div>
+                    <div>
+                      <input class="btn-check" type="radio" name="paywallPlan" id="pwYear" checked>
+                      <label class="radio-card" for="pwYear">
+                        <span class="plan-option-name">年費<span class="save-tag">省下兩個月</span></span>
+                        <span class="plan-option-price">NT$ 1,800<small>／年</small></span>
+                        <span class="text-note">平均 NT$ 150／月</span>
+                      </label>
+                    </div>
+                  </fieldset>
+                  <a class="btn btn-primary btn-lg w-100" href="pricing.html#checkout">訂閱並繼續閱讀</a>
+                  <p class="paywall-login">已經是訂閱者了？<a href="login.html">登入</a></p>
+                  <p class="paywall-trust">七天內不滿意可全額退費 ‧ 線上一鍵取消 ‧ 訂閱期間全站 438 篇付費文章任讀</p>
+                  <p class="paywall-alt">還沒想好？<a href="articles.html">先看看免費文章</a> ｜ <a href="account.html#library">把這篇加入收藏，之後再讀</a></p>
+                </div>
+              </section>
+
+              <!-- 文末：作者卡 → 本篇標籤 → 延伸閱讀 → 讀者回應 -->
+              <footer class="article-end">
+                <section class="block is-white author-card" aria-labelledby="aboutTitle">
+                  <img class="avatar avatar-xl" src="images/avatar-chen.jpg" alt="" width="64" height="64">
+                  <div>
+                    <h2 id="aboutTitle" class="article-end-subtitle">關於作者</h2>
+                    <p class="author-card-name">陳柏諺</p>
+                    <p class="author-card-job">台北某獨立餐酒館主廚兼老闆</p>
+                    <p class="author-card-bio">開店第四年，前三年都在繳學費。在這裡寫餐飲現場的真實數字，不談夢想只談帳。已發表 18 篇。</p>
+                    <div class="author-card-actions">
+                      <button class="btn btn-outline-secondary" type="button" aria-pressed="false" data-toggle-pressed data-label-on="已追蹤" data-icon-on="bi-person-check" data-icon-off="bi-person-plus">
+                        <i class="bi bi-person-plus" aria-hidden="true"></i><span>追蹤作者</span>
+                      </button>
+                      <a class="btn btn-text" href="author.html">查看全部文章</a>
+                    </div>
+                  </div>
+                </section>
+
+                <div class="article-tags">
+                  <h2 class="article-end-subtitle">本篇標籤</h2>
+                  <ul class="tag-list">
+                    <li><a class="tag" href="articles.html">#成本結構</a></li>
+                    <li><a class="tag" href="articles.html">#開店</a></li>
+                    <li><a class="tag" href="articles.html">#損益表</a></li>
+                  </ul>
+                </div>
+
+                <section aria-labelledby="relatedTitle">
+                  <h2 id="relatedTitle" class="article-end-title">讀完這篇的人還讀了</h2>
+                  <div class="related-stack">
+                    <article class="block mini-block is-locked">
+                      <div class="card-kicker">
+                        <span class="perm-badge is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                        <a class="card-kicker-link" href="articles.html">餐飲與零售</a>
+                      </div>
+                      <h3 class="mini-block-title text-phrase"><a href="article.html">便利商店的選址：<wbr>為什麼對街那間活了，<wbr>我們這間撐不過一年</a></h3>
+                      <div class="mini-block-author">
+                        <img class="avatar avatar-sm" src="images/avatar-huang.jpg" alt="" width="32" height="32" loading="lazy">
+                        <p class="meta-line meta-line-flow"><span><strong>黃敬哲</strong></span><span>13 分鐘</span></p>
+                      </div>
+                    </article>
+                    <article class="block mini-block is-locked">
+                      <div class="card-kicker">
+                        <span class="perm-badge is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                        <a class="card-kicker-link" href="articles.html">文化與創作產業</a>
+                      </div>
+                      <h3 class="mini-block-title text-phrase"><a href="article.html">獨立書店的現金流：<wbr>為什麼賣書不是主要收入</a></h3>
+                      <div class="mini-block-author">
+                        <img class="avatar avatar-sm" src="images/avatar-su.jpg" alt="" width="32" height="32" loading="lazy">
+                        <p class="meta-line meta-line-flow"><span><strong>蘇曉薇</strong></span><span>11 分鐘</span></p>
+                      </div>
+                    </article>
+                    <article class="block mini-block is-locked">
+                      <div class="card-kicker">
+                        <span class="perm-badge is-locked"><i class="bi bi-lock-fill" aria-hidden="true"></i>訂閱限定</span>
+                        <a class="card-kicker-link" href="articles.html">文化與創作產業</a>
+                      </div>
+                      <h3 class="mini-block-title text-phrase"><a href="article.html">一場演唱會的票價<wbr>是誰決定的</a></h3>
+                      <div class="mini-block-author">
+                        <img class="avatar avatar-sm" src="images/avatar-zheng.jpg" alt="" width="32" height="32" loading="lazy">
+                        <p class="meta-line meta-line-flow"><span><strong>鄭昱安</strong></span><span>17 分鐘</span></p>
+                      </div>
+                    </article>
+                  </div>
+                </section>
+
+                <section id="comments" aria-labelledby="commentsTitle">
+                  <h2 id="commentsTitle" class="article-end-title">讀者回應（34 則）</h2>
+
+                  <div class="callout is-info comments-gate" role="note" data-show-view="unsubscribed">
+                    <i class="bi bi-lock-fill callout-icon" aria-hidden="true"></i>
+                    <div class="callout-body">
+                      <p>留言功能開放給訂閱者使用。</p>
+                    </div>
+                    <a class="btn btn-sm btn-outline-secondary callout-action" href="pricing.html">查看方案</a>
+                  </div>
+                  <!-- 未訂閱：停用的留言框（霧白底）；已訂閱：可用 -->
+                  <form class="comment-form is-disabled" action="article.html" data-show-view="unsubscribed">
+                    <label class="visually-hidden" for="commentLocked">留言</label>
+                    <textarea class="form-control" id="commentLocked" rows="3" autocomplete="off" placeholder="說說你的現場經驗，或問作者一個問題。" disabled></textarea>
+                    <button class="btn btn-primary" type="submit" disabled>送出回應</button>
+                  </form>
+                  <form class="comment-form" action="article.html#comments" data-show-view="subscribed">
+                    <input type="hidden" name="view" value="subscribed">
+                    <label class="visually-hidden" for="commentOpen">留言</label>
+                    <textarea class="form-control" id="commentOpen" rows="3" autocomplete="off" placeholder="說說你的現場經驗，或問作者一個問題。"></textarea>
+                    <button class="btn btn-primary" type="submit">送出回應</button>
+                  </form>
+
+                  <ol class="comment-list">
+                    <li class="comment">
+                      <span class="avatar avatar-md avatar-initial" aria-hidden="true">I</span>
+                      <div class="comment-body">
+                        <p class="comment-meta"><strong>@indie_shop_owner</strong> ‧ <time datetime="2026-09-29">2026/09/29</time></p>
+                        <p>訂了三個月，光是搞懂通路抽成怎麼算，就省下我自己撞牆半年的時間。想問桌時成本的算法在外帶比例高的店要怎麼調整？</p>
+                        <!-- 作者回覆：縮排的藍框積木＋「作者」徽章 -->
+                        <div class="comment is-reply">
+                          <img class="avatar avatar-sm" src="images/avatar-chen.jpg" alt="" width="32" height="32" loading="lazy">
+                          <div class="comment-body">
+                            <p class="comment-meta"><strong>陳柏諺</strong> <span class="status-badge is-brand"><i class="bi bi-pen" aria-hidden="true"></i>作者</span></p>
+                            <p>外帶要另外算一條線，因為它不佔桌子但佔出餐檯。我在第四段有提到出餐檯的瓶頸，邏輯是一樣的。</p>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                    <li class="comment">
+                      <span class="avatar avatar-md avatar-initial" aria-hidden="true">O</span>
+                      <div class="comment-body">
+                        <p class="comment-meta"><strong>@ops_notes</strong> ‧ <time datetime="2026-09-29">2026/09/29</time></p>
+                        <p>很少看到有人願意把真實數字寫出來，這點值得付錢。</p>
+                      </div>
+                    </li>
+                  </ol>
+                  <button class="btn btn-outline-secondary w-100" type="button">載入其餘 32 則回應</button>
+                </section>
+              </footer>
+            </div>
+          </article>
+
+          <!-- 設計稿狀態示意：文章已下架（讀者看到）；≥ 1200px 對齊右欄 -->
+          <div class="article-after">
+            <section class="demo-state" aria-labelledby="demoRemovedTitle">
+              <p class="demo-state-tag"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意</p>
+              <h2 id="demoRemovedTitle" class="demo-state-title">文章已由作者下架時（讀者看到）</h2>
+              <div class="block is-white empty-state">
+                <span class="empty-state-icon"><i class="bi bi-slash-circle" aria-hidden="true"></i></span>
+                <p>這篇文章已由作者下架。</p>
+                <a class="btn btn-outline-secondary" href="articles.html">瀏覽其他文章</a>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <!-- < 576px：文章工具列改成底部固定的黑色行動列（4 格、2px 白線分格、圖示＋文字） -->
+      <div class="article-actionbar" role="toolbar" aria-label="文章工具">
+        <button class="actionbar-btn" type="button" aria-pressed="false" data-toggle-pressed data-label-on="已收藏" data-icon-on="bi-heart-fill" data-icon-off="bi-heart">
+          <i class="bi bi-heart" aria-hidden="true"></i><span>收藏</span>
+        </button>
+        <button class="actionbar-btn" type="button"><i class="bi bi-share" aria-hidden="true"></i><span>分享</span></button>
+        <div class="dropup">
+          <button class="actionbar-btn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+            <i class="bi bi-type" aria-hidden="true"></i><span>字級</span>
+          </button>
+          <div class="dropdown-menu size-menu">
+            <p class="size-menu-title">字級調整</p>
+            <div class="segmented" role="group" aria-label="字級調整">
+              <input class="btn-check" type="radio" name="proseSizeBar" id="barSizeSm" data-prose-size="sm"><label class="btn" for="barSizeSm"><span class="size-sample is-sm" aria-hidden="true">A</span><span class="visually-hidden">17px</span></label>
+              <input class="btn-check" type="radio" name="proseSizeBar" id="barSizeMd" data-prose-size="md" checked><label class="btn" for="barSizeMd"><span class="size-sample is-md" aria-hidden="true">A</span><span class="visually-hidden">18px</span></label>
+              <input class="btn-check" type="radio" name="proseSizeBar" id="barSizeLg" data-prose-size="lg"><label class="btn" for="barSizeLg"><span class="size-sample is-lg" aria-hidden="true">A</span><span class="visually-hidden">20px</span></label>
+            </div>
+            <p class="size-menu-note">選擇記在本機，跨文章保留。</p>
+          </div>
+        </div>
+        <button class="actionbar-btn" type="button" aria-pressed="false" data-reading-mode>
+          <i class="bi bi-moon" aria-hidden="true"></i><span>閱讀模式</span>
+        </button>
+      </div>
+      <!-- ============ 頁面內容到這裡結束 ============ -->
+    </main>
+
+    <footer class="site-footer">
+      <div class="container site-footer-main">
+        <a class="site-footer-brand" href="index.html">
+          <span class="site-footer-word">現場筆記</span>
+          <span class="site-footer-en">FieldNotes</span>
+        </a>
+        <div class="row gy-5">
+          <div class="col-lg-5">
+            <p class="site-footer-lead">
+              這裡不收二手整理、不收懶人包，只收第一線工作者親自寫的長文。每篇文章都可以免費讀前三分之一，讀到關鍵的那一段才需要訂閱。
+            </p>
+          </div>
+          <!-- 沒有頁面的連結（關於現場筆記、作者審核標準、聯絡我們）用不帶 href 的佔位連結 -->
+          <div class="col-6 col-md-4 col-lg-2 offset-lg-1">
+            <h2 class="site-footer-title">讀者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="articles.html">瀏覽文章</a></li>
+              <li><a href="pricing.html">訂閱方案</a></li>
+              <li><a href="account.html#library">我的收藏</a></li>
+              <li><a href="account.html#subscription">訂閱狀態</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <h2 class="site-footer-title">作者</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a href="account.html?role=reader#apply">申請成為作者</a></li>
+              <li><a href="account.html?role=author#my-articles">我的文章</a></li>
+              <li><a href="account.html?role=author#editor">撰寫新文章</a></li>
+              <li><a href="account.html?role=author#analytics">內容數據</a></li>
+            </ul>
+          </div>
+          <div class="col-md-4 col-lg-2">
+            <h2 class="site-footer-title">平台</h2>
+            <ul class="list-unstyled site-footer-links mb-0">
+              <li><a>關於現場筆記</a></li>
+              <li><a>作者審核標準</a></li>
+              <li><a href="pricing.html#faq">退費與取消政策</a></li>
+              <li><a>聯絡我們</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- 版權列：滿版活力橘細條 -->
+      <div class="site-footer-strip">
+        <div class="container">
+          <p class="site-footer-copy">© 2026 現場筆記 FieldNotes｜<wbr>本站為課程設計稿範例，文章、作者與數據皆為示意資料。</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

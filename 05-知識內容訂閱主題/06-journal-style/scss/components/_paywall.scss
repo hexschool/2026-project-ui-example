@@ -1,0 +1,168 @@
+// ============================================================
+// 付費預覽牆 Paywall（文章內頁、Guideline）：「封口的信」
+// - 140px 漸層淡出在殘句上（.paywall-teaser，見 _prose.scss）
+// - 白色紙卡、24px 圓角、浮起陰影（全站唯一壓在內容上的卡片）；上方一道淡淡的信封摺線（V 字），上緣中央一段珊瑚紙膠帶當封條
+// - 由上而下：①鉛筆進度條＋「已免費讀完 32%」②標題 Huninn 26px ③說明 ④兩張票券 RadioCard（預設年費）
+//   ⑤胖按鈕「訂閱並繼續閱讀」滿寬（全卡唯一的主要按鈕）⑥登入 ⑦信任小字 ⑧替代入口（小字連結）
+// - 已訂閱：整個元件不渲染（data-show-view="unsubscribed"）
+// ============================================================
+.paywall {
+  position: relative;
+  max-width: $prose-max-width;
+  margin-top: map-get($spacers, 4);
+  padding: 3.25rem 1.25rem 1.75rem;
+  border-radius: 1.5rem;
+  background-color: $white;
+  box-shadow: $box-shadow-lg;
+
+  @include media-breakpoint-up(md) {
+    padding: 3.5rem 2.5rem 2.25rem;
+  }
+
+  // 信封的摺線：從左右上角斜向中間的兩條淡線（裝飾）
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2.5rem;
+    border-radius: 1.5rem 1.5rem 0 0;
+    background:
+      linear-gradient(to top right, transparent calc(50% - 1px), $dot calc(50% - 1px), $dot calc(50% + .75px), transparent calc(50% + .75px)) left top / 50% 100% no-repeat,
+      linear-gradient(to top left, transparent calc(50% - 1px), $dot calc(50% - 1px), $dot calc(50% + .75px), transparent calc(50% + .75px)) right top / 50% 100% no-repeat;
+    pointer-events: none;
+  }
+}
+// 封條：上緣中央的珊瑚紙膠帶（.tape 預設就在上緣中央）
+.paywall-seal {
+  --tape-tilt: -2deg;
+  top: -12px;
+}
+.paywall-progress {
+  .progress { max-width: 16rem; }
+  .progress-text { font-weight: $font-weight-bold; }
+}
+.paywall-title {
+  margin: 1.25rem 0 .75rem;
+  font-size: 1.625rem; // 26px
+  line-height: 1.5;
+  @include media-breakpoint-down(md) { font-size: 1.375rem; }
+}
+.paywall-lead {
+  margin-bottom: 0;
+  color: $pen-body;
+  line-height: 1.85;
+}
+.paywall-cta {
+  margin-top: .25rem;
+}
+.paywall-login {
+  margin: 1rem 0 0;
+  text-align: center;
+  font-size: $font-size-sm;
+}
+.paywall-foot {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1.5px dashed $dot;
+  color: $pen-muted;
+  font-size: $small-font-size;
+  line-height: 1.8;
+  text-align: center;
+
+  p { margin-bottom: .25rem; }
+}
+
+// ---------- 票券狀的方案選項 RadioCard ----------
+// 兩側各一個半圓缺口＋缺口之間一條點線撕線（mask 挖出來的，陰影加在外層 .ticket-option）
+// 選中：2px 珊瑚字色框＋珊瑚淡底＋右上一枚圓形勾貼紙（貼紙放在 mask 外面，才不會被裁掉）
+// <div class="ticket-option">
+//   <input class="btn-check" type="radio" name="plan" id="pwYear" checked>
+//   <label class="ticket-radio" for="pwYear">…</label>
+//   <span class="sticker is-coral ticket-radio-check" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+// </div>
+.ticket-options {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 0;
+  border: 0;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.ticket-option {
+  position: relative;
+  filter: drop-shadow(0 1px 0 rgba($pen, .06)) drop-shadow(0 6px 10px rgba($pen, .07));
+
+  // 焦點環畫在外層（label 有 mask，外推的 outline 會被裁掉）
+  &:has(.btn-check:focus-visible) {
+    outline: 2px solid $coral-ink;
+    outline-offset: 3px;
+    border-radius: 1.125rem;
+  }
+}
+.ticket-radio {
+  --tear: 2.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: .125rem;
+  height: 100%;
+  padding: 1rem 1.25rem 0;
+  border: 2px solid $dot;
+  border-radius: 1rem;
+  background-color: $sheet;
+  color: $pen;
+  cursor: pointer;
+  -webkit-mask:
+    radial-gradient(circle 10px at 0 calc(100% - var(--tear)), transparent 97%, #000),
+    radial-gradient(circle 10px at 100% calc(100% - var(--tear)), transparent 97%, #000);
+  -webkit-mask-composite: source-in;
+  mask:
+    radial-gradient(circle 10px at 0 calc(100% - var(--tear)), transparent 97%, #000),
+    radial-gradient(circle 10px at 100% calc(100% - var(--tear)), transparent 97%, #000);
+  mask-composite: intersect;
+  transition: background-color .12s ease, border-color .12s ease;
+
+  &:hover { background-color: $butter; }
+}
+.ticket-radio-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem 0;
+  font-weight: $font-weight-bold;
+
+  .save-tag { margin-left: .5rem; }
+}
+.ticket-radio-price {
+  font-size: 1.75rem;
+}
+.ticket-radio-note {
+  display: flex;
+  align-items: center;
+  min-height: var(--tear);
+  margin: auto -1.25rem 0;
+  padding: 0 1.25rem;
+  border-top: 2px dotted $paper-edge;
+  color: $pen-muted;
+  font-size: $font-size-sm;
+}
+.ticket-radio-check {
+  --sticker-size: 2rem;
+  position: absolute;
+  top: -.625rem;
+  right: -.5rem;
+  font-size: 1rem;
+  visibility: hidden;
+  pointer-events: none;
+}
+.btn-check:checked + .ticket-radio {
+  border-color: $coral-ink;
+  background-color: $coral-tint;
+
+  .ticket-radio-note { color: $pen; } // 珊瑚淡底上的小字用藍黑（$pen-muted 只有 4.58）
+}
+.btn-check:checked ~ .ticket-radio-check {
+  visibility: visible;
+}

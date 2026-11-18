@@ -1,0 +1,274 @@
+// ============================================================
+// 頁首 SiteHeader：一排格子
+// ≥ 992px：高 72px、底部 2px $ink、sticky；格子之間 2px $ink 直線
+//   品牌格（克萊因藍）｜首頁｜文章列表｜訂閱方案｜（彈性空白）｜搜尋方格｜會員格（活力橘）
+//   品牌格與會員格的底色貼齊視窗兩側，裡面的字對齊內容版心（1920 寬時頁首滿版、文字停在 1320 版心）
+//   目前頁＝黑底白字（導覽格與會員格）；hover＝霧白底
+// < 992px：品牌格（內容寬）＋搜尋、會員（橘）、選單（黑）3 個 56px 方格；
+//   選單展開是一疊滿寬的格子（3 個導覽＋會員入口），每格 56px
+// 搜尋：點方格展開頁首正下方的一條白色搜尋積木（Collapse）
+// ============================================================
+// 格子的焦點環畫在格子內側（格子貼齊視窗與頁首底線，外推的焦點環會被切掉）：
+// 外圈 3px 白、內圈 3px $ink；黑格看得到白圈，白格看得到黑圈，藍格與橘格兩圈都看得到
+@mixin cell-focus {
+  outline: 0;
+  box-shadow: inset 0 0 0 3px $paper, inset 0 0 0 6px $ink;
+}
+
+.site-header {
+  // 版心邊緣：讓格子裡的字和下方內容的左右邊對齊（cqw 是頁首自己的寬度，不含捲軸）
+  container-type: inline-size;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  border-bottom: $line;
+  background-color: $paper;
+}
+.site-header {
+  --edge: #{$container-padding-x * .5};
+
+  @include media-breakpoint-up(sm) { --edge: max(#{$container-padding-x * .5}, calc((100cqw - #{map-get($container-max-widths, sm)}) / 2 + #{$container-padding-x * .5})); }
+  @include media-breakpoint-up(md) { --edge: max(#{$container-padding-x * .5}, calc((100cqw - #{map-get($container-max-widths, md)}) / 2 + #{$container-padding-x * .5})); }
+  @include media-breakpoint-up(lg) { --edge: max(#{$container-padding-x-lg * .5}, calc((100cqw - #{map-get($container-max-widths, lg)}) / 2 + #{$container-padding-x-lg * .5})); }
+  @include media-breakpoint-up(xl) { --edge: max(#{$container-padding-x-lg * .5}, calc((100cqw - #{map-get($container-max-widths, xl)}) / 2 + #{$container-padding-x-lg * .5})); }
+  @include media-breakpoint-up(xxl) { --edge: max(#{$container-padding-x-lg * .5}, calc((100cqw - #{map-get($container-max-widths, xxl)}) / 2 + #{$container-padding-x-lg * .5})); }
+}
+
+.site-cells {
+  --bs-navbar-padding-x: 0;
+  --bs-navbar-padding-y: 0;
+  align-items: stretch;
+  min-height: $header-cell-height-sm;
+  padding: 0;
+
+  @include media-breakpoint-up(lg) {
+    min-height: $header-cell-height;
+  }
+}
+
+// ---------- 品牌格：克萊因藍底、「現場筆記」900 白字＋「FieldNotes」Bricolage ----------
+.site-brand {
+  @include surface-klein;
+  display: inline-flex;
+  align-items: center;
+  gap: .625rem;
+  margin: 0;
+  padding: 0 1.25rem 0 var(--edge);
+  border-right: $line;
+  color: $paper;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover,
+  &:focus { color: $paper; }
+  &:focus-visible { @include cell-focus; }
+
+  @include media-breakpoint-up(lg) {
+    min-width: 13.75rem; // 220px
+    padding-right: 1.75rem;
+  }
+}
+.site-brand-name {
+  font-size: 1.25rem;
+  font-weight: $font-weight-black;
+  letter-spacing: .02em;
+  line-height: 1;
+
+  @include media-breakpoint-up(lg) {
+    font-size: 1.375rem; // 22px
+  }
+}
+.site-brand-en {
+  font-family: $font-family-display;
+  font-size: .8125rem; // 13px
+  font-weight: 700;
+  letter-spacing: .01em;
+  line-height: 1;
+  color: $on-klein-muted;
+}
+
+// ---------- 格子（方格按鈕、導覽格、會員格）共用 ----------
+.site-cell {
+  display: inline-grid;
+  place-items: center;
+  width: $header-cell-height-sm;
+  height: $header-cell-height-sm;
+  padding: 0;
+  border: 0;
+  border-left: $line;
+  border-radius: 0;
+  background-color: $paper;
+  color: $ink;
+  font-size: 1.375rem;
+  line-height: 1;
+  text-decoration: none;
+  transition: background-color .12s ease-out, color .12s ease-out;
+
+  &:hover { background-color: $fog; color: $ink; }
+  &:focus-visible { @include cell-focus; }
+
+  @include media-breakpoint-up(lg) {
+    width: $header-cell-height;
+    height: $header-cell-height;
+  }
+}
+// 搜尋展開時，方格反黑表示「打開中」
+.site-cell[aria-expanded="true"] {
+  background-color: $ink;
+  color: $paper;
+
+  &:hover { background-color: $ink-2; color: $paper; }
+}
+.site-cell-member {
+  background-color: $orange;
+
+  &:hover { background-color: $orange-hover; }
+}
+.site-cell-menu {
+  background-color: $ink;
+  color: $paper;
+
+  &:hover { background-color: $ink-2; color: $paper; }
+  &[aria-expanded="true"] .bi::before { content: "\F659"; } // bi-x-lg：選單打開時換成關閉
+}
+// < 992px 右側的 3 個方格貼齊視窗右緣
+.site-cells-mobile {
+  margin-left: auto;
+}
+// Bootstrap 的 .navbar-toggler 有自己的內距與焦點樣式，這裡改回方格
+.navbar-toggler.site-cell {
+  padding: 0;
+  border-radius: 0;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  font-size: 1.5rem;
+
+  &:focus { box-shadow: none; }
+  &:focus-visible { @include cell-focus; }
+}
+
+// ---------- 導覽格 ----------
+.site-nav {
+  .nav-link {
+    display: flex;
+    align-items: center;
+    min-height: $header-cell-height-sm;
+    padding: 0 var(--edge);
+    border-top: $line;
+    color: $ink;
+    font-size: 1.0625rem;
+    font-weight: $font-weight-bold;
+    text-decoration: none;
+    transition: background-color .12s ease-out, color .12s ease-out;
+
+    &:hover { background-color: $fog; color: $ink; }
+    &:focus-visible { @include cell-focus; }
+    &.active {
+      background-color: $ink;
+      color: $paper;
+    }
+  }
+  // 選單裡的會員入口（<li class="site-nav-member">）：和頁首的會員格一樣是橘格
+  // 連結本身只能是 class="nav-link"（目前頁加 active），check-layout.mjs 依這個寫法比對
+  .site-nav-member .nav-link {
+    gap: .625rem;
+    background-color: $orange;
+    color: $ink;
+
+    &:hover { background-color: $orange-hover; color: $ink; }
+    &.active { background-color: $ink; color: $paper; }
+  }
+
+  @include media-breakpoint-up(lg) {
+    .nav-link {
+      min-height: 0;
+      height: 100%;
+      padding: 0 1.75rem; // 每格左右 28px
+      border-top: 0;
+      border-right: $line;
+      font-size: 1rem;
+    }
+  }
+}
+// ≥ 992px：格子撐滿 72px 高（Bootstrap 的 .navbar-collapse 預設垂直置中，這裡改成撐滿）
+// < 992px：選單展開成一疊滿寬格子
+.site-cells .navbar-collapse {
+  align-items: stretch;
+}
+@include media-breakpoint-down(lg) {
+  .site-cells .navbar-collapse {
+    flex-basis: 100%;
+  }
+}
+
+// ---------- 桌機右側：搜尋方格＋會員格 ----------
+.site-cells-end {
+  align-items: stretch;
+  margin-left: auto;
+
+  .site-cell { border-left: $line; }
+}
+.site-member {
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  padding: 0 var(--edge) 0 1.25rem;
+  border-left: $line;
+  background-color: $orange;
+  color: $ink;
+  font-weight: $font-weight-bold;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color .12s ease-out, color .12s ease-out;
+
+  .avatar {
+    width: 2.25rem;  // 36px
+    height: 2.25rem;
+    border-color: $ink;
+  }
+
+  &:hover { background-color: $orange-hover; color: $ink; }
+  &:focus-visible { @include cell-focus; }
+  // 目前頁（個人頁面）：黑底白字、頭像外圈橘色
+  &.active {
+    background-color: $ink;
+    color: $paper;
+
+    .avatar { border-color: $orange; }
+  }
+}
+
+// ---------- 搜尋列：頁首正下方一條白色搜尋積木 ----------
+.site-search-panel {
+  border-top: $line;
+  background-color: $fog;
+}
+.site-search {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: .75rem 0;
+  padding: .375rem .375rem .375rem 1rem;
+  border: $line;
+  border-radius: $block-radius;
+  background-color: $paper;
+
+  > .bi { font-size: 1.125rem; }
+  .btn { flex: none; white-space: nowrap; }
+
+  .form-control {
+    min-height: 2.75rem;
+    padding: .25rem .25rem;
+    border: 0;
+    background: transparent;
+    font-size: 1.0625rem;
+
+    &:focus { box-shadow: none; }
+  }
+  &:focus-within { box-shadow: $focus-ring-double; }
+
+  @include media-breakpoint-up(lg) {
+    margin: 1rem 0;
+  }
+}

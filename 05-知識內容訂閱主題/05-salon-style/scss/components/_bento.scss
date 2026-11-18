@@ -1,0 +1,196 @@
+// ============================================================
+// 便當盒與積木（本風格的骨架）
+// 1. 四種底色的情境 surface：白、黑、克萊因藍、活力橘（＋狀態色填滿）
+// 2. 便當盒網格 .bento、積木 .block、可點積木 .block-link、硬陰影、幾何裝飾
+// 這個檔案在 components 裡第一個載入：header、footer、cards 都會用到這裡的 surface mixin
+// ============================================================
+
+// ============================================================
+// 1. 四種底色的情境：白、黑、克萊因藍、活力橘（另有狀態色填滿的積木）
+// 每種底色配一組文字、次要字、連結、按鈕、徽章、頭像框的反白規則。
+// 用 CSS 自訂屬性往下繼承，所以積木裡再放一塊不同底色的積木（例如橘色摘要裡的黑色日期塊）也不會亂。
+//   .block.is-klein、.on-klein（任何元素）都會套用同一組
+// ============================================================
+@mixin surface($bg, $fg, $muted, $link, $link-hover-line,
+  $primary-bg, $primary-fg, $primary-hover-bg,
+  $secondary-bg, $secondary-fg, $secondary-border, $secondary-hover-bg,
+  $locked-bg, $locked-fg, $free-bg, $free-fg, $ring,
+  $seg-on-bg, $seg-on-fg) {
+  --fn-bg: #{$bg};
+  --fn-fg: #{$fg};
+  --fn-muted: #{$muted};
+  --fn-link-hover-line: #{$link-hover-line};
+  --fn-primary-bg: #{$primary-bg};
+  --fn-primary-fg: #{$primary-fg};
+  --fn-primary-hover-bg: #{$primary-hover-bg};
+  --fn-secondary-bg: #{$secondary-bg};
+  --fn-secondary-fg: #{$secondary-fg};
+  --fn-secondary-border: #{$secondary-border};
+  --fn-secondary-hover-bg: #{$secondary-hover-bg};
+  --fn-locked-bg: #{$locked-bg};
+  --fn-locked-fg: #{$locked-fg};
+  --fn-free-bg: #{$free-bg};
+  --fn-free-fg: #{$free-fg};
+  --fn-ring: #{$ring};
+  --fn-seg-on-bg: #{$seg-on-bg};
+  --fn-seg-on-fg: #{$seg-on-fg};
+  --bs-link-color-rgb: #{to-rgb($link)};
+  --bs-link-hover-color-rgb: #{to-rgb($link)};
+  background-color: $bg;
+  color: $fg;
+}
+
+// 白（預設）：黑字、藍連結、藍色主要按鈕
+@mixin surface-white {
+  @include surface($paper, $ink, $ink-2, $klein, $klein,
+    $klein, $paper, $klein-deep,
+    $paper, $ink, $ink, $fog,
+    $klein, $paper, $orange, $ink, $ink,
+    $ink, $paper);
+  --bs-link-hover-color-rgb: #{to-rgb($klein-deep)};
+}
+// 黑：白字、次要字 $on-ink-muted、主要按鈕橘底黑字
+@mixin surface-ink {
+  @include surface($ink, $paper, $on-ink-muted, $paper, $orange,
+    $orange, $ink, $orange-hover,
+    transparent, $paper, $paper, #262626,
+    $klein, $paper, $orange, $ink, $paper,
+    $orange, $ink);
+}
+// 克萊因藍：白字、次要字 $on-klein-muted、主要按鈕白底藍字；黑字不放在藍底上（1.85:1）
+@mixin surface-klein {
+  @include surface($klein, $paper, $on-klein-muted, $paper, $orange,
+    $paper, $klein, $klein-tint,
+    transparent, $paper, $paper, $klein-deep,
+    $paper, $klein, $orange, $ink, $paper,
+    $paper, $klein);
+}
+// 活力橘：字一律 $ink（次要字也用 $ink，灰字在橘底只有 3.48:1）；主要按鈕藍底白字
+@mixin surface-orange {
+  @include surface($orange, $ink, $ink, $ink, $ink,
+    $klein, $paper, $klein-deep,
+    $paper, $ink, $ink, $orange-tint,
+    $klein, $paper, $paper, $ink, $ink,
+    $ink, $paper);
+}
+
+:root,
+.on-white,
+.block.is-white { @include surface-white; }
+.on-ink,
+.block.is-ink { @include surface-ink; }
+.on-klein,
+.block.is-klein { @include surface-klein; }
+.on-orange,
+.block.is-orange { @include surface-orange; }
+// 狀態色填滿的積木（個人頁的訂閱狀態、申請狀態）：黃底黑字、紅底白字、綠底白字、霧白底黑字
+.block.is-warning {
+  @include surface($warning, $ink, $ink, $ink, $ink,
+    $ink, $paper, $ink-2,
+    $paper, $ink, $ink, $fog,
+    $klein, $paper, $orange, $ink, $ink,
+    $ink, $paper);
+}
+.block.is-danger {
+  @include surface($danger, $paper, $paper, $paper, $paper,
+    $paper, $danger, $danger-tint,
+    transparent, $paper, $paper, #B00D31,
+    $paper, $klein, $orange, $ink, $paper,
+    $paper, $danger);
+}
+.block.is-success {
+  @include surface($success, $paper, $paper, $paper, $paper,
+    $paper, $success, $success-tint,
+    transparent, $paper, $paper, #086A35,
+    $paper, $klein, $orange, $ink, $paper,
+    $paper, $success);
+}
+.block.is-fog {
+  @include surface($fog, $ink, $ink-2, $klein, $klein,
+    $klein, $paper, $klein-deep,
+    $paper, $ink, $ink, $paper,
+    $klein, $paper, $orange, $ink, $ink,
+    $ink, $paper);
+}
+
+// 浮層（下拉選單、對話框、Offcanvas）一律是白積木：放在藍或黑積木裡也不會繼承到反白規則
+.dropdown-menu,
+.modal-content,
+.offcanvas,
+.offcanvas-lg { @include surface-white; }
+
+// 積木裡的分隔線跟著字色（白積木黑線、藍與黑積木白線）
+.block hr,
+.on-white hr,
+.on-ink hr,
+.on-klein hr,
+.on-orange hr { color: var(--fn-fg); }
+
+// ============================================================
+// 2. 便當盒網格與積木
+// ============================================================
+
+// 便當盒：≥ 992px 12 欄、間距 16px；以下單欄，積木一塊接一塊（間距 12px）
+// 積木的位置（grid-column、grid-row）寫在各頁 partial，不做 .span-* 工具類別
+// <div class="bento"> <div class="block is-klein home-quote">…</div> … </div>
+.bento {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $bento-gap-sm;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: $bento-gap;
+  }
+}
+
+// 積木：2px $ink 框、20px 圓角、實色填滿；沒有柔和陰影
+// .block.is-white／.is-ink／.is-klein／.is-orange（另有 .is-fog、.is-warning、.is-danger、.is-success）
+.block {
+  position: relative;
+  min-width: 0;
+  padding: $block-padding-sm;
+  border: $line;
+  border-radius: $block-radius;
+  background-color: var(--fn-bg, #{$paper});
+  color: var(--fn-fg, #{$ink});
+
+  @include media-breakpoint-up(lg) {
+    padding: $block-padding;
+  }
+
+  > :last-child { margin-bottom: 0; }
+}
+.block-tight {
+  padding: 1.25rem;
+
+  @include media-breakpoint-up(lg) {
+    padding: 1.5rem;
+  }
+}
+// 可以整塊點的積木（主題積木、文章積木、方案積木裡的整張連結）：按下時往右下壓 2px
+.block-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color .12s ease-out, color .12s ease-out;
+
+  &:hover { color: inherit; }
+}
+// 按下（不是 hover）：按鈕與可點積木往右下位移 2px
+.btn:active,
+.block-link:active {
+  transform: translate(2px, 2px);
+}
+
+// 硬陰影：只給付費牆卡、拖曳中的積木（8px）；下拉、插入選單、對話框（6px）
+.shadow-hard    { box-shadow: $shadow-hard; }
+.shadow-hard-sm { box-shadow: $shadow-hard-sm; }
+
+// 幾何裝飾（只放在首頁 Hero 與首頁底部 CTA）：半圓或圓，aria-hidden
+.deco-shape {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+

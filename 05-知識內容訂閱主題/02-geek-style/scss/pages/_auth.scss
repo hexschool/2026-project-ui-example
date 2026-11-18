@@ -1,0 +1,283 @@
+// ============================================================
+// 登入、註冊、忘記密碼（login.html、register.html、forgot-password.html）共用：IDE 側欄面板裡的表單
+// - .ide.auth-ide：活動列｜表單面板（≥ 1200px 440px、992–1199px 360px）｜編輯區
+// - 表單面板 .auth-panel：貼齊活動列、滿高（100dvh）、sticky、$panel 底；內容從頂端 96px 開始（不垂直置中），
+//   面板底部是切換列 .auth-switch（還沒有帳號？／已經有帳號？／返回登入），≥ 992px 貼在面板最下方
+// - 編輯區 .auth-notes：設計稿狀態示意由上而下（最寬 640px、靠左，頂端和面板的 H1 對齊）
+//   註冊頁另有免費會員權益摘要窗格 .auth-plan（最寬 480px；權益清單 .benefit-branch 在 components/_plans.scss）；
+//   忘記密碼頁的 3 個示意排成直向流程線 .auth-flow（節點 $pass → $sky → $fail）
+// - 992px 以下：表單面板變成內容上方的滿寬區塊（保留 $panel 底）→ 編輯區的示意；表單最寬 512px、靠左
+// ============================================================
+
+$auth-panel-w-lg: 22.5rem; // 360px（992–1199px）
+$auth-panel-w:    27.5rem; // 440px（≥ 1200px）
+$auth-top:        6rem;    // 96px：≥ 992px 面板與編輯區的內容從這裡開始
+
+// ---------- 版面：面板寬度（覆寫 .ide 的 256／288px，底色欄跟著改） ----------
+.ide.auth-ide {
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: $auth-panel-w-lg minmax(0, 1fr);
+    @include ide-side-column($auth-panel-w-lg);
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: $auth-panel-w minmax(0, 1fr);
+    @include ide-side-column($auth-panel-w);
+  }
+}
+
+// ---------- 表單面板 ----------
+.auth-panel {
+  display: flex;
+  flex-direction: column;
+}
+.auth-panel-body {
+  width: 100%;
+  max-width: 32rem;
+  padding: 2rem 1rem 1.75rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 2.5rem 1.5rem 2rem;
+  }
+  @include media-breakpoint-up(lg) {
+    max-width: none;
+    padding: $auth-top 2rem 2.5rem;
+  }
+  @include media-breakpoint-up(xl) {
+    padding-inline: 3rem;
+  }
+}
+.auth-title {
+  margin-bottom: .75rem;
+}
+.auth-lead {
+  margin: 0 0 2rem;
+  color: $fg-muted;
+}
+
+// 表單：標籤 13px 500、輸入框 $rail 底＋1px $control 框＋等寬字（_variables.scss 的 $input-*）
+.auth-field {
+  margin-bottom: 1.25rem;
+
+  .form-text {
+    margin: .375rem 0 0;
+    font-size: $small-font-size;
+    line-height: 1.6;
+  }
+}
+// 「忘記密碼？」和密碼標籤同一列靠右；點擊範圍上下各加 12px（觸控 44px），不改變外觀尺寸
+.auth-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.auth-forgot {
+  position: relative;
+  margin-bottom: $form-label-margin-bottom;
+  font-size: $small-font-size;
+  color: $sky;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -.75rem -.25rem;
+  }
+  &:hover {
+    color: $sky-hover;
+    text-decoration: underline;
+    text-underline-offset: .25em;
+  }
+}
+// 同意條款：方框和第一行文字對齊，文字可以換行；「服務條款」「隱私權政策」沒有頁面（不帶 href 的 <a>），外觀做成連結
+.auth-terms {
+  margin-bottom: 1.5rem;
+  font-size: $font-size-sm;
+  line-height: 1.65;
+
+  .form-check-input {
+    margin-top: .325em;
+  }
+  .form-check-label {
+    color: $fg;
+  }
+  a:not([href]) {
+    color: $sky;
+    text-decoration: underline;
+    text-decoration-color: rgba($sky, .45);
+    text-underline-offset: .25em;
+  }
+}
+.auth-submit {
+  --bs-btn-padding-y: .625rem;
+  width: 100%;
+  min-height: 2.75rem;
+  font-weight: $font-weight-bold;
+}
+
+// 面板底部的切換列：上方 1px 線；≥ 992px 推到面板最下方（像面板的底部列）
+.auth-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 .5rem;
+  margin: 0;
+  padding: .25rem 1rem;
+  border-top: 1px solid $line;
+  font-size: $small-font-size;
+  color: $fg-muted;
+
+  .btn-text {
+    --bs-btn-font-size: #{$small-font-size};
+    gap: .375rem;
+  }
+  @include media-breakpoint-up(md) {
+    padding-inline: 1.5rem;
+  }
+  @include media-breakpoint-up(lg) {
+    margin-top: auto;
+    padding: .375rem 2rem;
+    background-color: $panel;
+  }
+  @include media-breakpoint-up(xl) {
+    padding-inline: 3rem;
+  }
+}
+
+// ---------- 編輯區：設計稿狀態示意（最寬 640px、靠左） ----------
+.auth-notes {
+  max-width: calc(40rem + 2rem);
+  padding: 2.5rem 1rem 4rem;
+
+  @include media-breakpoint-up(md) {
+    max-width: calc(40rem + 3rem);
+    padding-inline: 1.5rem;
+  }
+  @include media-breakpoint-up(lg) {
+    max-width: calc(40rem + 6rem);
+    padding: $auth-top 3rem 5rem;
+  }
+  > * {
+    margin-top: 0;
+  }
+  > * + * {
+    margin-top: 2rem;
+  }
+}
+
+// ---------- 註冊：免費會員權益摘要（一般窗格，不加電光綠框、不加陰影，層級低於表單） ----------
+.auth-plan {
+  max-width: 30rem;
+
+  > .pane-head > h2 {
+    font-size: $font-size-base;
+    color: $fg-strong;
+  }
+  .plan-price .figure-num {
+    font-size: map-get($figure-sizes, sm);
+  }
+}
+.auth-plan-link {
+  margin-left: 2.125rem; // 和權益清單的文字左緣對齊
+}
+
+// ---------- 註冊：欄位錯誤示意 ----------
+.auth-stage {
+  @include media-breakpoint-up(md) {
+    padding: 1.5rem;
+  }
+  .auth-field {
+    margin-bottom: 1.25rem;
+  }
+  .invalid-feedback {
+    align-items: flex-start;
+    line-height: 1.6;
+
+    > .bi {
+      margin-top: .1875rem;
+    }
+    a {
+      color: $sky;
+    }
+  }
+  // 勾選框：標籤維持內文色（只有方框與下方錯誤文字是錯誤色）；錯誤文字和標籤文字左緣對齊、圖示與文字之間留空
+  .auth-terms .form-check-input.is-invalid {
+    border-color: $fail;
+  }
+  .auth-terms .form-check-input.is-invalid ~ .form-check-label {
+    color: $fg;
+  }
+  .auth-terms .form-check-input.is-invalid ~ .invalid-feedback {
+    display: flex;
+  }
+}
+
+// ---------- 忘記密碼：3 個示意串在一條直向流程線上（照實際發生的順序） ----------
+.auth-flow {
+  --branch-x: .625rem;
+  --branch-pad: 2.25rem;
+  --branch-node-y: 2.125rem; // 對齊示意標題那一行
+  --node-ring: #{$editor};
+
+  > li {
+    padding-bottom: 2rem;
+  }
+  > li:last-child {
+    padding-bottom: 0;
+  }
+  > li > .demo-state {
+    margin-top: 0;
+  }
+  .branch-node .bi {
+    font-size: .6875rem;
+  }
+  @include media-breakpoint-up(md) {
+    --branch-node-y: 2.375rem;
+  }
+}
+// 重設信已寄出：小字裡的「重新寄送」是行內的文字按鈕（不加 .btn，維持在句子裡）；點擊範圍上下各加 12px
+.auth-resend {
+  margin-top: .5rem !important;
+  font-size: $small-font-size;
+  color: $fg-muted;
+}
+.auth-inline-btn {
+  position: relative;
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $sky;
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba($sky, .45);
+  text-underline-offset: .25em;
+  transition: $hover-transition;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -.75rem -.25rem;
+  }
+  &:hover {
+    color: $sky-hover;
+    text-decoration-color: currentColor;
+  }
+}
+// 設定新密碼：窗格（標題列放小標「設定新密碼」）
+.auth-reset {
+  max-width: 30rem;
+
+  > .pane-head > h3 {
+    font-size: $font-size-base;
+    color: $fg-strong;
+  }
+  .auth-field:last-of-type {
+    margin-bottom: 1.5rem;
+  }
+}
+.auth-reset-lead {
+  margin: 0 0 1.25rem;
+  color: $fg-muted;
+}

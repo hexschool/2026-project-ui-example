@@ -1,0 +1,387 @@
+// ============================================================
+// 方案窗格、權益清單、比較矩陣、收據（訂閱方案頁；註冊頁的免費會員權益摘要、Guideline 也用這一組）
+// - 方案：3 個 .plan-pane 無間距並排（.plan-track），上緣一條橫向分支線串起 3 個節點；
+//   992px 以下上下堆疊，分支線改成左側直線。月費 .is-recommended（2px $volt 框＋$rec-tint 底）固定不動
+// - 比較矩陣 .matrix：真正的 <table>，每個方案欄中央一條直線（免費 $branch-free、月費 $branch-trunk、年費 $branch-create）
+//   ✓＝線上實心節點＋「有」、✗＝空心虛線節點＋「無」、—＝沒有節點；節點是裝飾（aria-hidden），讀螢幕軟體只讀「有／無」
+// - 收據 .receipt：<dl> 每列「名稱 ……… 等寬數值」（點線引導）
+// ============================================================
+
+// ---------- 方案窗格與分支線 ----------
+// <div class="plan-track">
+//   <article class="pane plan-pane"><span class="node node-lg node-hollow branch-node" aria-hidden="true"></span>
+//     <div class="pane-head"><h2>免費會員</h2></div><div class="pane-body">價格 → 適合 → 權益清單 → 按鈕</div></article>
+//   …
+// </div>
+$plan-rail-x: 1.5rem;   // 992px 以下：直線距離方案窗格左緣（往外）
+$plan-rail-y: 1.25rem;  // ≥ 992px：橫線距離方案窗格上緣（往上）
+$plan-node: 1.25rem;    // .node-lg
+$plan-head-h: $pane-head-height + .75rem; // 方案窗格標題列高度（992px 以下節點對齊它的中線）
+
+.plan-track {
+  display: grid;
+  gap: 1rem;
+  padding-left: $plan-rail-x + .75rem;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    padding-left: 0;
+    padding-top: $plan-rail-y + 1rem;
+  }
+}
+.plan-pane {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  > .branch-node {
+    --node-ring: #{$editor};
+    --node-bg: #{$editor};
+    position: absolute;
+    left: calc(-1 * #{$plan-rail-x} - #{$plan-node} / 2);
+    top: calc(#{$plan-head-h * .5} - #{$plan-node} / 2);
+  }
+  // 節點之間的線：畫在前一個窗格上，接到下一個窗格的節點
+  &:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: calc(-1 * #{$plan-rail-x} - 1px);
+    top: $plan-head-h * .5;
+    height: calc(100% + 1rem);
+    border-left: 2px solid $line-strong;
+  }
+  > .pane-head {
+    min-height: $plan-head-h;
+
+    > h2,
+    > h3 {
+      font-size: 1rem;
+      color: $fg-strong;
+    }
+  }
+  > .pane-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  @include media-breakpoint-up(lg) {
+    > .branch-node {
+      left: 1.25rem;
+      top: calc(-1 * #{$plan-rail-y} - #{$plan-node} / 2);
+    }
+    &:not(:last-child)::before {
+      left: calc(1.25rem + #{$plan-node} / 2);
+      top: calc(-1 * #{$plan-rail-y} - 1px);
+      width: 100%;
+      height: 0;
+      border-left: 0;
+      border-top: 2px solid $line-strong;
+    }
+    // 無間距並排：相鄰的框線疊在一起；推薦方案的 2px 框壓在最上層
+    & + & {
+      margin-left: -1px;
+    }
+    &:not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+    &:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+    &:not(:first-child) > .pane-head { border-top-left-radius: 0; }
+    &:not(:last-child) > .pane-head { border-top-right-radius: 0; }
+    &.is-recommended {
+      z-index: 1;
+    }
+  }
+}
+.plan-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: .3125rem;
+  margin: 0 0 0 auto !important;
+  font-size: .75rem !important;
+  font-weight: $font-weight-bold;
+  color: $volt !important;
+
+  .bi {
+    font-size: .6875rem;
+  }
+}
+.plan-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .125rem .375rem;
+  margin: 0 0 .75rem;
+  font-family: $font-family-monospace;
+  letter-spacing: 0;
+
+  .figure-num {
+    font-size: map-get($figure-sizes, sm);
+
+    @include media-breakpoint-up(xl) {
+      font-size: map-get($figure-sizes, lg);
+    }
+  }
+  .save-tag {
+    align-self: center;
+  }
+}
+.plan-currency,
+.plan-period {
+  font-size: $mono-size;
+  color: $fg-muted;
+}
+.plan-fit {
+  margin: 0 0 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px dashed $line-strong;
+  font-size: $font-size-sm;
+  color: $fg-muted;
+}
+.benefit-list {
+  margin: 0 0 1.75rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: .625rem;
+    font-size: $font-size-sm;
+    line-height: 1.65;
+
+    + li {
+      margin-top: .625rem;
+    }
+    .bi {
+      flex: 0 0 auto;
+      margin-top: .1875rem;
+      font-size: .9375rem;
+      line-height: 1;
+    }
+  }
+  .is-yes .bi { color: $volt; }
+  .is-no {
+    color: $fg-muted;
+
+    .bi { color: $fg-dim; }
+  }
+}
+// 權益清單的分支版 .benefit-list.branch-v.benefit-branch（註冊頁的免費會員權益摘要）：
+// 一條 $branch-free 灰色直線（同比較矩陣的免費欄）：✓＝實心節點＋勾、✗＝虛線空心節點＋叉
+// <li class="is-yes"><span class="node node-lg branch-node" aria-hidden="true"><i class="bi bi-check-lg"></i></span><span>…</span></li>
+// ✗ 的節點加 .node-dashed、圖示 bi-x-lg。節點是裝飾（aria-hidden），讀螢幕軟體讀「包含／不包含」；直線畫在每一列身上，所以列距用 padding 不用 margin
+.benefit-branch {
+  --branch-color: #{$branch-free};
+  --branch-x: .625rem;
+  --branch-pad: 2.125rem;
+  --branch-node-y: .75rem;
+  margin-bottom: 1rem;
+
+  > li {
+    padding-bottom: .75rem;
+
+    + li {
+      margin-top: 0;
+    }
+  }
+  > li:last-child {
+    padding-bottom: 0;
+  }
+  .node {
+    --node-color: #{$branch-free};
+
+    .bi {
+      margin: 0;
+      font-size: .625rem;
+      color: $on-volt;
+    }
+  }
+  .node-dashed .bi {
+    color: $fg-dim;
+  }
+}
+.plan-cta {
+  width: 100%;
+  margin-top: auto;
+}
+
+// ---------- 比較矩陣（分支圖） ----------
+.matrix-wrap {
+  border: 1px solid $line;
+  border-radius: $border-radius;
+}
+.matrix {
+  width: 100%;
+  min-width: 40rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: $font-size-sm;
+
+  th,
+  td {
+    padding: .75rem 1rem;
+    border-bottom: 1px solid $line;
+    vertical-align: middle;
+  }
+  thead th {
+    background-color: $panel-raised;
+    color: $fg-strong;
+    font-weight: $font-weight-bold;
+    text-align: center;
+    white-space: nowrap;
+    border-bottom-color: $line-strong;
+  }
+  thead th:first-child,
+  tbody th {
+    text-align: left;
+  }
+  // 首欄凍結（手機橫向捲動時）：$editor 底＋右側 1px 線
+  thead th:first-child,
+  tbody th {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    box-shadow: inset -1px 0 0 $line;
+  }
+  tbody th {
+    background-color: $editor;
+    color: $fg;
+    font-weight: $font-weight-medium;
+  }
+  td {
+    position: relative;
+    width: 20%;
+    text-align: center;
+    background-color: $editor;
+  }
+  .is-free  { --col: #{$branch-free}; --cell-bg: #{$editor}; }
+  .is-month { --col: #{$branch-trunk}; --cell-bg: #{$rec-tint}; }
+  .is-year  { --col: #{$branch-create}; --cell-bg: #{$editor}; }
+  td.is-month,
+  thead .is-month {
+    background-color: $rec-tint;
+  }
+  // 每個方案欄中央一條直線：每格畫自己那一段，第一列從節點開始、最後一個權益列到節點結束
+  td::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: -1px;
+    left: 50%;
+    margin-left: -1px;
+    border-left: 2px solid var(--col);
+  }
+  tbody tr:first-child td::before { top: 50%; }
+  tbody tr:nth-last-child(2) td::before { bottom: 50%; }
+  tbody tr:last-child > * { border-bottom: 0; }
+  .is-total {
+    th {
+      font-weight: $font-weight-bold;
+      color: $fg-strong;
+    }
+    td {
+      font-family: $font-family-monospace;
+      font-weight: $font-weight-bold;
+      color: $fg-strong;
+      letter-spacing: 0;
+    }
+    td::before {
+      content: none;
+    }
+    strong {
+      color: $volt;
+    }
+  }
+}
+.matrix-flag {
+  display: block;
+  margin-top: .125rem;
+  font-size: .75rem;
+  font-weight: $font-weight-medium;
+  color: $volt;
+
+  .bi {
+    margin-right: .25rem;
+    font-size: .6875rem;
+  }
+}
+// 一格：[空][節點][有／無]，節點剛好在欄中央的線上
+.mx {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: .5rem;
+  text-align: left;
+
+  > .node {
+    --node-size: .875rem;
+    --node-color: var(--col);
+    --node-ring: var(--cell-bg);
+    --node-bg: var(--cell-bg);
+    grid-column: 2;
+  }
+}
+.mx-yes {
+  color: $fg-strong;
+}
+.mx-no {
+  color: $fg-muted;
+
+  > .node {
+    border-style: dashed;
+    border-width: 1.5px;
+    background-color: var(--node-bg);
+  }
+}
+.mx-na {
+  display: inline;
+  color: $fg-muted;
+}
+.matrix-hint {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: -.75rem 0 .75rem;
+  font-size: $small-font-size;
+  color: $fg-muted;
+}
+
+// ---------- 收據：名稱 ……… 等寬數值 ----------
+// <dl class="receipt"><div><dt>方案</dt><dd>年費訂閱</dd></div>…</dl>
+.receipt {
+  margin: 0 0 1.25rem;
+  font-size: $font-size-sm;
+
+  > div {
+    display: flex;
+    align-items: baseline;
+    gap: .375rem;
+    padding: .375rem 0;
+
+    // 點線引導：空的彈性元素，底線落在基線上
+    &::before {
+      content: "";
+      order: 1;
+      flex: 1 1 1rem;
+      min-width: 1rem;
+      border-bottom: 2px dotted $line-strong;
+    }
+  }
+  dt {
+    order: 0;
+    flex: 0 0 auto;
+    font-weight: $font-weight-normal;
+    color: $fg-muted;
+  }
+  dd {
+    order: 2;
+    margin: 0;
+    color: $fg-strong;
+    text-align: right;
+  }
+  dd.num {
+    font-size: $mono-size;
+  }
+}

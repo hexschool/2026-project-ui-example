@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 每頁改：title、description -->
+  <title>訂閱方案｜現場筆記 FieldNotes</title>
+  <meta name="description" content="免費、月費、年費三種方案一次比較。438 篇付費文章、142 位第一線作者，隨時取消、七天內不滿意可全額退費。">
+  <meta name="theme-color" content="#F7EEDC">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <!-- 字體：Huninn 粉圓（標題、引言）、Chiron GoRound TC（介面與長文）、Fredoka（數字與英文） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Chiron+GoRound+TC:wght@400;500;700&family=Fredoka:wght@500;600&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!--
+    ============================================================
+    頁面骨架（所有頁面共用）
+    - 頁首、頁尾在每一頁都完整寫一份；改頁首或頁尾時，10 個 .html 要一起改，
+      改完執行 npm run check 確認都與這份範本一致。
+    - 頁首是離視窗頂 12px 的浮起膠囊（64px 高）：
+      品牌（手繪筆記本＋現場筆記＋FieldNotes）靠左 → 主導覽（首頁、文章列表、訂閱方案）置中 → 搜尋圓鈕、會員膠囊靠右。
+      992px 以下：膠囊只留品牌＋「搜尋、會員頭像、選單」三個圓鈕；選單展開成膠囊下方的一張圓角紙卡（3 個導覽連結＋會員入口）。
+      HTML 的順序是「品牌 → 手機圓鈕列 → 選單（主導覽＋桌機的搜尋與會員入口）」，Tab 順序與畫面順序一致。
+      搜尋列（#siteSearch）展開在膠囊正下方，是一張圓角紙條。
+    - 每頁只需要調整一處「目前頁面」標示：
+      首頁、文章列表、訂閱方案：頁首導覽的 <a class="nav-link"> 加 active 與 aria-current="page"
+      文章內頁（article.html）、作者個人頁（author.html）：「文章列表」加 active，不加 aria-current
+      個人頁面（account.html）：手機選單的「我的現場筆記」加 active 與 aria-current，
+                               桌機的 .site-member 加 is-active 與 aria-current
+      Guideline、登入（login.html）、註冊（register.html）、忘記密碼（forgot-password.html）不標示目前頁
+      （目前頁的手繪珊瑚螢光筆由 CSS 依 .active／.is-active 畫上去）
+    - 示意使用者已登入（陳柏諺），所以頁首沒有「登入 / 註冊」
+    - <main> 裡的內容放在一張「手帳紙」上：.container > .sheet（點格紋）；長文、表單底下用 .sheet-plain 區塊（純紙色）
+    ============================================================
+  -->
+  <!-- 內容較短的頁面，頁尾也貼齊視窗底部 -->
+  <div class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main">跳至主要內容</a>
+
+    <header class="site-header">
+      <div class="container">
+        <div class="site-header-inner">
+          <nav class="navbar navbar-expand-lg site-capsule" aria-label="主要導覽">
+            <a class="navbar-brand site-brand" href="index.html">
+              <svg class="site-brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+                <path class="site-brand-ribbon" d="M20.5 3.5h4.5v10l-2.25-1.9-2.25 1.9z"/>
+                <path class="site-brand-book" d="M8.6 3.9c4.9-.5 10.6-.4 16 .2 1.3.2 2 .9 2.1 2.2.3 6.6.3 13.2-.1 19.6-.1 1.3-.9 2.1-2.2 2.2-5.2.4-10.5.4-15.8 0-1.3-.1-2.1-.9-2.2-2.2-.3-6.5-.3-13.1.1-19.7.1-1.3.9-2.2 2.1-2.3z"/>
+                <path class="site-brand-lines" d="M12.2 11.2c3.2-.2 6.6-.2 9.6 0M12.2 15.8c3.2-.2 6.6-.2 9.6 0M12.2 20.4c2.2-.1 4.4-.1 6.4 0"/>
+                <path class="site-brand-rings" d="M4.4 8.6h4.8M4.4 16h4.8M4.4 23.4h4.8"/>
+              </svg>
+              <span class="site-brand-name">現場筆記</span>
+              <span class="site-brand-en">FieldNotes</span>
+            </a>
+
+            <!-- 992px 以下的圓鈕列：搜尋、會員入口、選單 -->
+            <div class="site-quick d-flex d-lg-none">
+              <button class="site-round-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋文章">
+                <i class="bi bi-search" aria-hidden="true"></i>
+              </button>
+              <a class="site-round-btn site-round-avatar" href="account.html" aria-label="我的現場筆記">
+                <img src="images/avatar-chen.jpg" alt="" width="32" height="32">
+              </a>
+              <button class="navbar-toggler site-round-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="開啟選單">
+                <i class="bi bi-list" aria-hidden="true"></i>
+              </button>
+            </div>
+
+            <div id="siteNav" class="collapse navbar-collapse site-menu">
+              <ul class="navbar-nav site-nav">
+                <li class="nav-item"><a class="nav-link" href="index.html">首頁</a></li>
+                <li class="nav-item"><a class="nav-link" href="articles.html">文章列表</a></li>
+                <li class="nav-item"><a class="nav-link active" href="pricing.html" aria-current="page">訂閱方案</a></li>
+                <li class="nav-item d-lg-none"><a class="nav-link" href="account.html">我的現場筆記</a></li>
+              </ul>
+              <!-- 桌機右側：搜尋圓鈕 → 會員膠囊 -->
+              <div class="site-header-actions d-none d-lg-flex">
+                <button class="site-round-btn" type="button" data-bs-toggle="collapse" data-bs-target="#siteSearch" aria-controls="siteSearch" aria-expanded="false" aria-label="搜尋文章">
+                  <i class="bi bi-search" aria-hidden="true"></i>
+                </button>
+                <a class="site-member" href="account.html">
+                  <img src="images/avatar-chen.jpg" alt="" width="32" height="32">
+                  <span>我的現場筆記</span>
+                </a>
+              </div>
+            </div>
+          </nav>
+
+          <!-- 點放大鏡展開的搜尋列（桌機與手機共用）：膠囊正下方的一張圓角紙條，送出到文章列表 -->
+          <div id="siteSearch" class="collapse site-search-panel">
+            <form class="site-search" role="search" action="articles.html">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input class="form-control" type="search" name="q" placeholder="搜尋文章、作者或標籤" aria-label="搜尋文章">
+              <button class="btn btn-primary" type="submit">搜尋</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="site-main flex-grow-1" tabindex="-1">
+      <!-- 訂閱方案：版頭（便利貼標題｜滑動開關）→ 活頁紙方案卡 → 完整權益比較 → 確認你的訂閱（表單紙卡｜鋸齒收據）→ FAQ（文案：CONTENT.md §6、§10.7）
+           開門見山，不放品牌故事；整頁只有方案卡被強調的那顆與「確認付款」是珊瑚胖按鈕 -->
+      <div class="container">
+        <div class="sheet pricing-sheet">
+
+          <!-- 區塊 1：方案首屏。月／年切換由 js/main.js 處理（省錢提示＋兩張付費卡的按鈕強調交換） -->
+          <section id="plans" class="section" aria-labelledby="pricingTitle">
+            <nav aria-label="目前位置">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">首頁</a></li>
+                <li class="breadcrumb-item active" aria-current="page">訂閱方案</li>
+              </ol>
+            </nav>
+
+            <!-- 版頭兩欄：左 7 欄黃便利貼寫標題（不傾斜）｜右 5 欄滑動旋鈕開關＋手繪箭頭指向省錢提示 -->
+            <div class="row gy-4 gx-lg-5 align-items-center pricing-head">
+              <div class="col-lg-7">
+                <div class="sticky-note is-butter pricing-title-note">
+                  <span class="tape tape-matcha tape-left" aria-hidden="true"></span>
+                  <h1 id="pricingTitle" class="text-phrase">一次訂閱，<wbr><span class="hl">讀完所有現場</span></h1>
+                  <p class="page-lead mb-0">438&nbsp;篇付費文章、142&nbsp;位第一線作者，新文章上線當天同步開放。</p>
+                </div>
+              </div>
+              <div class="col-lg-5">
+                <div class="billing-panel">
+                  <!-- 滑動旋鈕開關：72px 膠囊軌道＋珊瑚圓鈕（transform 位移）；底層是兩個 radio，方向鍵可切換
+                       軌道左右兩半各是一個 label，點軌道也能切換 -->
+                  <fieldset class="billing-switch">
+                    <legend class="visually-hidden">計費方式</legend>
+                    <input class="btn-check" type="radio" name="billing" id="billMonth" value="month" data-billing checked>
+                    <input class="btn-check" type="radio" name="billing" id="billYear" value="year" data-billing>
+                    <label class="billing-switch-label is-month" for="billMonth">月繳</label>
+                    <span class="billing-switch-track">
+                      <label class="billing-switch-hit is-month" for="billMonth"><span class="visually-hidden">月繳</span></label>
+                      <label class="billing-switch-hit is-year" for="billYear"><span class="visually-hidden">年繳</span></label>
+                      <span class="billing-switch-knob" aria-hidden="true"></span>
+                    </span>
+                    <label class="billing-switch-label is-year" for="billYear">年繳（省兩個月）</label>
+                  </fieldset>
+                  <!-- 手繪箭頭：從「年繳」往下彎，指向省錢提示（裝飾） -->
+                  <svg class="billing-arrow" viewBox="0 0 64 56" width="64" height="56" aria-hidden="true" focusable="false">
+                    <path d="M50 4c6 14 2 30-12 38-7 4-15 5-24 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                    <path d="M21 39l-8 7 9 5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <!-- 省錢提示：預留高度，選年繳時才顯示（visibility 切換，版面不跳動） -->
+                  <p class="billing-hint" data-billing-hint aria-live="polite">年繳一年省下 NT$&nbsp;360 ‧ 平均每月 NT$&nbsp;150</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3 張活頁紙方案卡：等高、按鈕貼底、頂端一排 7 個活頁孔
+                 「★ 最多人選」圓形貼紙與 2.5px 珊瑚框固定在月費卡，不隨月／年切換移動 -->
+            <div class="row g-4 g-xl-5 pricing-plans">
+              <div class="col-lg-4">
+                <article class="plan-card" aria-labelledby="planFree">
+                  <h2 id="planFree" class="plan-card-name">免費會員</h2>
+                  <p class="plan-card-price"><span class="plan-card-currency">NT$</span><span class="figure-num">0</span></p>
+                  <p class="plan-card-fit">適合：想先看看這裡寫什麼的人</p>
+                  <ul class="check-list">
+                    <li><i class="bi bi-check2 check-yes" aria-hidden="true"></i><span><span class="visually-hidden">包含：</span>免費文章全文閱讀（共 127&nbsp;篇）</span></li>
+                    <li><i class="bi bi-check2 check-yes" aria-hidden="true"></i><span><span class="visually-hidden">包含：</span>付費文章免費預覽前 1/3</span></li>
+                    <li><i class="bi bi-check2 check-yes" aria-hidden="true"></i><span><span class="visually-hidden">包含：</span>收藏文章與追蹤作者</span></li>
+                    <li class="is-no"><i class="bi bi-x check-no" aria-hidden="true"></i><span><span class="visually-hidden">不含：</span>付費文章全文</span></li>
+                    <li class="is-no"><i class="bi bi-x check-no" aria-hidden="true"></i><span><span class="visually-hidden">不含：</span>留言與提問</span></li>
+                  </ul>
+                  <a class="btn btn-paper btn-plump w-100" href="register.html">免費註冊</a>
+                </article>
+              </div>
+              <div class="col-lg-4">
+                <article class="plan-card is-recommended" aria-labelledby="planMonth">
+                  <p class="sticker is-butter plan-card-flag"><i class="bi bi-star-fill" aria-hidden="true"></i>最多人選</p>
+                  <h2 id="planMonth" class="plan-card-name">月費訂閱</h2>
+                  <p class="plan-card-price"><span class="plan-card-currency">NT$</span><span class="figure-num">180</span><span class="plan-card-period">／月</span></p>
+                  <p class="plan-card-fit">適合：想先訂一個月試試的人</p>
+                  <ul class="check-list">
+                    <li><i class="bi bi-check2 check-yes" aria-hidden="true"></i><span><span class="visually-hidden">包含：</span>全站 438&nbsp;篇付費文章全文</span></li>
+                    <li><i class="bi bi-check2 check-yes" aria-hidden="true"></i><span><span class="visually-hidden">包含：</span>新上線文章即時解鎖</span></li>
+                    <li><i class="bi bi-check2 check-yes" aria-hidden="true"></i><span><span class="visually-hidden">包含：</span>留言與向作者提問</span></li>
+                    <li><i class="bi bi-check2 check-yes" aria-hidden="true"></i><span><span class="visually-hidden">包含：</span>無廣告閱讀模式</span></li>
+                    <li><i class="bi bi-check2 check-yes" aria-hidden="true"></i><span><span class="visually-hidden">包含：</span>隨時取消，讀到期末</span></li>
+                  </ul>
+                  <a class="btn btn-primary btn-plump w-100" href="#checkout" data-plan-cta="month">開始訂閱</a>
+                </article>
+              </div>
+              <div class="col-lg-4">
+                <article class="plan-card is-matcha" aria-labelledby="planYear">
+                  <h2 id="planYear" class="plan-card-name">年費訂閱<span class="save-tag">省 NT$&nbsp;360</span></h2>
+                  <p class="plan-card-price"><span class="plan-card-currency">NT$</span><span class="figure-num">1,800</span><span class="plan-card-period">／年</span></p>
+                  <p class="plan-card-fit">適合：已經確定要長期讀的人</p>
+                  <ul class="check-list">
+                    <li><i class="bi bi-check2 check-yes" aria-hidden="true"></i><span><span class="visually-hidden">包含：</span>月費方案的全部權益</span></li>
+                    <li><i class="bi bi-check2 check-yes" aria-hidden="true"></i><span><span class="visually-hidden">包含：</span>平均每月 NT$&nbsp;150</span></li>
+                    <li><i class="bi bi-check2 check-yes" aria-hidden="true"></i><span><span class="visually-hidden">包含：</span>年度精選合輯 PDF（每季更新）</span></li>
+                    <li><i class="bi bi-check2 check-yes" aria-hidden="true"></i><span><span class="visually-hidden">包含：</span>作者線上問答場次優先報名</span></li>
+                  </ul>
+                  <a class="btn btn-paper btn-plump w-100" href="#checkout" data-plan-cta="year">訂閱一年</a>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <!-- 區塊 2：完整權益比較。方格紙表格（表頭黃便利貼色、月費欄淡珊瑚底）；✓／✗ 在小圓貼紙裡＋文字
+               手機橫向捲動、首欄凍結（不拆成卡片） -->
+          <section id="compare" class="section pricing-compare" aria-labelledby="compareTitle">
+            <div class="section-heading">
+              <h2 id="compareTitle" class="title-wave">完整權益比較</h2>
+            </div>
+            <p class="compare-hint d-lg-none"><i class="bi bi-arrow-left-right" aria-hidden="true"></i>左右捲動可以看到三種方案，最左欄會固定不動</p>
+            <div class="table-scroll compare-scroll" tabindex="0" role="region" aria-labelledby="compareTitle">
+              <table class="table table-data compare-table">
+                <caption class="visually-hidden">完整權益比較：免費會員、月費訂閱、年費訂閱</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">權益項目</th>
+                    <th scope="col">免費會員</th>
+                    <th scope="col" class="is-recommended">月費訂閱</th>
+                    <th scope="col">年費訂閱</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">免費文章全文（127&nbsp;篇）</th>
+                    <td><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                    <td class="is-recommended"><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                    <td><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">付費文章預覽（前 1/3）</th>
+                    <td><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                    <td class="is-recommended"><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                    <td><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">付費文章全文（438&nbsp;篇）</th>
+                    <td><span class="compare-mark is-no"><span class="mark-dot is-no" aria-hidden="true"><i class="bi bi-x"></i></span>無</span></td>
+                    <td class="is-recommended"><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                    <td><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">新文章即時解鎖</th>
+                    <td><span class="compare-mark is-no"><span class="mark-dot is-no" aria-hidden="true"><i class="bi bi-x"></i></span>無</span></td>
+                    <td class="is-recommended"><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                    <td><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">收藏與追蹤作者</th>
+                    <td><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                    <td class="is-recommended"><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                    <td><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">留言與向作者提問</th>
+                    <td><span class="compare-mark is-no"><span class="mark-dot is-no" aria-hidden="true"><i class="bi bi-x"></i></span>無</span></td>
+                    <td class="is-recommended"><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                    <td><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">無廣告閱讀模式</th>
+                    <td><span class="compare-mark is-no"><span class="mark-dot is-no" aria-hidden="true"><i class="bi bi-x"></i></span>無</span></td>
+                    <td class="is-recommended"><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                    <td><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">年度精選合輯 PDF</th>
+                    <td><span class="compare-mark is-no"><span class="mark-dot is-no" aria-hidden="true"><i class="bi bi-x"></i></span>無</span></td>
+                    <td class="is-recommended"><span class="compare-mark is-no"><span class="mark-dot is-no" aria-hidden="true"><i class="bi bi-x"></i></span>無</span></td>
+                    <td><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">作者線上問答優先報名</th>
+                    <td><span class="compare-mark is-no"><span class="mark-dot is-no" aria-hidden="true"><i class="bi bi-x"></i></span>無</span></td>
+                    <td class="is-recommended"><span class="compare-mark is-no"><span class="mark-dot is-no" aria-hidden="true"><i class="bi bi-x"></i></span>無</span></td>
+                    <td><span class="compare-mark"><span class="mark-dot is-yes" aria-hidden="true"><i class="bi bi-check2"></i></span>有</span></td>
+                  </tr>
+                  <tr class="is-price-row">
+                    <th scope="row">平均月費</th>
+                    <td><span aria-hidden="true">—</span><span class="visually-hidden">不適用</span></td>
+                    <td class="is-recommended num">NT$&nbsp;180</td>
+                    <td class="num"><strong>NT$&nbsp;150</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- 區塊 3：確認你的訂閱。方案卡的按鈕連到這裡；摘要以 Notion 的年費為準（靜態），不隨月／年切換改變
+               左 7 欄表單紙卡＋付款狀態示意｜右 5 欄收據（上緣直、下緣鋸齒，≥ 992 sticky） -->
+          <section id="checkout" class="section pricing-checkout" aria-labelledby="checkoutTitle">
+            <div class="section-heading">
+              <h2 id="checkoutTitle" class="title-wave">確認你的訂閱</h2>
+            </div>
+            <div class="row gy-5 gx-lg-5">
+              <div class="col-lg-7">
+                <!-- 設計稿沒有後端：表單不送出；串接金流時在這裡改成 <form action="…" method="post"> -->
+                <form class="note-card is-white checkout-card" action="pricing.html" aria-labelledby="payTitle">
+                  <span class="tape tape-butter tape-left" aria-hidden="true"></span>
+                  <h3 id="payTitle" class="checkout-card-title">付款方式</h3>
+                  <fieldset id="payMethods">
+                    <legend class="visually-hidden">選擇付款方式</legend>
+                    <!-- 4 個圓角票券 radio：選中＝珊瑚框＋珊瑚淡底＋右上勾貼紙 -->
+                    <div class="pay-options">
+                      <div class="pay-option">
+                        <input class="btn-check" type="radio" name="pay" id="payApple">
+                        <label class="pay-ticket" for="payApple"><i class="bi bi-apple" aria-hidden="true"></i>Apple Pay</label>
+                        <span class="sticker is-coral pay-check" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+                      </div>
+                      <div class="pay-option">
+                        <input class="btn-check" type="radio" name="pay" id="payGoogle">
+                        <label class="pay-ticket" for="payGoogle"><i class="bi bi-google" aria-hidden="true"></i>Google Pay</label>
+                        <span class="sticker is-coral pay-check" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+                      </div>
+                      <div class="pay-option">
+                        <input class="btn-check" type="radio" name="pay" id="payLine">
+                        <label class="pay-ticket" for="payLine"><i class="bi bi-line" aria-hidden="true"></i>LINE Pay</label>
+                        <span class="sticker is-coral pay-check" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+                      </div>
+                      <div class="pay-option">
+                        <input class="btn-check" type="radio" name="pay" id="payCard" checked>
+                        <label class="pay-ticket" for="payCard"><i class="bi bi-credit-card" aria-hidden="true"></i>信用卡</label>
+                        <span class="sticker is-coral pay-check" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+                      </div>
+                    </div>
+                  </fieldset>
+                  <!-- 只有選「信用卡」時顯示（CSS :has） -->
+                  <div class="row g-3 checkout-fields">
+                    <div class="col-12">
+                      <label class="form-label" for="cardNo">卡號</label>
+                      <input class="form-control num" type="text" id="cardNo" inputmode="numeric" autocomplete="cc-number" value="4821 1234 5678 9012">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label" for="cardExp">有效期限</label>
+                      <input class="form-control num" type="text" id="cardExp" inputmode="numeric" autocomplete="cc-exp" placeholder="MM / YY">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label" for="cardCvc">安全碼</label>
+                      <input class="form-control num" type="text" id="cardCvc" inputmode="numeric" autocomplete="cc-csc" placeholder="CVC" aria-describedby="cardCvcHelp">
+                      <p id="cardCvcHelp" class="form-text mb-0">卡片背面三碼</p>
+                    </div>
+                  </div>
+                  <hr class="hr-wave">
+                  <div class="form-check-row">
+                    <input class="form-check-input" type="checkbox" id="agreeRenew" checked>
+                    <label class="form-check-label" for="agreeRenew">我了解本方案將於到期日自動續訂，可隨時於個人頁面取消。</label>
+                  </div>
+                </form>
+
+                <!-- 設計稿狀態示意：付款三態（處理中 → 成功／失敗）與欄位錯誤 -->
+                <section class="demo-state" aria-labelledby="demoPayTitle">
+                  <p class="demo-state-tag"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意</p>
+                  <h3 id="demoPayTitle" class="demo-state-title">設計稿狀態示意：付款狀態</h3>
+                  <p class="text-note">按下「確認付款」後依序出現，提示框放在付款方式上方。</p>
+                  <div class="d-grid gap-3">
+                    <div class="callout">
+                      <i class="bi bi-arrow-repeat callout-icon" aria-hidden="true"></i>
+                      <div class="callout-body">
+                        <p class="callout-title"><span class="badge-state is-neutral"><i class="bi bi-hourglass-split" aria-hidden="true"></i>處理中</span></p>
+                        <p>處理中，請勿關閉頁面…</p>
+                      </div>
+                    </div>
+                    <div id="paySuccessDemo" class="callout is-ok">
+                      <i class="bi bi-check-circle-fill callout-icon" aria-hidden="true"></i>
+                      <div class="callout-body">
+                        <p class="callout-title"><span class="badge-state is-ok"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>訂閱成功</span></p>
+                        <p>訂閱成功，438&nbsp;篇文章已全部解鎖。</p>
+                        <div class="callout-actions">
+                          <a class="btn btn-paper btn-sm" href="article.html?view=subscribed">回到剛才那篇文章</a>
+                          <a class="btn btn-text" href="articles.html">探索全部文章</a>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="callout is-error">
+                      <i class="bi bi-x-circle-fill callout-icon" aria-hidden="true"></i>
+                      <div class="callout-body">
+                        <p class="callout-title"><span class="badge-state is-error"><i class="bi bi-x-circle-fill" aria-hidden="true"></i>付款失敗</span></p>
+                        <p>付款未完成，訂閱尚未開始。銀行回覆：額度不足。</p>
+                        <div class="callout-actions">
+                          <a class="btn btn-paper btn-sm" href="#payMethods">換一張卡</a>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="demo-state-stage">
+                      <p class="demo-state-label">欄位錯誤：卡號位數不足</p>
+                      <label class="form-label" for="cardNoError">卡號</label>
+                      <input class="form-control num is-invalid" type="text" id="cardNoError" inputmode="numeric" autocomplete="off" value="4821 1234 5678" aria-describedby="cardNoErrorMsg" aria-invalid="true">
+                      <p id="cardNoErrorMsg" class="field-error mb-0"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>卡號需為 16 碼</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <div class="col-lg-5">
+                <!-- 收據：白紙、上緣直、下緣鋸齒（mask）；每列「標籤 ⋯⋯ 值」點線引導；「下次扣款」整列抹茶螢光筆＋Fredoka 40px 日期 -->
+                <div class="receipt-wrap">
+                  <aside class="receipt" aria-labelledby="summaryTitle">
+                    <h3 id="summaryTitle" class="receipt-title">訂閱摘要</h3>
+                    <dl class="info-list receipt-list">
+                      <div><dt>方案</dt><dd>年費訂閱</dd></div>
+                      <div><dt>首期金額</dt><dd class="num">NT$&nbsp;1,800</dd></div>
+                      <div><dt>訂閱期間</dt><dd class="num"><time datetime="2026-10-03">2026/10/03</time> – <time datetime="2027-10-02">2027/10/02</time></dd></div>
+                    </dl>
+                    <div class="receipt-next">
+                      <p class="receipt-next-label"><i class="bi bi-calendar-event" aria-hidden="true"></i>下次扣款</p>
+                      <p class="receipt-next-date figure-num"><time datetime="2027-10-02">2027/10/02</time></p>
+                      <p class="receipt-next-note">屆時自動續訂 NT$&nbsp;1,800</p>
+                    </div>
+                    <div class="receipt-total">
+                      <span>本次應付</span>
+                      <span class="figure-num">NT$&nbsp;1,800</span>
+                    </div>
+                    <button class="btn btn-primary btn-plump w-100" type="button" data-pay>確認付款 NT$&nbsp;1,800</button>
+                    <p class="receipt-status" data-pay-status role="status"></p>
+                    <p class="receipt-trust">七天內不滿意可全額退費 ‧ 線上一鍵取消 ‧ 訂閱期間全站 438&nbsp;篇付費文章任讀</p>
+                  </aside>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 區塊 4：FAQ。H2 置中＋單欄 800 置中；每題一張圓角紙卡，問題前一枚問號圓貼紙；展開的那題黃便利貼色
+               第一題預設展開、一次只開一題；對平台有利的規則也照寫 -->
+          <section id="faq" class="section pricing-faq" aria-labelledby="faqTitle">
+            <div class="section-heading text-center">
+              <h2 id="faqTitle" class="title-wave text-phrase">訂閱前，<wbr>你可能想知道</h2>
+            </div>
+            <div class="accordion faq-list" id="faqList">
+              <div class="accordion-item">
+                <h3 class="accordion-header">
+                  <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" aria-expanded="true" aria-controls="faq1"><span class="sticker is-blue faq-q" aria-hidden="true"><i class="bi bi-question-lg"></i></span>可以隨時取消嗎？</button>
+                </h3>
+                <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqList">
+                  <div class="accordion-body">可以，在個人頁面點一下就能取消，不需來信或致電。取消後仍可閱讀到本期結束。</div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h3 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" aria-expanded="false" aria-controls="faq2"><span class="sticker is-blue faq-q" aria-hidden="true"><i class="bi bi-question-lg"></i></span>取消後文章就看不到了嗎？</button>
+                </h3>
+                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqList">
+                  <div class="accordion-body">到期後付費文章會回到預覽狀態，免費文章與你的收藏紀錄都會保留。</div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h3 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" aria-expanded="false" aria-controls="faq3"><span class="sticker is-blue faq-q" aria-hidden="true"><i class="bi bi-question-lg"></i></span>可以退費嗎？</button>
+                </h3>
+                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqList">
+                  <div class="accordion-body">首次訂閱七天內、閱讀未超過 3&nbsp;篇付費文章，可申請全額退費。</div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h3 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4" aria-expanded="false" aria-controls="faq4"><span class="sticker is-blue faq-q" aria-hidden="true"><i class="bi bi-question-lg"></i></span>年費訂到一半想取消怎麼辦？</button>
+                </h3>
+                <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqList">
+                  <div class="accordion-body">可取消自動續訂，已付費期間照常使用至到期日；年費不提供按比例退款（七天內首次訂閱除外）。</div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h3 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5" aria-expanded="false" aria-controls="faq5"><span class="sticker is-blue faq-q" aria-hidden="true"><i class="bi bi-question-lg"></i></span>訂閱可以指定只看某位作者嗎？</button>
+                </h3>
+                <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqList">
+                  <div class="accordion-body">目前採全站訂閱制，不分作者。訂閱一次所有付費文章都能讀。</div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h3 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq6" aria-expanded="false" aria-controls="faq6"><span class="sticker is-blue faq-q" aria-hidden="true"><i class="bi bi-question-lg"></i></span>有學生或團體優惠嗎？</button>
+                </h3>
+                <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqList">
+                  <div class="accordion-body">目前尚未提供，企業團體訂閱預計於後續開放。</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="site-footer-paper">
+          <div class="row gy-4 gx-lg-5">
+            <div class="col-lg-5">
+              <a class="site-brand" href="index.html">
+                <svg class="site-brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+                  <path class="site-brand-ribbon" d="M20.5 3.5h4.5v10l-2.25-1.9-2.25 1.9z"/>
+                  <path class="site-brand-book" d="M8.6 3.9c4.9-.5 10.6-.4 16 .2 1.3.2 2 .9 2.1 2.2.3 6.6.3 13.2-.1 19.6-.1 1.3-.9 2.1-2.2 2.2-5.2.4-10.5.4-15.8 0-1.3-.1-2.1-.9-2.2-2.2-.3-6.5-.3-13.1.1-19.7.1-1.3.9-2.2 2.1-2.3z"/>
+                  <path class="site-brand-lines" d="M12.2 11.2c3.2-.2 6.6-.2 9.6 0M12.2 15.8c3.2-.2 6.6-.2 9.6 0M12.2 20.4c2.2-.1 4.4-.1 6.4 0"/>
+                  <path class="site-brand-rings" d="M4.4 8.6h4.8M4.4 16h4.8M4.4 23.4h4.8"/>
+                </svg>
+                <span class="site-brand-name">現場筆記</span>
+                <span class="site-brand-en">FieldNotes</span>
+              </a>
+              <!-- 品牌說明寫在一張黃便利貼上（不傾斜） -->
+              <p class="site-footer-lead sticky-note is-butter">這裡不收二手整理、不收懶人包，只收第一線工作者親自寫的長文。每篇文章都可以免費讀前三分之一，讀到關鍵的那一段才需要訂閱。</p>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2 offset-lg-1">
+              <h2 class="site-footer-title">讀者</h2>
+              <ul class="list-unstyled site-footer-links mb-0">
+                <li><a href="articles.html">瀏覽文章</a></li>
+                <li><a href="pricing.html">訂閱方案</a></li>
+                <li><a href="account.html#library">我的收藏</a></li>
+                <li><a href="account.html#subscription">訂閱狀態</a></li>
+              </ul>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+              <h2 class="site-footer-title">作者</h2>
+              <ul class="list-unstyled site-footer-links mb-0">
+                <li><a href="account.html?role=reader#apply">申請成為作者</a></li>
+                <li><a href="account.html?role=author#my-articles">我的文章</a></li>
+                <li><a href="account.html?role=author#editor">撰寫新文章</a></li>
+                <li><a href="account.html?role=author#analytics">內容數據</a></li>
+              </ul>
+            </div>
+            <!-- 關於現場筆記、作者審核標準、聯絡我們尚未設計頁面：不帶 href 的佔位連結 -->
+            <div class="col-md-4 col-lg-2">
+              <h2 class="site-footer-title">平台</h2>
+              <ul class="list-unstyled site-footer-links mb-0">
+                <li><a>關於現場筆記</a></li>
+                <li><a>作者審核標準</a></li>
+                <li><a href="pricing.html#faq">退費與取消政策</a></li>
+                <li><a>聯絡我們</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="site-footer-copy">© 2026 現場筆記 FieldNotes｜<wbr>本站為課程設計稿範例，文章、作者與數據皆為示意資料。</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+// ============================================================
+// Markdown 即時高亮與代碼塊預覽（本風格的招牌 1、2）
+// 1. .md-quote：引用區塊（> 記號欄、左 3px 電光綠線、$panel 底）；首頁引文與文章引言同一組字級
+// 2. .prose：長文（700px、17px／1.9；h2 ##、h3 ###、引言 >、--- 等寬虛線、Markdown 表格）
+//    加 .md-lines.md-lines-xl 時，≥ 1200px 左側出現行號槽（每個段落、標題、表格、圖片各算一行）
+// 3. .code-block：代碼塊預覽（分頁列＋行號＋語法上色＋橫向捲動），Guideline 07 用
+// 4. 行內 code：$panel-raised 底＋語法字串色
+// 記號與行號一律用 ::before／::after 的替代文字留空（content: "…" / ""），不寫進文字本身
+// ============================================================
+
+// ---------- 1. 引用區塊 ----------
+// <figure class="md-quote">
+//   <blockquote><p>引文</p></blockquote>
+//   <figcaption class="author-line">…署名…</figcaption>
+// </figure>
+// 文章內頁的 <blockquote> 直接套同一組（.prose blockquote）
+@mixin md-quote {
+  position: relative;
+  margin: 0;
+  padding: 1.25rem 1.5rem 1.25rem 3rem;
+  background-color: $panel;
+  border-left: 3px solid $volt;
+  border-radius: 0 $border-radius $border-radius 0;
+
+  // > 記號欄：和引文第一行垂直置中（記號用引文的字級畫再縮小）
+  &::before {
+    content: ">" / "";
+    position: absolute;
+    left: 1.125rem;
+    top: 1.25rem;
+    font-family: $font-family-monospace;
+    font-size: $quote-font-size;
+    font-weight: $font-weight-bold;
+    line-height: $quote-line-height;
+    color: $md-marker-color;
+    transform: scale(.75);
+    transform-origin: 0 50%;
+  }
+  blockquote,
+  > p {
+    margin: 0;
+  }
+  blockquote p,
+  > p {
+    margin: 0;
+    font-size: $quote-font-size;
+    font-weight: $font-weight-medium;
+    line-height: $quote-line-height;
+    color: $fg-strong;
+  }
+  figcaption {
+    margin-top: 1rem;
+    font-size: $font-size-sm;
+    color: $fg-muted;
+  }
+}
+.md-quote {
+  @include md-quote;
+}
+@include media-breakpoint-down(md) {
+  .md-quote {
+    padding: 1rem 1rem 1rem 2.25rem;
+
+    &::before {
+      left: .75rem;
+      top: 1rem;
+    }
+  }
+}
+
+// ---------- 2. 長文 ----------
+// <div class="prose md-lines md-lines-xl" data-prose-sizable>…</div>
+// 字級調整：.prose-sm／.prose-lg（js/main.js 切換），三段行高都 ≥ 1.8
+.prose {
+  --prose-fs: #{map-get($prose-font-sizes, md)};
+  --prose-lh: #{map-get($prose-line-heights, md)};
+  max-width: $prose-max-width;
+  font-family: $prose-font-family;
+  font-size: var(--prose-fs);
+  line-height: var(--prose-lh);
+  color: $fg;
+  letter-spacing: .02em;
+
+  > * {
+    --ln-h: calc(var(--prose-fs) * var(--prose-lh));
+  }
+  p,
+  ul,
+  ol {
+    margin: 0 0 $prose-paragraph-gap;
+  }
+  li + li {
+    margin-top: .375em;
+  }
+  h2 {
+    @include md-marker("##", 2);
+    --ln-h: calc(#{$prose-h2-size} * 1.45);
+    // 上 2.75em、下 .9em（以內文字級計，字級調整時跟著變）
+    margin: calc(var(--prose-fs) * 2.75) 0 calc(var(--prose-fs) * .9);
+    font-size: $prose-h2-size;
+    line-height: 1.45;
+  }
+  h3 {
+    @include md-marker("###", 3, .6);
+    --ln-h: calc(#{$prose-h3-size} * 1.5);
+    margin: calc(var(--prose-fs) * 2) 0 calc(var(--prose-fs) * .75);
+    font-size: $prose-h3-size;
+    line-height: 1.5;
+  }
+  > :first-child {
+    margin-top: 0;
+  }
+  blockquote {
+    @include md-quote;
+    --ln-top: 1.25rem;
+    --ln-h: calc(#{$quote-font-size} * #{$quote-line-height});
+    margin: 2em 0;
+  }
+  // --- 分隔線：等寬的虛線（每段約一個等寬字寬）
+  hr {
+    height: 2px;
+    margin: 2.5em 0;
+    border: 0;
+    background-image: linear-gradient(90deg, $line-strong 0 .6em, transparent .6em 1em);
+    background-size: 1em 2px;
+    opacity: 1;
+  }
+  figure {
+    margin: 2em 0;
+  }
+  figcaption {
+    margin-top: .625rem;
+    font-size: $small-font-size;
+    line-height: 1.7;
+    color: $fg-muted;
+  }
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid $line;
+    border-radius: $border-radius-sm;
+  }
+  a {
+    color: $sky;
+  }
+  strong {
+    color: $fg-strong;
+  }
+}
+.prose-sm {
+  --prose-fs: #{map-get($prose-font-sizes, sm)};
+  --prose-lh: #{map-get($prose-line-heights, sm)};
+}
+.prose-lg {
+  --prose-fs: #{map-get($prose-font-sizes, lg)};
+  --prose-lh: #{map-get($prose-line-heights, lg)};
+}
+// 導言：比內文大一階、$fg-strong
+.lede {
+  font-size: $lede-font-size;
+  line-height: $lede-line-height;
+  color: $fg-strong;
+}
+
+// 渲染後的 Markdown 表格：等寬數字、欄與欄之間 1px 直線、表頭 $panel-raised
+// <div class="md-table-wrap"><table class="md-table">…</table></div>（窄螢幕在 wrap 裡橫向捲動）
+.md-table-wrap {
+  margin: 2em 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  border: 1px solid $line;
+  border-radius: $border-radius-sm;
+}
+.md-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $font-size-sm;
+  line-height: 1.6;
+
+  caption {
+    caption-side: top;
+    padding: .625rem .875rem;
+    font-size: $small-font-size;
+    font-weight: $font-weight-bold;
+    color: $fg-muted;
+    border-bottom: 1px solid $line;
+  }
+  th,
+  td {
+    padding: .5rem .875rem;
+    border-bottom: 1px solid $line;
+    white-space: nowrap;
+  }
+  th + th,
+  td + td,
+  th + td {
+    border-left: 1px solid $line;
+  }
+  thead th {
+    background-color: $panel-raised;
+    color: $fg-strong;
+    font-weight: $font-weight-bold;
+  }
+  tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+  .num {
+    font-size: $mono-size;
+    text-align: right;
+  }
+}
+
+// ---------- 3. 代碼塊預覽 ----------
+// <figure class="code-block">
+//   <figcaption class="code-block-tab"><span class="code-block-lang">js</span></figcaption>
+//   <pre tabindex="0"><code><span class="code-line">…</span>…</code></pre>
+// </figure>
+// 語法上色：.tok-kw 關鍵字（紫）、.tok-str 字串（橘棕）、.tok-var 變數（天藍）、.tok-com 註解（$fg-dim 斜體）、.tok-fn 函式（$fg-strong）
+.code-block {
+  margin: 0;
+  overflow: hidden;
+  background-color: $rail;
+  border: 1px solid $line;
+  border-radius: $border-radius;
+
+  pre {
+    margin: 0;
+    padding: .875rem 1rem .875rem 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    font-family: $font-family-monospace;
+    font-size: $code-size;
+    line-height: 1.7;
+    color: $fg;
+
+    &:focus-visible {
+      outline: 2px solid $volt;
+      outline-offset: -2px;
+    }
+  }
+  code {
+    display: block;
+    min-width: max-content;
+    padding: 0;
+    background: none;
+    color: inherit;
+    font-size: inherit;
+    counter-reset: code-ln;
+  }
+}
+.code-block-tab {
+  display: flex;
+  align-items: stretch;
+  min-height: 1.75rem;
+  margin: 0;
+  background-color: $panel-raised;
+  border-bottom: 1px solid $line;
+}
+.code-block-lang {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 1rem;
+  background-color: $rail;
+  box-shadow: inset 0 2px 0 $volt;
+  font-family: $font-family-monospace;
+  font-size: .75rem;
+  color: $fg;
+}
+.code-line {
+  display: block;
+  white-space: pre;
+
+  &::before {
+    counter-increment: code-ln;
+    content: counter(code-ln) / "";
+    display: inline-block;
+    width: 3rem;
+    padding-right: 1rem;
+    color: $fg-dim;
+    text-align: right;
+    user-select: none;
+  }
+}
+// 放在長文 .prose 裡時，分頁列不吃 .prose figcaption 的圖說間距
+.prose .code-block-tab {
+  margin-top: 0;
+}
+.tok-kw  { color: $branch-admin; }
+.tok-str { color: $syntax-string; }
+.tok-var { color: $sky; }
+.tok-fn  { color: $fg-strong; }
+.tok-com { color: $fg-dim; font-style: italic; }
+
+// ---------- 4. 行內 code ----------
+code {
+  padding: .1em .375em;
+  border-radius: 3px;
+  background-color: $panel-raised;
+  font-family: $font-family-monospace;
+  letter-spacing: 0;
+}

@@ -1,0 +1,630 @@
+// ============================================================
+// 編輯器元件（個人頁「撰寫新文章」；Guideline 也用）
+// - 寫作窗格 .write-pane：左側槽 = 行號（每個區塊一號）＋區塊記號（標題 #、分隔線 ---；段落沒有記號）
+// - 選取：$selection 底；浮動格式工具列 .float-toolbar（$panel 小窗格，窄螢幕可橫向捲動）
+// - 免費預覽分隔線 .preview-divider：2px $volt 虛線＋兩端把手＋「2,200 字」綠底黑字（全站唯一用虛線當分隔的地方）
+// - 空行：「＋」鈕常駐在記號槽（不是 hover 才出現）；插入選單 .insert-menu 每項左側 32 × 24 區塊縮圖
+// - 底部操作列 .write-bar（$panel-raised 狀態列）；文章設定面板 .settings-pane（可收合）
+// 三個浮動元件在設計稿上同時出現只是為了一次看完（頁面上有說明）
+// ============================================================
+
+// ---------- 1. 寫作窗格與左側槽 ----------
+// <div class="pane write-pane"><div class="pane-head">權限徽章</div>
+//   <div class="write-doc"><p class="wb wb-title">…</p><p class="wb wb-lede">…</p><div class="wb wb-rule" role="separator"></div><p class="wb">…</p>…</div>
+//   <div class="write-bar">…</div></div>
+// 每個 .wb 是一「行」：行號用 ::after 的 counter，記號用 ::before（替代文字留空）
+// --ln-h：這一行第一行文字的行高（rem），行號與記號在這個高度裡垂直置中
+.write-doc {
+  --gut: 4rem;       // 左側槽寬
+  --num-w: 1.625rem; // 行號欄（靠右對齊）
+  --mark-x: 2rem;    // 記號欄的起點（寬 28px，「＋」鈕也放這裡）
+  --pad-l: .875rem;  // 左側槽到文字的距離
+  --pad-r: 1rem;
+  --off: calc(-1 * (var(--gut) + var(--pad-l))); // 從區塊左緣回到窗格左緣
+  position: relative;
+  counter-reset: wl;
+  padding: 1.5rem var(--pad-r) 2rem calc(var(--gut) + var(--pad-l));
+  background: linear-gradient(90deg, $rail 0 var(--gut), $line var(--gut) calc(var(--gut) + 1px), $editor calc(var(--gut) + 1px));
+
+  @include media-breakpoint-up(md) {
+    --gut: 4.75rem;
+    --num-w: 2.25rem;
+    --mark-x: 2.75rem;
+    --pad-l: 1.5rem;
+    --pad-r: 2rem;
+    padding-top: 2.25rem;
+    padding-bottom: 2.5rem;
+  }
+}
+.wb {
+  --ln-h: 1.85rem;
+  position: relative;
+  max-width: 40rem;
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  line-height: 1.85;
+  color: $fg;
+
+  // 行號
+  &::after {
+    counter-increment: wl;
+    content: counter(wl) / "";
+    position: absolute;
+    left: var(--off);
+    top: 0;
+    width: var(--num-w);
+    height: var(--ln-h);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-family: $font-family-monospace;
+    font-size: $mono-size;
+    font-weight: $font-weight-normal;
+    line-height: 1;
+    letter-spacing: 0;
+    color: $gutter-color;
+    pointer-events: none;
+  }
+}
+// 區塊記號
+.wb-title::before,
+.wb-rule::before {
+  position: absolute;
+  left: calc(var(--off) + var(--mark-x));
+  top: 0;
+  height: var(--ln-h);
+  display: flex;
+  align-items: center;
+  font-family: $font-family-monospace;
+  font-size: $mono-size;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+  letter-spacing: 0;
+  color: $md-marker-color;
+  white-space: pre;
+  pointer-events: none;
+}
+.wb-title::before { content: "#" / ""; }
+.wb-rule::before { content: "---" / ""; }
+
+.wb-title {
+  --ln-h: 2.1rem;
+  margin-bottom: .75rem;
+  font-size: 1.5rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.4;
+  letter-spacing: $letter-spacing-heading;
+  color: $fg-strong;
+
+  @include media-breakpoint-up(md) {
+    --ln-h: 2.45rem;
+    font-size: 1.75rem;
+  }
+}
+.wb-lede {
+  --ln-h: 1.9125rem;
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: $fg-muted;
+}
+.wb-rule {
+  --ln-h: 1.75rem;
+  height: 1.75rem;
+  background: linear-gradient($line-strong, $line-strong) 0 50% / 100% 1px no-repeat;
+}
+.wb.is-placeholder {
+  color: $fg-dim;
+}
+
+// ---------- 2. 選取＋浮動格式工具列 ----------
+// 工具列浮在選取段落的正上方（區塊上方預留空間，不蓋到上一段）
+.wb-selection {
+  margin-top: 3.75rem;
+
+  > p {
+    margin: 0;
+  }
+}
+.write-doc .is-selected {
+  padding: .1em 0;
+  background-color: $selection;
+  color: #FFFFFF;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.float-toolbar {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + .375rem);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+  padding: .25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background-color: $panel;
+  border: 1px solid $line-strong;
+  border-radius: $border-radius-sm;
+  box-shadow: $box-shadow-sm;
+
+  @include media-breakpoint-up(md) {
+    left: 3rem;
+    max-width: calc(100% - 3rem);
+  }
+  button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: 3px;
+    background-color: transparent;
+    color: $fg;
+    font-size: 1rem;
+    transition: $hover-transition;
+
+    @include media-breakpoint-up(lg) {
+      width: 2.25rem;
+      height: 2.25rem;
+    }
+    &:hover {
+      background-color: $panel-raised;
+      color: $fg-strong;
+    }
+    &:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 2px $volt;
+    }
+  }
+}
+.float-toolbar-sep {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 1.25rem;
+  margin: 0 .25rem;
+  background-color: $line-strong;
+}
+
+// ---------- 3. 免費預覽分隔線 ----------
+// <div class="wb preview-divider" role="separator" aria-label="…">
+//   <div class="preview-divider-line">把手｜鎖＋說明｜字數｜把手</div><p class="preview-hint">可拖曳調整位置</p></div>
+.preview-divider {
+  --ln-h: 2.75rem;
+  max-width: none;
+  margin: 2rem 0 1.5rem;
+}
+.preview-divider-line {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 2.75rem;
+
+  // 虛線畫在第一列（把手那一列）的中線上
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(1.375rem - 1px);
+    border-top: 2px dashed $volt;
+  }
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+.preview-grip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 2.25rem;
+  border: 1px solid $volt;
+  border-radius: $border-radius-sm;
+  background-color: $volt-tint;
+  color: $volt;
+  font-size: 1rem;
+  cursor: grab;
+}
+.preview-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-width: 0;
+  margin-inline: auto;
+  padding: .125rem .625rem;
+  background-color: $editor;
+  color: $volt;
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+  text-align: center;
+}
+.preview-count {
+  flex: 0 0 auto;
+  padding: .125rem .5rem;
+  border-radius: $border-radius-sm;
+  background-color: $volt;
+  color: $on-volt;
+  font-size: $small-font-size;
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+  white-space: nowrap;
+
+  .num {
+    font-size: $mono-size;
+  }
+}
+// < 768px：說明文字放到虛線下方（虛線那一列只留把手與字數）
+@include media-breakpoint-down(md) {
+  .preview-divider-line {
+    flex-wrap: wrap;
+  }
+  .preview-label {
+    order: 1;
+    flex: 1 0 100%;
+    justify-content: center;
+    margin: .25rem 0 0;
+    padding: 0;
+    background-color: transparent;
+    text-wrap: balance;
+  }
+  .preview-count {
+    margin-left: auto;
+  }
+}
+.preview-hint {
+  margin: .25rem 0 0;
+  font-size: .75rem;
+  line-height: 1.5;
+  color: $fg-muted;
+  text-align: center;
+}
+
+// ---------- 4. 空行：「＋」鈕（28px，常駐在記號槽）＋placeholder＋游標 ----------
+.wb-empty {
+  margin-bottom: .5rem;
+}
+.insert-btn {
+  position: absolute;
+  left: calc(var(--off) + var(--mark-x));
+  top: calc((var(--ln-h) - 1.75rem) / 2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid $volt;
+  border-radius: 50%;
+  background-color: $volt-tint;
+  color: $volt;
+  font-size: .875rem;
+  transition: $hover-transition;
+
+  // 觸控：點擊範圍上下左右各加 8px（不改變外觀尺寸）
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -.5rem;
+  }
+  &:hover,
+  &[aria-expanded="true"] {
+    background-color: $volt;
+    color: $on-volt;
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: $focus-ring-double;
+  }
+}
+.wb-placeholder {
+  margin: 0;
+  color: $fg-dim;
+}
+
+// ---------- 5. 插入選單：指令列外觀，分組名稱前加 // ----------
+// <div class="insert-menu"><p class="insert-group">內容</p><button class="insert-item"><svg class="blk-thumb">…</svg><i class="bi …"></i>圖片</button>…</div>
+.insert-menu {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 18rem);
+  margin: 0 0 .5rem;
+  padding: .25rem 0 .375rem;
+  background-color: $panel;
+  border: 1px solid $line-strong;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+}
+.insert-group {
+  margin: 0;
+  padding: .5rem .875rem .25rem;
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+  color: $fg-muted;
+
+  &::before {
+    content: "// " / "";
+    font-family: $font-family-monospace;
+    font-weight: $font-weight-normal;
+    letter-spacing: 0;
+    color: $fg-dim;
+    white-space: pre;
+  }
+  &:not(:first-child) {
+    margin-top: .375rem;
+    padding-top: .75rem;
+    border-top: 1px solid $line;
+  }
+}
+.insert-item {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: .375rem .875rem;
+  border: 0;
+  background-color: transparent;
+  color: $fg;
+  font-size: $font-size-sm;
+  text-align: left;
+  transition: $hover-transition;
+
+  @include media-breakpoint-up(lg) {
+    min-height: 2.5rem;
+  }
+  .bi {
+    font-size: 1rem;
+    line-height: 1;
+    color: $fg-muted;
+  }
+  &:hover {
+    background-color: $row-hover;
+    color: $fg-strong;
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px $volt;
+  }
+  // 免費預覽分隔線：強調（電光綠淡底＋左側 2px）
+  &.is-highlight {
+    background-color: $volt-tint;
+    color: $volt;
+    font-weight: $font-weight-bold;
+    box-shadow: inset 2px 0 0 $volt;
+
+    .bi { color: $volt; }
+    &:hover { color: $volt-hover; }
+    &:focus-visible { box-shadow: inset 0 0 0 2px $volt; }
+  }
+}
+// 32 × 24 區塊縮圖（純圖形，aria-hidden）
+.blk-thumb {
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 1.5rem;
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+
+  .t-frame,
+  .t-code { fill: $rail; stroke: $line-strong; stroke-width: 1; }
+  .t-line { stroke: $fg-dim; }
+  .t-volt { stroke: $volt; }
+  .t-volt-fill { fill: $volt; stroke: none; }
+  .t-sky { stroke: $sky; }
+  .t-sky-fill { fill: $sky; stroke: none; }
+  .t-dot { fill: $fg-muted; stroke: none; }
+  .t-admin { stroke: $branch-admin; }
+  .t-str { stroke: $syntax-string; }
+}
+
+// ---------- 6. 底部操作列 ----------
+.write-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  padding: .75rem 1rem;
+  background-color: $panel-raised;
+  border-top: 1px solid $line;
+  border-radius: 0 0 calc(#{$border-radius} - 1px) calc(#{$border-radius} - 1px);
+}
+.write-bar-status,
+.editor-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  font-size: $small-font-size;
+  color: $fg-muted;
+
+  .bi { color: $pass; }
+  .num { font-size: $mono-size; }
+}
+.write-bar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+
+  @include media-breakpoint-down(sm) {
+    width: 100%;
+
+    > .btn {
+      flex: 1 1 0;
+      padding-inline: .5rem;
+    }
+  }
+}
+
+// ---------- 7. 文章設定面板 ----------
+.settings-pane > .pane-head {
+  justify-content: space-between;
+  padding-right: .25rem;
+}
+.settings-collapse {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: -.375rem 0;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background-color: transparent;
+  color: $fg-muted;
+  transition: $hover-transition;
+
+  &:hover {
+    background-color: $row-hover;
+    color: $fg-strong;
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px $volt;
+  }
+  .bi {
+    transition: transform .15s ease;
+  }
+  &[aria-expanded="false"] .bi {
+    transform: rotate(180deg);
+  }
+}
+.settings-body {
+  padding: 1.25rem;
+}
+.settings-row {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  & + & {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px dashed $line-strong;
+  }
+}
+.settings-range {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+
+  .progress {
+    flex: 1 1 auto;
+    height: .5rem;
+  }
+  .num {
+    font-size: $mono-size;
+    font-weight: $font-weight-bold;
+    color: $fg-strong;
+  }
+}
+.settings-cover {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: .875rem;
+}
+// 可移除的標籤（× 鈕在標籤裡）與「＋ 新增」
+.tag-removable {
+  padding-right: .125rem;
+
+  button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.375rem;
+    height: 1.375rem;
+    padding: 0;
+    border: 0;
+    border-radius: 2px;
+    background-color: transparent;
+    color: $fg-muted;
+    font-size: 1rem;
+    transition: $hover-transition;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: -.5rem -.25rem;
+    }
+    &:hover {
+      background-color: $line-strong;
+      color: $fg-strong;
+    }
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px $volt;
+    }
+  }
+}
+.tag.tag-add {
+  border: 1px dashed $control;
+  background-color: transparent;
+  color: $sky;
+  cursor: pointer;
+
+  &:hover {
+    border-color: $sky;
+    color: $sky-hover;
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: $focus-ring-double;
+  }
+}
+
+// ---------- 8. 發布前檢查清單（設計稿狀態示意） ----------
+.check-title {
+  margin: 0 0 .625rem;
+  font-weight: $font-weight-bold;
+  color: $fg-strong;
+}
+.checklist {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    font-size: $font-size-sm;
+
+    + li {
+      margin-top: .375rem;
+    }
+    .bi {
+      flex: 0 0 auto;
+      margin-top: .1875rem;
+    }
+  }
+  .is-done .bi { color: $pass; }
+  .is-todo {
+    color: $warn;
+  }
+}
+// 空白新文章：上下內距縮小
+.write-pane-blank .write-doc {
+  padding-top: 1.25rem;
+  padding-bottom: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-collapse .bi {
+    transition: none;
+  }
+}

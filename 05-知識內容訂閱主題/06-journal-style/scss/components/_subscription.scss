@@ -1,0 +1,158 @@
+// ============================================================
+// 訂閱狀態卡 SubscriptionCard（個人頁面、Guideline）：「月計畫頁」
+// - 白紙卡 5 : 7：左半是黃色方格頁（計畫本的月曆頁），Fredoka 56px 到期日外面一個手繪珊瑚圈、「剩餘 364 天」
+//   右半是 .info-list（點線引導）＋兩顆同大小的次要膠囊按鈕（變更方案、取消自動續訂）
+// - 其他狀態 .sub-state：已取消待到期是黃便利貼，未訂閱與已到期是白紙卡
+// - 取消確認對話框（.cancel-dialog）：圓角紙卡；「確認取消」「先不要」一樣大
+// ============================================================
+
+// 手繪的珊瑚圈（不閉合的橢圓，像用筆圈起日期）
+$hand-ellipse: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 80' preserveAspectRatio='none'><path d='M108 6C160 5 196 20 195 41S150 76 96 75 4 61 5 39 52 4 122 9' fill='none' stroke='#{$coral}' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/></svg>");
+
+.sub-card {
+  position: relative;
+  display: grid;
+  overflow: hidden;
+  border-radius: $border-radius-lg;
+  background-color: $white;
+  box-shadow: $box-shadow;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 5fr 7fr;
+  }
+}
+.sub-card-main {
+  padding: 1.75rem 1.5rem 2rem;
+  // 方格頁：黃底＋淡格線（裝飾）
+  background-color: $butter;
+  background-image:
+    linear-gradient(rgba($pen, .06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba($pen, .06) 1px, transparent 1px);
+  background-size: 1.5rem 1.5rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 2.25rem 2rem;
+    border-right: 2px dashed $paper-edge;
+  }
+  @include media-breakpoint-down(md) {
+    border-bottom: 2px dashed $paper-edge;
+  }
+}
+.sub-card-label {
+  margin: 1.25rem 0 .25rem;
+  color: $pen-body;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+// 到期日：Fredoka 56px，外面一個手繪珊瑚圈（背景 SVG，裝飾）
+.sub-card-date {
+  display: inline-block;
+  margin: 0 0 .25rem -.875rem;
+  padding: .75rem 1.25rem .875rem;
+  background: escape-svg($hand-ellipse) no-repeat center / 100% 100%;
+  font-size: 3.5rem;   // 56px
+  line-height: 1;
+  @include media-breakpoint-down(sm) { font-size: 2.5rem; }
+  @include media-breakpoint-between(md, xl) { font-size: 2.75rem; }
+}
+.sub-card-remain {
+  margin: 0;
+  color: $pen;
+  font-family: $font-family-hand;
+  font-size: 1.125rem;
+}
+.sub-card-detail {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 1.5rem 1.75rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 2rem 2.25rem;
+  }
+  .info-list > div { padding-block: .75rem; }
+
+  // 手機：值放不下一行時改成標籤在上、值在下（不畫點線）
+  @include media-breakpoint-down(sm) {
+    .info-list > div {
+      flex-direction: column;
+      gap: .125rem;
+      &::after { display: none; }
+    }
+    .info-list dd { text-align: left; }
+    .sub-card-pay { justify-content: flex-start; }
+  }
+}
+.sub-card-pay {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .25rem 1rem;
+}
+// 兩顆同大小的次要膠囊
+.sub-card-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+
+  @include media-breakpoint-down(sm) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// ---------- 其他訂閱狀態 ----------
+.sub-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  padding: 1.5rem 1.5rem 1.75rem;
+
+  p { color: $pen-body; }
+  > .btn { margin-top: auto; }
+}
+.sub-state-title {
+  margin: .875rem 0 .5rem;
+  font-size: 1.25rem;
+
+  // 768–1199 三欄最窄（卡片內約 140–150px，Guideline 有左側索引時更窄）：
+  // 「已取消自動續訂」7 個字放不下 20px，改 18px，不讓最後一個字落單
+  @include media-breakpoint-between(md, xl) { font-size: 1.125rem; }
+}
+
+// ---------- 取消確認對話框 ----------
+// 真的對話框（.modal.cancel-dialog）與設計稿的靜態版（.cancel-dialog-static）共用：圓角紙卡、按鈕一樣大
+.cancel-dialog .modal-footer,
+.cancel-dialog-static .modal-footer {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+
+  > * { margin: 0; }
+}
+.cancel-dialog-note {
+  margin: 0;
+  padding: .875rem 1.5rem 1.25rem;
+  border-top: 1.5px dashed $dot;
+  color: $pen-muted;
+  font-size: $small-font-size;
+  line-height: 1.7;
+}
+.cancel-dialog-static {
+  max-width: 31.25rem;
+  margin-top: map-get($spacers, 3);
+  border-radius: $border-radius-xl;
+  background-color: $white;
+  box-shadow: $box-shadow-lg;
+
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: 1.25rem 1.5rem;
+  }
+  .modal-header { padding-bottom: .5rem; }
+  .modal-title { margin: 0; }
+  .modal-body { padding-block: .5rem 1rem; color: $pen-body; }
+}

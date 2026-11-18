@@ -1,0 +1,578 @@
+// ============================================================
+// 現場筆記 FieldNotes｜02 極客代碼知識庫｜Bootstrap 5 變數覆寫（design token）
+// 規則：只在這裡改 Bootstrap 變數；元件與頁面樣式一律引用變數，不寫死色碼
+//
+// 單一深色主題：VS Code 暗底、電光綠、天藍。不跟著作業系統切換（$enable-dark-mode: false）
+// 對比度皆以 WCAG 2.x 相對亮度公式計算；未註明時是對頁面底 $editor #1E1E1E 的比值
+// 分層靠底色深淺：$rail（最深）→ $editor（頁面）→ $panel（側欄、窗格）→ $panel-raised（標題列、表頭、hover）
+// ============================================================
+
+// ---------- 1. 色彩 ----------
+
+// 面（由深到淺）
+$rail:          #181818; // 活動列（頁首）、頁尾、輸入框底、程式碼區塊底（內文 11.98、次要字 7.47、電光綠 12.37）
+$editor:        #1E1E1E; // 頁面底（編輯區）
+$panel:         #252526; // 側欄面板、窗格、卡片、付費牆卡（內文 10.33、標題 13.68、次要字 6.44）
+$panel-raised:  #2D2D30; // 窗格標題列、表頭、hover 列、行內 code 底、分頁籤列（內文 9.26、次要字 5.77）
+$row-hover:     #2A2D2E; // 列表與樹狀列的 hover 底（內文 9.36）
+
+// 線：$line 只當裝飾（1.51），可以操作的東西一律用 $control 框（≥ 3:1）
+$line:          #3C3C3C; // 窗格分隔線、列分隔線、縮排導線（裝飾）
+$line-strong:   #454545; // 浮層外框（下拉、對話框、指令列）
+$control:       #7A7A7A; // 輸入框、checkbox、radio、選項卡框線（對 $editor 3.88、$panel 3.57、$rail 4.14）
+
+// 文字
+$fg-strong:     #F2F2F2; // 標題、重要數字（14.89）
+$fg:            #D4D4D4; // 內文、長文（11.25；不用純白，降低眩光）
+$fg-muted:      #A8A8A8; // 次要文字、資訊列、說明（7.01／面板 6.44／$panel-raised 5.77）
+$fg-dim:        #8F8F8F; // 行號、placeholder、鎖住的目錄項目（5.15／面板 4.74／$rail 5.49）
+
+// 電光綠：品牌與動作（主要按鈕、目前位置、訂閱限定、游標、狀態列、分支主幹）
+$volt:          #3DF58A; // 當字 11.61（面板 10.67）；按鈕字 $on-volt 在綠底 13.44
+$volt-hover:    #6BFFA8; // 主要按鈕 hover（按鈕字 15.16）
+$volt-tint:     #1E3A2A; // 選中列、目前目錄項目、訂閱限定徽章底（$volt 8.63、內文 8.36）
+$rec-tint:      #222B25; // 推薦方案（月費）窗格與矩陣欄淡底（$volt 10.16、內文 9.84、次要字 6.13）
+$on-volt:       #0B0F0C; // 電光綠與天藍底上的字
+
+// 天藍：連結、免費權限、資訊、次要按鈕框、創作分支
+$sky:           #4FC1FF; // 8.26／面板 7.59／$panel-raised 6.80；$on-volt 在天藍底 9.56
+$sky-hover:     #8AD6FF; // 連結 hover
+$info-tint:     #1B2E3D; // 資訊提示框、免費徽章底（$sky 6.91、內文 9.41）
+
+// 狀態色：成功不用電光綠（主色是動作，$pass 是狀態），一律搭配圖示與文字
+$pass:          #89D185; // 成功：訂閱中、已通過、付款成功、已讀完（9.15／面板 8.40）
+$pass-tint:     #1F2E22; // $pass 7.83
+$warn:          #E2C08D; // 提醒：已取消待到期、審核中、即將到期、處理中（9.65）
+$warn-tint:     #3A3220; // $warn 7.34
+$fail:          #F48771; // 錯誤：未通過、付款失敗、扣款失敗、欄位錯誤（6.79／面板 6.24）
+$fail-tint:     #3A2323; // $fail 5.92
+
+// 分支色與語法色
+$branch-admin:   #C586C0; // 平台管理分支、語法關鍵字（5.99／面板 5.50／$panel-raised 4.93）
+$syntax-string:  #CE9178; // 語法字串、行內 code 的字（$panel-raised 上 5.19）
+$selection:      #264F78; // 編輯器的文字選取底（白字 8.50）
+
+// 權限色：訂閱限定＝電光綠字＋實心鎖＋綠淡底；免費＝天藍字＋開鎖＋藍淡底
+$perm-premium:    $volt;
+$perm-premium-bg: $volt-tint;
+$perm-free:       $sky;
+$perm-free-bg:    $info-tint;
+
+// 分支色（權限分支樹、比較矩陣、方案節點；同一組意思全站一致）
+$branch-trunk:  $volt;          // 閱讀、帳號（主幹）、月費
+$branch-create: $sky;           // 創作、年費
+$branch-free:   $fg-dim;        // 免費會員
+
+$primary:   $volt;
+$secondary: $panel-raised;
+$success:   $pass;
+$info:      $sky;
+$warning:   $warn;
+$danger:    $fail;
+$light:     $panel-raised;
+$dark:      $rail;
+
+$theme-colors: (
+  "primary":   $primary,
+  "secondary": $secondary,
+  "success":   $success,
+  "info":      $info,
+  "warning":   $warning,
+  "danger":    $danger,
+  "light":     $light,
+  "dark":      $dark,
+);
+
+// 按鈕與標籤上的字：亮色底（電光綠、天藍、狀態色）選到 $on-volt，深色底選到 $fg-strong
+$color-contrast-dark:  $on-volt;
+$color-contrast-light: $fg-strong;
+$min-contrast-ratio:   4.5;
+
+// 只有一套深色主題：不輸出 [data-bs-theme="dark"]，深淺切換不影響畫面
+$enable-dark-mode: false;
+
+// ---------- 全站底色與文字（深色要逐一覆寫，否則會出現白底元件） ----------
+$body-bg:                  $editor;
+$body-color:               $fg;
+$body-secondary-color:     $fg-muted;
+$body-secondary-bg:        $panel;
+$body-tertiary-color:      $fg-dim;
+$body-tertiary-bg:         $panel-raised;
+$body-emphasis-color:      $fg-strong;
+$border-color:             $line;
+$border-color-translucent: rgba(#FFFFFF, .1);
+$headings-color:           $fg-strong;
+
+// 連結：天藍＋細底線
+$link-color:             $sky;
+$link-hover-color:       $sky-hover;
+$link-decoration:        underline;
+$link-underline-offset:  .25em;
+
+// 狀態色三件組：文字、淡底、淡框（alert、.text-*-emphasis、.bg-*-subtle 共用）；淡底一律用深色淡底
+$primary-text-emphasis:   $volt;
+$secondary-text-emphasis: $fg;
+$success-text-emphasis:   $pass;
+$info-text-emphasis:      $sky;
+$warning-text-emphasis:   $warn;
+$danger-text-emphasis:    $fail;
+$light-text-emphasis:     $fg;
+$dark-text-emphasis:      $fg;
+
+$primary-bg-subtle:       $volt-tint;
+$secondary-bg-subtle:     $panel-raised;
+$success-bg-subtle:       $pass-tint;
+$info-bg-subtle:          $info-tint;
+$warning-bg-subtle:       $warn-tint;
+$danger-bg-subtle:        $fail-tint;
+$light-bg-subtle:         $panel-raised;
+$dark-bg-subtle:          $rail;
+
+$primary-border-subtle:   mix($volt, $editor, 45%);
+$secondary-border-subtle: $line;
+$success-border-subtle:   mix($pass, $editor, 45%);
+$info-border-subtle:      mix($sky, $editor, 45%);
+$warning-border-subtle:   mix($warn, $editor, 45%);
+$danger-border-subtle:    mix($fail, $editor, 45%);
+$light-border-subtle:     $line;
+$dark-border-subtle:      $line;
+
+// 元件的「選中」：電光綠底＋黑字（分頁、核取方塊、分段控制共用）
+$component-active-bg:    $volt;
+$component-active-color: $on-volt;
+
+// 焦點環：2px 間隙（頁面底色）＋2px 電光綠外圈；電光綠按鈕上也看得到
+$focus-ring-width:      2px;
+$focus-ring-opacity:    1;
+$focus-ring-blur:       0;
+$focus-ring-color:      $volt;
+$focus-ring-double:     0 0 0 2px $editor, 0 0 0 4px $volt; // 自訂：內圈間隙、外圈電光綠
+$focus-ring-box-shadow: $focus-ring-double;
+
+$code-color:  $syntax-string;
+$code-font-size: .875em;
+$mark-bg:     $selection;
+$mark-color:  $fg-strong;
+$mark-padding: .1em .15em;
+$kbd-bg:      $panel-raised;
+$kbd-color:   $fg-strong;
+
+$hr-color:    $line;
+$hr-opacity:  1;
+
+// ---------- 2. 字體與字級 ----------
+// 黑體：Noto Sans TC 負責介面、標題與長文
+// 等寬：JetBrains Mono 只給記號（# ## > 行號）、數字、資訊列、徽章、程式碼；中文會退回 Noto Sans TC
+$font-family-sans-serif: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+$font-family-monospace:  "JetBrains Mono", "Noto Sans TC", ui-monospace, "SFMono-Regular", Menlo, monospace;
+$font-family-base:       $font-family-sans-serif;
+$font-family-code:       $font-family-monospace;
+$headings-font-family:   $font-family-sans-serif;
+$display-font-family:    $font-family-sans-serif;
+
+$font-size-root:  null;
+$font-size-base:  .9375rem;  // 15px：介面內文
+$font-size-sm:    .8125rem;  // 13px
+$font-size-lg:    1.0625rem; // 17px
+$small-font-size: .8125rem;  // 13px：資訊列、麵包屑、行號
+
+$font-weight-light:    400;
+$font-weight-normal:   400;
+$font-weight-medium:   500;
+$font-weight-semibold: 700;
+$font-weight-bold:     700;
+$font-weight-bolder:   900;
+
+$line-height-base: 1.65;
+$line-height-sm:   1.5;
+$line-height-lg:   1.9;
+
+// 字級階層（≥ 992px；以下的字級寫在 _base.scss）
+$h1-font-size: 2.25rem;   // 36px：各頁 H1（文章 H1 另見 $article-title-size）
+$h2-font-size: 1.75rem;   // 28px：區塊 H2（前加 ## 記號）
+$h3-font-size: 1.25rem;   // 20px：H3、卡片標題
+$h4-font-size: 1.0625rem; // 17px
+$h5-font-size: .9375rem;  // 15px
+$h6-font-size: .8125rem;  // 13px
+
+$headings-font-weight:   700;
+$headings-line-height:   1.35;
+$headings-margin-bottom: .75rem;
+
+// 首頁 H1（Display）：64 → 48 → 36px，900 字重
+$display-font-sizes: (
+  1: 4rem,
+  2: 3rem,
+  3: 2.5rem,
+  4: 2.25rem,
+  5: 2rem,
+  6: 1.75rem,
+);
+$display-font-weight: 900;
+$display-line-height: 1.18;
+
+$lead-font-size:   1.1875rem; // 19px：首頁副標
+$lead-font-weight: 400;
+
+// 自訂：字級（_base.scss 與各頁用）
+$hero-title-sizes:   (xs: 2.25rem, md: 3rem, lg: 3.5rem, xl: 4rem); // 36 → 48 → 56 → 64px（992–1199px 用 56，兩行才放得下）
+$page-title-sizes:   (xs: 1.875rem, lg: 2.25rem);       // 30 → 36px
+$section-title-sizes: (xs: 1.5rem, lg: 1.75rem);        // 24 → 28px
+$article-title-sizes: (xs: 1.875rem, lg: 2.5rem);       // 30 → 40px（文章 H1，行高 1.35）
+$mono-size:          .8125rem;  // 13px：資訊列、徽章、行號、分頁
+$code-size:          .875rem;   // 14px：程式碼、行內 code
+$figure-sizes:       (sm: 2.75rem, lg: 3.5rem);         // 44 → 56px：價格、到期日、數據卡大數字
+
+// 自訂：字距
+$letter-spacing-body:    .01em;
+$letter-spacing-heading: -.01em;
+$letter-spacing-label:   .02em;
+
+// 自訂：長文排版（文章內頁 .prose、編輯器、Guideline 長文示範共用）
+// 內文最大寬 700px（規格 680–720px），左側 56px 行號槽（≥ 1200px 才顯示）在 700px 之外
+$prose-max-width:     700px;
+$prose-font-family:   $font-family-sans-serif;
+// 字級調整 Aa 三段：小／標準（預設）／大；三段行高都 ≥ 1.8
+$prose-font-sizes:    (sm: 1rem, md: 1.0625rem, lg: 1.1875rem);  // 16／17／19px
+$prose-line-heights:  (sm: 1.95, md: 1.9, lg: 1.85);
+$prose-paragraph-gap: 1.25em;
+$prose-h2-size:       1.5625rem; // 25px，行高 1.45，上 2.75em、下 .9em
+$prose-h3-size:       1.25rem;   // 20px，行高 1.5
+$lede-font-size:      1.25rem;   // 導言 20px／1.8
+$lede-line-height:    1.8;
+$quote-font-size:     1.25rem;   // 引言區塊（首頁引文同一組）20px／1.75，500 字重
+$quote-line-height:   1.75;
+
+// Markdown 記號與行號槽
+$md-marker-color:  $volt;
+$gutter-width:     3.5rem; // 56px：行號槽
+$gutter-color:     $fg-dim;
+
+// ---------- 3. 間距 ----------
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * .25,  // 4px
+  2: $spacer * .5,   // 8px
+  3: $spacer,        // 16px
+  4: $spacer * 1.5,  // 24px
+  5: $spacer * 2,    // 32px
+  6: $spacer * 3,    // 48px
+  7: $spacer * 4,    // 64px
+  8: $spacer * 6,    // 96px
+);
+
+$grid-gutter-width:   1.5rem;  // 24px
+$container-padding-x: 2rem;    // 左右各 16px；≥ 768px 在 _base.scss 的 .wrap 改成 24／48px
+// 斷點沿用 Bootstrap：sm 576 / md 768 / lg 992 / xl 1200 / xxl 1400
+
+// 版面：IDE 三欄（活動列｜側欄面板｜編輯區），內容的版心只存在於編輯區內
+$activity-bar-width:  6rem;     // 96px：≥ 992px 固定在左側的活動列
+$topbar-height:       3.5rem;   // 56px：< 992px 的頂端列
+$side-panel-width:    18rem;    // 288px（≥ 1200px）
+$side-panel-width-lg: 16rem;    // 256px（992–1199px）
+$panel-head-height:   2.25rem;  // 36px：側欄面板的標題列
+$pane-head-height:    2rem;     // 32px：窗格標題列
+$wrap-wide:           1200px;   // 首頁、訂閱方案的內容最寬
+$wrap-list:           960px;    // 文章列表、作者頁
+$wrap-account:        1040px;   // 個人頁、Guideline
+$wrap-pad-x:          3rem;     // 48px：編輯區內容左右內距（≥ 992px）
+$section-gap:         4rem;     // 64px：區塊上下留白（< 992px 為 48px）
+$section-gap-sm:      3rem;
+$row-height:          2.5rem;   // 40px：介面列高（< 992px 觸控一律 44px）
+
+// sticky：≥ 992px 沒有頂端列，sticky 元素貼齊視窗頂；< 992px 一律取消 sticky
+$sticky-top-offset:   1rem;     // 16px（方案頁訂閱摘要）
+$scroll-pad-desktop:  1rem;     // 16px
+$scroll-pad-mobile:   4.5rem;   // 72px：頂端列 56px＋16px
+
+// ---------- 4. 圓角與陰影 ----------
+// 按鈕、輸入框 4px；窗格、卡片、選單、付費牆 6px；貼齊視窗邊的面板 0；頭像是 6px 圓角方形
+$border-width:       1px;
+$border-radius-sm:   .25rem;  // 4px
+$border-radius:      .375rem; // 6px
+$border-radius-lg:   .375rem;
+$border-radius-xl:   .375rem;
+$border-radius-xxl:  .375rem;
+$border-radius-pill: 50rem;   // 只給狀態圓點、分支節點、開關
+
+$enable-shadows: false;
+// 陰影只給蓋在內容上的層：付費牆卡、指令列搜尋、下拉選單、插入選單、浮動工具列、對話框（＋1px $line-strong 框）
+$box-shadow-sm:    0 2px 6px rgba(0, 0, 0, .4);
+$box-shadow:       0 12px 32px rgba(0, 0, 0, .55);
+$box-shadow-lg:    0 12px 32px rgba(0, 0, 0, .55);
+$box-shadow-inset: inset 0 1px 2px rgba(0, 0, 0, .4);
+
+$enable-negative-margins: true;
+
+// ---------- 5. 元件 ----------
+// 按鈕：主要＝電光綠底＋黑字；次要＝.btn-outline-info（天藍框）；中性＝.btn-outline-secondary（$control 框）
+$btn-padding-y:        .625rem;  // 高 44px
+$btn-padding-x:        1.25rem;
+$btn-font-size:        .9375rem;
+$btn-line-height:      1.5;
+$btn-padding-y-sm:     .5rem;
+$btn-padding-x-sm:     .875rem;
+$btn-font-size-sm:     .8125rem;
+$btn-padding-y-lg:     .75rem;   // 高 48px
+$btn-padding-x-lg:     1.5rem;
+$btn-font-size-lg:     1rem;
+$btn-font-weight:      700;
+$btn-border-radius:    .25rem;
+$btn-border-radius-sm: .25rem;
+$btn-border-radius-lg: .25rem;
+$btn-disabled-opacity: 1;        // 停用不用透明度，改用 _base.scss 的停用色（保留原尺寸）
+$btn-focus-width:      $focus-ring-width;
+$btn-link-disabled-color: $fg-dim;
+
+// 表單：$rail 底、$control 框、等寬字（中文退回 Noto Sans TC）
+$input-font-family:           $font-family-monospace;
+$input-bg:                    $rail;
+$input-color:                 $fg;
+$input-border-color:          $control;
+$input-placeholder-color:     $fg-dim;
+$input-padding-y:             .625rem;
+$input-padding-x:             .75rem;
+$input-font-size:             .9375rem;
+$input-border-radius:         .25rem;
+$input-focus-bg:              $rail;
+$input-focus-color:           $fg-strong;
+$input-focus-border-color:    $volt;
+$input-focus-box-shadow:      0 0 0 1px $volt;
+$input-disabled-bg:           $panel-raised;
+$input-disabled-color:        $fg-dim;
+$input-disabled-border-color: $line-strong;
+$input-group-addon-bg:        $panel-raised;
+$input-group-addon-color:     $fg-muted;
+$input-group-addon-border-color: $control;
+$form-label-font-size:        .8125rem;
+$form-label-font-weight:      500;
+$form-label-color:            $fg;
+$form-label-margin-bottom:    .375rem;
+$form-text-color:             $fg-muted;
+$form-file-button-bg:         $panel-raised;
+$form-file-button-hover-bg:   $row-hover;
+$form-file-button-color:      $fg;
+
+$form-select-bg:               $rail;
+$form-select-indicator-color:  $fg-muted;
+$form-select-focus-box-shadow: $input-focus-box-shadow;
+
+// 核取方塊、radio：$rail 底＋$control 框；選中為電光綠底＋黑勾
+$form-check-input-bg:                   $rail;
+$form-check-input-border:               1px solid $control;
+$form-check-input-border-radius:        .1875rem;
+$form-check-input-checked-color:        $on-volt;
+$form-check-input-checked-bg-color:     $volt;
+$form-check-input-checked-border-color: $volt;
+$form-check-input-focus-border:         $volt;
+$form-check-input-focus-box-shadow:     $focus-ring-double;
+$form-check-input-disabled-opacity:     .5;
+
+$form-switch-color:         $fg-muted;
+$form-switch-focus-color:   $volt;
+$form-switch-checked-color: $on-volt;
+
+$form-feedback-valid-color:   $pass;
+$form-feedback-invalid-color: $fail;
+$enable-validation-icons: false; // 錯誤改用下方文字＋圖示
+
+$form-range-track-bg: $panel-raised;
+
+$btn-close-color:        $fg-strong;
+$btn-close-opacity:      .8;
+$btn-close-hover-opacity: 1;
+$btn-close-focus-shadow: $focus-ring-double;
+
+// 卡片（少用；本風格的卡片是 .pane 窗格）
+$card-bg:            $panel;
+$card-color:         $fg;
+$card-border-color:  $line;
+$card-border-radius: .375rem;
+$card-cap-bg:        $panel-raised;
+$card-cap-color:     $fg-muted;
+$card-spacer-y:      1.25rem;
+$card-spacer-x:      1.25rem;
+
+// 導覽（活動列沿用 .navbar／.nav-link 結構，外觀在 components/_header.scss）
+$navbar-padding-y:               0;
+$navbar-padding-x:               0;
+$navbar-nav-link-padding-x:      0;
+$navbar-light-color:             $fg-muted;
+$navbar-light-hover-color:       $fg-strong;
+$navbar-light-active-color:      $fg-strong;
+$navbar-light-brand-color:       $fg-strong;
+$navbar-light-brand-hover-color: $fg-strong;
+$navbar-light-toggler-border-color: transparent;
+$navbar-toggler-border-radius:   .25rem;
+$navbar-toggler-focus-width:     0;
+$nav-link-font-size:             .75rem;
+$nav-link-color:                 $fg-muted;
+$nav-link-hover-color:           $fg-strong;
+$nav-link-disabled-color:        $fg-dim;
+$nav-underline-border-width:     2px;
+$nav-underline-link-active-color: $fg-strong;
+$nav-tabs-border-color:          $line;
+$nav-tabs-link-active-bg:        $editor;
+$nav-tabs-link-active-color:     $fg-strong;
+
+// 下拉選單、彈出框（浮層：$panel 底＋$line-strong 框＋陰影）
+$dropdown-bg:                $panel;
+$dropdown-color:             $fg;
+$dropdown-border-color:      $line-strong;
+$dropdown-border-radius:     .375rem;
+$dropdown-divider-bg:        $line;
+$dropdown-box-shadow:        $box-shadow;
+$dropdown-link-color:        $fg;
+$dropdown-link-hover-color:  $fg-strong;
+$dropdown-link-hover-bg:     $row-hover;
+$dropdown-link-active-color: $volt;
+$dropdown-link-active-bg:    $volt-tint;
+$dropdown-link-disabled-color: $fg-dim;
+$dropdown-header-color:      $fg-muted;
+$dropdown-padding-y:         .375rem;
+$dropdown-item-padding-y:    .5rem;
+
+// 對話框、側邊抽屜
+$modal-content-bg:            $panel;
+$modal-content-color:         $fg;
+$modal-content-border-color:  $line-strong;
+$modal-content-border-radius: .375rem;
+$modal-content-box-shadow-xs: $box-shadow;
+$modal-content-box-shadow-sm-up: $box-shadow;
+$modal-header-border-color:   $line;
+$modal-footer-border-color:   $line;
+$modal-backdrop-bg:           #000000;
+$modal-backdrop-opacity:      .6;
+$offcanvas-bg-color:          $panel;
+$offcanvas-color:             $fg;
+$offcanvas-border-color:      $line;
+$offcanvas-backdrop-bg:       #000000;
+$offcanvas-backdrop-opacity:  .6;
+
+// Accordion（方案頁 FAQ 是單欄樹狀問答，外觀在 pages/_pricing.scss）
+$accordion-color:               $fg;
+$accordion-bg:                  transparent;
+$accordion-border-color:        $line;
+$accordion-border-radius:       0;
+$accordion-button-color:        $fg-strong;
+$accordion-button-bg:           transparent;
+$accordion-button-active-bg:    transparent;
+$accordion-button-active-color: $fg-strong;
+$accordion-button-padding-y:    .875rem;
+$accordion-button-padding-x:    0;
+$accordion-body-padding-x:      0;
+$accordion-body-padding-y:      .25rem;
+$accordion-icon-color:          $fg-muted;
+$accordion-icon-active-color:   $volt;
+$accordion-button-focus-box-shadow: inset 0 0 0 2px $volt;
+
+// 標籤
+$badge-font-size:     .75rem;
+$badge-font-weight:   500;
+$badge-color:         $on-volt;
+$badge-border-radius: .25rem;
+$badge-padding-y:     .25rem;
+$badge-padding-x:     .5rem;
+
+// 麵包屑（畫成等寬的路徑「首頁 / 文章列表」）
+$breadcrumb-divider:       quote("/");
+$breadcrumb-font-size:     .8125rem;
+$breadcrumb-divider-color: $fg-dim;
+$breadcrumb-active-color:  $fg;
+$breadcrumb-item-padding-x: .5rem;
+$breadcrumb-margin-bottom: 0;
+
+// 分頁（等寬數字）
+$pagination-color:               $fg;
+$pagination-bg:                  $panel;
+$pagination-border-color:        $line-strong;
+$pagination-hover-color:         $fg-strong;
+$pagination-hover-bg:            $row-hover;
+$pagination-hover-border-color:  $control;
+$pagination-focus-color:         $fg-strong;
+$pagination-focus-bg:            $row-hover;
+$pagination-focus-box-shadow:    $focus-ring-double;
+$pagination-active-color:        $on-volt;
+$pagination-active-bg:           $volt;
+$pagination-active-border-color: $volt;
+$pagination-disabled-color:      $fg-dim;
+$pagination-disabled-bg:         $editor;
+$pagination-disabled-border-color: $line;
+$pagination-padding-y:           .5625rem;
+$pagination-padding-x:           .875rem;
+$pagination-border-radius:       .25rem;
+
+// 提示、彈出框、toast
+$tooltip-bg:            $panel-raised;
+$tooltip-color:         $fg-strong;
+$tooltip-opacity:       1;
+$tooltip-border-radius: .25rem;
+$popover-bg:            $panel;
+$popover-border-color:  $line-strong;
+$popover-border-radius: .375rem;
+$popover-header-bg:     $panel-raised;
+$popover-header-color:  $fg-strong;
+$popover-body-color:    $fg;
+$popover-box-shadow:    $box-shadow;
+$toast-background-color: $panel;
+$toast-color:           $fg;
+$toast-border-color:    $line-strong;
+$toast-header-background-color: $panel-raised;
+$toast-header-color:    $fg-muted;
+$toast-border-radius:   .375rem;
+
+// 列表群組
+$list-group-bg:                 $panel;
+$list-group-color:              $fg;
+$list-group-border-color:       $line;
+$list-group-hover-bg:           $row-hover;
+$list-group-active-color:       $volt;
+$list-group-active-bg:          $volt-tint;
+$list-group-active-border-color: $volt;
+$list-group-action-color:       $fg;
+$list-group-action-hover-color: $fg-strong;
+$list-group-action-active-bg:   $panel-raised;
+$list-group-disabled-color:     $fg-dim;
+
+// 表格（資料表 DataTable）：$line 分隔、表頭 $panel-raised、數字欄靠右、等寬數字
+$table-color:          $fg;
+$table-bg:             transparent;
+$table-border-color:   $line;
+$table-striped-bg:     $panel-raised;
+$table-hover-bg:       $row-hover;
+$table-hover-color:    $fg-strong;
+$table-active-bg:      $volt-tint;
+$table-cell-padding-y: .625rem;
+$table-cell-padding-x: .75rem;
+$table-th-font-weight: 700;
+
+// 提示（alert 顏色由上面的三件組決定）
+$alert-border-radius: .375rem;
+$alert-padding-y:     .875rem;
+$alert-padding-x:     1rem;
+
+// 進度條：空軌是 $panel-raised（尚未開始＝空軌，不是 0% 的填色）
+$progress-height:        .375rem;
+$progress-bg:            $panel-raised;
+$progress-bar-bg:        $volt;
+$progress-border-radius: 0;
+$progress-bar-transition: width .08s linear;
+
+$figure-caption-font-size: .8125rem;
+$figure-caption-color:     $fg-muted;
+
+$thumbnail-bg:           $panel;
+$thumbnail-border-color: $line;
+
+// ---------- 6. 本風格的招牌：浮層與動態 ----------
+$overlay-border: 1px solid $line-strong; // 浮層外框（配 $box-shadow）
+$cursor-blink:   1s;                      // 方塊游標閃爍週期（steps(1)，只改 opacity）
+$hover-transition: background-color .12s ease, color .12s ease, border-color .12s ease;
+
+// 圖表（內容數據漏斗）：同一個顏色等比例橫條；淺色示範見 Guideline
+$chart-bar:         $sky;
+$chart-grid:        $line;
+$chart-bar-on-light: #1F6FB2; // Guideline 淺色示範（對白 5.28）
+$chart-text-on-light: #1E1E1E;
+$chart-bg-on-light:  #F3F3F3;

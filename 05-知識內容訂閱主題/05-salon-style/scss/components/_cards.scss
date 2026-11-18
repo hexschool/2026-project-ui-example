@@ -1,0 +1,250 @@
+// ============================================================
+// 卡片：主題積木、文章積木（列表）、精簡文章積木，以及卡片裡共用的小零件
+// 全部都是 .block（2px $ink 框、20px 圓角、實色填滿）；hover／focus 只換底色與字色，不改尺寸
+// ============================================================
+
+// ---------- 「權限徽章＋分類」列、「‧」資訊列 ----------
+// <div class="card-kicker"><span class="perm-badge is-locked">…</span><a class="card-kicker-link" href="articles.html">餐飲與零售</a></div>
+.card-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem .75rem;
+  margin-bottom: .75rem;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+}
+.card-kicker-link {
+  color: var(--fn-fg);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .3em;
+
+  &:hover { color: var(--fn-fg); text-decoration-color: var(--fn-link-hover-line); }
+}
+// <p class="meta-line"><span>約 6,800 字</span><span>閱讀 18 分鐘</span><span><time …>2026/09/28</time></span></p>
+.meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0;
+  font-size: .875rem;
+  line-height: 1.6;
+  color: var(--fn-muted);
+  font-variant-numeric: tabular-nums;
+
+  > span + span::before {
+    content: "‧";
+    margin: 0 .5em;
+  }
+}
+
+// 項目多（3 項以上）的資訊列：每一項不斷行，「‧」接在前一項後面，換行時留在行尾
+// <p class="meta-line meta-line-wrap">…</p>（文章列表）
+.meta-line-wrap {
+  display: block;
+
+  > span { white-space: nowrap; }
+  > span + span::before { content: none; }
+  > span:not(:last-child)::after {
+    content: "‧";
+    margin: 0 .5em;
+  }
+}
+
+// ---------- 權限色條（裝飾；權限仍靠徽章的圖示＋文字） ----------
+// 用背景漸層畫：色條 12px＋2px $ink 分隔線，跟著積木的圓角，不需要 overflow: hidden
+// .perm-stripe-left（文章積木，≥ 768px）／.perm-stripe-top（精簡文章積木、手機的文章積木）
+// 色條顏色：.is-locked 克萊因藍、.is-free 活力橘
+.is-locked { --fn-stripe: #{$perm-locked}; }
+.is-free   { --fn-stripe: #{$perm-free}; }
+@mixin stripe-left {
+  padding-left: calc(#{$block-padding-sm} + 14px);
+  background-image: linear-gradient(90deg, var(--fn-stripe, #{$ink}) 0 12px, $ink 12px 14px, transparent 14px);
+
+  @include media-breakpoint-up(lg) {
+    padding-left: calc(#{$block-padding} + 14px);
+  }
+}
+@mixin stripe-top {
+  padding-top: calc(#{$block-padding-sm} + 14px);
+  background-image: linear-gradient(180deg, var(--fn-stripe, #{$ink}) 0 12px, $ink 12px 14px, transparent 14px);
+}
+.perm-stripe-top { @include stripe-top; }
+.perm-stripe-left { @include stripe-left; }
+
+// ---------- 主題積木 TopicCard（首頁） ----------
+// 40px 黑底白圖示方塊 → 主題名 h3（24px 900）→ 描述 → 底部 Bricolage「86 篇 ‧ 最新更新 2026/09/28」（常駐）
+// 整塊是連到 articles.html 的連結；hover／focus 換成藍底白字（只換顏色，尺寸不變）
+// <a class="block block-link topic-block" href="articles.html">…</a>
+.topic-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 13.75rem; // 220px：寬度不同但同一列等高
+
+  &:hover,
+  &:focus-visible {
+    @include surface-klein;
+
+    .topic-block-icon { background-color: $paper; color: $klein; }
+  }
+}
+.topic-block-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-bottom: 1.25rem;
+  border-radius: $border-radius-sm;
+  background-color: $ink;
+  color: $paper;
+  font-size: 1.25rem;
+  transition: background-color .12s ease-out, color .12s ease-out;
+}
+.topic-block-title {
+  margin-bottom: .5rem;
+  font-size: 1.375rem;
+  font-weight: $font-weight-black;
+  line-height: 1.3;
+
+  @include media-breakpoint-up(xl) {
+    font-size: 1.5rem; // 24px
+  }
+}
+.topic-block-text {
+  margin-bottom: 1.25rem;
+  color: var(--fn-muted);
+}
+.topic-block-meta {
+  margin: auto 0 0;
+  font-family: $font-family-display;
+  font-size: .9375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+// ---------- 精簡文章積木（首頁精選次要、延伸閱讀） ----------
+// 頂端 12px 權限色條 → 權限徽章＋分類 → 標題（h3）→ 作者（＋職稱）‧ 閱讀時間
+// <article class="block mini-block is-locked">…</article>
+.mini-block {
+  @include stripe-top;
+  display: flex;
+  flex-direction: column;
+  transition: background-color .12s ease-out;
+
+  &:hover,
+  &:focus-within { background-color: $fog; }
+}
+.mini-block-title {
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: $font-weight-black;
+  line-height: 1.4;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: $klein; }
+  }
+}
+.mini-block-author {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  margin-top: auto;
+}
+// 資訊列在窄欄換行時，「‧」留在上一行行尾，不會出現在下一行開頭
+.meta-line-flow {
+  display: block;
+
+  > span { white-space: nowrap; }
+  > span:first-child { white-space: normal; }
+}
+
+// ---------- 文章積木（文章列表、作者個人頁） ----------
+// 每篇一塊獨立積木，左側 12px 權限色條（手機改頂端）；≥ 1200 積木內再分左右兩欄（左 5：徽章＋分類、標題、作者；右 7：導言、標籤、資訊列）
+// DOM 順序不變，左欄先讀。hover／focus 換霧白底
+// <article class="block article-block is-locked">
+//   <div class="article-block-head">card-kicker → h2.article-block-title → author-line</div>
+//   <div class="article-block-body">p.article-block-lede → ul.tag-list → p.meta-line</div>
+// </article>
+.article-block {
+  @include stripe-top;
+  display: grid;
+  gap: 1rem;
+  transition: background-color .12s ease-out;
+
+  &:hover,
+  &:focus-within { background-color: $fog; }
+
+  @include media-breakpoint-up(md) {
+    padding-top: $block-padding-sm;
+    @include stripe-left;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: 2.5rem;
+  }
+}
+.article-block-title {
+  margin-bottom: .875rem;
+  font-size: 1.375rem; // 22px
+  font-weight: $font-weight-black;
+  line-height: 1.4;
+  letter-spacing: 0;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: $klein; }
+  }
+
+  @include media-breakpoint-up(xl) {
+    font-size: 1.625rem; // 26px
+  }
+}
+.article-block-lede {
+  margin-bottom: .875rem;
+  line-height: 1.8;
+}
+.article-block-body {
+  display: flex;
+  flex-direction: column;
+  gap: .875rem;
+
+  > * { margin: 0; }
+}
+
+// 文章積木的堆疊：單欄滿寬、間距 12px（文章列表、作者個人頁）
+// <ul class="article-stack"><li><article class="block article-block is-locked">…</article></li>…</ul>
+.article-stack {
+  display: grid;
+  gap: .75rem;
+  margin: 0 0 2.5rem;
+  padding: 0;
+  list-style: none;
+}
+// 付費文章資訊列最後一格「免費預覽前 N 字」：克萊因藍粗字（強調色，不用橘色字）
+.meta-line .is-preview {
+  color: $klein;
+  font-weight: $font-weight-bold;
+}
+
+// ---------- 封面（積木裡的圖片，被積木圓角裁切） ----------
+.cover-frame {
+  display: block;
+  overflow: hidden;
+  background-color: $fog;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}

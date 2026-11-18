@@ -1,0 +1,268 @@
+// ============================================================
+// 訂閱方案 pricing.html
+// 版頭兩欄（左 7 欄黃便利貼寫 H1｜右 5 欄滑動開關＋手繪箭頭指向省錢提示）→ 3 張活頁紙方案卡
+// → 方格紙比較矩陣 → 結帳 7 : 5（表單紙卡｜下緣鋸齒的收據，sticky）→ FAQ 單欄 800 置中，每題一張圓角紙卡
+// 方案卡、開關、矩陣見 components/_plans.scss
+// ============================================================
+
+// ---------- 版頭 ----------
+.pricing-head {
+  margin-top: map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 3);
+  @include media-breakpoint-up(lg) { margin-bottom: map-get($spacers, 6); }
+}
+.pricing-title-note {
+  padding: 2.5rem 1.75rem 2rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 3rem 2.75rem 2.5rem;
+  }
+  h1 { margin-bottom: 1rem; }
+}
+// 開關＋手繪箭頭＋省錢提示：置中排成一欄
+.billing-panel {
+  display: grid;
+  justify-items: center;
+  row-gap: .25rem;
+  @include media-breakpoint-down(lg) { row-gap: .875rem; }
+}
+.billing-arrow {
+  justify-self: center;
+  margin-left: 6rem;
+  color: $coral-ink;
+  // 窄螢幕：開關與提示上下緊貼，不畫箭頭（省下 56px 的預留高度）
+  @include media-breakpoint-down(lg) { display: none; }
+}
+// 省錢提示：珊瑚淡底的圓角泡泡；預留高度，月繳時 visibility: hidden（不是 display: none，版面不跳動）
+.billing-hint {
+  margin: 0;
+  padding: .625rem 1.25rem;
+  border-radius: 1.25rem;
+  background-color: $coral-tint;
+  color: $pen;
+  font-family: $font-family-hand;
+  font-size: 1.0625rem;
+  text-align: center;
+  visibility: hidden;
+
+  &.is-visible { visibility: visible; }
+}
+// 箭頭只在提示出現時一起出現
+.billing-panel:has(.billing-hint:not(.is-visible)) .billing-arrow {
+  visibility: hidden;
+}
+
+// ---------- 方案卡列 ----------
+// 月費卡的圓形貼紙超出卡片上緣：堆疊時（< 992）每張卡上方多留一點空間，貼紙不被裁、不壓到上一張
+.pricing-plans {
+  --bs-gutter-y: 2.75rem;
+  padding-top: 1rem;
+
+  @include media-breakpoint-up(lg) {
+    --bs-gutter-y: 1.5rem;
+  }
+}
+
+// ---------- 比較矩陣 ----------
+.compare-hint {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  color: $pen-muted;
+  font-size: $small-font-size;
+}
+
+// ---------- 結帳 ----------
+.checkout-card {
+  padding: 2.25rem 1.5rem 1.75rem;
+  @include media-breakpoint-up(md) { padding: 2.5rem 2.25rem 2rem; }
+
+  fieldset { margin: 0 0 1.5rem; padding: 0; border: 0; }
+  .hr-wave { margin-block: 1.75rem 1rem; }
+}
+.checkout-card-title {
+  margin-bottom: 1.25rem;
+  font-size: 1.25rem;
+}
+// 4 個圓角票券 radio：兩欄（≥ 576）
+.pay-options {
+  display: grid;
+  gap: .875rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.pay-option {
+  position: relative;
+
+  &:has(.btn-check:focus-visible) .pay-ticket {
+    outline: 2px solid $coral-ink;
+    outline-offset: 3px;
+  }
+}
+.pay-ticket {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  min-height: 3.5rem;
+  padding: .75rem 1.25rem;
+  border: 2px dashed $paper-edge;
+  border-radius: 1rem;
+  background-color: $sheet;
+  color: $pen;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: background-color .12s ease, border-color .12s ease;
+
+  .bi { font-size: 1.25rem; }
+  &:hover { background-color: $butter; }
+}
+.pay-check {
+  --sticker-size: 1.75rem;
+  position: absolute;
+  top: -.5rem;
+  right: -.375rem;
+  font-size: .875rem;
+  visibility: hidden;
+  pointer-events: none;
+}
+.btn-check:checked + .pay-ticket {
+  border-style: solid;
+  border-color: $coral-ink;
+  background-color: $coral-tint;
+}
+.btn-check:checked ~ .pay-check {
+  visibility: visible;
+}
+// 卡號欄位只在選「信用卡」時出現
+.checkout-card:not(:has(#payCard:checked)) .checkout-fields {
+  display: none;
+}
+.checkout-card + .demo-state {
+  margin-top: map-get($spacers, 6);
+}
+
+// 收據：白紙、上緣直、下緣鋸齒（mask：conic-gradient 鋸齒，每齒 20px）；陰影加在外層（drop-shadow 跟著鋸齒）
+.receipt-wrap {
+  filter: drop-shadow(0 1px 0 rgba($pen, .08)) drop-shadow(0 10px 16px rgba($pen, .1));
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+  }
+}
+.receipt {
+  --zig: 1.25rem;
+  padding: 2rem 1.75rem calc(2rem + var(--zig) / 2);
+  border-radius: 1rem 1rem 0 0;
+  background-color: $white;
+  -webkit-mask:
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--zig) 100%;
+  mask:
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--zig) 100%;
+
+  @include media-breakpoint-up(xl) {
+    padding-inline: 2.25rem;
+  }
+}
+.receipt-title {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px dashed $dot;
+  font-size: 1.25rem;
+  text-align: center;
+}
+.receipt-list dd { font-weight: $font-weight-medium; }
+// 下次扣款：整列抹茶螢光筆＋Fredoka 40px 日期
+.receipt-next {
+  margin: 1.25rem 0;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  background: escape-svg($marker-stroke-matcha) no-repeat 50% 50% / 100% 100%, $matcha-tint;
+
+  p { margin: 0; }
+}
+.receipt-next-label {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+}
+.receipt-next-date {
+  margin: .25rem 0 !important;
+  font-size: 2.5rem; // 40px
+  @include media-breakpoint-down(sm) { font-size: 2.125rem; }
+}
+.receipt-next-note {
+  color: $pen-body;
+  font-size: $font-size-sm;
+}
+.receipt-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-top: 1rem;
+  border-top: 2px solid $pen;
+  font-weight: $font-weight-bold;
+
+  .figure-num { font-size: 1.75rem; }
+}
+.receipt-status {
+  min-height: 1.5rem;
+  margin: .75rem 0 0;
+  color: $success;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  text-align: center;
+
+  &:empty { min-height: 0; }
+}
+.receipt-trust {
+  margin: .75rem 0 0;
+  color: $pen-muted;
+  font-size: $small-font-size;
+  line-height: 1.8;
+  text-align: center;
+}
+
+// ---------- FAQ ----------
+// 單欄 800 置中；每題一張白底圓角紙卡；展開的那題整張變黃便利貼色
+.faq-list {
+  --bs-accordion-bg: #{$white};
+  --bs-accordion-btn-bg: #{$white};
+  max-width: 50rem;
+  margin-inline: auto;
+
+  .accordion-item {
+    border-radius: 1.25rem;
+    box-shadow: $box-shadow;
+    overflow: hidden;
+
+    + .accordion-item { margin-top: 1rem; }
+    &:has(.accordion-button:not(.collapsed)) {
+      --bs-accordion-bg: #{$butter};
+    }
+  }
+  .accordion-button {
+    gap: .875rem;
+    min-height: 4rem;
+    font-family: $font-family-hand;
+    font-size: 1.125rem;
+    font-weight: 400;
+    &:hover:not(:focus-visible) { background-color: $butter; }
+  }
+  .accordion-body {
+    padding-top: 0;
+    padding-left: calc(#{$accordion-button-padding-x} + 2rem + .875rem); // 對齊問題文字（貼紙 32px＋間距）
+    color: $pen-body;
+    line-height: 1.85;
+  }
+}
+.faq-q {
+  --sticker-size: 2rem;
+  font-size: 1.125rem;
+}

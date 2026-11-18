@@ -1,0 +1,774 @@
+// ============================================================
+// 現場筆記 FieldNotes｜05 撞色創作者沙龍：全站基礎
+// 字體與字級、連結、區塊節奏、頁面標題區、麵包屑、按鈕、焦點、表單、方塊分頁籤、分段控制、
+// 選項卡、標籤、分頁、空狀態，以及設計稿專用的切換器與狀態示意
+// 便當盒、積木與四種底色的情境（surface、.on-*、.block.is-*）在 components/_bento.scss
+// ============================================================
+
+// ---------- 全站 ----------
+html {
+  scroll-padding-top: $site-header-height-sm + .75rem; // 錨點捲動扣掉 sticky 頁首
+
+  @include media-breakpoint-up(lg) {
+    scroll-padding-top: $site-header-height + 1rem;
+  }
+}
+body {
+  letter-spacing: $letter-spacing-body;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  letter-spacing: 0;
+}
+h1, .h1, h2, .h2 {
+  letter-spacing: $letter-spacing-display;
+}
+h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
+  font-weight: $font-weight-bold; // H3 以下 700；900 只給 H1、H2、列表標題與大名
+  line-height: 1.35;
+}
+
+// 字級三段：≥ 1200 → 768–1199 → 以下（RFS 已關閉）
+h1, .h1 { line-height: 1.15; font-size: 2.125rem; } // 34px
+h2, .h2 { font-size: 1.875rem; }                     // 30px
+h3, .h3 { font-size: 1.25rem; }                      // 20px
+@include media-breakpoint-up(md) {
+  h1, .h1 { font-size: 2.75rem; }  // 44px
+  h2, .h2 { font-size: 2.25rem; }  // 36px
+}
+@include media-breakpoint-up(xl) {
+  h1, .h1 { font-size: $h1-font-size; } // 56px
+  h2, .h2 { font-size: $h2-font-size; } // 44px
+  h3, .h3 { font-size: $h3-font-size; } // 24px
+}
+
+p { margin-bottom: .75rem; }
+
+.form-text {
+  margin-top: .375rem;
+}
+
+// 容器：≥ 992px 左右內距改成 24px（$container-padding-x 是 16px）
+.container {
+  @include media-breakpoint-up(lg) {
+    padding-right: $container-padding-x-lg * .5;
+    padding-left: $container-padding-x-lg * .5;
+  }
+}
+
+// ---------- 字體與數字 ----------
+// Bricolage Grotesque 800：價格、到期日、數據卡、首頁數字、英文品牌（中文落到 Noto Sans TC）
+.figure-num {
+  font-family: $font-family-display;
+  font-weight: 800;
+  font-variation-settings: "opsz" 96;
+  font-optical-sizing: auto;
+  letter-spacing: -.02em;
+  line-height: 1;
+}
+// 表格與資訊列的數字：Noto Sans TC 500＋等寬數字（Bricolage 的數字寬度不一，表格對不齊）
+.num {
+  font-variant-numeric: tabular-nums;
+  font-weight: $font-weight-medium;
+}
+.text-note {
+  font-size: .875rem;
+  color: var(--fn-muted);
+}
+.text-black-900 { font-weight: $font-weight-black; }
+
+// ---------- 詞組換行 ----------
+// 標題的斷點用 <wbr> 標出（例如逗號後）；空間真的不夠時才在詞組中間斷，不會溢出
+.text-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// 連結 hover：只換底線顏色與粗細，不位移
+a {
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color .12s ease-out, color .12s ease-out;
+
+  &:hover {
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--fn-link-hover-line, currentColor);
+  }
+}
+
+// ---------- 區塊節奏 ----------
+.section {
+  padding-top: $section-space-sm;
+  padding-bottom: $section-space-sm;
+
+  @include media-breakpoint-up(lg) {
+    padding-top: $section-space;
+    padding-bottom: $section-space;
+  }
+}
+.section + .section { padding-top: 0; } // 區塊之間只留一份間距（白底接白底）
+.section-sm {
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
+}
+
+// 區塊標題列：左 H2（＋副標）｜右動作按鈕，按鈕和 H2 底線對齊；H2 下方沒有底線或眉標
+// <div class="section-heading">
+//   <h2>…</h2> <p>副標</p> <a class="btn btn-outline-secondary section-heading-action">…</a>
+// </div>
+.section-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+
+  h2 { margin: 0; }
+  p {
+    max-width: 40rem;
+    margin: 0;
+    font-size: 1.0625rem;
+    color: var(--fn-muted);
+  }
+  .section-heading-action { justify-self: start; }
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 2rem;
+    row-gap: .75rem;
+
+    h2 { grid-column: 1; grid-row: 1; align-self: end; }
+    p { grid-column: 1 / -1; grid-row: 2; }
+    .section-heading-action { grid-column: 2; grid-row: 1; align-self: end; }
+  }
+  @include media-breakpoint-up(lg) {
+    margin-bottom: 2rem;
+  }
+}
+
+// ---------- 頁面標題區（文章列表、訂閱方案、個人頁面、作者頁共用） ----------
+// 麵包屑 → H1（900 超大字，左對齊）→ 說明；切換頁面時標題位置不跳動
+.page-header {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+
+  h1 { margin: .75rem 0 0; }
+
+  @include media-breakpoint-up(lg) {
+    padding-top: 2.5rem;
+    padding-bottom: 2rem;
+  }
+}
+.page-lead {
+  max-width: 45rem;
+  margin: .75rem 0 0;
+  font-size: 1.0625rem;
+  color: var(--fn-muted);
+}
+.page-body { padding-bottom: $section-space-sm; }
+@include media-breakpoint-up(lg) {
+  .page-body { padding-bottom: $section-space; }
+}
+
+// ---------- 麵包屑：觸控高度 44px，目前頁黑字 700 ----------
+.breadcrumb {
+  flex-wrap: wrap;
+  font-weight: $font-weight-medium;
+}
+.breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+
+  &.active { font-weight: $font-weight-bold; }
+}
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--fn-fg);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .25em;
+}
+
+// ============================================================
+// 按鈕：2px $ink 框＋12px 圓角＋700 字；顏色依所在積木的底色反白（--fn-primary-*、--fn-secondary-*）
+//   .btn-primary：白積木藍底白字、藍積木白底藍字、黑積木橘底黑字、橘積木藍底白字
+//   .btn-outline-secondary：白積木白底黑框、藍與黑積木透明底白框白字
+//   .btn-dark（黑底白字）、.btn-accent（橘底黑字）固定不反白
+//   hover 只換底色；按下時往右下壓 2px（.btn:active）
+// ============================================================
+.btn {
+  --bs-btn-border-width: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  text-decoration: none;
+  letter-spacing: $letter-spacing-label;
+
+  .bi { font-size: 1.05em; line-height: 1; }
+}
+.btn-primary {
+  --bs-btn-color: var(--fn-primary-fg);
+  --bs-btn-bg: var(--fn-primary-bg);
+  --bs-btn-border-color: #{$ink};
+  --bs-btn-hover-color: var(--fn-primary-fg);
+  --bs-btn-hover-bg: var(--fn-primary-hover-bg);
+  --bs-btn-hover-border-color: #{$ink};
+  --bs-btn-active-color: var(--fn-primary-fg);
+  --bs-btn-active-bg: var(--fn-primary-hover-bg);
+  --bs-btn-active-border-color: #{$ink};
+  --bs-btn-disabled-color: #{$gray-600};
+  --bs-btn-disabled-bg: #{$fog};
+  --bs-btn-disabled-border-color: #{$gray-600};
+}
+.btn-outline-secondary {
+  --bs-btn-color: var(--fn-secondary-fg);
+  --bs-btn-bg: var(--fn-secondary-bg);
+  --bs-btn-border-color: var(--fn-secondary-border);
+  --bs-btn-hover-color: var(--fn-secondary-fg);
+  --bs-btn-hover-bg: var(--fn-secondary-hover-bg);
+  --bs-btn-hover-border-color: var(--fn-secondary-border);
+  --bs-btn-active-color: var(--fn-secondary-fg);
+  --bs-btn-active-bg: var(--fn-secondary-hover-bg);
+  --bs-btn-active-border-color: var(--fn-secondary-border);
+  --bs-btn-disabled-color: #{$gray-600};
+  --bs-btn-disabled-bg: #{$fog};
+  --bs-btn-disabled-border-color: #{$gray-600};
+}
+.btn-dark {
+  --bs-btn-color: #{$paper};
+  --bs-btn-bg: #{$ink};
+  --bs-btn-border-color: #{$ink};
+  --bs-btn-hover-color: #{$paper};
+  --bs-btn-hover-bg: #{$ink-2};
+  --bs-btn-hover-border-color: #{$ink};
+  --bs-btn-active-color: #{$paper};
+  --bs-btn-active-bg: #{$ink-2};
+  --bs-btn-active-border-color: #{$ink};
+}
+.btn-accent {
+  --bs-btn-color: #{$ink};
+  --bs-btn-bg: #{$orange};
+  --bs-btn-border-color: #{$ink};
+  --bs-btn-hover-color: #{$ink};
+  --bs-btn-hover-bg: #{$orange-hover};
+  --bs-btn-hover-border-color: #{$ink};
+  --bs-btn-active-color: #{$ink};
+  --bs-btn-active-bg: #{$orange-hover};
+  --bs-btn-active-border-color: #{$ink};
+}
+// 文字按鈕：44px 觸控高度、粗底線；hover 換底線色
+.btn-text {
+  --bs-btn-padding-x: .25rem;
+  --bs-btn-color: var(--fn-fg);
+  --bs-btn-hover-color: var(--fn-fg);
+  --bs-btn-active-color: var(--fn-fg);
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-border-color: transparent;
+  min-height: 2.75rem;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .3em;
+
+  &:hover { text-decoration-color: var(--fn-link-hover-line); }
+}
+.btn-lg { min-height: 3.5rem; }
+.btn-sm { min-height: 2.75rem; }
+// 方形圖示按鈕（44px）：收藏、分享、Aa、閱讀模式這類只有圖示的按鈕
+.btn-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+}
+
+// ---------- 鍵盤焦點：2px 白內圈＋3px $ink 外圈，在白、藍、橘、黑上都看得到 ----------
+:focus-visible {
+  outline: 3px solid $ink;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px $paper;
+}
+.btn:focus-visible,
+.btn-check:focus-visible + .btn,
+.btn-close:focus-visible,
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus-visible,
+.page-link:focus-visible,
+.accordion-button:focus-visible {
+  outline: 0;
+  box-shadow: $focus-ring-double;
+}
+.form-check-input:focus:not(:focus-visible) { box-shadow: none; }
+.offcanvas:focus-visible,
+.modal:focus-visible,
+main:focus-visible {
+  outline: 0;
+  box-shadow: none;
+}
+
+.skip-link {
+  position: absolute;
+  top: .5rem;
+  left: .5rem;
+  z-index: 1100;
+  padding: .75rem 1.25rem;
+  border: $line;
+  border-radius: $border-radius;
+  background-color: $orange;
+  color: $ink;
+  font-weight: $font-weight-bold;
+  text-decoration: none;
+  transform: translateY(-200%);
+
+  &:focus { transform: none; }
+}
+
+// ---------- 表單微調 ----------
+.form-control,
+.form-select {
+  min-height: 3rem;
+}
+.form-control-lg { min-height: 4rem; } // 64px：文章列表搜尋
+.form-control::placeholder { opacity: 1; }
+.form-control:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 100px $paper inset;
+  -webkit-text-fill-color: $ink;
+}
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: $danger;
+  background-image: none;
+  padding-right: $input-padding-x;
+}
+// 錯誤文字：紅色圖示＋黑字（紅字對白 5.50:1 也可，但與欄位框的紅色重複）
+.invalid-feedback {
+  display: none;
+  color: $ink;
+  font-weight: $font-weight-medium;
+
+  &::before {
+    content: "\F622"; // bi-exclamation-circle-fill：錯誤不只靠顏色
+    margin-right: .375rem;
+    font-family: bootstrap-icons;
+    color: $danger;
+    vertical-align: -.125em;
+  }
+}
+.is-invalid ~ .invalid-feedback { display: block; }
+.form-label-optional {
+  margin-left: .375rem;
+  font-weight: $font-weight-normal;
+  font-size: .8125rem;
+  color: $gray-600;
+}
+.form-count {
+  font-size: .8125rem;
+  color: $gray-600;
+  font-variant-numeric: tabular-nums;
+}
+.form-check {
+  min-height: 1.75rem;
+}
+.form-check-label {
+  cursor: pointer;
+}
+.form-switch .form-check-input:checked {
+  background-color: $klein;
+  border-color: $ink;
+}
+
+// ---------- 方塊分頁籤（文章列表排序、收藏、我的文章、審核佇列、Guideline） ----------
+// 選中黑底白字；數量放在文字後。手機超出寬度時橫向捲動（只捲這一列）
+// <div class="nav nav-blocks" role="tablist"> <button class="nav-link active" …>全部 <span class="tab-count">38</span></button> …
+.nav-blocks {
+  flex-wrap: nowrap;
+  gap: .5rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding: .3125rem; // 讓焦點環不被捲動容器裁掉
+  margin: -.3125rem;
+
+  .nav-link {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    min-height: 2.75rem;
+    padding: .5rem 1rem;
+    border: $line;
+    border-radius: $border-radius;
+    background-color: $paper;
+    color: $ink;
+    font-weight: $font-weight-bold;
+    white-space: nowrap;
+    transition: background-color .12s ease-out, color .12s ease-out;
+
+    &:hover { background-color: $fog; color: $ink; }
+    &.active,
+    &[aria-pressed="true"],
+    &[aria-selected="true"] {
+      background-color: $ink;
+      color: $paper;
+    }
+  }
+  // 用 radio 做的分頁籤（文章列表排序）：<input class="btn-check" …><label class="nav-link" …>
+  .btn-check + .nav-link { cursor: pointer; }
+  .btn-check:checked + .nav-link {
+    background-color: $ink;
+    color: $paper;
+  }
+  .btn-check:focus-visible + .nav-link { box-shadow: $focus-ring-double; }
+  .nav-link:focus-visible { outline: 0; box-shadow: $focus-ring-double; }
+
+  // 選項只有 3～4 個時：放不下一排就換行，不做橫向捲動（避免最後一顆在手機被切一半）
+  // <div class="nav nav-blocks is-wrap">…</div>
+  &.is-wrap {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+.tab-count {
+  font-family: $font-family-display;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- 分段控制（月／年、字級、付費層級、數據期間） ----------
+// 外框 2px $ink、12px 圓角；選中塊 8px 圓角，顏色依底色：白積木黑底白字、黑積木橘底黑字、藍積木白底藍字
+// <div class="segmented" role="group" aria-label="計費方式">
+//   <input type="radio" class="btn-check" name="billing" id="b1" value="monthly" checked><label class="btn" for="b1">月繳</label> …
+// </div>
+.segmented {
+  display: inline-flex;
+  gap: .25rem;
+  padding: .25rem;
+  border: 2px solid var(--fn-fg);
+  border-radius: $border-radius;
+
+  .btn {
+    --bs-btn-padding-y: .4375rem;
+    --bs-btn-padding-x: 1.125rem;
+    --bs-btn-color: var(--fn-fg);
+    --bs-btn-hover-color: var(--fn-fg);
+    --bs-btn-bg: transparent;
+    --bs-btn-hover-bg: transparent;
+    --bs-btn-border-color: transparent;
+    --bs-btn-hover-border-color: transparent;
+    min-height: 2.5rem;
+    border-radius: $border-radius-sm;
+
+    &:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: .3em; }
+  }
+  .btn-check:checked + .btn {
+    --bs-btn-active-bg: var(--fn-seg-on-bg);
+    --bs-btn-active-color: var(--fn-seg-on-fg);
+    --bs-btn-active-border-color: transparent;
+    background-color: var(--fn-seg-on-bg);
+    color: var(--fn-seg-on-fg);
+    text-decoration: none;
+  }
+  .btn-check:checked + .btn:active { transform: none; }
+}
+.segmented-sm .btn {
+  --bs-btn-padding-x: .75rem;
+  --bs-btn-font-size: .875rem;
+  min-height: 2.25rem;
+}
+
+// ---------- 選項卡（整張可點的 radio：付費牆方案、結帳付款方式） ----------
+// 未選白底黑框；選中藍底白字＋右上 check-circle-fill（不只靠底色）
+// <input type="radio" class="btn-check" name="pay" id="payCard" checked>
+// <label class="radio-card" for="payCard">…</label>
+.radio-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  height: 100%;
+  padding: 1rem 2.75rem 1rem 1.125rem;
+  border: $line;
+  border-radius: $border-radius;
+  background-color: $paper;
+  color: $ink;
+  cursor: pointer;
+  transition: background-color .12s ease-out, color .12s ease-out;
+
+  &:hover { background-color: $fog; }
+  &:active { transform: translate(2px, 2px); }
+}
+.btn-check:checked + .radio-card {
+  background-color: $klein;
+  color: $paper;
+
+  .text-note { color: $on-klein-muted; }
+
+  &::after {
+    content: "\F26A"; // bi-check-circle-fill
+    position: absolute;
+    top: .75rem;
+    right: .875rem;
+    font-family: bootstrap-icons;
+    font-size: 1.25rem;
+    line-height: 1;
+    color: $paper;
+  }
+}
+.btn-check:focus-visible + .radio-card { box-shadow: $focus-ring-double; }
+
+// ---------- 標籤（#成本結構） ----------
+// 白底 2px 黑框方角小牌；選中黑底白字；目前條件下 0 篇時霧白底灰字並顯示 0
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  min-height: 2rem;
+  padding: .125rem .625rem;
+  border: $line;
+  border-radius: $border-radius-sm;
+  background-color: $paper;
+  color: $ink;
+  font-size: .875rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.4;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color .12s ease-out, color .12s ease-out;
+}
+a.tag:hover,
+label.tag:hover { background-color: $fog; color: $ink; }
+.tag.is-active,
+.btn-check:checked + .tag {
+  background-color: $ink;
+  color: $paper;
+}
+.tag.is-empty {
+  background-color: $fog;
+  color: $gray-600;
+}
+.btn-check + .tag { cursor: pointer; }
+.btn-check:focus-visible + .tag { box-shadow: $focus-ring-double; }
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------- 浮層：下拉、對話框用 6px 硬陰影（$enable-shadows 關閉時 Bootstrap 不會輸出） ----------
+.dropdown-menu { box-shadow: $shadow-hard-sm; }
+.modal-content { box-shadow: $shadow-hard-sm; }
+.offcanvas { --bs-offcanvas-border-width: 2px; }
+
+// ---------- 分頁：48px 方塊，目前頁藍底白字 ----------
+.pagination {
+  --bs-pagination-border-radius: #{$border-radius};
+  flex-wrap: wrap;
+  gap: .5rem;
+
+  .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3rem;
+    min-height: 3rem;
+    border-radius: $border-radius !important;
+    font-weight: $font-weight-bold;
+    text-decoration: none;
+  }
+  .page-item:not(:first-child) .page-link { margin-left: 0; }
+}
+// 上一頁／下一頁：<span class="page-link-text">上一頁</span>＋箭頭圖示；< 576px 只留箭頭（文字改成螢幕閱讀器才讀）
+@include media-breakpoint-down(sm) {
+  .pagination .page-link-text { @include visually-hidden; }
+}
+
+// ---------- 圖片 ----------
+.img-cover {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// ---------- 手機滿版橫向捲動列（作者牆、分頁籤） ----------
+.scroll-x {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+
+// ---------- 空狀態（文章列表、個人頁面、作者個人頁、Guideline 共用） ----------
+// 圖示（56px 霧白方塊）＋一句說明＋一個下一步按鈕；不責怪使用者、不用驚嘆號
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+
+  p { margin: 0; font-size: 1.0625rem; font-weight: $font-weight-medium; }
+}
+.empty-state-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: $line;
+  border-radius: $border-radius;
+  background-color: $fog;
+  color: $ink;
+  font-size: 1.5rem;
+}
+
+// ============================================================
+// 設計稿專用（不是產品介面）：切換器、狀態示意、角色標記
+// 外觀刻意和產品元件不同：2px 虛線框、灰色小字、沒有填色
+// （全站只有這裡和編輯器的空行積木用虛線）
+// ============================================================
+
+// ---------- 設計稿切換器（文章內頁「未訂閱｜已訂閱」、個人頁面「讀者｜作者｜管理員」） ----------
+// <div class="design-switcher" role="group" aria-labelledby="switcherLabel" data-switcher="view">
+//   <span id="switcherLabel" class="design-switcher-label"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意（非產品介面）</span>
+//   <button type="button" data-value="unsubscribed" aria-pressed="true">未訂閱</button>…
+// </div>
+.design-switcher {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .375rem;
+  padding: .3125rem .375rem .3125rem .875rem;
+  border: 2px dashed $gray-600;
+  border-radius: $border-radius;
+  background-color: $paper;
+  color: $ink-2;
+  font-size: .8125rem;
+
+  button {
+    min-height: 2.75rem;
+    padding: .25rem .875rem;
+    border: 1px solid transparent;
+    border-radius: $border-radius-sm;
+    background: transparent;
+    color: $ink-2;
+    font-size: .875rem;
+
+    &:hover { border-color: $gray-600; }
+    &[aria-pressed="true"] {
+      border-color: $ink-2;
+      background-color: $fog;
+      color: $ink;
+      font-weight: $font-weight-bold;
+
+      &::before {
+        content: "\F633"; // bi-check-lg：選中不只靠底色
+        font-family: bootstrap-icons;
+        margin-right: .25rem;
+        vertical-align: -.125em;
+      }
+    }
+  }
+}
+.design-switcher-label {
+  margin-right: .25rem;
+  white-space: nowrap;
+
+  .bi { margin-right: .25rem; }
+}
+@include media-breakpoint-down(sm) {
+  .design-switcher {
+    display: flex;
+    width: 100%;
+    padding: .375rem .5rem .5rem;
+
+    button { flex: 1 1 0; }
+  }
+  .design-switcher-label {
+    flex: 1 0 100%;
+    padding: .25rem .375rem 0;
+  }
+}
+
+// 依切換器狀態顯示／隱藏：<body data-view="…">、<body data-role="…">
+// 元素寫 data-show-view="subscribed"、data-show-role="author admin"
+body[data-view="unsubscribed"] [data-show-view]:not([data-show-view~="unsubscribed"]),
+body[data-view="subscribed"] [data-show-view]:not([data-show-view~="subscribed"]),
+body[data-role="reader"] [data-show-role]:not([data-show-role~="reader"]),
+body[data-role="author"] [data-show-role]:not([data-show-role~="author"]),
+body[data-role="admin"] [data-show-role]:not([data-show-role~="admin"]) {
+  display: none !important;
+}
+
+// ---------- 角色標記（「作者可見」「管理員可見」「一般讀者可見」）：1px 虛線框小字，和產品徽章區隔 ----------
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .0625rem .5rem;
+  border: 1px dashed currentColor;
+  border-radius: $border-radius-sm;
+  color: inherit;
+  font-size: .75rem;
+  font-weight: $font-weight-normal;
+  letter-spacing: $letter-spacing-label;
+  line-height: 1.6;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+// ---------- 設計稿狀態示意 ----------
+// <section class="demo-state" aria-labelledby="…">
+//   <p class="demo-state-tag"><i class="bi bi-layers" aria-hidden="true"></i>設計稿狀態示意</p>
+//   <h3 id="…" class="demo-state-title">其他訂閱狀態</h3>
+//   <div class="demo-state-stage">…示意畫面…</div>
+// </section>
+.demo-state {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px dashed $gray-600;
+}
+.demo-state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin-bottom: .5rem;
+  color: $ink-2;
+  font-size: .8125rem;
+  letter-spacing: $letter-spacing-label;
+}
+.demo-state-title {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-body;
+}
+// 示範畫面的外框：虛線表示這是示意
+.demo-state-stage {
+  padding: 1rem;
+  border: 2px dashed $gray-600;
+  border-radius: $block-radius;
+
+  @include media-breakpoint-up(md) {
+    padding: 1.5rem;
+  }
+}
+
+// ---------- 減少動態：拿掉 :active 位移與所有 transition ----------
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+  .btn:active,
+  .block-link:active,
+  .radio-card:active {
+    transform: none;
+  }
+}

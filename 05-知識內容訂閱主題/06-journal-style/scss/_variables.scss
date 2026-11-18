@@ -1,0 +1,531 @@
+// ============================================================
+// 現場筆記 FieldNotes｜06 手帳筆記插畫 — Bootstrap 5 變數覆寫（design token）
+// 規則：只在這裡改 Bootstrap 變數；元件與頁面樣式一律引用變數，不寫死色碼
+//
+// 概念「一本隨身手帳」：桌面上攤開一張淺奶油色點格紙，用珊瑚橘螢光筆畫重點、
+// 抹茶綠紙膠帶貼住剪下來的文章；字是藍黑墨水色，讀起來沒有負擔
+// 單一淺色主題：不使用 data-bs-theme，也不跟著作業系統切換深色模式
+// 對比度皆以 WCAG 2.x 相對亮度公式計算，括號內是對「手帳紙」$sheet #FFFBF2 的比值
+// ============================================================
+
+// ---------- 1. 色彩 ----------
+// 紙與桌面：頁面底是桌面，內容放在一張手帳紙上
+$desk:         #F7EEDC; // 桌面：頁面底、頁尾區（$pen 9.75、$pen-muted 4.87）
+$sheet:        #FFFBF2; // 手帳紙（淺奶油）：主要內容底、紙卡
+$white:        #FFFFFF; // 輸入框底、拍立得白框（$pen 11.24、$pen-muted 5.62）
+$dot:          #E7DCC6; // 點格紋、縫線（1.32，只當裝飾）
+$paper-edge:   #D8CCB6; // 紙張的厚度：次要胖按鈕底部的厚度、手繪分隔線（1.54，只當裝飾）
+
+// 墨水：藍黑三階
+$pen:          #2F3B52; // 藍黑墨水：標題、介面主要文字、深色示範底（10.88）
+$pen-body:     #3E4A60; // 長文內文（8.64）
+$pen-muted:    #5F6878; // 次要文字、資訊列（5.44；桌面 4.87、白 5.62、黃便利貼 4.98、抹茶淡底 4.81、珊瑚淡底 4.58、藍淡底 4.77）
+$control:      #8C7F6A; // 輸入框、checkbox、radio 的框線（3.79；對白 3.92、對珊瑚淡底 3.19）
+
+// 珊瑚橘：主色。只當填色（上面放 $pen），需要珊瑚色的字用 $coral-ink
+$coral:        #F29C82; // 柔和珊瑚橘：主要按鈕底、螢光筆、貼紙（按鈕字 $pen 5.27；珊瑚對紙約 2.2，不當字）
+$coral-light:  #F6AE97; // 主要按鈕 hover：變淺（$pen 6.11）；變深的 #EC8364 配 $pen 只有 4.28，所以不用
+$coral-press:  #D9775C; // 胖按鈕底部的厚度（3.02，圖形）
+$coral-marker: #F8C4B2; // 螢光筆畫線：H1 重點半句、導覽目前頁、目錄目前項（$pen 7.24）
+$coral-tint:   #FCE3D8; // 珊瑚淡底：訂閱限定徽章底、推薦卡底、淡螢光筆（$pen 9.15、$coral-ink 5.11）
+$coral-ink:    #A3412A; // 珊瑚色字：訂閱限定、「免費預覽前 N 字」、連結、焦點環（6.08；珊瑚淡底 5.11、黃便利貼 5.56、白 6.27）
+
+// 抹茶綠：次要色。只當填色與線條；需要綠色的字用 $success
+$matcha:       #9BBF8A; // 紙膠帶、次要強調底、貼紙、H2 波浪底線（$pen 在抹茶底 5.47；抹茶對紙約 2.0，不當字）
+$matcha-deep:  #6F9A5E; // 抹茶按鈕的框與厚度、圓章線條（3.15，圖形）
+$matcha-tint:  #E8F0DF; // 抹茶便利貼、頁尾的紙、會員膠囊（$pen 9.61）
+
+// 便利貼的另外兩色
+$butter:       #FFF1C2; // 黃便利貼：引文、目錄、洞察（$pen 9.96）
+$blue-tint:    #E3EEF7; // 藍便利貼：免費徽章底、資訊淡底（$pen 9.55）
+
+// 狀態色：文字、圖示與框線用；淡底見下方 $*-bg-subtle
+$info:         #2F5E8C; // 資訊、免費權限字（6.56；藍淡底 5.75、黃便利貼 6.00）
+$success:      #3F6B33; // 成功（6.05；抹茶淡底 5.34）
+$warning:      #8A5A00; // 提醒（5.74；#FFF3D1 5.36、黃便利貼 5.25）
+$danger:       #B0264E; // 錯誤（覆盆子紅，和珊瑚字拉開色相；6.29；淡底 #FBE3EA 5.34）
+$warning-tint: #FFF3D1; // 提醒淡底
+$danger-tint:  #FBE3EA; // 錯誤淡底（覆盆子淡底）
+
+$primary:   $coral;
+$secondary: $matcha;
+$light:     $sheet;
+$dark:      $pen;
+
+$theme-colors: (
+  "primary":   $primary,
+  "secondary": $secondary,
+  "success":   $success,
+  "info":      $info,
+  "warning":   $warning,
+  "danger":    $danger,
+  "light":     $light,
+  "dark":      $dark,
+);
+
+// 按鈕、徽章上的文字色：Bootstrap 的 color-contrast() 依序試「淺色 → 深色」，取第一個達 4.5:1 的
+// 珊瑚、抹茶底上會選到藍黑墨水（5.27、5.47）；狀態色與 $pen 底上選到手帳紙
+$color-contrast-light: $sheet;
+$color-contrast-dark:  $pen;
+$min-contrast-ratio:   4.5;
+
+// 只有一套淺色主題，不輸出 [data-bs-theme="dark"] 那一份變數
+$enable-dark-mode: false;
+
+// ---------- 全站底色與文字 ----------
+$body-bg:               $desk;
+$body-color:            $pen;
+$body-secondary-color:  $pen-muted;
+$body-secondary-bg:     $sheet;
+$body-tertiary-color:   $pen-muted;
+$body-tertiary-bg:      $sheet;
+$body-emphasis-color:   $pen;
+$border-color:          $dot;
+$border-color-translucent: rgba($pen, .12);
+$headings-color:        $pen;
+
+// 連結：珊瑚色字＋底線，hover 底線變粗（顏色不變，不改尺寸）
+$link-color:            $coral-ink;
+$link-hover-color:      $coral-ink;
+$link-decoration:       underline;
+$link-underline-offset: .25em;
+
+// 各狀態色的「文字、淡底、淡框」三件組（.text-*-emphasis、.bg-*-subtle、.border-*-subtle 共用）
+$primary-text-emphasis:   $coral-ink;
+$secondary-text-emphasis: $success;
+$success-text-emphasis:   $success;
+$info-text-emphasis:      $info;
+$warning-text-emphasis:   $warning;
+$danger-text-emphasis:    $danger;
+$light-text-emphasis:     $pen;
+$dark-text-emphasis:      $pen;
+
+$primary-bg-subtle:       $coral-tint;
+$secondary-bg-subtle:     $matcha-tint;
+$success-bg-subtle:       $matcha-tint;
+$info-bg-subtle:          $blue-tint;
+$warning-bg-subtle:       $warning-tint;
+$danger-bg-subtle:        $danger-tint;
+$light-bg-subtle:         $sheet;
+$dark-bg-subtle:          $dot;
+
+$primary-border-subtle:   $coral;
+$secondary-border-subtle: $matcha;
+$success-border-subtle:   $success;
+$info-border-subtle:      $info;
+$warning-border-subtle:   $warning;
+$danger-border-subtle:    $danger;
+$light-border-subtle:     $dot;
+$dark-border-subtle:      $pen;
+
+// 元件的「選中」：藍黑墨水底＋手帳紙字（下拉選單、列表群組）
+// 分段控制、標籤、分頁的選中另外在 _base.scss 用珊瑚填色
+$component-active-bg:    $pen;
+$component-active-color: $sheet;
+
+// 焦點環：2px 珊瑚字色＋2px 白隙（6.27）
+// 一般元素用 outline＋2px 位移；按鈕、核取方塊用下面這組雙層 box-shadow
+$focus-ring-width:   2px;
+$focus-ring-opacity: 1;
+$focus-ring-blur:    0;
+$focus-ring-color:   $coral-ink;
+$focus-ring-double:  0 0 0 2px $white, 0 0 0 4px $coral-ink; // 自訂：內圈白隙、外圈珊瑚字色
+$focus-ring-box-shadow: $focus-ring-double;
+
+$code-color: $pen;
+$mark-bg:    $coral-marker;
+$mark-color: $pen;
+$kbd-bg:     $pen;
+$kbd-color:  $sheet;
+
+$hr-color:   $paper-edge;
+$hr-opacity: 1;
+
+// ---------- 2. 字體與字級 ----------
+// 手帳標題：Huninn（jf 粉圓），圓潤得像用粗原子筆寫的標題。只有 400 一個字重：
+//   標題不加粗、font-weight 一律 400，並在 _base.scss 設 font-synthesis: none（不讓瀏覽器合成粗體）
+//   Huninn 有 3 個字不是台灣標準字形（真 → 眞、填 → 塡、突 的下半是「大」），
+//   最前面的「Huninn TW Fix」只含這 3 個字（Chiron GoRound TC 500 的子集，css/fonts/），見 _base.scss 的 @font-face
+// 介面與長文：Chiron GoRound TC（圓角黑體，400／500／700），字形已和 Noto Sans TC 並排實測
+// 數字與英文：Fredoka（圓角數字）；中文字會落回 Chiron GoRound TC
+$font-family-hand:       "Huninn TW Fix", "Huninn", "Chiron GoRound TC", "PingFang TC", "Microsoft JhengHei", sans-serif; // 自訂：標題、引言、便利貼標題
+$font-family-num:        "Fredoka", "Chiron GoRound TC", "PingFang TC", sans-serif; // 自訂：.figure-num、價格、日期大字、數字貼紙
+$font-family-sans-serif: "Chiron GoRound TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+$font-family-monospace:  ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+$font-family-base:       $font-family-sans-serif;
+$headings-font-family:   $font-family-hand;
+$display-font-family:    $font-family-hand;
+
+$font-size-base:   1rem;     // 16px
+$font-size-sm:     .875rem;  // 14px
+$font-size-lg:     1.125rem; // 18px
+$small-font-size:  .8125rem; // 13px：小字資訊列
+
+// Chiron GoRound TC 載入 400／500／700：介面 400、標籤與導覽 500、按鈕與強調 700
+$font-weight-light:    400;
+$font-weight-normal:   400;
+$font-weight-medium:   500;
+$font-weight-semibold: 700;
+$font-weight-bold:     700;
+$font-weight-bolder:   700;
+
+$line-height-base: 1.75; // 介面文字；長文另外用 $prose-line-heights（≥ 1.9）
+$line-height-sm:   1.6;
+$line-height-lg:   1.95;
+
+// 字級階層（≥ 1200 的值；992 以下在 _base.scss 縮小）
+$h1-font-size: 2.5rem;    // 40px：各頁 H1、作者大名（→ 34 → 28）
+$h2-font-size: 1.875rem;  // 30px：區塊 H2，下方手繪波浪底線（→ 26）
+$h3-font-size: 1.3125rem; // 21px：卡片標題、便利貼標題
+$h4-font-size: 1.125rem;  // 18px
+$h5-font-size: 1rem;      // 16px
+$h6-font-size: .875rem;   // 14px
+
+$headings-font-weight:   400;
+$headings-line-height:   1.45;
+$headings-margin-bottom: .75rem;
+
+// Display：首頁 H1（56 → 46 → 34）、表單頁 H1（64 → 52 → 36）
+$display-font-sizes: (
+  1: 4rem,    // 64px：登入、註冊、忘記密碼的大字 H1
+  2: 3.5rem,  // 56px：首頁 Hero
+  3: 3rem,
+  4: 2.5rem,  // 40px
+  5: 2.25rem,
+  6: 2rem,
+);
+$display-font-weight: 400;
+$display-line-height: 1.35;
+
+$lead-font-size:   1.1875rem; // 19px：導言
+$lead-font-weight: 400;
+
+// 自訂：字距
+$letter-spacing-body:    .03em;
+$letter-spacing-heading: .04em;
+$letter-spacing-label:   .05em; // 小字、徽章、按鈕
+
+// 自訂：長文排版（文章內頁、編輯器、Guideline 的長文示範共用，見 components/_prose.scss）
+// 內文最大寬 680px（規格 680–720px），與容器寬度無關；長文底下不放點格紋
+$prose-max-width:     42.5rem;   // 680px
+$prose-font-sizes:    (sm: 1rem, md: 1.0625rem, lg: 1.1875rem); // Aa 三段：16／17／19px
+$prose-line-heights:  (sm: 2,    md: 1.95,      lg: 1.9);       // 每段都 ≥ 1.8
+$prose-paragraph-gap: 1.3em;     // 段距
+$prose-lede-size:     1.1875rem; // 導言 19px／1.85
+$prose-quote-size:    1.25rem;   // 引言 20px／1.8（Huninn，放在黃便利貼上；首頁引文同一組）
+
+// ---------- 3. 間距 ----------
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * .25,  // 4px
+  2: $spacer * .5,   // 8px
+  3: $spacer,        // 16px
+  4: $spacer * 1.5,  // 24px：卡片間距
+  5: $spacer * 2.25, // 36px：橫線紙的行距
+  6: $spacer * 3.25, // 52px：區塊上下（< 992）
+  7: $spacer * 4.5,  // 72px：區塊上下（≥ 992）
+  8: $spacer * 6,    // 96px
+);
+
+// 紙張（.sheet）：最寬 1200px（≥ 1400 為 1240），桌面在兩側露出
+// 版心 = 容器（含左右內距）；紙張就是容器的內容區
+$grid-gutter-width: 1.5rem;   // 24px：卡片間距
+$container-padding-x: 1.5rem; // 左右各 12px（Bootstrap 取一半）；≥ 768px 在 _base.scss 改成 24px
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1248px,  // 紙張 1200 ＋ 左右 24
+  xxl: 1288px, // 紙張 1240 ＋ 左右 24
+);
+// RWD 斷點沿用 Bootstrap 預設：sm 576 / md 768 / lg 992 / xl 1200 / xxl 1400
+
+// 自訂：紙張內距與區塊節奏
+$sheet-padding:     3.5rem;  // 56px（≥ 992）
+$sheet-padding-sm:  1.5rem;  // 24px（< 992）
+$section-space:     4.5rem;  // 72px（≥ 992）
+$section-space-sm:  3.25rem; // 52px（< 992）
+
+// ---------- 4. 圓角與陰影 ----------
+// 紙張 28、紙卡與便利貼 20、輸入框 14、按鈕與標籤膠囊 999、貼紙正圓、拍立得 6
+$border-width:       1px;
+$border-radius-sm:   .5rem;    // 8px：小元件（徽章以外的小方塊）
+$border-radius:      .875rem;  // 14px：輸入框、表格內的小卡
+$border-radius-lg:   1.25rem;  // 20px：紙卡、便利貼
+$border-radius-xl:   1.75rem;  // 28px：紙張、攤開的手帳、頁尾的紙
+$border-radius-xxl:  1.75rem;
+$border-radius-pill: 50rem;    // 按鈕、標籤、徽章、頁首膠囊
+$radius-polaroid:    .375rem;  // 自訂：拍立得 6px
+
+// 陰影：紙張感的柔和陰影；浮起層（付費牆、選單、對話框）更深一階；胖按鈕是底部的「厚度」
+$enable-shadows:   false;
+$box-shadow-sm:    0 1px 0 rgba($pen, .06), 0 4px 10px rgba($pen, .06);
+$box-shadow:       0 1px 0 rgba($pen, .06), 0 10px 24px rgba($pen, .08); // 紙卡、便利貼、拍立得
+$box-shadow-lg:    0 18px 40px rgba($pen, .16);                          // 浮起層
+$box-shadow-inset: none;
+$shadow-capsule:   0 6px 18px rgba($pen, .10); // 自訂：頁首膠囊
+
+$enable-negative-margins: true;
+
+// ---------- 5. 元件 ----------
+// 按鈕：主要＝珊瑚底＋藍黑字（5.27），hover 變淺；次要＝紙底＋2px 藍黑框；文字連結＝珊瑚色字底線（_base.scss）
+// 一般按鈕高 48px，胖按鈕 .btn-plump 高 56px（_base.scss）
+$btn-padding-y:        .6875rem; // 高 48px（含 2px 框）
+$btn-padding-x:        1.5rem;
+$btn-font-size:        1rem;
+$btn-padding-y-sm:     .5rem;    // 高約 40px；觸控目標由 min-height 補到 44px
+$btn-padding-x-sm:     1rem;
+$btn-font-size-sm:     .875rem;
+$btn-padding-y-lg:     .8125rem;
+$btn-padding-x-lg:     2rem;
+$btn-font-size-lg:     1.0625rem;
+$btn-font-weight:      700;
+$btn-border-width:     2px;
+$btn-border-radius:    50rem;
+$btn-border-radius-sm: 50rem;
+$btn-border-radius-lg: 50rem;
+$btn-disabled-opacity: 1; // 停用不疊透明度，改用桌面底＋淡字＋虛線框（見 _base.scss）
+$btn-focus-width:      $focus-ring-width;
+$btn-link-disabled-color: $pen-muted;
+
+// 表單：白底、14px 圓角、1.5px 控件框線（3.92）；focus 時框線變珊瑚字色並加 1px 環，合成 2.5px
+$input-bg:                    $white;
+$input-color:                 $pen;
+$input-border-color:          $control;
+$input-border-width:          1.5px;
+$input-placeholder-color:     $pen-muted;
+$input-plaintext-color:       $pen;
+$input-padding-y:             .75rem;
+$input-padding-x:             1rem;
+$input-font-size:             1rem;
+$input-border-radius:         .875rem;
+$input-border-radius-sm:      .75rem;
+$input-border-radius-lg:      1rem;
+$input-focus-bg:              $white;
+$input-focus-color:           $pen;
+$input-focus-border-color:    $coral-ink;
+$input-focus-box-shadow:      0 0 0 1px $coral-ink;
+$input-disabled-bg:           $desk;
+$input-disabled-color:        $pen-muted;
+$input-disabled-border-color: $paper-edge;
+$input-group-addon-bg:        $sheet;
+$input-group-addon-color:     $pen-muted;
+$input-group-addon-border-color: $control;
+$form-label-font-size:        .9375rem;
+$form-label-font-weight:      500;
+$form-label-color:            $pen;
+$form-label-margin-bottom:    .5rem;
+$form-text-color:             $pen-muted;
+$form-file-button-bg:         $sheet;
+$form-file-button-hover-bg:   $butter;
+$form-file-button-color:      $pen;
+
+$form-select-indicator-color: $pen;
+$form-select-focus-box-shadow: $input-focus-box-shadow;
+
+// 核取方塊、radio：白底＋控件框線；選中為珊瑚底＋藍黑勾（5.27）
+$form-check-input-bg:                   $white;
+$form-check-input-border:               1.5px solid $control;
+$form-check-input-border-radius:        .375rem;
+$form-check-input-checked-color:        $pen;
+$form-check-input-checked-bg-color:     $coral;
+$form-check-input-checked-border-color: $coral-press;
+$form-check-input-focus-border:         $coral-ink;
+$form-check-input-focus-box-shadow:     $focus-ring-double;
+$form-check-input-width:                1.25em;
+$form-check-radio-checked-bg-image:     url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='2' fill='#{$pen}'/></svg>");
+
+// 開關：關閉為空心＋控件色圓鈕；開啟為珊瑚軌道＋藍黑圓鈕
+$form-switch-color:         $control;
+$form-switch-focus-color:   $coral-ink;
+$form-switch-checked-color: $pen;
+
+$form-range-track-bg:        $dot;
+$form-feedback-valid-color:   $success;
+$form-feedback-invalid-color: $danger;
+$form-feedback-icon-valid:    none;
+$form-feedback-icon-invalid:  none; // 錯誤不靠欄位內的驚嘆號圖示，改在下方寫錯誤文字＋圖示
+
+// 關閉鈕 X
+$btn-close-color:         $pen;
+$btn-close-opacity:       .85;
+$btn-close-hover-opacity: 1;
+$btn-close-focus-shadow:  $focus-ring-double;
+
+// 卡片：紙卡（.note-card 在 components/_paper.scss），Bootstrap .card 也長成紙卡
+$card-bg:            $sheet;
+$card-color:         $pen;
+$card-border-width:  0;
+$card-border-color:  transparent;
+$card-border-radius: 1.25rem;
+$card-box-shadow:    $box-shadow;
+$card-cap-bg:        transparent;
+$card-spacer-y:      1.5rem;
+$card-spacer-x:      1.5rem;
+
+// 頁首：離視窗頂 12px 的浮起膠囊，高 64px
+// sticky 偏移：12 ＋ 64 ＋ 24 呼吸 ＝ 100px（篩選便利貼、目錄、收據、設定面板、Guideline 目錄、錨點捲動）
+$site-header-gap:    .75rem;  // 12px
+$site-header-height: 4rem;    // 64px
+$sticky-top-offset:  6.25rem; // 100px
+
+// 導覽列
+$navbar-padding-y:             0;
+$navbar-padding-x:             0;
+$navbar-nav-link-padding-x:    1rem;
+$navbar-light-color:           $pen;
+$navbar-light-hover-color:     $pen;
+$navbar-light-active-color:    $pen;
+$navbar-light-brand-color:     $pen;
+$navbar-light-brand-hover-color: $pen;
+$navbar-light-toggler-border-color: transparent;
+$navbar-toggler-border-radius: 50rem;
+$nav-link-font-size:           1rem;
+$nav-link-font-weight:         500;
+$nav-link-color:               $pen;
+$nav-link-hover-color:         $pen;
+$nav-link-disabled-color:      $pen-muted;
+$nav-underline-border-width:   0; // 底線式分頁籤的「選中」改成手繪珊瑚底線（_base.scss）
+$nav-underline-link-active-color: $pen;
+
+// 下拉選單：紙卡浮起
+$dropdown-bg:                 $sheet;
+$dropdown-color:              $pen;
+$dropdown-border-color:       $dot;
+$dropdown-border-width:       1px;
+$dropdown-border-radius:      1rem;
+$dropdown-inner-border-radius: 1rem;
+$dropdown-divider-bg:         $dot;
+$dropdown-box-shadow:         $box-shadow-lg;
+$dropdown-link-color:         $pen;
+$dropdown-link-hover-color:   $pen;
+$dropdown-link-hover-bg:      $butter;
+$dropdown-link-active-color:  $pen;
+$dropdown-link-active-bg:     $coral-tint;
+$dropdown-header-color:       $pen-muted;
+$dropdown-padding-y:          .5rem;
+$dropdown-padding-x:          .5rem;
+$dropdown-item-padding-y:     .625rem;
+$dropdown-item-padding-x:     .875rem;
+
+// 對話框、側邊抽屜
+$modal-content-bg:            $sheet;
+$modal-content-color:         $pen;
+$modal-content-border-width:  0;
+$modal-content-border-radius: 1.5rem;
+$modal-content-box-shadow-xs: $box-shadow-lg;
+$modal-content-box-shadow-sm-up: $box-shadow-lg;
+$modal-header-border-color:   $dot;
+$modal-footer-border-color:   $dot;
+$modal-backdrop-bg:           $pen;
+$modal-backdrop-opacity:      .45;
+$modal-md:                    32.5rem; // 520px：取消對話框（規格的寬窄層級）
+$offcanvas-bg-color:          $sheet;
+$offcanvas-color:             $pen;
+$offcanvas-border-width:      0;
+$offcanvas-backdrop-bg:       $pen;
+$offcanvas-backdrop-opacity:  .45;
+$offcanvas-box-shadow:        $box-shadow-lg;
+
+// 列表群組
+$list-group-color:              $pen;
+$list-group-bg:                 $sheet;
+$list-group-border-color:       $dot;
+$list-group-hover-bg:           $butter;
+$list-group-active-color:       $pen;
+$list-group-active-bg:          $coral-tint;
+$list-group-active-border-color: $coral;
+
+// Accordion：每題是一張圓角紙卡（pricing 的 FAQ）；展開那題的底色是黃便利貼
+$accordion-color:               $pen;
+$accordion-bg:                  $sheet;
+$accordion-border-width:        0;
+$accordion-border-color:        transparent;
+$accordion-border-radius:       1.25rem;
+$accordion-inner-border-radius: 1.25rem;
+$accordion-button-color:        $pen;
+$accordion-button-bg:           $sheet;
+$accordion-button-active-bg:    $butter;
+$accordion-button-active-color: $pen;
+$accordion-icon-color:          $pen;
+$accordion-icon-active-color:   $pen;
+$accordion-button-focus-box-shadow: inset 0 0 0 2px $coral-ink;
+$accordion-button-padding-y:    1.125rem;
+$accordion-button-padding-x:    1.5rem;
+$accordion-body-padding-x:      1.5rem;
+$accordion-body-padding-y:      1.25rem;
+
+// 徽章：膠囊
+$badge-font-size:     .8125rem;
+$badge-font-weight:   500;
+$badge-border-radius: 50rem;
+$badge-padding-y:     .3125rem;
+$badge-padding-x:     .75rem;
+
+// 麵包屑
+$breadcrumb-divider:        quote("／");
+$breadcrumb-font-size:      .875rem;
+$breadcrumb-divider-color:  $pen-muted;
+$breadcrumb-active-color:   $pen;
+$breadcrumb-item-padding-x: .375rem;
+
+// 分頁：44px 圓形泡泡，目前頁珊瑚底
+$pagination-color:                $pen;
+$pagination-bg:                   $white;
+$pagination-border-width:         1.5px;
+$pagination-border-color:         $dot;
+$pagination-border-radius:        50rem;
+$pagination-hover-color:          $pen;
+$pagination-hover-bg:             $butter;
+$pagination-hover-border-color:   $paper-edge;
+$pagination-focus-color:          $pen;
+$pagination-focus-bg:             $white;
+$pagination-focus-box-shadow:     $focus-ring-double;
+$pagination-active-color:         $pen;
+$pagination-active-bg:            $coral;
+$pagination-active-border-color:  $coral-press;
+$pagination-disabled-color:       $pen-muted;
+$pagination-disabled-bg:          $desk;
+$pagination-disabled-border-color: $dot;
+$pagination-padding-y:            .5rem;
+$pagination-padding-x:            .75rem;
+$pagination-margin-start:         .5rem;
+
+// 提示、彈出框
+$tooltip-bg:                 $pen;
+$tooltip-color:              $sheet;
+$tooltip-opacity:            1;
+$tooltip-border-radius:      .75rem;
+$popover-bg:                 $sheet;
+$popover-border-color:       $dot;
+$popover-border-radius:      1rem;
+$popover-header-bg:          $butter;
+$popover-body-color:         $pen;
+$popover-box-shadow:         $box-shadow-lg;
+
+// 表格：方格紙（白底、細格線 $dot、表頭黃便利貼色），外框圓角在 _base.scss 的 .table-scroll
+$table-color:          $pen;
+$table-bg:             $white;
+$table-border-color:   $dot;
+$table-striped-bg:     $sheet;
+$table-hover-bg:       $sheet;
+$table-cell-padding-y: .875rem;
+$table-cell-padding-x: 1rem;
+$table-th-font-weight: 500;
+
+// 提示框
+$alert-border-radius: 1rem;
+$alert-padding-y:     1rem;
+$alert-padding-x:     1.25rem;
+
+// 進度條：鉛筆風（珊瑚填色＋斜紋）；空軌是虛線框的紙（尚未開始＝空軌，不是 0% 的填色）
+$progress-height:        .625rem;
+$progress-bg:            $dot;
+$progress-bar-bg:        $coral;
+$progress-bar-color:     $pen;
+$progress-border-radius: 50rem;
+
+// 圖說
+$figure-caption-font-size: .875rem;
+$figure-caption-color:     $pen-muted;

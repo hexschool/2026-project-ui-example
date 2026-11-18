@@ -1,0 +1,539 @@
+// ============================================================
+// 現場筆記 FieldNotes｜05 撞色創作者沙龍：Bootstrap 5 變數覆寫（design token）
+// 規則：只在這裡改 Bootstrap 變數；元件與頁面樣式一律引用變數，不寫死色碼
+//
+// 單一淺色主題（不跟著作業系統切換深色模式）。
+// 對比度以 WCAG 2.x 公式計算；沒有特別註明時，都是對純白 $paper 的比值
+// ============================================================
+
+// ---------- 1. 色彩：純白底、深黑、克萊因藍撞活力橘 ----------
+// 基礎色票（設計 Guideline 的「色彩」章節以此為準）
+
+// 面與線
+$paper:      #FFFFFF; // 純白：頁面底、白積木
+$fog:        #F2F2F2; // 霧白：表頭、停用欄位、交替底（$ink 字 17.68:1）
+$hairline:   #D6D6D6; // 髮絲線：表格列分隔、註冊頁權益摘要外框（1.45:1，只當裝飾）
+
+// 墨黑三階：所有可見邊界都是 2px $ink
+$ink:        #0A0A0A; // 深黑：標題、2px 框線、黑積木、按鈕字（19.80:1；白字在黑積木 19.80:1）
+$ink-text:   #1F1F1F; // 長文內文（16.48:1）
+$ink-2:      #3D3D3D; // 次要文字（10.86:1）；不放在橘底或藍底上
+$gray-600:   #5C5C5C; // placeholder、說明小字（6.69:1；對 $fog 5.97:1、對 $klein-tint 5.55:1）
+
+// 克萊因藍：主色。主要按鈕、連結、訂閱限定、藍積木
+$klein:           #002FA7; // 當字 10.69:1；白字在藍底 10.69:1
+$klein-deep:      #00217A; // 藍色按鈕 hover（白字 14.01:1）
+$klein-tint:      #E5EAF6; // 推薦欄淡底、選中列（$ink 16.43:1、$klein 8.87:1）
+$on-klein-muted:  #C9D4F2; // 藍積木上的次要字、✗ 項目（對 $klein 7.22:1）
+
+// 活力橘：撞色。橘積木、免費權限、★ 標籤、進度條、強調數據卡
+// 橘色永遠不當白底上的字（3.12:1）；橘底上的字一律 $ink（6.35:1）
+$orange:          #FF5A1F;
+$orange-hover:    #FF7A45; // 橘按鈕 hover（$ink 7.66:1）
+$orange-ink:      #B33E00; // 真的需要橘色字時（極少用，5.82:1）
+$orange-tint:     #FFE6DC; // 橘淡底（$ink 16.60:1）
+
+// 狀態色：填色時字色見右側註解
+$success:         #0A7D3E; // 成功（字 5.23:1；白字在綠底 5.23:1）
+$success-tint:    #E3F4EA; //   淡底：字用 $ink（17.34:1），綠色只給圖示
+$warning:         #FFD23F; // 提醒（填色，$ink 字 13.71:1）
+$warning-ink:     #7A5A00; //   提醒字色（6.38:1）
+$warning-tint:    #FFF4CC; //   淡底（$ink 17.97:1）
+$danger:          #D0103A; // 錯誤（字 5.50:1；白字在紅底 5.50:1）
+$danger-tint:     #FDE7EC; //   淡底（$danger 字 4.67:1）
+
+// 黑積木上的次要字、深底圖表
+$on-ink-muted:    #9A9A9A; // 對 $ink 7.04:1
+$sky-on-ink:      #7FA0FF; // 漏斗深底示範的橫條與字（對 $ink 7.90:1）
+
+// 權限色：訂閱限定＝藍底白字＋lock-fill；免費＝橘底黑字＋unlock
+// 文章積木左側的權限色條也用這兩色（色條只是裝飾，權限仍靠徽章的圖示＋文字）
+$perm-locked:     $klein;
+$perm-locked-on:  $paper;
+$perm-free:       $orange;
+$perm-free-on:    $ink;
+
+// ---------- Bootstrap 主題色 ----------
+$primary:   $klein;
+$secondary: $ink;
+$info:      $ink;   // 資訊提示不用藍（藍是品牌）：$fog 底＋2px $ink 左條
+$light:     $fog;
+$dark:      $ink;
+
+$theme-colors: (
+  "primary":   $primary,
+  "secondary": $secondary,
+  "success":   $success,
+  "info":      $info,
+  "warning":   $warning,
+  "danger":    $danger,
+  "light":     $light,
+  "dark":      $dark,
+  "accent":    $orange,
+);
+
+// color-contrast() 依序試「淺色 → 深色」，取第一個達 4.5:1 的：
+// 藍、黑、綠、紅上會選到白；橘、黃、霧白上會選到 $ink
+$color-contrast-light: $paper;
+$color-contrast-dark:  $ink;
+$min-contrast-ratio:   4.5;
+
+// 單一淺色主題，不輸出 [data-bs-theme="dark"] 那一份變數
+$enable-dark-mode: false;
+
+// ---------- 全站底色與文字 ----------
+$body-bg:                  $paper;
+$body-color:               $ink;
+$body-secondary-color:     $ink-2;
+$body-secondary-bg:        $fog;
+$body-tertiary-color:      $gray-600;
+$body-tertiary-bg:         $fog;
+$body-emphasis-color:      $ink;
+$border-color:             $ink;
+$border-color-translucent: rgba($ink, .16);
+$headings-color:           inherit; // 標題跟著所在積木的字色（白積木黑字、藍與黑積木白字）
+
+// 連結：克萊因藍＋底線，hover 換深藍；藍積木、黑積木上的連結在 _base.scss 的 on-* 情境改白字
+$link-color:                     $klein;
+$link-hover-color:               $klein-deep;
+$link-decoration:                underline;
+$link-underline-offset:          .22em;
+
+// 各狀態色的「文字、淡底、淡框」三件組（alert、.text-*-emphasis、.bg-*-subtle 共用）
+$primary-text-emphasis:   $klein;
+$secondary-text-emphasis: $ink;
+$success-text-emphasis:   $success;
+$info-text-emphasis:      $ink;
+$warning-text-emphasis:   $warning-ink;
+$danger-text-emphasis:    $danger;
+$light-text-emphasis:     $ink;
+$dark-text-emphasis:      $ink;
+
+$primary-bg-subtle:       $klein-tint;
+$secondary-bg-subtle:     $fog;
+$success-bg-subtle:       $success-tint;
+$info-bg-subtle:          $fog;
+$warning-bg-subtle:       $warning-tint;
+$danger-bg-subtle:        $danger-tint;
+$light-bg-subtle:         $paper;
+$dark-bg-subtle:          $fog;
+
+$primary-border-subtle:   $klein;
+$secondary-border-subtle: $ink;
+$success-border-subtle:   $success;
+$info-border-subtle:      $ink;
+$warning-border-subtle:   $ink;
+$danger-border-subtle:    $danger;
+$light-border-subtle:     $hairline;
+$dark-border-subtle:      $ink;
+
+// 元件的「選中」：黑底白字（下拉選單、列表群組、分段控制、篩選方塊共用）
+$component-active-bg:    $ink;
+$component-active-color: $paper;
+
+// 焦點環：2px 白內圈＋3px $ink 外圈（外推）。白、藍、橘、黑四種積木上都看得到
+// 橘色焦點環對白底只有 3.12:1、對 $fog 2.79:1，不採用
+$focus-ring-width:      3px;
+$focus-ring-opacity:    1;
+$focus-ring-blur:       0;
+$focus-ring-color:      $ink;
+$focus-ring-double:     0 0 0 2px $paper, 0 0 0 5px $ink; // 自訂：按鈕、輸入框、核取方塊
+$focus-ring-box-shadow: $focus-ring-double;
+
+$code-color: $klein;
+$mark-bg:    $warning;
+$mark-color: $ink;
+$kbd-bg:     $ink;
+$kbd-color:  $paper;
+
+$hr-color:   $ink;
+$hr-opacity: 1;
+$hr-border-width: 2px;
+
+// ---------- 2. 字體與字級 ----------
+// Noto Sans TC：全部中文（標題 900、列表標題 900、H3 700、介面 400／500、按鈕與標籤 700、長文 400）
+// Bricolage Grotesque：數字、價格、到期日、英文品牌（800，opsz 96）；表格與資訊列的數字仍用 Noto Sans TC＋tabular-nums
+$font-family-sans-serif: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+$font-family-display:    "Bricolage Grotesque", "Noto Sans TC", system-ui, sans-serif; // 自訂：.figure-num、品牌英文
+$font-family-base:       $font-family-sans-serif;
+$font-family-monospace:  ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+$headings-font-family:   $font-family-sans-serif;
+$display-font-family:    $font-family-sans-serif;
+
+$font-size-base:   1rem;     // 16px：介面內文
+$font-size-sm:     .875rem;  // 14px
+$font-size-lg:     1.125rem; // 18px
+$small-font-size:  .8125rem; // 13px
+
+$font-weight-light:    400;
+$font-weight-normal:   400;
+$font-weight-medium:   500;
+$font-weight-semibold: 700;
+$font-weight-bold:     700;
+$font-weight-bolder:   900;
+$font-weight-black:    900; // 自訂：H1、H2、列表標題、作者大名
+
+$line-height-base: 1.7;  // 介面文字；長文另用 $prose-line-height
+$line-height-sm:   1.4;
+$line-height-lg:   1.85;
+
+// 字級階層（≥ 1200 的值；992 與以下在 _base.scss 用 media query 縮小）
+// 首頁 H1 80 → 64 → 42、各頁 H1 56 → 44 → 34、H2 44 → 36 → 30、H3 24 → 20
+$h1-font-size: 3.5rem;    // 56px：各頁 H1
+$h2-font-size: 2.75rem;   // 44px：區塊 H2
+$h3-font-size: 1.5rem;    // 24px：H3、積木標題
+$h4-font-size: 1.25rem;   // 20px
+$h5-font-size: 1.0625rem; // 17px
+$h6-font-size: .9375rem;  // 15px
+
+$headings-font-weight:   900;
+$headings-line-height:   1.2;
+$headings-margin-bottom: .75rem;
+
+$display-font-sizes: (
+  1: 5rem,     // 80px：首頁 H1
+  2: 4.5rem,   // 72px：作者大名
+  3: 4rem,     // 64px：方案頁、登入塔的 H1
+  4: 3.5rem,
+  5: 3rem,
+  6: 2.5rem,
+);
+$display-font-weight: 900;
+$display-line-height: 1.1;
+
+$lead-font-size:   1.25rem; // 20px：導言
+$lead-font-weight: 500;
+
+// 自訂：大數字（Bricolage Grotesque 800）
+$figure-sizes: (
+  price:  4rem,     // 64px：方案價格
+  date:   4.5rem,   // 72px：到期日
+  stat:   3.5rem,   // 56px：數據卡
+  home:   3rem,     // 48px：首頁數字
+);
+
+// 自訂：長文排版（Guideline「長文排版規範」以此為準）
+$prose-max-width:     45rem;    // 720px（規格 680–720px）
+$prose-font-size:     1.125rem; // 18px（Aa 中）
+$prose-line-height:   1.85;     // 規格 ≥ 1.8；手機不下調
+$prose-paragraph-gap: 1.3em;
+$prose-sizes: (                 // Aa 三段：字級、行高（每段都 ≥ 1.8）
+  sm: (1.0625rem, 1.9),         // 17px／1.9
+  md: (1.125rem, 1.85),         // 18px／1.85（預設）
+  lg: (1.25rem, 1.8),           // 20px／1.8
+);
+$prose-h2-size:       1.75rem;  // 28px／1.4，上方 6 × 48px 的 $orange 短條
+$prose-h3-size:       1.3125rem;// 21px／1.5
+$lede-font-size:      1.25rem;  // 20px／1.75
+$lede-line-height:    1.75;
+$quote-font-size:     1.3125rem;// 21px／1.7：引言區塊（首頁引文同一組），左側 8px $klein 實心條
+$quote-line-height:   1.7;
+
+// 自訂：字距
+$letter-spacing-display: -.02em; // 900 超大字收緊一點
+$letter-spacing-body:    .01em;
+$letter-spacing-label:   .02em;
+
+// ---------- 3. 間距 ----------
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * .25,  // 4px
+  2: $spacer * .5,   // 8px
+  3: $spacer,        // 16px：便當盒間距
+  4: $spacer * 1.5,  // 24px：積木內距（< 992）
+  5: $spacer * 2.5,  // 40px：積木內距（≥ 992）
+  6: $spacer * 3.5,  // 56px：區塊上下留白（< 992）
+  7: $spacer * 5,    // 80px：區塊上下留白（≥ 992）
+);
+
+// 自訂：便當盒與積木
+$bento-gap:        1rem;    // 16px：積木之間（≥ 992）
+$bento-gap-sm:     .75rem;  // 12px：手機單欄堆疊
+$block-padding:    2.5rem;  // 40px（≥ 992）
+$block-padding-sm: 1.5rem;  // 24px（< 992）
+$section-space:    5rem;    // 80px
+$section-space-sm: 3.5rem;  // 56px
+
+$grid-gutter-width:   1.5rem;
+$container-padding-x: 2rem;  // 左右各 16px（≥ 992px 在 _base.scss 改成 24px）；需 ≥ gutter 才不會讓 .row 溢出
+$container-padding-x-lg: 3rem; // 自訂：≥ 992px 左右各 24px
+// 容器沿用 Bootstrap 預設（≥ 1400 為 1320px）；頁首格子的對齊計算也用這組值
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  xxl: 1320px,
+);
+// RWD 斷點沿用 Bootstrap 預設：sm 576 / md 768 / lg 992 / xl 1200 / xxl 1400
+
+// ---------- 4. 圓角、線條與陰影 ----------
+// 所有可見邊界都是 2px $ink；推薦積木 4px、選中與目前編輯中 3px $klein
+$border-width:       2px;
+$line:               2px solid $ink; // 自訂：積木、按鈕、輸入框的外框
+$line-thick:         4px;            // 自訂：推薦積木（月費方案）
+$line-selected:      3px;            // 自訂：選中、目前編輯中（$klein）
+
+$border-radius-sm:   .5rem;    // 8px：徽章（方角小牌）、分段控制內的選中塊
+$border-radius:      .75rem;   // 12px：按鈕、輸入框、分段控制外框
+$border-radius-lg:   1.25rem;  // 20px：積木
+$border-radius-xl:   1.25rem;  // 20px：對話框、付費牆卡
+$border-radius-xxl:  1.25rem;
+$border-radius-pill: 50rem;    // 頭像、圓形圖示底
+$block-radius:       $border-radius-lg; // 自訂
+
+// 沒有柔和陰影。硬陰影只給兩種東西：付費牆卡、拖曳中的積木（8px）；下拉、插入選單、對話框（6px）
+$enable-shadows: false;
+$shadow-hard:      8px 8px 0 $ink; // 自訂：付費牆、拖曳中的積木
+$shadow-hard-sm:   6px 6px 0 $ink; // 自訂：下拉、插入選單、對話框
+$box-shadow-sm:    none;
+$box-shadow:       $shadow-hard-sm;
+$box-shadow-lg:    $shadow-hard;
+$box-shadow-inset: none;
+
+$enable-negative-margins: true;
+$enable-rfs: false; // 字級的 RWD 縮放自己寫在 _base.scss（≥ 1200 → 992 → 以下三段），不用 RFS 的流體字級
+
+// ---------- 5. 元件 ----------
+// 按鈕：2px $ink 框＋12px 圓角＋700 字；主要＝藍底白字；次要＝白底黑框；按下時位移 2px（不是 hover）
+$btn-padding-y:        .625rem;  // 48px 高（含 2px 框）
+$btn-padding-x:        1.375rem;
+$btn-font-size:        1rem;
+$btn-line-height:      1.5;
+$btn-padding-y-sm:     .5rem;    // 44px 高，符合觸控目標
+$btn-padding-x-sm:     1rem;
+$btn-font-size-sm:     .9375rem;
+$btn-padding-y-lg:     .875rem;  // 56px 高：首頁 Hero、付費牆、結帳
+$btn-padding-x-lg:     1.75rem;
+$btn-font-size-lg:     1.0625rem;
+$btn-font-weight:      700;
+$btn-border-width:     2px;
+$btn-border-radius:    $border-radius;
+$btn-border-radius-sm: $border-radius;
+$btn-border-radius-lg: $border-radius;
+$btn-disabled-opacity: 1; // 停用色另外指定（_base.scss），不疊透明度
+$btn-focus-width:      $focus-ring-width;
+$btn-link-disabled-color: $gray-600;
+$btn-transition:       color .12s ease-out, background-color .12s ease-out, border-color .12s ease-out;
+
+// 表單：白底、2px $ink 框、12px 圓角；聚焦時框換克萊因藍＋外圈焦點環
+$input-bg:                    $paper;
+$input-color:                 $ink;
+$input-border-color:          $ink;
+$input-border-width:          2px;
+$input-placeholder-color:     $gray-600;
+$input-plaintext-color:       $ink;
+$input-padding-y:             .625rem; // 48px 高
+$input-padding-x:             1rem;
+$input-font-size:             1rem;
+$input-line-height:           1.5;
+$input-border-radius:         $border-radius;
+$input-border-radius-sm:      $border-radius;
+$input-border-radius-lg:      $border-radius;
+$input-focus-bg:              $paper;
+$input-focus-color:           $ink;
+$input-focus-border-color:    $ink;
+$input-focus-box-shadow:      $focus-ring-double;
+$input-disabled-bg:           $fog;
+$input-disabled-color:        $gray-600;
+$input-disabled-border-color: $ink;
+$input-group-addon-bg:        $fog;
+$input-group-addon-color:     $ink;
+$input-group-addon-border-color: $ink;
+$form-label-font-size:        .9375rem;
+$form-label-font-weight:      700;
+$form-label-color:            $ink;
+$form-label-margin-bottom:    .5rem;
+$form-text-color:             $gray-600;
+$form-text-font-size:         .8125rem;
+$form-file-button-bg:         $fog;
+$form-file-button-hover-bg:   $klein-tint;
+$form-file-button-color:      $ink;
+
+$form-select-indicator-color:  $ink;
+$form-select-focus-box-shadow: $focus-ring-double;
+
+// 核取方塊、radio：白底 2px $ink 框；選中為黑底白勾
+$form-check-input-bg:                   $paper;
+$form-check-input-border:               2px solid $ink;
+$form-check-input-border-radius:        .3125rem;
+$form-check-input-checked-color:        $paper;
+$form-check-input-checked-bg-color:     $ink;
+$form-check-input-checked-border-color: $ink;
+$form-check-input-focus-border:         $ink;
+$form-check-input-focus-box-shadow:     $focus-ring-double;
+$form-check-input-width:                1.25em;
+
+// 開關：未開為黑圓鈕、開啟為白圓鈕在藍軌道上
+$form-switch-color:         $ink;
+$form-switch-focus-color:   $ink;
+$form-switch-checked-color: $paper;
+$form-switch-width:         2.5em;
+
+$form-feedback-valid-color:   $success;
+$form-feedback-invalid-color: $danger;
+$form-feedback-font-size:     .8125rem;
+
+$btn-close-color:         $ink;
+$btn-close-opacity:       1;
+$btn-close-hover-opacity: 1;
+$btn-close-focus-shadow:  $focus-ring-double;
+
+// 卡片（Bootstrap .card 很少用；積木用 .block）
+$card-bg:            $paper;
+$card-color:         $ink;
+$card-border-color:  $ink;
+$card-border-width:  2px;
+$card-border-radius: $block-radius;
+$card-cap-bg:        $fog;
+$card-spacer-y:      1.5rem;
+$card-spacer-x:      1.5rem;
+
+// 頁首：72px 高的格子列＋底部 2px $ink；sticky 元素、錨點捲動、閱讀進度條的位移都以此為準
+$site-header-height:    4.625rem; // 74px（≥ 992：72px 格子＋2px 底線）
+$site-header-height-sm: 3.625rem; // 58px（< 992：56px 方格＋2px 底線）
+$header-cell-height:    4.5rem;   // 72px
+$header-cell-height-sm: 3.5rem;   // 56px
+$sticky-top-offset:     $site-header-height + 1rem; // 90px：sticky 側欄、目錄、摘要的 top
+
+// 導覽列（格子頁首在 components/_header.scss 自己排，這裡只關掉 Bootstrap 的預設內距與顏色）
+$navbar-padding-y:             0;
+$navbar-padding-x:             0;
+$navbar-nav-link-padding-x:    1.75rem;
+$navbar-light-color:           $ink;
+$navbar-light-hover-color:     $ink;
+$navbar-light-active-color:    $paper;
+$navbar-light-brand-color:     $paper;
+$navbar-light-brand-hover-color: $paper;
+$navbar-light-toggler-border-color: transparent;
+$navbar-toggler-border-radius: 0;
+$nav-link-font-size:           1rem;
+$nav-link-font-weight:         700;
+$nav-link-color:               $ink;
+$nav-link-hover-color:         $ink;
+$nav-link-disabled-color:      $gray-600;
+$nav-underline-border-width:   3px;
+$nav-underline-link-active-color: $ink;
+$nav-pills-link-active-bg:     $ink;
+$nav-pills-link-active-color:  $paper;
+
+// 下拉選單：白積木＋6px 硬陰影
+$dropdown-bg:                 $paper;
+$dropdown-color:              $ink;
+$dropdown-border-color:       $ink;
+$dropdown-border-width:       2px;
+$dropdown-border-radius:      $border-radius;
+$dropdown-divider-bg:         $ink;
+$dropdown-box-shadow:         $shadow-hard-sm;
+$dropdown-link-color:         $ink;
+$dropdown-link-hover-color:   $ink;
+$dropdown-link-hover-bg:      $fog;
+$dropdown-link-active-color:  $paper;
+$dropdown-link-active-bg:     $ink;
+$dropdown-link-disabled-color: $gray-600;
+$dropdown-header-color:       $ink-2;
+$dropdown-padding-y:          .5rem;
+$dropdown-item-padding-y:     .625rem;
+$dropdown-item-padding-x:     1rem;
+
+// 對話框、側邊抽屜：白積木＋2px 框＋6px 硬陰影
+$modal-content-bg:            $paper;
+$modal-content-color:         $ink;
+$modal-content-border-color:  $ink;
+$modal-content-border-width:  2px;
+$modal-content-border-radius: $block-radius;
+$modal-content-box-shadow-xs: $shadow-hard-sm;
+$modal-content-box-shadow-sm-up: $shadow-hard-sm;
+$modal-header-border-color:   $ink;
+$modal-header-border-width:   2px;
+$modal-footer-border-width:   0;
+$modal-backdrop-bg:           $ink;
+$modal-backdrop-opacity:      .55;
+$modal-md:                    32.5rem; // 520px：取消對話框
+$modal-inner-padding:         2rem;
+$offcanvas-bg-color:          $paper;
+$offcanvas-color:             $ink;
+$offcanvas-border-color:      $ink;
+$offcanvas-border-width:      2px;
+$offcanvas-backdrop-bg:       $ink;
+$offcanvas-backdrop-opacity:  .55;
+
+// Accordion（方案頁 FAQ 會改成一條一條的問答積木，見 pages/_pricing.scss）
+$accordion-color:               $ink;
+$accordion-bg:                  $paper;
+$accordion-border-color:        $ink;
+$accordion-border-width:        2px;
+$accordion-border-radius:       $border-radius-lg;
+$accordion-inner-border-radius: calc(#{$border-radius-lg} - 2px);
+$accordion-button-color:        $ink;
+$accordion-button-padding-y:    1.25rem;
+$accordion-button-padding-x:    1.5rem;
+$accordion-body-padding-x:      1.5rem;
+$accordion-body-padding-y:      1.25rem;
+$accordion-button-active-bg:    $klein;
+$accordion-button-active-color: $paper;
+$accordion-button-focus-box-shadow: $focus-ring-double;
+
+// 表格：2px 框積木、黑表頭、1px 髮絲線分列（components 裡的 .data-table、.compare-table）
+$table-color:           $ink;
+$table-bg:              $paper;
+$table-border-color:    $hairline;
+$table-border-width:    1px;
+$table-cell-padding-y:  .875rem;
+$table-cell-padding-x:  1rem;
+$table-striped-bg:      $fog;
+$table-hover-bg:        $fog;
+$table-th-font-weight:  700;
+
+// 進度條：黑框白軌、藍色進度（已讀完綠、尚未開始空軌）
+$progress-height:        .625rem; // 10px
+$progress-bg:            $paper;
+$progress-border-radius: $border-radius-pill;
+$progress-bar-bg:        $klein;
+$progress-bar-transition: none;
+
+// 分頁：48px 方塊，目前頁藍底白字
+$pagination-padding-y:          .6875rem;
+$pagination-padding-x:          .75rem;
+$pagination-font-size:          1rem;
+$pagination-color:              $ink;
+$pagination-bg:                 $paper;
+$pagination-border-width:       2px;
+$pagination-border-color:       $ink;
+$pagination-border-radius:      $border-radius;
+$pagination-margin-start:       .5rem;
+$pagination-hover-color:        $ink;
+$pagination-hover-bg:           $fog;
+$pagination-hover-border-color: $ink;
+$pagination-focus-box-shadow:   $focus-ring-double;
+$pagination-active-color:       $paper;
+$pagination-active-bg:          $klein;
+$pagination-active-border-color: $ink;
+$pagination-disabled-color:     $gray-600;
+$pagination-disabled-bg:        $fog;
+$pagination-disabled-border-color: $ink;
+
+// 麵包屑
+$breadcrumb-font-size:        .9375rem;
+$breadcrumb-margin-bottom:    0;
+$breadcrumb-divider-color:    $ink-2;
+$breadcrumb-active-color:     $ink;
+$breadcrumb-divider:          quote("／");
+$breadcrumb-item-padding-x:   .5rem;
+
+// Tooltip、Popover、Toast
+$tooltip-bg:        $ink;
+$tooltip-color:     $paper;
+$tooltip-opacity:   1;
+$popover-border-color: $ink;
+$popover-border-width: 2px;
+$toast-border-color: $ink;
+$toast-border-width: 2px;
+
+// List group
+$list-group-border-color: $ink;
+$list-group-border-width: 2px;
+$list-group-active-bg:    $ink;
+$list-group-active-color: $paper;
+$list-group-hover-bg:     $fog;

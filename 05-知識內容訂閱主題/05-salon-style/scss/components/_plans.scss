@@ -1,0 +1,231 @@
+// ============================================================
+// 方案積木 PlanCard、比較矩陣 ComparisonTable（訂閱方案、Guideline；註冊頁的權益摘要沿用方案名、價格與權益清單）
+// 3 塊等高方案積木三種填色：免費白、月費克萊因藍（4px 框＋傾斜的橘色「★ 最多人選」貼紙）、年費黑
+// 按鈕貼底；被強調的那顆 .btn-primary、另一顆 .btn-outline-secondary，顏色依積木底色自動反白
+// ============================================================
+
+// <article class="block plan-block is-klein is-recommended">
+//   <span class="plan-sticker">…最多人選</span>
+//   <h2 class="plan-name">月費訂閱</h2>
+//   <p class="plan-price"><span class="plan-price-currency">NT$</span><span class="plan-price-num">180</span><span class="plan-price-unit">／月</span></p>
+//   <p class="plan-fit">適合：…</p>
+//   <ul class="plan-features"><li class="is-yes">…</li><li class="is-no">…</li></ul>
+//   <a class="btn btn-primary plan-btn" …>開始訂閱</a>
+// </article>
+.plan-block {
+  container-type: inline-size; // 價格依積木寬度縮放
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+
+  // 推薦（月費）：4px 框，不放大積木（內距少 2px 抵掉多出來的框，內容和其他兩塊對齊）
+  &.is-recommended {
+    border-width: $line-thick;
+    padding: calc(#{$block-padding-sm} - 2px);
+
+    @include media-breakpoint-up(lg) {
+      padding: calc(#{$block-padding} - 2px);
+    }
+  }
+}
+// 「★ 最多人選」：活力橘方角貼紙，壓在積木左上緣、傾斜 -4°（固定在月費，不隨月／年切換移動）
+.plan-sticker {
+  position: absolute;
+  top: -1.125rem;
+  left: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .3125rem .875rem;
+  border: $line;
+  border-radius: $border-radius-sm;
+  background-color: $orange;
+  color: $ink;
+  font-weight: $font-weight-black;
+  font-size: .9375rem;
+  letter-spacing: $letter-spacing-label;
+  transform: rotate(-4deg);
+  white-space: nowrap;
+
+  @include media-breakpoint-up(lg) {
+    left: 2.25rem;
+  }
+}
+.plan-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .75rem;
+  margin-bottom: 1rem;
+  font-size: 1.375rem;
+  font-weight: $font-weight-black;
+  line-height: 1.35;
+  letter-spacing: 0;
+
+  @include media-breakpoint-up(xl) {
+    font-size: 1.5rem; // 24px
+  }
+}
+// 價格：Bricolage 800，64px（依積木寬度縮放）；「NT$」與「／月」「／年」縮小
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 .25rem;
+  margin-bottom: .75rem;
+  line-height: 1;
+}
+.plan-price-currency {
+  font-family: $font-family-display;
+  font-size: 1.25rem;
+  font-weight: 700;
+  align-self: flex-start;
+  margin-top: .375rem;
+}
+.plan-price-num {
+  font-family: $font-family-display;
+  font-size: clamp(3rem, 22cqi, 4rem); // 64px
+  font-weight: 800;
+  font-variation-settings: "opsz" 96;
+  letter-spacing: -.03em;
+}
+.plan-price-unit {
+  font-size: 1rem;
+  font-weight: $font-weight-bold;
+}
+.plan-fit {
+  margin-bottom: 1.25rem;
+  font-weight: $font-weight-medium;
+  color: var(--fn-muted);
+}
+// 權益清單：✓ 依積木底色（白積木藍、藍積木白、黑積木橘）；✗ 灰色 x-lg＋次要字（不用刪除線）
+.plan-features {
+  display: grid;
+  gap: .625rem;
+  margin: 0 0 1.75rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: 1.25rem minmax(0, 1fr);
+    gap: .625rem;
+    align-items: start;
+    line-height: 1.6;
+  }
+  .bi { margin-top: .125rem; font-size: 1.125rem; line-height: 1.2; }
+  .is-yes .bi { color: var(--fn-check, #{$klein}); -webkit-text-stroke: .5px currentColor; }
+  .is-no { color: var(--fn-muted); }
+  .is-no .bi { color: var(--fn-muted); }
+}
+.block.is-klein .plan-features { --fn-check: #{$paper}; }
+.block.is-ink .plan-features { --fn-check: #{$orange}; }
+.block.is-white .plan-features .is-no,
+.block.is-white .plan-features .is-no .bi { color: $gray-600; }
+// 按鈕貼底、滿寬
+.plan-btn {
+  width: 100%;
+  margin-top: auto;
+}
+
+// ============================================================
+// 比較矩陣：2px 框 20px 圓角；表頭黑底白字、月費表頭藍底白字、月費欄克萊因藍淡底
+// ✓＝20px 藍色實心圓勾＋「有」、✗＝灰框圓叉＋「無」、—＝不適用
+// 外框 .compare-frame 負責圓角裁切（overflow: hidden），手機的捲動容器 .compare-scroll 另外一層，首欄凍結
+// ============================================================
+.compare-hint {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .75rem;
+  font-size: .875rem;
+  font-weight: $font-weight-medium;
+  color: $ink-2;
+}
+.compare-frame {
+  border: $line;
+  border-radius: $block-radius;
+  overflow: hidden;
+  background-color: $paper;
+}
+.compare-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+.compare-table {
+  width: 100%;
+  min-width: 42rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-variant-numeric: tabular-nums;
+
+  th,
+  td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid $hairline;
+    background-color: $paper;
+    text-align: center;
+    vertical-align: middle;
+  }
+  thead th {
+    border-bottom: $line;
+    background-color: $ink;
+    color: $paper;
+    font-size: 1.0625rem;
+    font-weight: $font-weight-black;
+    white-space: nowrap;
+
+    &.is-recommended {
+      background-color: $klein;
+      color: $paper;
+    }
+  }
+  // 首欄：權益名稱靠左、凍結（手機橫向捲動時不動）；右側 2px 黑線分隔
+  th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    border-right: $line;
+    text-align: left;
+    font-weight: $font-weight-bold;
+  }
+  thead th:first-child { background-color: $ink; }
+  tbody th { background-color: $paper; }
+  td.is-recommended { background-color: $klein-tint; }
+  tbody tr:last-child > * { border-bottom: 0; }
+  .is-strong { font-weight: $font-weight-black; }
+}
+// 儲存格的有／無：圓形圖示＋文字（不只靠顏色）
+.cell-yes,
+.cell-no {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-weight: $font-weight-bold;
+
+  .bi {
+    display: inline-grid;
+    place-items: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    font-size: .75rem;
+    line-height: 1;
+  }
+}
+.cell-yes .bi {
+  background-color: $klein;
+  color: $paper;
+  -webkit-text-stroke: .5px currentColor;
+}
+.cell-no {
+  color: $gray-600;
+
+  .bi {
+    border: 2px solid $gray-600;
+    color: $gray-600;
+    font-size: .625rem;
+  }
+}
+.cell-na { color: $gray-600; font-weight: $font-weight-bold; }

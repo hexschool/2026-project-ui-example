@@ -1,0 +1,211 @@
+// ============================================================
+// 創作者後台的數據：數據卡 StatTile、資料表 DataTable、閱讀漏斗
+// 我的文章 4 張數據卡依序白、黑、藍、橘；內容數據只有「由本篇帶來的訂閱」是橘積木
+// ============================================================
+
+// ---------- 數據卡：小字標籤＋Bricolage 大數字（依積木寬度縮放）＋單位 ----------
+// <div class="stat-grid">
+//   <div class="block block-tight stat-block is-ink"><p class="stat-label">總瀏覽</p><p class="stat-value"><span class="figure-num">142,860</span></p></div>
+// </div>
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $bento-gap-sm;
+  margin-bottom: 1.5rem;
+
+  @include media-breakpoint-up(lg) { gap: $bento-gap; }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.stat-block {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.25rem;
+  min-height: 8.5rem;
+}
+.stat-label {
+  margin: 0;
+  font-size: .9375rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.45;
+}
+.stat-value {
+  display: flex;
+  align-items: baseline;
+  gap: .25rem;
+  margin: 0;
+  line-height: 1;
+
+  .figure-num {
+    font-size: clamp(1.75rem, 21cqi, 3.5rem); // 56px：7 位數（142,860）也放得下
+    font-variant-numeric: tabular-nums;
+  }
+  small {
+    font-size: 1rem;
+    font-weight: $font-weight-bold;
+  }
+}
+
+// ---------- 資料表：2px 框積木、黑表頭白字、1px 髮絲線分列；數字欄靠右＋等寬數字 ----------
+// 外框 .data-table 負責圓角裁切，裡面的 .table-responsive 在手機橫向捲動
+// <div class="data-table"><div class="table-responsive"><table class="table">…</table></div></div>
+.data-table {
+  border: $line;
+  border-radius: $block-radius;
+  overflow: hidden;
+  background-color: $paper;
+
+  .table {
+    margin: 0;
+    font-size: .9375rem;
+    line-height: 1.55;
+    vertical-align: middle;
+  }
+  caption {
+    caption-side: top;
+    padding: .875rem 1.25rem;
+    border-bottom: $line;
+    color: $ink;
+    font-weight: $font-weight-bold;
+  }
+  th,
+  td {
+    padding: .875rem 1.25rem;
+    white-space: nowrap;
+  }
+  thead th {
+    border-bottom: 0;
+    background-color: $ink;
+    color: $paper;
+    font-size: .875rem;
+    font-weight: $font-weight-bold;
+    letter-spacing: $letter-spacing-label;
+  }
+  tbody th { font-weight: $font-weight-bold; }
+  tbody tr:last-child > * { border-bottom: 0; }
+  .is-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .num { font-variant-numeric: tabular-nums; }
+  .is-muted { color: $gray-600; }
+}
+// 欄位多的表格（我的文章 6 欄、使用者管理 5 欄）：左右留白收窄，標題與灰字備註可換行，
+// 操作按鈕可上下排；≥ 1200px 的主欄放得下不用捲動（平板以下照常在框內橫向捲動）
+// <div class="data-table is-compact">…</div>
+.data-table.is-compact {
+  th,
+  td {
+    padding-right: .5rem;
+    padding-left: .5rem;
+
+    &:first-child { padding-left: 1.25rem; }
+    &:last-child { padding-right: 1.25rem; }
+  }
+  .segmented-sm .btn { --bs-btn-padding-x: .5rem; }
+  // 1200–1399 主欄只有 748px：付費層級切換拿掉鎖頭圖示（文字「免費／訂閱限定」本身就說清楚）
+  @include media-breakpoint-down(xxl) {
+    .segmented-sm .bi { display: none; }
+  }
+  tbody th {
+    min-width: 10.5rem; // 9 個字的標題剛好一行
+    white-space: normal;
+  }
+  td.is-muted {
+    min-width: 6.5rem;
+    white-space: normal;
+  }
+  // 欄寬不夠時操作按鈕改成上下排，不把表格撐到要橫向捲動
+  .table-actions { flex-wrap: wrap; }
+}
+// 表格裡的文字按鈕（編輯、查看數據、下架…）：橫排、間距小
+.table-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: .25rem .75rem;
+
+  .btn-text { min-height: 2.5rem; padding-top: 0; padding-bottom: 0; }
+}
+.table-title {
+  font-weight: $font-weight-bold;
+  color: $ink;
+
+  &.is-removed {
+    color: $gray-600;
+    text-decoration: line-through;
+  }
+}
+a.table-title { color: $klein; }
+.user-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: .625rem;
+}
+
+// ---------- 閱讀漏斗：4 條同色克萊因藍、等比例、40px 粗的橫條，右側直接標數字 ----------
+// 不畫梯形、不用雙軸；深色底示範時放進黑積木，橫條改 $sky-on-ink
+// <div class="funnel" role="img" aria-label="…">
+//   <div class="funnel-row" style="--w: .337" aria-hidden="true">
+//     <span class="funnel-label">讀完免費段</span>
+//     <span class="funnel-track"><span class="funnel-bar"></span><span class="funnel-value">6,208</span><span class="funnel-rate">佔前一階段 33.7%</span></span>
+//   </div>
+// </div>
+.funnel-title {
+  margin-bottom: .25rem;
+  font-size: 1.25rem;
+  font-weight: $font-weight-black;
+  line-height: 1.45;
+}
+.funnel-sub {
+  margin-bottom: 1.5rem;
+  font-size: .875rem;
+  color: var(--fn-muted);
+}
+.funnel {
+  --fn-bar: #{$klein};
+  display: grid;
+  gap: 1rem;
+}
+.block.is-ink .funnel,
+.on-ink .funnel { --fn-bar: #{$sky-on-ink}; }
+.funnel-row {
+  display: grid;
+  gap: .375rem;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    gap: 1rem;
+    align-items: center;
+  }
+}
+.funnel-label {
+  font-weight: $font-weight-bold;
+  font-size: .9375rem;
+}
+.funnel-track {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .75rem;
+  min-width: 0;
+}
+.funnel-bar {
+  flex: none;
+  width: calc(var(--w, 1) * (100% - 5.5rem)); // 最長那條也留 5.5rem 給數字
+  min-width: 4px;
+  height: 2.5rem; // 40px
+  background-color: var(--fn-bar);
+}
+.funnel-value {
+  font-weight: $font-weight-black;
+  font-variant-numeric: tabular-nums;
+}
+.funnel-rate {
+  font-size: .8125rem;
+  color: var(--fn-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

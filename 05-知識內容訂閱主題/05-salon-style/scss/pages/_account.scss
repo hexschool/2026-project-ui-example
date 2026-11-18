@@ -1,0 +1,466 @@
+// ============================================================
+// 個人頁面 account.html（同一個版型、三種權限：<body data-role="reader|author|admin">）
+// 版頭：麵包屑＋H1｜右側設計稿切換器
+// ≥ 992px：左欄 300px sticky（個人積木 → 權限分組積木 → 讀者才有的申請入口）｜右欄內容便當盒
+//   權限分組一組一塊積木、一組一種顏色：閱讀白、創作藍（作者可見）、平台管理橘（管理員可見）、帳號黑
+//   目前項目：白積木上黑底白字、色積木上白底黑字
+// < 992px：內容上方一顆黑色下拉按鈕（顯示目前區段），展開同樣的分組
+// ============================================================
+
+// ---------- 版頭 ----------
+.account-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+
+  h1 {
+    font-size: 2.5rem;
+
+    @include media-breakpoint-up(lg) { font-size: 3.5rem; } // 56px
+  }
+}
+
+// ---------- 兩欄版面 ----------
+.account-layout {
+  display: grid;
+  gap: 1.5rem;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: 17rem minmax(0, 1fr);
+    gap: 2rem;
+    align-items: start;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: 18.75rem minmax(0, 1fr); // 300px
+    gap: 2.5rem;
+  }
+}
+.account-rail { min-width: 0; }
+.account-side {
+  display: grid;
+  gap: .75rem;
+
+  @include media-breakpoint-up(lg) {
+    position: sticky;
+    top: $sticky-top-offset;
+    max-height: calc(100vh - #{$sticky-top-offset} - 1rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    padding: 0 .375rem .375rem 0; // 讓焦點環不被捲動容器裁掉
+    margin-right: -.375rem;
+  }
+}
+// 個人積木（白）：48px 頭像、姓名、「年費訂閱中」藍徽章
+.account-profile {
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+  padding: 1.25rem;
+}
+.account-profile-name {
+  margin: 0 0 .25rem;
+  font-size: 1.125rem;
+  font-weight: $font-weight-black;
+  line-height: 1.35;
+}
+// 權限分組積木
+.account-nav {
+  display: grid;
+  gap: .75rem;
+}
+.account-nav-group {
+  padding: 1rem;
+
+  ul {
+    display: grid;
+    gap: .125rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+.account-nav-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem;
+  margin: 0 0 .5rem;
+  padding: 0 .625rem;
+  font-size: .8125rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+  color: var(--fn-muted);
+
+  .role-chip { margin-left: auto; color: var(--fn-fg); }
+}
+// 一列 44px；目前項目：白積木上黑底白字、色積木上白底黑字
+.account-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  min-height: 2.75rem;
+  padding: .375rem .625rem;
+  border-radius: $border-radius-sm;
+  color: var(--fn-fg);
+  font-weight: $font-weight-bold;
+  text-decoration: none;
+  transition: background-color .12s ease-out, color .12s ease-out;
+
+  &:hover {
+    color: var(--fn-fg);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .3em;
+    text-decoration-color: var(--fn-link-hover-line);
+  }
+  &:focus-visible { outline: 0; box-shadow: $focus-ring-double; }
+  .bi { font-size: .875rem; }
+
+  &.active {
+    background-color: $ink;
+    color: $paper;
+    text-decoration: none;
+  }
+}
+.account-nav-group.is-klein,
+.account-nav-group.is-orange,
+.account-nav-group.is-ink {
+  .account-nav-link.active {
+    background-color: $paper;
+    color: $ink;
+  }
+}
+.account-nav-group .tab-count {
+  margin-left: auto;
+}
+// 讀者才有的申請入口：虛線框白積木（這是「你可以多一區」的提示，不是真的分組）
+.account-upgrade {
+  padding: 1.25rem;
+  border: 2px dashed $ink;
+  border-radius: $block-radius;
+  background-color: $paper;
+
+  p { margin: 0 0 .75rem; font-weight: $font-weight-bold; }
+}
+
+// < 992px：黑色下拉按鈕（顯示目前區段）
+.account-nav-toggle {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  width: 100%;
+  min-height: 3.75rem;
+  padding: .5rem 1rem;
+  border: $line;
+  border-radius: $border-radius;
+  background-color: $ink;
+  color: $paper;
+  text-align: left;
+
+  > .bi { margin-left: auto; transition: transform .2s ease-out; }
+  &[aria-expanded="true"] > .bi { transform: rotate(180deg); }
+  &:focus-visible { outline: 0; box-shadow: $focus-ring-double; }
+}
+.account-nav-toggle-text {
+  display: grid;
+  line-height: 1.35;
+
+  small { color: $on-ink-muted; font-size: .8125rem; }
+}
+.account-nav-menu {
+  width: 100%;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: .5rem;
+  border: $line;
+  border-radius: $border-radius;
+  box-shadow: $shadow-hard-sm;
+
+  .dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: .375rem;
+    margin: .5rem 0 .25rem;
+    padding: .25rem .625rem;
+    border-radius: $border-radius-sm;
+    font-size: .8125rem;
+    font-weight: $font-weight-bold;
+    color: $ink-2;
+
+    &.is-create { background-color: $klein; color: $paper; }
+    &.is-admin { background-color: $orange; color: $ink; }
+    &.is-account { background-color: $ink; color: $paper; }
+  }
+  li:first-child .dropdown-header { margin-top: 0; }
+  .dropdown-item {
+    min-height: 2.75rem;
+    display: flex;
+    align-items: center;
+    border-radius: $border-radius-sm;
+    font-weight: $font-weight-medium;
+
+    &.active { background-color: $ink; color: $paper; }
+  }
+}
+
+// ---------- 右欄：各區段 ----------
+.account-content {
+  display: grid;
+  gap: 4rem;
+  min-width: 0;
+
+  @include media-breakpoint-up(lg) { gap: 5rem; }
+}
+.account-section {
+  min-width: 0;
+  scroll-margin-top: $sticky-top-offset;
+
+  .section-heading h2,
+  > h2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem .75rem;
+    margin: 0;
+  }
+  > h2 { margin-bottom: 1.5rem; }
+  .section-heading { align-items: center; }
+}
+.account-subtitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin: 2.5rem 0 1rem;
+  font-size: 1.25rem;
+  font-weight: $font-weight-black;
+  scroll-margin-top: $sticky-top-offset;
+}
+.account-lead {
+  max-width: 45rem;
+  margin: -.75rem 0 1.5rem;
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: $ink-2;
+}
+// 狀態示意裡並排的兩塊積木
+.pair-grid {
+  display: grid;
+  gap: $bento-gap-sm;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $bento-gap;
+  }
+}
+.stack-grid {
+  display: grid;
+  gap: .75rem;
+}
+
+// ---------- 我的訂閱 ----------
+.sub-hero .status-badge { align-self: flex-start; }
+.sub-hero-period {
+  margin: 1rem 0 0;
+  font-size: .875rem;
+  font-weight: $font-weight-medium;
+  color: var(--fn-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- 我的收藏：一排 3 塊收藏積木（≥ 1200px），平板 2 塊 ----------
+.library-tabs { margin-bottom: 1.25rem; }
+.library-grid {
+  display: grid;
+  gap: $bento-gap-sm;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $bento-gap;
+  }
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.library-block {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+
+  > * { margin: 0; }
+  .card-kicker { margin: 0; }
+  .btn { align-self: flex-start; margin-top: auto; }
+}
+.library-block-title {
+  font-size: 1.125rem;
+  font-weight: $font-weight-black;
+  line-height: 1.45;
+}
+.library-progress {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: .5rem !important;
+
+  .read-progress { flex: 1 1 auto; }
+}
+.library-progress-text {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- 我的文章 ----------
+.articles-filter-tabs { margin-bottom: 1rem; }
+
+// ---------- 撰寫新文章：寫作區 8 ｜ 文章設定 4（≥ 1200px） ----------
+.editor-grid {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    gap: $bento-gap;
+
+    .editor-settings {
+      position: sticky;
+      top: $sticky-top-offset;
+    }
+  }
+}
+.editor-settings .btn-icon { flex: none; }
+.publish-check {
+  .callout { margin-bottom: 1rem; }
+}
+.editor-demo-grid {
+  display: grid;
+  gap: $bento-gap-sm;
+  align-items: start;
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: $bento-gap;
+
+    .is-full { grid-column: 1 / -1; }
+  }
+}
+
+// ---------- 內容數據 ----------
+.analytics-head { align-items: center; }
+.funnel-block { margin-bottom: 1rem; }
+.analytics-insight { margin-bottom: 2.5rem; }
+
+// ---------- 平台管理 ----------
+.review-block {
+  display: grid;
+  gap: 1.25rem;
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    .review-block-reason { grid-column: 1 / -1; }
+  }
+}
+.review-block-who {
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+  margin-bottom: 1rem;
+}
+.review-block-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .5rem;
+  margin: 0 0 .125rem;
+  font-size: 1.125rem;
+}
+.review-block-text {
+  margin-bottom: .75rem;
+  line-height: 1.8;
+
+  .text-note { display: block; margin-bottom: .25rem; font-weight: $font-weight-bold; }
+}
+.review-block-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: .5rem;
+}
+.review-block-reason {
+  padding-top: 1.25rem;
+  border-top: 1px solid $hairline;
+}
+.admin-article {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  > div:first-child { min-width: 0; }
+}
+.admin-article-title {
+  margin: 0 0 .25rem;
+  font-size: 1.125rem;
+  font-weight: $font-weight-black;
+}
+
+// ---------- 成為作者：申請表積木 7 ｜ 送出之後 5 ----------
+.apply-grid {
+  display: grid;
+  gap: $bento-gap-sm;
+  align-items: start;
+
+  @include media-breakpoint-up(xl) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: $bento-gap;
+
+    .demo-state { margin-top: 0; }
+  }
+}
+.apply-fields {
+  display: grid;
+  gap: 1rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    .is-full { grid-column: 1 / -1; }
+  }
+}
+.form-title {
+  margin-bottom: 1.25rem;
+  font-size: 1.25rem;
+  font-weight: $font-weight-black;
+}
+
+// ---------- 帳號設定 ----------
+.settings-grid {
+  display: grid;
+  gap: $bento-gap-sm;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $bento-gap;
+  }
+}
+.settings-switch {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 2.75rem;
+  margin: 0;
+  padding-left: 0;
+
+  .form-check-input { flex: none; float: none; margin: 0; }
+  .form-check-label { font-weight: $font-weight-medium; }
+}

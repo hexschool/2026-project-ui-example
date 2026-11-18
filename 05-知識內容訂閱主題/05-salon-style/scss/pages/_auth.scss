@@ -1,0 +1,262 @@
+// ============================================================
+// 登入 login.html、免費註冊 register.html、忘記密碼 forgot-password.html（2026-11 補頁，3 頁共用）
+// 表單頁不放麵包屑。左邊是「積木塔」：橘色 H1 積木 → 白色表單積木 → 矮的黑色切換積木，
+// 間距 0、相鄰積木共用 2px 框；≥ 992px 白色表單積木向右錯開 16px（用 margin，不用 transform）。
+// 右邊是設計稿示意積木（2px 灰色虛線框）或註冊頁的免費會員權益積木。
+//   登入：塔 2 / 8｜示意 9 / 13（兩塊由上而下）
+//   註冊：塔 1 / 7＋下方欄位錯誤示意（同寬）｜權益 8 / 13
+//   忘記密碼：塔 1 / 7｜示意 8 / 13（3 塊由上而下，間距 12px）
+// < 992px：單欄，塔滿寬、不錯開 →（註冊頁的權益積木）→ 示意
+// ============================================================
+
+.auth-page {
+  padding-top: 1.5rem;
+
+  @include media-breakpoint-up(lg) {
+    padding-top: 3.5rem;
+  }
+}
+
+// ---------- 版面：≥ 992px 12 欄 ----------
+// <div class="auth-grid is-login|is-register|is-forgot">
+//   <section class="auth-tower">…</section>
+//   <aside class="auth-plan">…</aside>（註冊）
+//   <div class="auth-demos">…</div>
+// </div>
+.auth-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: $bento-gap;
+    row-gap: 2.5rem;
+  }
+}
+@include media-breakpoint-up(lg) {
+  .auth-grid.is-login {
+    .auth-tower { grid-column: 2 / 8; }
+    .auth-demos { grid-column: 9 / 13; }
+  }
+  .auth-grid.is-register {
+    .auth-tower { grid-column: 1 / 7; grid-row: 1; }
+    .auth-plan  { grid-column: 8 / 13; grid-row: 1; }
+    .auth-demos { grid-column: 1 / 7; grid-row: 2; }
+  }
+  // 忘記密碼的 3 塊示意比塔高很多：塔 sticky，捲動看示意時表單一直在旁邊
+  .auth-grid.is-forgot {
+    .auth-tower { grid-column: 1 / 7; position: sticky; top: $sticky-top-offset; }
+    .auth-demos { grid-column: 8 / 13; }
+  }
+}
+
+// ---------- 積木塔 ----------
+.auth-tower {
+  display: flex;
+  flex-direction: column;
+
+  // 相鄰積木共用 2px 框：後一塊往上疊 2px
+  > .block + .block { margin-top: -2px; }
+}
+
+// ① 橘色 H1 積木：H1（64px 900）＋說明（黑字）；右上角一個黑色方形類型標記（只有圖示、裝飾）
+//    標記只和 H1 同高，所以只有 H1 讓出右側空間，說明可以用滿積木寬度
+.auth-mark {
+  position: absolute;
+  top: $block-padding-sm;
+  right: $block-padding-sm;
+  display: inline-grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: $border-radius;
+  background-color: $ink;
+  color: $paper;
+  font-size: 1.375rem;
+  line-height: 1;
+
+  @include media-breakpoint-up(lg) {
+    top: $block-padding;
+    right: $block-padding;
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.625rem;
+  }
+}
+.auth-title {
+  margin: 0 0 1rem;
+  padding-right: 4rem;
+  font-size: 2.5rem;         // 40px
+  font-weight: $font-weight-black;
+  line-height: 1.1;
+  letter-spacing: $letter-spacing-display;
+
+  @include media-breakpoint-up(md) {
+    font-size: 3.25rem;      // 52px
+  }
+  @include media-breakpoint-up(xl) {
+    font-size: 4rem;         // 64px
+  }
+}
+.auth-lead {
+  max-width: 30rem;
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.75;
+}
+
+// ② 白色表單積木：≥ 992px 向右錯開 16px（寬度不變：左邊推進去多少，右邊就伸出去多少）
+.auth-form-block {
+  z-index: 1;
+
+  @include media-breakpoint-up(lg) {
+    margin-right: -$bento-gap;
+    margin-left: $bento-gap;
+  }
+}
+// 表單：56px 高的輸入框（和 56px 的主要按鈕同高，積木感比較厚實）
+.auth-form {
+  .form-control { min-height: 3.5rem; font-size: 1.0625rem; }
+}
+.auth-field { margin-bottom: 1.25rem; }
+.auth-field-last { margin-bottom: 1.75rem; }
+// 「忘記密碼？」放在密碼標籤同一列靠右（不和底部的註冊連結擠在一起）
+.auth-label-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 1rem;
+  margin-bottom: .25rem;
+
+  .form-label { margin-bottom: 0; }
+  .btn-text { --bs-btn-padding-y: 0; font-size: .9375rem; }
+}
+// 同意條款：方框和第一行文字對齊，文字可換行；「服務條款」「隱私權政策」沒有頁面（不帶 href 的 <a>），外觀做成連結
+.auth-terms {
+  margin-bottom: 1.75rem;
+
+  .form-check-label { line-height: 1.7; }
+  .form-check-input.is-invalid ~ .form-check-label { color: $ink; }
+}
+.auth-terms-link {
+  color: $klein;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .22em;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover { color: $klein-deep; text-decoration-thickness: 2px; }
+}
+
+// ③ 矮的黑色切換積木：「還沒有帳號？[免費註冊]」白字、白色底線連結（hover 換橘色底線）
+.auth-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 .375rem;
+  margin: 0;
+  padding-top: .625rem;
+  padding-bottom: .625rem;
+  font-weight: $font-weight-medium;
+
+  @include media-breakpoint-up(lg) {
+    padding-top: .875rem;
+    padding-bottom: .875rem;
+  }
+  .btn-text { font-size: 1.0625rem; }
+}
+
+// ---------- 註冊頁：免費會員權益積木（白底、2px 髮絲線框、沒有填色與陰影，層級低於表單） ----------
+// 方案名、價格、適合、✓／✗ 清單沿用 components/_plans.scss 的 .plan-name、.plan-price、.plan-fit、.plan-features
+.auth-plan {
+  container-type: inline-size; // 價格 .plan-price-num 依積木寬度縮放
+  border-color: $hairline;
+
+  .plan-features { margin-bottom: 1.25rem; }
+}
+
+// ---------- 設計稿示意積木：2px 灰色虛線框、20px 圓角（和產品積木的實線黑框區隔） ----------
+// <div class="auth-demos">
+//   <section class="demo-state auth-demo">
+//     <p class="demo-state-tag">…</p><h2 class="demo-state-title">…</h2><p class="text-note auth-demo-note">設計說明</p>
+//     …示意畫面（提示框或白積木）…
+//   </section>
+// </div>
+.auth-demos {
+  display: grid;
+  gap: .75rem;
+  align-content: start;
+}
+.demo-state.auth-demo {
+  margin: 0;
+  padding: 1.25rem;
+  border: 2px dashed $gray-600;
+  border-radius: $block-radius;
+
+  @include media-breakpoint-up(lg) {
+    padding: 1.5rem;
+  }
+  .demo-state-title { margin-bottom: .375rem; }
+  // 沒有設計說明時（連結已失效），示意畫面和標題之間補回間距
+  .demo-state-title + :not(.auth-demo-note) { margin-top: 1rem; }
+}
+.auth-demo-note {
+  margin-bottom: 1rem;
+  line-height: 1.7;
+  text-wrap: pretty; // 窄欄時避免最後一行只剩一兩個字
+}
+.auth-demo .invalid-feedback,
+.auth-demo .callout-body p { text-wrap: pretty; }
+
+// 示意畫面裡的白積木（欄位錯誤、已寄出、設定新密碼）：內距比正式積木小一點
+.auth-stage {
+  padding: 1.25rem;
+
+  @include media-breakpoint-up(lg) {
+    padding: 1.75rem;
+  }
+}
+.auth-stage-title {
+  margin-bottom: .5rem;
+  font-size: 1.25rem;
+  font-weight: $font-weight-black;
+}
+.auth-stage-lead {
+  margin-bottom: 1.25rem;
+  color: var(--fn-muted);
+}
+// 重設信已寄出：56px 綠色方塊＋envelope-check（成功不只靠顏色：圖示＋標題）
+.auth-sent-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 1rem;
+  border: $line;
+  border-radius: $border-radius;
+  background-color: $success;
+  color: $paper;
+  font-size: 1.625rem;
+  line-height: 1;
+}
+.auth-sent-text { line-height: 1.8; text-wrap: pretty; }
+// 「沒有收到？…或 [重新寄送]。」：句子裡的文字按鈕（行內，不撐高行距）
+.auth-resend {
+  margin-bottom: 1.25rem;
+  font-size: .9375rem;
+  color: var(--fn-muted);
+
+  .btn-text {
+    display: inline;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    font-size: inherit;
+    vertical-align: baseline;
+  }
+}

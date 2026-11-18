@@ -1,0 +1,257 @@
+// ============================================================
+// 方案卡 PlanCard、權益清單、比較矩陣、計費滑動開關（訂閱方案頁、Guideline）
+// - 方案紙卡頂端一排 7 個活頁孔（radial-gradient 露出桌面色）；等高、按鈕貼底
+//   免費 $sheet、月費 $coral-tint＋2.5px $coral-ink 框＋旋轉 8° 的 88px 圓形貼紙「★ 最多人選」（不放大卡片）、年費 $matcha-tint＋吊牌「省 NT$ 360」
+//   價格 Fredoka 56px；底部 .btn-plump（被強調的那顆 .btn-primary、另一顆 .btn-paper，js/main.js 依月／年交換）
+// - 權益清單 .check-list：✓ 是 $success 的 check2＋文字，✗ 是 $pen-muted 的 x＋文字
+// - 計費開關 .billing-switch：72px 膠囊軌道＋珊瑚圓鈕（transform 位移），底層是兩個 .btn-check radio（name="billing" data-billing）
+// - 比較矩陣 .compare-table：方格紙表格（.table-scroll＋.table-data），月費欄淡珊瑚底，✓／✗ 在小圓貼紙裡＋文字，首欄凍結
+// ============================================================
+
+// ---------- 方案卡 ----------
+.plan-card {
+  --plan-bg: #{$sheet};
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 3.25rem 1.5rem 1.75rem;
+  border: 1.5px solid $dot;
+  border-radius: $border-radius-lg;
+  background-color: var(--plan-bg);
+  box-shadow: $box-shadow;
+  color: $pen;
+
+  @include media-breakpoint-up(xl) {
+    padding-inline: 2rem;
+  }
+
+  // 頂端一排 7 個活頁孔（裝飾）：孔裡露出桌面色，孔緣一圈淡陰影
+  &::before {
+    content: "";
+    position: absolute;
+    top: .875rem;
+    left: 50%;
+    width: calc(7 * 2.25rem);
+    height: 1rem;
+    translate: -50% 0;
+    background: radial-gradient(circle at 50% 50%, $desk 0 .3125rem, rgba($pen, .16) .34rem .42rem, transparent .45rem) repeat-x 0 0 / 2.25rem 1rem;
+    pointer-events: none;
+  }
+
+  &.is-recommended {
+    --plan-bg: #{$coral-tint};
+    border: 2.5px solid $coral-ink;
+  }
+  &.is-matcha {
+    --plan-bg: #{$matcha-tint};
+  }
+
+  > .btn {
+    margin-top: auto;
+  }
+}
+.plan-card-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem 0;
+  margin-bottom: .75rem;
+  font-size: 1.375rem;
+
+  .save-tag { margin-left: .625rem; }
+}
+.plan-card-price {
+  display: flex;
+  align-items: baseline;
+  gap: .25rem;
+  margin-bottom: .25rem;
+  color: $pen;
+
+  .figure-num { font-size: 3.5rem; line-height: 1.1; } // 56px
+}
+.plan-card-currency {
+  font-family: $font-family-num;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.plan-card-period {
+  color: $pen-body;
+  font-size: 1rem;
+  font-weight: $font-weight-medium;
+}
+.plan-card-fit {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 2px dotted $paper-edge;
+  color: $pen-body;
+  font-size: $font-size-sm;
+}
+// 月費卡右上「★ 最多人選」：88px 圓形貼紙、旋轉 8°（裝飾性的傾斜；文字仍可讀，在 DOM 裡是一般文字）
+.plan-card-flag {
+  --sticker-size: 5.5rem;
+  position: absolute;
+  top: -1.75rem;
+  right: -.75rem;
+  z-index: 1;
+  gap: .125rem;
+  margin: 0;
+  rotate: 8deg;
+  font-family: $font-family-hand;
+  font-size: .9375rem;
+  line-height: 1.3;
+
+  .bi { color: $coral-ink; font-size: 1.125rem; }
+}
+
+// ---------- 權益清單 ----------
+// <ul class="check-list"><li><i class="bi bi-check2 check-yes" aria-hidden="true"></i><span><span class="visually-hidden">包含：</span>…</span></li>
+//   <li class="is-no"><i class="bi bi-x check-no" aria-hidden="true"></i><span><span class="visually-hidden">不含：</span>…</span></li></ul>
+.check-list {
+  display: grid;
+  gap: .625rem;
+  margin: 0 0 1.75rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    line-height: 1.65;
+  }
+  .bi {
+    flex-shrink: 0;
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+  .check-yes { color: $success; }
+  .check-no { color: $pen-muted; }
+  .is-no { color: $pen-muted; }
+}
+
+// ---------- 計費滑動開關 ----------
+// 兩個 radio 放在最前面（DOM），後面依序是「月繳」文字、軌道（左右兩半各一個 label）、「年繳」文字
+// 年繳選中：旋鈕往右 32px（transform）；選中那側的文字加粗、藍黑色，另一側次要色
+.billing-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem 1rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.billing-switch-label {
+  color: $pen-muted;
+  font-size: 1rem;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: color .12s ease;
+
+  &:hover { color: $pen; }
+}
+.billing-switch-track {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  width: 4.5rem;   // 72px
+  height: 2.5rem;  // 40px
+  border: 2px solid $pen;
+  border-radius: $border-radius-pill;
+  background-color: $white;
+  box-shadow: 0 3px 0 $paper-edge;
+}
+.billing-switch-hit {
+  flex: 1;
+  cursor: pointer;
+}
+.billing-switch-knob {
+  position: absolute;
+  top: .25rem;
+  left: .25rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background-color: $coral;
+  box-shadow: inset 0 -2px 0 $coral-press;
+  pointer-events: none;
+  transition: transform .2s ease;
+}
+.billing-switch .btn-check:nth-of-type(1):checked ~ .billing-switch-label.is-month,
+.billing-switch .btn-check:nth-of-type(2):checked ~ .billing-switch-label.is-year {
+  color: $pen;
+  font-weight: $font-weight-bold;
+}
+.billing-switch .btn-check:nth-of-type(2):checked ~ .billing-switch-track .billing-switch-knob {
+  transform: translateX(2rem);
+}
+.billing-switch .btn-check:focus-visible ~ .billing-switch-track {
+  outline: 2px solid $coral-ink;
+  outline-offset: 3px;
+}
+
+// ---------- 比較矩陣 ----------
+.compare-table {
+  min-width: 40rem;
+
+  th,
+  td {
+    padding: .875rem 1.25rem;
+  }
+  > thead th:not(:first-child),
+  td {
+    text-align: center;
+  }
+  // 月費欄：淡珊瑚底（#FDF0EA）
+  .is-recommended {
+    background-color: #FDF0EA;
+  }
+  > thead .is-recommended {
+    background-color: $coral-tint;
+  }
+  // 首欄凍結：橫向捲動時權益名稱固定在左邊
+  > thead th:first-child,
+  > tbody th {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: $white;
+    box-shadow: 1px 0 0 $dot;
+  }
+  > thead th:first-child { background-color: $butter; }
+  .is-price-row {
+    th,
+    td { font-weight: $font-weight-bold; }
+  }
+}
+.compare-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  color: $pen;
+
+  &.is-no { color: $pen-muted; }
+}
+// ✓／✗ 的小圓貼紙（24px）
+.mark-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px $white, 0 1px 3px rgba($pen, .16);
+  font-size: 1rem;
+  line-height: 1;
+
+  &.is-yes {
+    background-color: $matcha-tint;
+    color: $success;
+  }
+  &.is-no {
+    background-color: $desk;
+    color: $pen-muted;
+  }
+}

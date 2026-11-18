@@ -1,0 +1,293 @@
+// ============================================================
+// 手帳的實物外皮：紙張、紙卡、便利貼、紙膠帶、拍立得、圓形貼紙、票券、對話泡泡、橫線紙、手繪塗鴉
+// 規則：
+// - 這些只是「外皮」，資料區一律端正：表單、表格、長文、文章卡、方案卡、按鈕不傾斜
+// - 只有裝飾性的容器可以傾斜（引文便利貼 -1.5°、拍立得 ±2°、貼紙 ±8°、為什麼值得訂的便利貼 ±1°），傾斜是固定值，hover 不改變
+// - 紙膠帶、貼紙、塗鴉都是 aria-hidden 的裝飾，pointer-events: none，不能蓋到文字
+// - 超出紙張的部分由 .sheet 的 overflow-x: clip 收住（不能用 overflow: hidden，會讓 sticky 失效）
+// ============================================================
+
+$rule-line: mix($info, $white, 16%); // 橫線紙的淡藍橫線（裝飾）
+
+// ---------- 紙張 .sheet：桌面上的一張點格紙 ----------
+// <div class="container"><div class="sheet">…</div></div>
+// 點格紋：1.2px 圓點、間距 22px；長文、表單、表格底下改用 .sheet-plain（純紙色）避免干擾閱讀
+.sheet {
+  position: relative;
+  padding: $sheet-padding-sm;
+  border-radius: $border-radius-lg;
+  background-color: $sheet;
+  background-image: radial-gradient(circle, $dot 1.2px, transparent 1.5px);
+  background-size: 22px 22px;
+  background-position: 11px 11px;
+  box-shadow: $box-shadow;
+  overflow-x: clip;
+  overflow-clip-margin: .5rem; // 貼在頁緣的便利貼可以超出紙張 8px
+
+  @include media-breakpoint-up(md) {
+    border-radius: $border-radius-xl;
+  }
+  @include media-breakpoint-up(lg) {
+    padding: $sheet-padding;
+  }
+}
+// 紙張上的純色區塊（長文、表單、表格底下）：蓋掉點格紋
+.sheet-plain {
+  background-color: $sheet;
+}
+
+// ---------- 紙卡 .note-card ----------
+// 奶油色紙、20px 圓角、紙張陰影；上緣常常貼一段紙膠帶（.tape）
+// .is-white：白紙卡（拍立得、收據、表單索引卡）
+.note-card {
+  position: relative;
+  display: block;
+  padding: 1.75rem 1.5rem 1.5rem;
+  border-radius: $border-radius-lg;
+  background-color: $sheet;
+  box-shadow: $box-shadow;
+  color: $pen;
+
+  &.is-white { background-color: $white; }
+}
+
+// ---------- 便利貼 .sticky-note ----------
+// 便利貼的外皮也做成 mixin：長文的引言區塊（.prose blockquote）不加 class 也能長成黃便利貼
+@mixin sticky-note-skin($bg) {
+  position: relative;
+  border-radius: $border-radius-lg $border-radius-lg .25rem $border-radius-lg;
+  background: linear-gradient(-45deg, transparent 12.5px, $bg 13px);
+  filter: drop-shadow(0 1px 0 rgba($pen, .07)) drop-shadow(0 8px 12px rgba($pen, .07));
+  color: $pen;
+
+  &::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 18px;
+    height: 18px;
+    border-top-left-radius: 5px;
+    background: linear-gradient(-45deg, transparent 50%, mix($pen, $bg, 9%) 50%);
+    pointer-events: none;
+  }
+}
+
+// 四色：.is-butter（黃）／.is-coral（珊瑚淡底）／.is-matcha（抹茶淡底）／.is-blue（藍淡底）
+// 右下角 18px 摺角：背景切掉一角，再用 ::after 畫翻起來的那一片；陰影用 drop-shadow 才會跟著摺角
+// 沒有框線。傾斜由各頁決定（只有裝飾性的便利貼可以傾斜）
+.sticky-note {
+  --note-bg: #{$butter};
+  --note-fold: #{mix($pen, $butter, 9%)};
+  position: relative;
+  padding: 1.5rem 1.5rem 1.75rem;
+  border-radius: $border-radius-lg $border-radius-lg .25rem $border-radius-lg;
+  background: linear-gradient(-45deg, transparent 12.5px, var(--note-bg) 13px);
+  filter: drop-shadow(0 1px 0 rgba($pen, .07)) drop-shadow(0 8px 12px rgba($pen, .07));
+  color: $pen;
+
+  &::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 18px;
+    height: 18px;
+    border-top-left-radius: 5px;
+    background: linear-gradient(-45deg, transparent 50%, var(--note-fold) 50%);
+    pointer-events: none;
+  }
+
+  &.is-butter { --note-bg: #{$butter};      --note-fold: #{mix($pen, $butter, 9%)}; }
+  &.is-coral  { --note-bg: #{$coral-tint};  --note-fold: #{mix($pen, $coral-tint, 9%)}; }
+  &.is-matcha { --note-bg: #{$matcha-tint}; --note-fold: #{mix($pen, $matcha-tint, 9%)}; }
+  &.is-blue   { --note-bg: #{$blue-tint};   --note-fold: #{mix($pen, $blue-tint, 9%)}; }
+}
+
+// ---------- 紙膠帶 .tape ----------
+// 72 × 22px 半透明斜紋，兩端撕邊；預設壓在父層上緣中央（父層要 position: relative）
+// 三色：.tape-coral／.tape-matcha（預設）／.tape-butter；傾斜用 --tape-tilt（-6° 到 5°）
+// <span class="tape tape-coral" aria-hidden="true"></span>
+// 父層 hover 時可以把 --tape-color 換成較深的那一階（_home.scss 的主題卡）
+.tape {
+  --tape-color: #{rgba($matcha, .78)};
+  --tape-tilt: -3deg;
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  z-index: 2;
+  width: 72px;
+  height: 22px;
+  translate: -50% 0;
+  rotate: var(--tape-tilt);
+  background-color: var(--tape-color);
+  background-image: repeating-linear-gradient(-45deg, rgba($white, .28) 0 5px, transparent 5px 10px);
+  clip-path: polygon(0 8%, 4% 0, 96% 4%, 100% 0, 98% 30%, 100% 55%, 97% 78%, 100% 100%, 3% 96%, 0 100%, 2% 70%, 0 45%, 3% 22%);
+  pointer-events: none;
+  transition: background-color .12s ease;
+
+  &.tape-coral  { --tape-color: #{rgba($coral, .72)}; }
+  &.tape-matcha { --tape-color: #{rgba($matcha, .78)}; }
+  &.tape-butter { --tape-color: #{rgba(mix($warning, $butter, 22%), .8)}; }
+  &.tape-left   { left: 2.5rem; }
+  &.tape-right  { left: auto; right: 2.5rem; translate: 50% 0; }
+  &.tape-wide   { width: 104px; }
+}
+
+// ---------- 拍立得 .polaroid ----------
+// 白框 10px、下緣 28px、6px 圓角、紙張陰影；照片在裡面（預設 16:9，--ratio 可改）
+// 傾斜只給裝飾用途（首頁主推封面、作者牆、作者頁頭像）；文章卡的縮圖不傾斜
+.polaroid {
+  position: relative;
+  display: block;
+  padding: 10px 10px 28px;
+  border-radius: $radius-polaroid;
+  background-color: $white;
+  box-shadow: $box-shadow;
+
+  img,
+  .polaroid-photo {
+    display: block;
+    width: 100%;
+    height: auto; // 蓋掉 <img height> 的呈現提示，比例由 aspect-ratio 決定
+    aspect-ratio: var(--ratio, 16 / 9);
+    object-fit: cover;
+    border-radius: 2px;
+  }
+  &.is-square { --ratio: 1 / 1; }
+}
+
+// ---------- 圓形貼紙 .sticker ----------
+// 正圓、2px 白描邊＋陰影（像撕下來的貼紙）；尺寸用 --sticker-size（預設 64px）
+// 四色：.is-butter／.is-coral／.is-matcha／.is-blue；預設是奶油色
+.sticker {
+  --sticker-size: 4rem;
+  --sticker-bg: #{$sheet};
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--sticker-size);
+  height: var(--sticker-size);
+  border-radius: 50%;
+  background-color: var(--sticker-bg);
+  box-shadow: 0 0 0 2px $white, 0 4px 10px rgba($pen, .12);
+  color: $pen;
+  text-align: center;
+
+  &.is-butter { --sticker-bg: #{$butter}; }
+  &.is-coral  { --sticker-bg: #{$coral-tint}; }
+  &.is-matcha { --sticker-bg: #{$matcha-tint}; }
+  &.is-blue   { --sticker-bg: #{$blue-tint}; }
+}
+
+// ---------- 票券 .ticket ----------
+// 兩側各一個半圓缺口＋缺口之間一條點線撕線；缺口位置用 --tear（從下緣算起）
+// 缺口是 mask 挖出來的，陰影要加在外層 .ticket-wrap（drop-shadow 跟著缺口）
+// <div class="ticket-wrap"><div class="ticket is-coral">…<div class="ticket-stub">按鈕</div></div></div>
+.ticket-wrap {
+  filter: drop-shadow(0 1px 0 rgba($pen, .07)) drop-shadow(0 8px 14px rgba($pen, .08));
+}
+.ticket {
+  --tear: 5.5rem;
+  --ticket-bg: #{$sheet};
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.75rem 1.75rem 0;
+  border-radius: $border-radius-lg;
+  background-color: var(--ticket-bg);
+  -webkit-mask:
+    radial-gradient(circle 13px at 0 calc(100% - var(--tear)), transparent 97%, #000) ,
+    radial-gradient(circle 13px at 100% calc(100% - var(--tear)), transparent 97%, #000);
+  -webkit-mask-composite: source-in;
+  mask:
+    radial-gradient(circle 13px at 0 calc(100% - var(--tear)), transparent 97%, #000),
+    radial-gradient(circle 13px at 100% calc(100% - var(--tear)), transparent 97%, #000);
+  mask-composite: intersect;
+
+  &.is-coral { --ticket-bg: #{$coral-tint}; }
+  &.is-white { --ticket-bg: #{$white}; }
+}
+// 票根：撕線以下的部分（放按鈕），高度 = --tear
+.ticket-stub {
+  display: flex;
+  align-items: center;
+  min-height: var(--tear);
+  margin-top: auto;
+  margin-inline: -1.75rem;
+  padding: .75rem 1.75rem;
+  border-top: 2px dotted $paper-edge;
+}
+
+// ---------- 對話泡泡 .speech ----------
+// 圓角＋左下一個小尾巴；兩色 .is-blue（預設）／.is-coral；署名寫在泡泡下方
+.speech {
+  --bubble-bg: #{$blue-tint};
+  position: relative;
+  margin: 0 0 1.25rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 1.5rem;
+  background-color: var(--bubble-bg);
+  color: $pen;
+  text-wrap: pretty;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 2rem;
+    bottom: -12px;
+    width: 22px;
+    height: 14px;
+    background-color: var(--bubble-bg);
+    clip-path: polygon(0 0, 100% 0, 10% 100%);
+  }
+  &.is-coral { --bubble-bg: #{$coral-tint}; }
+  &.is-butter { --bubble-bg: #{$butter}; }
+  &.is-white { --bubble-bg: #{$white}; }
+
+  // 尾巴朝上（署名在泡泡上方時，例如留言）
+  &.speech-up {
+    margin: .75rem 0 0;
+    &::after {
+      top: -12px;
+      bottom: auto;
+      clip-path: polygon(10% 0, 100% 100%, 0 100%);
+    }
+  }
+}
+
+// ---------- 橫線紙 .ruled ----------
+// 一行一條淡藍橫線，行距 = --rule（預設 36px）；寫在線上的文字把 line-height 設成 --rule 的倍數
+.ruled {
+  --rule: 2.25rem;
+  background-color: $sheet;
+  background-image: repeating-linear-gradient(to bottom, transparent 0 calc(var(--rule) - 1.5px), $rule-line calc(var(--rule) - 1.5px) var(--rule));
+  background-position: 0 var(--rule-offset, 0);
+}
+
+// ---------- 手繪框 .hand-frame ----------
+// 不規則圓角的 2px 框，像用筆圈起來（編輯器的吊牌工具、強調的小區塊）
+.hand-frame {
+  border: 2px solid $pen;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+}
+
+// ---------- 手繪塗鴉 .doodle ----------
+// inline SVG（stroke="currentColor"），一律 aria-hidden；顏色用 .doodle-coral／.doodle-matcha／.doodle-pen
+// 每頁控制在 3–5 個以內，資料區（表格、價格、到期日、付款欄位、長文）不加塗鴉
+.doodle {
+  position: absolute;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.doodle-coral  { color: $coral; }
+.doodle-matcha { color: $matcha-deep; }
+.doodle-pen    { color: $pen; }

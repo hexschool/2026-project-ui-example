@@ -1,0 +1,223 @@
+// ============================================================
+// 長文排版 .prose（文章內頁、編輯器、Guideline 的長文示範共用）
+// - 680px（$prose-max-width）、純紙色底（不放點格紋）、內文 $pen-body
+// - Aa 三段：.is-size-sm／-md／-lg（$prose-font-sizes／$prose-line-heights，每段行高都 ≥ 1.9），手機不下調行高
+// - h2 Huninn 26px，底下一筆珊瑚螢光筆；h3 Huninn 20px
+// - 引言區塊放在黃便利貼上（不傾斜）；損益表是方格紙表格；圖片是拍立得（不傾斜），圖說寫在下緣白邊
+// - 未訂閱時的殘句 .paywall-teaser 上面覆蓋 140px 的漸層淡出
+// ============================================================
+
+// ---------- 引言 .pull-quote ----------
+// Huninn 20px／1.8；首頁引文與文章內頁的引言區塊同一組，外層放在黃便利貼（.sticky-note.is-butter）上
+// <figure class="sticky-note is-butter"><blockquote class="pull-quote"><p>…</p></blockquote><figcaption>…</figcaption></figure>
+@mixin pull-quote-type {
+  font-family: $font-family-hand;
+  font-size: $prose-quote-size;
+  font-weight: 400;
+  font-synthesis: none;
+  line-height: 1.8;
+  letter-spacing: $letter-spacing-heading;
+  color: $pen;
+}
+.pull-quote {
+  @include pull-quote-type;
+  margin: 0;
+
+  p:last-child { margin-bottom: 0; }
+}
+
+// ---------- 長文 .prose ----------
+.prose {
+  max-width: $prose-max-width;
+  color: $pen-body;
+  font-size: map-get($prose-font-sizes, md);
+  line-height: map-get($prose-line-heights, md);
+  overflow-wrap: break-word;
+
+  @each $size, $value in $prose-font-sizes {
+    &.is-size-#{$size} {
+      font-size: $value;
+      line-height: map-get($prose-line-heights, $size);
+    }
+  }
+
+  p,
+  ul,
+  ol {
+    margin-bottom: $prose-paragraph-gap;
+  }
+  li + li { margin-top: .35rem; }
+
+  h2 {
+    width: fit-content;
+    max-width: 100%;
+    margin: 2.75rem 0 1rem;
+    padding-inline: .08em;
+    font-size: 1.625rem; // 26px（不跟著 Aa 變動）
+    line-height: 1.5;
+    color: $pen;
+    background: escape-svg($marker-stroke) no-repeat 0 96% / 100% .42em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    @include media-breakpoint-down(md) { font-size: 1.4375rem; } // 23px
+  }
+  h3 {
+    margin: 2rem 0 .625rem;
+    font-size: 1.25rem; // 20px
+    line-height: 1.55;
+    color: $pen;
+  }
+  strong { color: $pen; }
+  a { color: $coral-ink; }
+
+  // 引言區塊：黃便利貼（不傾斜），Huninn 20px／1.8
+  blockquote {
+    @include sticky-note-skin($butter);
+    @include pull-quote-type;
+    margin: 2.25rem 0;
+    padding: 1.5rem 1.75rem 1.75rem 3.25rem;
+
+    // 左上一個珊瑚色的大引號（裝飾）
+    &::before {
+      content: "“" / "";
+      position: absolute;
+      top: .5rem;
+      left: 1rem;
+      color: $coral;
+      font-family: $font-family-num;
+      font-size: 3rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+    p:last-child { margin-bottom: 0; }
+  }
+
+  // 圖片＋圖說：拍立得（不傾斜），圖說寫在下緣白邊
+  figure.polaroid,
+  .prose-figure {
+    margin: 2.25rem 0;
+    padding: 10px 10px 0;
+
+    img { --ratio: 16 / 9; }
+    figcaption {
+      padding: .75rem .375rem .875rem;
+      color: $pen-muted;
+      font-size: $small-font-size;
+      line-height: 1.7;
+    }
+  }
+
+  // 分隔線：手繪波浪虛線
+  hr {
+    @extend .hr-wave;
+    margin-block: 2.4em;
+  }
+
+  // 行內程式碼：白底細框、藍黑字（不用連結色）
+  code {
+    padding: .1em .4em;
+    border: 1px solid $dot;
+    border-radius: .375rem;
+    background-color: $white;
+    color: $pen;
+    font-size: .875em;
+  }
+  // 程式碼區塊：藍黑底、手帳紙字、圓角、可橫向捲動
+  pre {
+    margin: 2rem 0;
+    padding: 1.25rem 1.5rem;
+    border-radius: 1rem;
+    background-color: $pen;
+    color: $sheet;
+    font-size: .875rem;
+    line-height: 1.7;
+    overflow-x: auto;
+
+    code {
+      padding: 0;
+      border: 0;
+      background: none;
+      color: inherit;
+      font-size: inherit;
+    }
+  }
+}
+
+// 損益表：方格紙表格（白底、16px 圓角、細格線 $dot、表頭黃便利貼色、合計列珊瑚淡底）
+// 外框就是捲動容器：窄螢幕在自己的範圍內橫向捲動，不撐破閱讀欄
+.prose-table {
+  position: relative;
+  margin: 2rem 0;
+  border: 1.5px solid $dot;
+  border-radius: 1rem;
+  background-color: $white;
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+    min-width: 26rem;
+    border-collapse: collapse;
+    font-size: .9375rem;
+    line-height: 1.6;
+  }
+  th,
+  td {
+    padding: .75rem 1rem;
+    border-bottom: 1px solid $dot;
+    white-space: nowrap;
+  }
+  td {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    border-left: 1px solid $dot;
+  }
+  thead th {
+    background-color: $butter;
+    color: $pen;
+    font-weight: $font-weight-medium;
+    border-bottom: 1.5px solid $paper-edge;
+    &:not(:first-child) {
+      text-align: right;
+      border-left: 1px solid $dot;
+    }
+  }
+  tbody th {
+    color: $pen;
+    font-weight: $font-weight-normal;
+    text-align: left;
+  }
+  .is-total {
+    th,
+    td {
+      background-color: $coral-tint;
+      color: $pen;
+      font-weight: $font-weight-bold;
+      border-bottom: 0;
+    }
+  }
+  caption {
+    caption-side: bottom;
+    padding: .625rem 1rem;
+    border-top: 1px solid $dot;
+    color: $pen-muted;
+    font-size: $small-font-size;
+  }
+  &:focus-visible { outline-offset: 3px; }
+}
+
+// 未訂閱的殘句：上面覆蓋 140px 的漸層淡出（裝飾，不擋選字），讓文字「正在淡出」而不是「已消失」
+.paywall-teaser {
+  position: relative;
+  margin-bottom: 0 !important;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -.75rem;
+    height: 8.75rem; // 140px
+    background: linear-gradient(to bottom, rgba($sheet, 0), rgba($sheet, .85) 65%, $sheet);
+    pointer-events: none;
+  }
+}

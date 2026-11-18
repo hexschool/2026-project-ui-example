@@ -1,6 +1,6 @@
 # _wireframe：共用的線框圖參考
 
-這個資料夾是「現場筆記 FieldNotes」設計稿的**資訊架構與版型依據**：所有風格（`01-typewriter-style`、`03-thinktank-style`、`04-slow-reading-style` 以及之後的各套）的頁面組成、區塊與內容都以這裡為準；桌機欄數與區塊的排列構圖是建議，各風格可以依自己的排版語言調整（2026-11-17 起，見 `WIREFRAME_SPEC.md` §0）。
+這個資料夾是「現場筆記 FieldNotes」設計稿的**資訊架構與版型依據**：所有風格（`01-typewriter-style`、`02-geek-style`、`03-thinktank-style`、`04-slow-reading-style`、`05-salon-style`、`06-journal-style` 以及之後的各套）的頁面組成、區塊與內容都以這裡為準；桌機欄數與區塊的排列構圖是建議，各風格可以依自己的排版語言調整（2026-11-17 起，見 `WIREFRAME_SPEC.md` §0）。
 
 - 來源：Notion「05-知識內容訂閱主題：現場筆記 FieldNotes」頁面內嵌的 `index.html`（<https://app.notion.com/p/3ef6ab47eb4880deba15e50c5092ec08>）
 - 下載日期：2026-10-06（Notion 頁面最後編輯 2026-10-04）；`index.html` 是**原樣保存**，沒有改過任何一個字元

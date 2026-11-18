@@ -1,0 +1,237 @@
+// ============================================================
+// 訂閱狀態 SubscriptionCard（個人頁面、Guideline）：狀態和顏色一對一，一眼看出差異
+//   訂閱中＝巨大的克萊因藍積木（72px 白色 Bricolage 到期日，本頁唯一的主數字）
+//   已取消待到期＝黃積木、已到期／未訂閱＝白積木、扣款失敗＝紅積木（提醒）
+//   每一種都還有狀態徽章的圖示＋文字，不只靠顏色
+// 另有：提醒積木 .notice-block、取消自動續訂對話框 .cancel-dialog、兩顆同樣大的按鈕 .equal-actions
+// ============================================================
+
+// ---------- 訂閱中：藍積木（到期日）＋白積木（扣款、付款方式、解鎖範圍、操作）並排 ----------
+// <article class="bento sub-main" aria-labelledby="…">
+//   <div class="block is-klein sub-hero">徽章 → 到期日 → 2027/10/02 → 剩餘 364 天</div>
+//   <div class="block is-white sub-detail"><dl class="sub-dl">…</dl><hr><div class="equal-actions">…</div></div>
+// </article>
+.sub-main {
+  margin-bottom: 0;
+
+  @include media-breakpoint-up(xl) {
+    .sub-hero { grid-column: 1 / 8; }
+    .sub-detail { grid-column: 8 / 13; }
+  }
+  @include media-breakpoint-only(lg) {
+    .sub-hero,
+    .sub-detail { grid-column: 1 / -1; }
+  }
+}
+.sub-hero {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.sub-hero-label {
+  margin: 1.5rem 0 .25rem;
+  font-weight: $font-weight-bold;
+  color: var(--fn-muted);
+}
+.sub-hero-date {
+  margin: 0 0 .75rem;
+  font-size: clamp(2.5rem, 15.5cqi, 4.5rem); // 72px：依積木寬度縮放，不溢出
+  color: var(--fn-fg);
+}
+.sub-hero-remain {
+  margin: auto 0 0;
+  padding: .25rem .75rem;
+  border: 2px solid currentColor;
+  border-radius: $border-radius-sm;
+  font-weight: $font-weight-bold;
+  font-variant-numeric: tabular-nums;
+}
+.sub-detail {
+  display: flex;
+  flex-direction: column;
+
+  hr { margin: 1.25rem 0; }
+  .equal-actions { margin-top: auto; }
+}
+// 資訊列表：dt 小字、dd 黑字；每列之間 1px 髮絲線
+.sub-dl {
+  display: grid;
+  margin: 0;
+
+  > div {
+    display: grid;
+    gap: .125rem;
+    padding: .75rem 0;
+    border-bottom: 1px solid $hairline;
+
+    &:first-child { padding-top: 0; }
+    &:last-child { border-bottom: 0; padding-bottom: 0; }
+  }
+  dt {
+    font-size: .875rem;
+    font-weight: $font-weight-bold;
+    color: var(--fn-muted);
+  }
+  dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 .5rem;
+    margin: 0;
+    font-weight: $font-weight-medium;
+    font-variant-numeric: tabular-nums;
+
+    .btn-text { min-height: 2.25rem; padding-top: 0; padding-bottom: 0; }
+  }
+}
+
+// 兩顆同樣大小、同樣好按的按鈕並排（變更方案／取消自動續訂、確認取消／先不要）
+// 兩顆按鈕一樣寬；放不下兩欄（每顆 < 136px）時改成上下兩顆，按鈕字不換行
+.equal-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: .75rem;
+
+  .btn {
+    width: 100%;
+    white-space: nowrap;
+  }
+}
+
+// ---------- 其他訂閱狀態：一排 3 塊積木（≥ 768px），手機堆疊 ----------
+// <article class="block block-tight sub-state is-warning">徽章 → h4 → 說明 → 按鈕</article>
+.sub-states {
+  display: grid;
+  gap: $bento-gap-sm;
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: $bento-gap;
+  }
+}
+.sub-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .625rem;
+
+  > * { margin: 0; }
+  .btn { margin-top: auto; }
+}
+.sub-state-title {
+  margin-top: .25rem;
+  font-size: 1.125rem;
+  font-weight: $font-weight-black;
+  line-height: 1.45;
+}
+.sub-state-text {
+  margin-bottom: .5rem;
+  line-height: 1.7;
+}
+// 黃積木裡的黃色徽章改白底，才看得出是一塊徽章
+.block.is-warning .status-badge.is-warning { background-color: $paper; }
+
+// ---------- 提醒積木（續訂扣款失敗、即將到期、申請狀態）：圖示＋標題＋說明＋按鈕 ----------
+// <div class="block block-tight notice-block is-danger" role="note">
+//   <i class="bi bi-x-circle-fill notice-icon" aria-hidden="true"></i>
+//   <div class="notice-body"><p class="notice-title">續訂扣款失敗</p><p>…</p><button …>更新付款方式</button></div>
+// </div>
+.notice-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.notice-icon {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 2px solid currentColor;
+  border-radius: $border-radius-sm;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.notice-body {
+  flex: 1 1 auto;
+  min-width: 0;
+
+  p { margin-bottom: .5rem; line-height: 1.7; }
+  .btn { margin-top: .25rem; }
+  > :last-child { margin-bottom: 0; }
+}
+.notice-title {
+  font-weight: $font-weight-black;
+  font-size: 1.0625rem;
+}
+.notice-quote {
+  margin: .25rem 0 .75rem;
+  padding: .5rem 0 .5rem 1rem;
+  border-left: 6px solid currentColor;
+  font-weight: $font-weight-bold;
+  line-height: 1.7;
+}
+
+// ---------- 取消自動續訂對話框（Modal 與設計稿上的靜態版共用） ----------
+// 只有一層確認；兩顆按鈕一樣大，「先不要」是主要
+.cancel-dialog {
+  position: relative;
+  padding: 2rem 1.5rem 1.5rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 2.5rem 2.5rem 2rem;
+  }
+  .btn-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: $line;
+    border-radius: $border-radius;
+    background-size: .875rem;
+  }
+}
+.cancel-dialog.is-static {
+  max-width: 32.5rem; // 520px
+  border: $line;
+  border-radius: $block-radius;
+  background-color: $paper;
+  box-shadow: $shadow-hard-sm;
+}
+.cancel-dialog-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 1.25rem;
+  border: $line;
+  border-radius: $border-radius;
+  background-color: $orange;
+  color: $ink;
+  font-size: 1.5rem;
+}
+.cancel-dialog-title {
+  margin-bottom: .75rem;
+  font-size: 1.5rem;
+  font-weight: $font-weight-black;
+  line-height: 1.35;
+}
+.cancel-dialog-text {
+  margin-bottom: 1.5rem;
+  line-height: 1.8;
+}
+.cancel-dialog-note {
+  display: flex;
+  gap: .5rem;
+  margin: 1.25rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid $hairline;
+  font-size: .875rem;
+  line-height: 1.7;
+  color: $ink-2;
+
+  .bi { flex: none; margin-top: .125rem; color: $ink; }
+}

@@ -1,0 +1,462 @@
+// ============================================================
+// 積木區塊編輯器 .lego-editor（account.html#editor、Guideline 08）
+// 寫作區是一疊積木（間距 10px），每塊 grid-template-columns: 32px 1fr：
+//   左邊 32px 黑色把手欄（白色 grip-vertical、cursor: grab，常駐顯示）｜右邊內容
+//   內容左上角 28px 方形類型標記（只有圖示、aria-hidden）：標題藍底、導言與段落白底、免費預覽橘底
+// 被選取的段落：3px 克萊因藍框＋上方黑色浮動工具列（選中工具橘底）
+// 免費預覽分隔線：一整塊橘色積木（兩端黑色方形把手、中央鎖頭＋文字、右側黑底「2,200 字」、下方「可拖曳調整位置」）
+// 空行積木：2px 虛線框（全站只有這裡和設計稿示意用虛線），把手欄換成 40px 藍色「＋」鈕
+// 插入選單：白色調色盤積木（6px 硬陰影），每組 2 欄胖方塊，「免費預覽分隔線」整列橘底
+// 靜態介面：不能真的編輯、不能真的拖曳（拖曳中的樣子只在 Guideline 示範）
+// ============================================================
+.lego-editor {
+  display: grid;
+  gap: .625rem; // 10px：積木之間
+  min-width: 0;
+}
+.lego-topline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .25rem;
+}
+
+// ---------- 一塊積木 ----------
+// <div class="lego-block">
+//   <span class="lego-grip" aria-hidden="true"><i class="bi bi-grip-vertical"></i></span>
+//   <div class="lego-body"><span class="lego-type" aria-hidden="true"><i class="bi bi-text-paragraph"></i></span><div class="lego-content">…</div></div>
+// </div>
+.lego-block {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  border: $line;
+  border-radius: $border-radius;
+  background-color: $paper;
+  overflow: hidden;
+
+  &.is-selected {
+    border: $line-selected solid $klein;
+  }
+}
+.lego-grip {
+  display: flex;
+  justify-content: center;
+  padding-top: 1rem;
+  background-color: $ink;
+  color: $paper;
+  font-size: 1.125rem;
+  cursor: grab;
+}
+.lego-body {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  gap: .875rem;
+  align-items: start;
+  padding: .875rem 1rem;
+
+  @include media-breakpoint-up(md) {
+    padding: 1rem 1.25rem;
+  }
+}
+// 類型標記：28px 方塊，只有圖示（標題藍、導言與段落白、免費預覽橘）
+.lego-type {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: $line;
+  border-radius: .375rem;
+  background-color: $paper;
+  color: $ink;
+  font-size: .9375rem;
+  line-height: 1;
+
+  &.is-klein { background-color: $klein; color: $paper; }
+  &.is-orange { background-color: $orange; color: $ink; }
+}
+.lego-content {
+  min-width: 0;
+
+  > :last-child { margin-bottom: 0; }
+  p { margin-bottom: 0; line-height: 1.85; }
+}
+// 標題輸入：900 大字；導言：500、比內文大一階
+.lego-title {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: $font-weight-black;
+  line-height: 1.4;
+
+  @include media-breakpoint-up(md) {
+    font-size: 1.75rem;
+  }
+}
+.lego-lede {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: $font-weight-medium;
+  line-height: 1.75;
+  color: $ink-2;
+}
+.is-placeholder { color: $gray-600; }
+// 標題與內文之間的分隔線
+.lego-rule {
+  margin: .375rem 0;
+  color: $ink;
+}
+// 被選取的文字：克萊因藍淡底＋藍色底線
+.lego-selected {
+  padding: .1em 0;
+  background-color: $klein-tint;
+  color: $ink;
+  box-shadow: inset 0 -3px 0 $klein;
+}
+
+// ---------- 浮動格式工具列：黑色長條積木，白色圖示；選中工具橘底黑字 ----------
+.lego-selection {
+  display: grid;
+  gap: .375rem;
+}
+.lego-toolbar {
+  display: flex;
+  align-items: center;
+  justify-self: start;
+  gap: .125rem;
+  max-width: calc(100% - 2.75rem);
+  margin-left: 2.75rem; // 對齊積木的內容欄（把手欄右側）
+  padding: .25rem;
+  border: $line;
+  border-radius: $border-radius;
+  background-color: $ink;
+  overflow-x: auto; // 窄螢幕在工具列裡橫向捲動
+  scrollbar-width: none;
+
+  button {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: $border-radius-sm;
+    background: transparent;
+    color: $paper;
+    font-size: 1.125rem;
+    transition: background-color .12s ease-out, color .12s ease-out;
+
+    &:hover { background-color: #262626; }
+    &[aria-pressed="true"] { background-color: $orange; color: $ink; }
+    &:focus-visible { outline: 0; box-shadow: inset 0 0 0 2px $paper, inset 0 0 0 5px $orange; }
+  }
+}
+@include media-breakpoint-down(sm) {
+  .lego-toolbar {
+    max-width: 100%;
+    margin-left: 0;
+  }
+}
+.lego-toolbar-sep {
+  flex: none;
+  width: 2px;
+  height: 1.5rem;
+  margin: 0 .25rem;
+  background-color: $on-ink-muted;
+}
+
+// ---------- 免費預覽分隔線：一整塊橘色積木 ----------
+// 作者看到的是這條線，讀者看到的是付費牆
+.lego-divider {
+  @include surface-orange;
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) auto 2rem;
+  align-items: stretch;
+  border: $line;
+  border-radius: $border-radius;
+  overflow: hidden;
+}
+.lego-divider-grip {
+  display: grid;
+  place-items: center;
+  background-color: $ink;
+  color: $paper;
+  font-size: 1.125rem;
+  cursor: grab;
+}
+.lego-divider-main {
+  display: grid;
+  gap: .125rem;
+  padding: .75rem 1rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.55;
+}
+.lego-divider-label {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+
+  .bi { margin-top: .125rem; }
+}
+.lego-divider-hint {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  font-size: .8125rem;
+  font-weight: $font-weight-medium;
+}
+.lego-divider-count {
+  align-self: center;
+  margin-right: .75rem;
+  padding: .25rem .625rem;
+  border-radius: $border-radius-sm;
+  background-color: $ink;
+  color: $paper;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+// ---------- 空行積木：虛線框，左側 40px 藍色「＋」鈕（固定顯示，不是 hover 才出現） ----------
+.lego-block.is-empty {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: .875rem;
+  padding: .625rem;
+  border-style: dashed;
+  border-color: $ink-2;
+}
+.lego-plus {
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: $line;
+  border-radius: $border-radius-sm;
+  background-color: $klein;
+  color: $paper;
+  font-size: 1.25rem;
+  transition: background-color .12s ease-out;
+
+  &:hover { background-color: $klein-deep; }
+  &:active { transform: translate(2px, 2px); }
+  &:focus-visible { outline: 0; box-shadow: $focus-ring-double; }
+  &[aria-expanded="true"] { background-color: $ink; }
+}
+.lego-placeholder {
+  margin: 0;
+  color: $gray-600;
+  line-height: 1.7;
+}
+// 文字游標（裝飾）：靜態藍色細條，不閃爍（方向文件的動態清單沒有游標）
+.lego-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.2em;
+  margin-left: .125rem;
+  background-color: $klein;
+  vertical-align: -.2em;
+}
+
+// ---------- 插入區塊選單：白色調色盤積木（6px 硬陰影） ----------
+.lego-menu {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .5rem;
+  width: min(100%, 22rem);
+  margin: .25rem 0 .75rem 3.25rem;
+  padding: 1rem;
+  border: $line;
+  border-radius: $border-radius;
+  background-color: $paper;
+  box-shadow: $shadow-hard-sm;
+
+  @include media-breakpoint-down(sm) {
+    width: calc(100% - 6px);
+    margin-left: 0;
+  }
+}
+.lego-menu-group {
+  grid-column: 1 / -1;
+  margin: .375rem 0 0;
+  font-size: .75rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-label;
+  color: $ink-2;
+
+  &:first-child { margin-top: 0; }
+}
+.lego-menu-item {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 2.75rem;
+  padding: .375rem .625rem;
+  border: $line;
+  border-radius: $border-radius-sm;
+  background-color: $paper;
+  color: $ink;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  text-align: left;
+  transition: background-color .12s ease-out;
+
+  .bi { font-size: 1.0625rem; }
+  &:hover { background-color: $fog; }
+  &:focus-visible { outline: 0; box-shadow: $focus-ring-double; }
+
+  // 免費預覽分隔線：整列橘底（強調）
+  &.is-accent {
+    grid-column: 1 / -1;
+    background-color: $orange;
+
+    &:hover { background-color: $orange-hover; }
+  }
+}
+
+// ---------- 底部操作列：自動儲存提示＋儲存草稿、預覽（次要）、發布文章（主要） ----------
+.lego-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  margin-top: .5rem;
+  padding: 1rem;
+  border: $line;
+  border-radius: $border-radius;
+  background-color: $fog;
+}
+.lego-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.autosave {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  margin: 0;
+  font-size: .875rem;
+  font-weight: $font-weight-medium;
+  color: $ink-2;
+
+  .bi { color: $success; font-size: 1.0625rem; }
+}
+
+// ---------- 文章設定面板（白積木，可收合；≥ 1200px sticky） ----------
+.editor-settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+
+  h3 { margin: 0; font-size: 1.25rem; font-weight: $font-weight-black; }
+}
+.editor-settings-body {
+  display: grid;
+  gap: 1.25rem;
+  padding-top: 1.25rem;
+  margin-top: 1rem;
+  border-top: $line;
+}
+.settings-field {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  .form-check { margin-bottom: .25rem; }
+}
+.settings-label {
+  display: block;
+  width: 100%;
+  margin-bottom: .5rem;
+  padding: 0;
+  font-size: .875rem;
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+}
+legend.settings-label { float: left; } // legend 不壓在 fieldset 框線上（Bootstrap 的 legend + * 會 clear）
+.settings-value {
+  margin: 0;
+  font-weight: $font-weight-bold;
+}
+.settings-cover {
+  margin-bottom: .75rem;
+  border: $line;
+  border-radius: $border-radius;
+  overflow: hidden;
+  aspect-ratio: 1200 / 630;
+
+  img { display: block; width: 100%; height: 100%; object-fit: cover; }
+}
+.settings-progress {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+
+  .read-progress { flex: 1 1 auto; }
+  strong { font-variant-numeric: tabular-nums; }
+}
+// 可移除的標籤、「＋ 新增」
+.tag-removable {
+  padding-right: .125rem;
+
+  button {
+    display: inline-grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-left: .125rem;
+    padding: 0;
+    border: 0;
+    border-radius: .375rem;
+    background: transparent;
+    color: inherit;
+    font-size: .75rem;
+
+    &:hover { background-color: $fog; }
+    &:focus-visible { outline: 0; box-shadow: $focus-ring-double; }
+  }
+}
+.tag-add {
+  background-color: $fog;
+  font-weight: $font-weight-bold;
+  cursor: pointer;
+
+  &:hover { background-color: $klein-tint; }
+  &:focus-visible { outline: 0; box-shadow: $focus-ring-double; }
+}
+
+// ---------- 發布前檢查（設計稿狀態示意） ----------
+.check-list {
+  display: grid;
+  gap: .5rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-weight: $font-weight-medium;
+  }
+  .is-done .bi { color: $success; }
+  .is-todo {
+    padding: .375rem .625rem;
+    border: $line;
+    border-radius: $border-radius-sm;
+    background-color: $warning;
+    color: $ink;
+    font-weight: $font-weight-bold;
+  }
+}
+
+// 減少動態：拿掉＋號的按下位移
+@media (prefers-reduced-motion: reduce) {
+  .lego-plus:active { transform: none; }
+}
