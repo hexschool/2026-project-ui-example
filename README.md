@@ -2,7 +2,7 @@
 
 六角學院 2026 專題班的 UI 風格範例。每個主題類型一個資料夾，底下再依視覺風格分成多個獨立專案。
 
-**從這裡開始：用瀏覽器打開根目錄的 [`index.html`](./index.html)（UI 風格範例站）**。它統整了所有主題類型與風格，每套風格都有「網站樣式」「Guideline」「原始碼」三個入口，並列出使用步驟與全部頁面（名詞清單已寫好，目前在 `index.html` 裡先註解隱藏）。樣式在 `_overview/overview.css`，縮圖在 `_overview/thumbs/`（新增風格時補一張 960 × 600 的首頁首屏截圖）。
+**從這裡開始：打開 <https://2026-training-course.hexschool.io>，或用瀏覽器打開根目錄的 [`index.html`](./index.html)（UI 風格範例站）**。最前面是總目錄，列出所有主題類型與風格；下面有使用步驟，以及每套風格的「網站樣式」「Guideline」「原始碼」三個入口與全部頁面（名詞清單已寫好，目前在 `index.html` 裡先註解隱藏）。
 
 | 主題類型 | 資料夾 | 內容 |
 |---|---|---|
@@ -13,3 +13,39 @@
 | 05 知識內容訂閱服務 | [`05-知識內容訂閱主題/`](./05-知識內容訂閱主題/) | 現場筆記 FieldNotes：第一線工作者的長文訂閱平台，共用 wireframe、文案與圖片清單（01 純粹打字機、02 極客代碼知識庫、03 高端政經智庫、04 溫暖心靈慢讀、05 撞色創作者沙龍、06 手帳筆記插畫） |
 
 各主題的說明、風格清單與新增規則，請看該資料夾的 `README.md`。
+
+## 預覽外框
+
+設計稿一律放在 [`preview.html`](./preview.html) 的 iframe 裡看，避免被當成真的網站。外框上固定標示「設計稿範例，虛構品牌，請勿輸入真實資料」，工具列可以打開總目錄、換頁面、切換桌機／平板／手機寬度、換到同主題的上一套／下一套，以及打開原始碼。
+
+| 檔案 | 用途 |
+|---|---|
+| `preview.html` | 外框頁。網址的 `#` 後面是目前的設計稿，例如 `preview.html#ecommerce/02-muji-style/products` |
+| `_overview/catalog.js` | 目錄資料：主題、風格、頁面。總目錄與外框都讀這一份 |
+| `_overview/directory.js` | 產生總目錄（`index.html` 與外框側欄共用） |
+| `_overview/preview.js`、`preview.css` | 外框的行為與樣式 |
+| `_overview/frame-guard.js` | 每頁設計稿的 `<head>` 都會載入。直接打開設計稿時轉到外框；在外框裡時回報目前位置 |
+| `_overview/overview.css`、`thumbs/` | `index.html` 的樣式與縮圖（960 × 600 的首頁首屏截圖） |
+| `CNAME` | GitHub Pages 的自訂網域，不要刪 |
+| `.nojekyll` | 讓 GitHub Pages 照原樣發佈；沒有它，底線開頭的 `_overview/` 不會被發佈，總目錄與外框都會失效 |
+| `_overview/check.mjs` | 檢查目錄資料、檔案、縮圖、外框腳本與 `index.html` 是否一致（`node _overview/check.mjs`） |
+
+- **不需要伺服器**：雙擊 `index.html` 或任何一頁已登記的設計稿都可以，外框照樣出現。
+- **複製到自己的專案**：風格資料夾單獨複製出去後找不到 `frame-guard.js`，頁面照常顯示；把 `<head>` 裡那兩行（註解與 `<script>`）刪掉即可。
+- **要截圖、列印、量寬度或檢查水平捲軸**：Playwright、Puppeteer 這類自動化瀏覽器直接打開設計稿，不會套外框；其他工具請把風格資料夾複製到別的地方再開，否則看到的是外框。要檢查外框本身，請開 `preview.html`。
+- **邊改樣式邊看**：重新整理會留在同一頁與同一個寬度，但會捲回最上面；想留在原位，在設計稿上按右鍵選「重新載入頁框」。
+- 各主題的 `_wireframe/` 是版型參考，沒有放進外框。
+
+## 部署
+
+push 到 `main` 後，GitHub Pages 會自動更新 <https://2026-training-course.hexschool.io>，不需要打包。整個 repo 都會公開，不要放金鑰、個資或還不能公開的內容。
+
+## 新增風格或頁面時
+
+沒登記的頁面打開只會看到「總目錄裡沒有這一頁」，所以建好資料夾或檔案後，先做第 1、2 步再開始做畫面。
+
+1. 每頁 `<head>` 的 `viewport` 後面保留 `frame-guard.js` 那兩行（`templates/page.html` 已經有）。
+2. 在 `_overview/catalog.js` 對應主題的 `styles`（新風格）或 `pages`（新頁面）加一筆。同一個主題的每套風格檔名要一致，加一頁就要每套都加。
+3. 新風格在 `_overview/thumbs/` 補一張縮圖，檔名是 `<主題編號>-<風格資料夾>.jpg`。
+4. 在 `index.html` 對應主題的 `.style-grid` 補卡片與連結。
+5. 執行 `node _overview/check.mjs`。

@@ -1,0 +1,203 @@
+/* ============================================================
+   預覽頁（preview.html）的樣式：工具列＋外框＋總目錄側欄
+   - 外框要在任何風格旁邊都認得出來：工具列上的「設計稿範例」標籤、設計稿四邊的藍框
+   - 外框不另外佔高度與寬度：標籤和主題、風格名稱放在同一格，設計稿四邊只有 3px 的框
+   - 色票、按鈕與總目錄清單共用 overview.css
+   ============================================================ */
+
+:root {
+  --canvas: #d5d9e0;      /* 畫布 */
+  --canvas-dot: #b3b9c4;  /* 畫布的點（裝飾用） */
+  --frame: 3px;           /* 藍框粗細 */
+}
+
+/* 整頁固定一個視窗高，沒有可捲的內容，只有 iframe 裡的設計稿會捲動 */
+.pv {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* ---------- 工具列：手機與平板兩列，992px 以上一列；裝置切換 768px 以上才有 ---------- */
+.pv-bar {
+  display: grid;
+  grid-template: "dir page nav" auto "title title source" auto / auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .25rem .5rem;
+  padding: .375rem .5rem;
+  border-bottom: 1px solid var(--rule-strong);
+  background: var(--paper);
+}
+.pv-open { grid-area: dir; }
+.pv-page { grid-area: page; }
+.pv-nav { grid-area: nav; }
+.pv-heading { grid-area: title; }
+.pv-source { grid-area: source; }
+.pv-device { display: none; grid-area: device; }
+
+.pv-open { font: inherit; font-size: .9375rem; font-weight: 500; cursor: pointer; }
+
+/* 主題 › 風格，下面一行是「設計稿範例」標籤 */
+.pv-heading {
+  container-type: inline-size;
+  min-width: 0;
+  padding-left: .25rem;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+/* 空間不夠時先縮短主題 */
+.pv-title { display: flex; min-width: 0; font-size: .9375rem; }
+.pv-title span { overflow: hidden; text-overflow: ellipsis; }
+.pv-theme { flex: 0 1 auto; min-width: 0; color: var(--muted); font-weight: 400; }
+.pv-style { flex: 0 0 auto; max-width: 100%; font-weight: 700; }
+.pv-style::before { content: "›"; margin-inline: .5rem; color: var(--muted); font-weight: 400; }
+
+.pv-label { font-size: .8125rem; }
+.pv-label strong {
+  margin-right: .5rem;
+  padding-inline: .375rem;
+  border-radius: 3px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+/* 這一格太窄時（小手機、992px 左右的視窗）省略「虛構品牌」 */
+@container (max-width: 16.5rem) { .pv-fiction { display: none; } }
+
+.pv-page select {
+  width: 100%;
+  min-height: 44px;
+  padding: .5rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.pv-page select:hover { border-color: var(--ink); }
+
+.pv-nav { display: flex; gap: .25rem; }
+.pv-nav .btn { min-width: 44px; }
+.pv-nav-text { display: none; }
+
+.pv-source { min-height: 32px; padding-block: .125rem; }
+
+@media (min-width: 768px) {
+  .pv-bar { grid-template: "dir page device nav" auto "title title title source" auto / auto minmax(0, 1fr) auto auto; }
+  .pv-device { display: flex; }
+  .pv-heading { display: flex; align-items: baseline; gap: .75rem; }
+}
+@media (min-width: 992px) {
+  .pv-bar {
+    grid-template: "dir title page device nav source" auto / auto minmax(0, 1fr) 12rem auto auto auto;
+    gap: .75rem;
+    padding: .375rem 1rem;
+  }
+  .pv-heading { display: block; padding-left: 0; }
+  .pv-title { font-size: 1rem; }
+  .pv-source { min-height: 44px; padding-block: .5rem; }
+}
+@media (min-width: 1280px) {
+  .pv-bar { grid-template-columns: auto minmax(0, 1fr) 14rem auto auto auto; }
+  .pv-nav-text { display: inline; }
+}
+
+/* 預覽寬度 */
+.pv-device button {
+  min-height: 44px;
+  padding: .5rem .75rem;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: .9375rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pv-device button + button { border-left: 0; }
+.pv-device button:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.pv-device button:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+.pv-device button:hover { background: var(--panel); }
+.pv-device button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: #fff; }
+.pv-device button:focus-visible { position: relative; z-index: 1; }
+.pv-device .num { font-size: .8125rem; }
+
+/* ---------- 畫布與外框（畫布在平板、手機寬度時才看得到） ---------- */
+.pv-canvas {
+  --device: 100%;
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  background: var(--canvas) radial-gradient(var(--canvas-dot) 1px, transparent 1.5px) 0 0 / 16px 16px;
+}
+.pv-frame {
+  position: relative;
+  width: 100%;
+  max-width: calc(var(--device) + var(--frame) * 2);
+  margin-inline: auto;
+  border: var(--frame) solid var(--accent);
+  background: var(--paper);
+}
+.pv-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: 0; /* 焦點在設計稿裡面時，由設計稿自己標示 */
+}
+.pv-frame p { padding: 1rem; }
+.pv-frame noscript p { position: relative; z-index: 1; }
+
+@media (min-width: 768px) {
+  .pv-canvas[data-device="tablet"] { --device: 768px; }
+  .pv-canvas[data-device="phone"] { --device: 390px; }
+}
+
+/* ---------- 總目錄側欄 ---------- */
+.pv-dir {
+  inset: 0 auto 0 0;
+  width: min(60rem, 100%);
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--paper);
+  color: var(--ink);
+  overscroll-behavior: contain;
+}
+.pv-dir::backdrop { background: rgba(21, 23, 26, .55); }
+.pv-dir-inner { min-height: 100%; padding: 0 var(--gutter) 2.5rem; }
+.pv-dir-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-inline: calc(var(--gutter) * -1);
+  margin-bottom: 1.5rem;
+  padding: .75rem var(--gutter);
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+.pv-dir-head h2 { font-size: 1.25rem; font-weight: 700; }
+.pv-dir-head form { margin-left: auto; }
+.pv-dir-head .btn { font: inherit; font-size: .9375rem; font-weight: 500; cursor: pointer; }
+/* 焦點移到清單裡的連結時，不要被固定的標題列蓋住 */
+.pv-dir .dir-style,
+.pv-dir .dir-more { scroll-margin-top: 6rem; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .pv-dir[open] { animation: pv-dir-in .2s ease-out; }
+}
+@keyframes pv-dir-in {
+  from { opacity: 0; transform: translateX(-2rem); }
+}

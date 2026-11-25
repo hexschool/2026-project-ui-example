@@ -69,6 +69,7 @@
 5. 替換 `images/` 的圖片（檔名維持一致就不用改 HTML）。可改 `scripts/generate-images.mjs` 的 `STYLE` 重新生成。
 6. 版型以 `_wireframe/WIREFRAME_SPEC.md` 為依據，資訊架構保持一致，只改視覺表現。
 7. 回到本檔，更新「風格清單」的狀態。
+8. 到根目錄的總目錄與預覽外框登記這套風格，步驟見[根目錄 README](../README.md)「新增風格或頁面時」。
 
 ### 換色時同步檢查
 

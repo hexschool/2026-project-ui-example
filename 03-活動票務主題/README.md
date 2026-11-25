@@ -96,6 +96,7 @@ Notion 列了 6 種風格，6 種都已完成，每套 10 頁。2026-10 先做 0
 7. 改 `scripts/generate-images.mjs` 的 `STYLE` 與 `JOBS`（照 `IMAGES.md`），`npm run images` 生成 22 張圖。
 8. 寫風格自己的 `README.md`：風格概念、頁面清單與檔名（10 頁）、design token 摘要、共用類別、指令。
 9. 用 `WIREFRAME_SPEC.md` §6 的驗收清單逐項檢查，回到本檔把「風格清單」的狀態改成「已完成」。
+10. 到根目錄的總目錄與預覽外框登記這套風格，步驟見[根目錄 README](../README.md)「新增風格或頁面時」。
 
 ### 換色時同步檢查
 
